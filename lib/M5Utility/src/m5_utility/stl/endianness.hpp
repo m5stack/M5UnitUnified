@@ -27,7 +27,7 @@ namespace m5 {
 namespace stl {
 
 // C++20 or later
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L || DOXYGEN_PROCESS
 
 using endian = std::endian;
 
@@ -60,11 +60,7 @@ enum class endian {
 constexpr uint32_t val32 = 0x11223344;
 constexpr uint8_t ref8   = static_cast<const uint8_t&>(val32);
 /// @endcond
-enum class endian {
-    little = 0x44,
-    big    = 0x11,
-    native = ref8
-};
+enum class endian { little = 0x44, big = 0x11, native = ref8 };
 #endif
 }  // namespace stl
 
@@ -75,15 +71,16 @@ enum class endian {
 namespace endian {
 ///@name endian type
 ///@{
-constexpr bool little = m5::stl::endian::native ==
-                        m5::stl::endian::little;  //!< true if little endian.
-constexpr bool big =
-    m5::stl::endian::native == m5::stl::endian::big;  //!< true if big endian.
-constexpr bool other = !little && !big;               //!< true if other endian.
+constexpr bool little =
+    m5::stl::endian::native ==
+    m5::stl::endian::little;  //!< @brief true if little endian.
+constexpr bool big = m5::stl::endian::native ==
+                     m5::stl::endian::big;  //!< @brief true if big endian.
+constexpr bool other = !little && !big;     //!< @brief true if other endian.
 ///@}
 
 static_assert(little || big || other, "Unable to determine endianness");
-static_assert((int)little + (int)big + (int)other == 1,
+static_assert(((int)little + (int)big + (int)other) == 1,
               "Endian matches more than one");
 }  // namespace endian
 }  // namespace m5

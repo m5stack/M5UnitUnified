@@ -19,6 +19,7 @@ namespace types {
 
 /*!
   @struct U16
+  @tparam DataEndianLittle Endian type specification<br> true: Little false: Big
   @brief Endian-compliant uint16
 */
 template <bool DataEndianLittle>

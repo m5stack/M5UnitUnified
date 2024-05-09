@@ -61,7 +61,9 @@ class BitSegment {
     ///@name Assignment
     ///@{
     BitSegment& operator=(const BitSegment& o) {
-        _v = o._v;
+        if (this != &o) {
+            _v = o._v;
+        }
         return *this;
     }
     BitSegment& operator=(const base_type v) {
@@ -119,11 +121,9 @@ class BitSegment {
     base_type _v{};
 };
 
-///@name Compare
-///@brief Comparison by raw values
+///@name Compare between same types.
 /// @related m5::utility::BitSegment
 ///@{
-// Compare between same types.
 template <size_t LowerBits, typename T>
 bool operator==(const BitSegment<LowerBits, T>& a,
                 const BitSegment<LowerBits, T>& b) {
@@ -154,7 +154,11 @@ bool operator>=(const BitSegment<LowerBits, T>& a,
                 const BitSegment<LowerBits, T>& b) {
     return !(a < b);
 }
-// Compare between BitSegment and integer
+///@}
+
+///@name  Compare between BitSegment and integer
+/// @related m5::utility::BitSegment
+///@{
 template <size_t LowerBits, typename T>
 bool operator==(const BitSegment<LowerBits, T>& a, const int b) {
     return a.raw() == b;
@@ -179,7 +183,11 @@ template <size_t LowerBits, typename T>
 bool operator>=(const BitSegment<LowerBits, T>& a, const int b) {
     return !(a < b);
 }
-// Compare between integer and BitSegment
+///@}
+
+///@name Compare between integer and BitSegment
+/// @related m5::utility::BitSegment
+///@{
 template <size_t LowerBits, typename T>
 bool operator==(const int a, const BitSegment<LowerBits, T>& b) {
     return a == b.raw();

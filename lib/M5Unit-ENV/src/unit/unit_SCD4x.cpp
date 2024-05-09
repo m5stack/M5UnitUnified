@@ -316,7 +316,7 @@ bool UnitSCD40::getSerialNumber(char* serialNumber) {
     if (getSerialNumber(sno)) {
         uint_fast8_t i{12};
         while (i--) {
-            *serialNumber++ = m5::utility::uintToHex((sno >> (i * 4)) & 0x0F);
+            *serialNumber++ = m5::utility::uintToHexChar((sno >> (i * 4)) & 0x0F);
         }
         *serialNumber = '\0';
         return true;

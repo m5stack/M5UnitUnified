@@ -2,6 +2,11 @@
   @file M5Utility.hpp
   @brief Main header of M5Utility
 
+  @mainpage M5Utility
+  Llibrary containing utilities common to M5 products.<br>
+  C++11 or later.
+
+
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root
   for full license information.

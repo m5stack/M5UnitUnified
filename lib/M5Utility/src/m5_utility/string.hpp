@@ -30,25 +30,28 @@ std::string& trim(std::string& s);
 
 ///@name Convert
 ///@{
-/*! @brief Convert from 0~15 to hexadecimal character */
-inline char uintToHex(const uint8_t v)
-{
-    return v < 10 ? '0' + v : 'A' + (v - 10);
+/*!
+  @brief Convert from 0~15 to hexadecimal character
+  @tparam Case Capitalise if true
+*/
+template<bool Case = true>
+constexpr char uintToHexChar(const uint8_t v) {
+    return (v & 0x0F) < 10 ? '0' + (v & 0x0F) : (Case ? 'A' : 'a') + ((v & 0x0F) - 10);
 }
 
 /*!
   @brief Convert any one unsigned integer to a hexadecimal string
   @tparam T Value type (Must be unsigned integer)
  */
-template <typename T>
-std::string unsignedToHex(const T& v) {
+template <typename T, bool Case = true>
+std::string unsignedToHexString(const T& v) {
     static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value,
                   "T must be unsigned integer");
     std::string s;
     for (size_t i = sizeof(T); i > 0; --i) {
         uint8_t u8 = (v >> ((i - 1) * 8)) & 0xFF;
-        s += uintToHex(u8 & 0x0F);
-        s += uintToHex((u8 >> 4) & 0x0F);
+        s += uintToHexChar<Case>((u8 >> 4) & 0x0F);
+        s += uintToHexChar<Case>(u8 & 0x0F);
     }
     return s;
 }

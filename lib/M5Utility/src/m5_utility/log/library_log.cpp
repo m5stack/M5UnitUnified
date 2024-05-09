@@ -25,7 +25,6 @@ void log_printf(const char* format, ...) {
     va_start(ap, format);
     vprintf(format, ap);
     va_end(ap);
-    putchar('\n');
 #if !defined(ARDUINO)
     fflush(stdout);
 #endif

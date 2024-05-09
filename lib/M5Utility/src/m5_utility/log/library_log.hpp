@@ -36,7 +36,8 @@ constexpr log_level_t logOutputLevel = log_level_t::NONE;
 #elif defined(M5_LOG_LEVEL)
 constexpr log_level_t logOutputLevel = static_cast<log_level_t>(M5_LOG_LEVEL);
 #elif defined(CORE_DEBUG_LEVEL)
-constexpr log_level_t logOutputLevel = static_cast<log_level_t>(CORE_DEBUG_LEVEL);
+constexpr log_level_t logOutputLevel =
+    static_cast<log_level_t>(CORE_DEBUG_LEVEL);
 #else
 /*!
   @var logOutputLevel
@@ -67,7 +68,7 @@ constexpr const char* tail(const char* s) {
 /*!
   @brief Gets the filename from full pathname
   @warning If the string is too long, the recursion depth may be too deep to
-  fail. (If  compile time calculation)
+  fail. (If compile time calculation)
  */
 constexpr const char* pathToFilename(const char* path) {
     return (path && path[0])
@@ -87,7 +88,7 @@ elapsed_time_t elapsedTime();
 ///@cond
 #ifndef M5_UTILITY_LOG_FORMAT
 #define M5_UTILITY_LOG_FORMAT(letter, format)             \
-    "[%6lld][" #letter "][%s:%u] %s(): " format,          \
+    "[%6lld][" #letter "][%s:%u] %s(): " format "\n",     \
         (int64_t)m5::utility::log::elapsedTime().count(), \
         m5::utility::log::pathToFilename(__FILE__), __LINE__, __func__
 #endif
