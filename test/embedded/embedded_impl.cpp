@@ -30,4 +30,3 @@ void delayMicroseconds(const unsigned int us) {
 
 }  // namespace utility
 }  // namespace m5
-

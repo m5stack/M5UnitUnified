@@ -45,5 +45,7 @@ void setup() {
 
 void loop() {
     test();
-    while(true) { delay(10000); }
+    while (true) {
+        delay(10000);
+    }
 }
