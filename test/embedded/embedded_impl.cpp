@@ -1,5 +1,5 @@
 /*!
-  Replace to Arduio functions
+  Replace to Arduino functions
 
   copyright M5Stack. All rights reserved.
   Licensed under the MIT license. See LICENSE file in the project root for full

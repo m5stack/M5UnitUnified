@@ -64,7 +64,7 @@ class TestSCD4x : public ::testing::TestWithParam<bool> {
 
         ustr = m5::utility::formatString("%s:%s", unit->deviceName(),
                                          GetParam() ? "Bus" : "Wire");
-        //printf("Test as %s\n", ustr.c_str());
+        // printf("Test as %s\n", ustr.c_str());
 
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
@@ -102,7 +102,7 @@ class TestSCD4x : public ::testing::TestWithParam<bool> {
     std::string ustr{};
 };
 
-//#define UNIT_TEST_SCD41
+// #define UNIT_TEST_SCD41
 
 class TestSCD40 : public TestSCD4x {
    protected:
