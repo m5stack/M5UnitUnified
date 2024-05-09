@@ -6,8 +6,8 @@
   license information.
 */
 
-#define USING_PAHUB (2) // Connection channel number for use via PaHub.
-#define USING_M5HAL  // When using M5HAL
+#define USING_PAHUB (2)  // Connection channel number for use via PaHub.
+#define USING_M5HAL      // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>

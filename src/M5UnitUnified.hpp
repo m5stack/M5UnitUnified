@@ -5,7 +5,7 @@
   @mainpage M5UnitUnfied
   Library for abstracted M5 units.
   C++11 or later.
-  
+
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root
   for full license information.
@@ -33,9 +33,9 @@ class UnitUnified {
 
     ///@name Constructor
     ///@{
-    UnitUnified()                              = default;
-    UnitUnified(const UnitUnified&)            = delete;
-    UnitUnified(UnitUnified&&)                 = default;
+    UnitUnified()                   = default;
+    UnitUnified(const UnitUnified&) = delete;
+    UnitUnified(UnitUnified&&)      = default;
     ///@}
 
     ///@name Assignment
@@ -46,24 +46,26 @@ class UnitUnified {
 
     ///@name Adding unit to be managed
     ///@{
-    //bool add(Component& u, Port& port);
+    // bool add(Component& u, Port& port);
     bool add(Component& u, m5::hal::bus::Bus* bus);
-    //    [[deprecated("use add(Component& u, Port& port) or add(Component& u, m5::hal::bus::Bus* bus);")]]
+    //    [[deprecated("use add(Component& u, Port& port) or add(Component& u,
+    //    m5::hal::bus::Bus* bus);")]]
     bool add(Component& u, TwoWire& wire);
     ///@}
-    
+
     bool begin();
     void update();
 
     //! @brief Output information for debug
     std::string debugInfo() const;
-    
-  protected:
+
+   protected:
     bool add_children(Component& u);
     bool add(Component& u, m5::unit::Adapter* a);
 
-    std::string make_unit_info(const Component* u, const uint8_t indent = 0) const;
-    
+    std::string make_unit_info(const Component* u,
+                               const uint8_t indent = 0) const;
+
    protected:
     container_type _units;
 
