@@ -78,7 +78,7 @@ The example of the UnitUnified itself depends on the connecting unit and will be
 
 .clang-format is much older.  
 There are items that have been changed in the current version, etc.  
-Prerequisite version is ?  
+Prerequisite version is 13?  
 What about updating to the latest settings?  
 The number of column digits is 80, can it be made larger?
 
