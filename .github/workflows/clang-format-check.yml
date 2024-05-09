@@ -11,6 +11,8 @@ jobs:
             exclude: ''
           - check: 'examples'
             exclude: ''
+          - check: 'test'
+            exclude: ''
     steps:
     - uses: actions/checkout@v3.1.0
     - name: Run clang-format style check for C/C++/Protobuf programs.
