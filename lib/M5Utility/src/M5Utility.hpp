@@ -4,7 +4,7 @@
 
   @mainpage M5Utility
   Llibrary containing utilities common to M5 products.<br>
-  C++11 or later.
+  C++11 or later
 
 
   @copyright M5Stack. All rights reserved.

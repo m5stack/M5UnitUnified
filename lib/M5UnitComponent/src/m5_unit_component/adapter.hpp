@@ -1,8 +1,8 @@
 /*!
-  @file adpter.hpp
+  @file adapter.hpp
   @brief Adapters to treat M5HAL and TwoWire in the same way
 
-  @warning Currently able to handle AAA, but will eventually be M5HAL only
+  @warning Currently able to handle TwoWire, but will eventually be M5HAL only
 
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root

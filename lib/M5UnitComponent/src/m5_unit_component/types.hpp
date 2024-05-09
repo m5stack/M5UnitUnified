@@ -16,7 +16,7 @@ namespace unit {
 namespace types {
 
 using uid_t  = uint32_t;  //!< @brief Component unique identifier
-using attr_t = uint32_t;  //!< @berif COmponent attrinute
+using attr_t = uint32_t;  //!< @brief Component attrinute
 
 }  // namespace types
 }  // namespace unit

@@ -4,7 +4,7 @@
 
   @mainpage M5UnitUnfied
   Library for abstracted M5 units.
-  C++11 or later.
+  C++11 or later
 
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root

@@ -2,6 +2,11 @@
   @file M5UnitComponent.hpp
   @brief Main header of M5UnitComponent
 
+  @mainpage M5UnitComponent
+  Library for componentising the functions of each device so that they can be
+  handled by M5UnitUnified<br>
+  C++11 or later
+
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root
   for full license information.
@@ -11,7 +16,6 @@
 
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
-#include <M5Utility.hpp>
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -30,7 +34,7 @@ class Adapter;
 
 /*!
   @namespace m5
-  @brief Toplevel namespace of M5
+  @brief Top level namespace of M5
  */
 namespace m5 {
 
@@ -42,8 +46,7 @@ namespace unit {
 
 /*!
   @class Component
-  @brief Base class of unit component
-  @detail Empty component
+  @brief Abstract base class of unit component
  */
 class Component {
    public:
@@ -246,12 +249,12 @@ class Component {
     //! @brief Output information for debug
     virtual std::string debugInfo() const;
 
-  protected:
+   protected:
     // Proper implementation in derived classes is required
     virtual const char* unit_device_name() const = 0;
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
-    // Ensure the adapter for children if Hub 
+    // Ensure the adapter for children if Hub
     virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
         return nullptr;
     }
@@ -259,7 +262,7 @@ class Component {
     virtual m5::hal::error::error_t select_channel(const uint8_t) {
         return m5::hal::error::error_t::OK;
     }
-    
+
     // Helper
     template <typename Func, typename... Args>
     auto readWithTransaction(uint8_t* out, const size_t len, Func func,
