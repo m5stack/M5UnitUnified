@@ -6,8 +6,8 @@
   license information.
 */
 
-#define USING_PAHUB (2)  // Connection channel number for use via PaHub.
-#define USING_M5HAL      // When using M5HAL
+//#define USING_PAHUB (2)  // Connection channel number for use via PaHub.
+// #define USING_M5HAL      // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
@@ -36,8 +36,10 @@ void setup() {
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
 
 #if defined(USING_PAHUB)
+#pragma message "Using via PaHub"
     // Using via PaHub
 #if defined(USING_M5HAL)
+#pragma message "Using M5HAL"
     // Using M5HAL
     m5::hal::bus::I2CBusConfig i2c_cfg;
     i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
@@ -55,6 +57,7 @@ void setup() {
     }
 #else
     // Using TwoWire
+#pragma message "Using Wire"
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
     if (!unitPaHub.add(unitSCD4x, USING_PAHUB) || !Units.add(unitPaHub, Wire) ||
         !Units.begin()) {
@@ -68,7 +71,9 @@ void setup() {
 
 #else
     // Direct connection
+#pragma message "Direct connection"
 #if defined(USING_M5HAL)
+#pragma message "Using M5HAL"
     // Using M5HAL
     m5::hal::bus::I2CBusConfig i2c_cfg;
     i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
@@ -83,6 +88,7 @@ void setup() {
         }
     }
 #else
+#pragma message "Using Wire"
     // Using TwoWire
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
     if (!Units.add(unitSCD4x, Wire) || !Units.begin()) {
