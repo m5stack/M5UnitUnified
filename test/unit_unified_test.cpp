@@ -44,7 +44,6 @@ void each_unit_test() {
 
     // Other test......
 
-    
     vec.push_back(u);
 }
 

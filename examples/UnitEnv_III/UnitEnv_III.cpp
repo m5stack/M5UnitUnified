@@ -133,5 +133,3 @@ void loop() {
                 unitSHT3x.humidity());
     }
 }
-
-
