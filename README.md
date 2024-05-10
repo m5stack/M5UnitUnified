@@ -45,8 +45,16 @@ If you want to try it on other devices, edit the ini accordingly.
 
 
 ## How to try UnitTest (PlatformIO only)
+This should be done with a direct connection, not via the Hub.
+
 - env:test_foo  
 [Advanced]_ - [Test]
+
+### Choose target unit
+```ini
+;test_filter= embedded/test_sht3x
+test_filter= embedded/test_scd4x
+```
 
 
 ## API Documentation 

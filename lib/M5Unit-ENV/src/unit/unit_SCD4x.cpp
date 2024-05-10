@@ -7,6 +7,7 @@
   for full license information.
 */
 #include "unit_SCD4x.hpp"
+#include <M5Utility.hpp>
 
 using namespace m5::utility::mmh3;
 
@@ -42,15 +43,16 @@ bool UnitSCD40::begin() {
 }
 
 void UnitSCD40::update() {
-    unsigned long at{m5::utility::millis()};
-
-    if (!_latest || at >= _latest + _interval) {
-        _updated = readMeasurement();
-        if (_updated) {
-            _latest = at;
+    if (_periodic) {
+        unsigned long at{m5::utility::millis()};
+        if (!_latest || at >= _latest + _interval) {
+            _updated = readMeasurement();
+            if (_updated) {
+                _latest = at;
+            }
+        } else {
+            _updated = false;
         }
-    } else {
-        _updated = false;
     }
 }
 
@@ -59,7 +61,7 @@ bool UnitSCD40::startPeriodicMeasurement(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    _periodic = sendCommand(SCD4x_COMMAND_START_PERIODIC_MEASUREMENT);
+    _periodic = sendCommand(START_PERIODIC_MEASUREMENT);
     if (_periodic) {
         _interval = SIGNAL_INTERVAL_MS;
     }
@@ -67,7 +69,7 @@ bool UnitSCD40::startPeriodicMeasurement(void) {
 }
 
 bool UnitSCD40::stopPeriodicMeasurement(const uint16_t delayMillis) {
-    if (sendCommand(SCD4x_COMMAND_STOP_PERIODIC_MEASUREMENT)) {
+    if (sendCommand(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
         m5::utility::delay(delayMillis);
         return true;
@@ -80,7 +82,7 @@ bool UnitSCD40::readMeasurement(void) {
         M5_LIB_LOGD("Not ready");
         return false;
     }
-    if (!sendCommand(SCD4x_COMMAND_READ_MEASUREMENT)) {
+    if (!sendCommand(READ_MEASUREMENT)) {
         return false;
     }
 
@@ -145,7 +147,7 @@ bool UnitSCD40::setTemperatureOffset(const float offset,
         return false;
     }
     uint16_t u16 = Temperature::toUint16(offset);
-    auto ret     = sendCommand(SCD4x_COMMAND_SET_TEMPERATURE_OFFSET, u16);
+    auto ret     = sendCommand(SET_TEMPERATURE_OFFSET, u16);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -163,7 +165,7 @@ bool UnitSCD40::getTemperatureOffset(float& offset) {
         return false;
     }
     uint16_t u16{};
-    auto ret = readRegister(SCD4x_COMMAND_GET_TEMPERATURE_OFFSET, u16, 1);
+    auto ret = readRegister(GET_TEMPERATURE_OFFSET, u16, 1);
     offset   = Temperature::toFloat(u16);
     return ret;
 }
@@ -174,7 +176,7 @@ bool UnitSCD40::setSensorAltitude(const uint16_t altitude,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(SCD4x_COMMAND_SET_SENSOR_ALTITUDE, altitude);
+    auto ret = sendCommand(SET_SENSOR_ALTITUDE, altitude);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -191,7 +193,7 @@ bool UnitSCD40::getSensorAltitude(uint16_t& altitude) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return readRegister(SCD4x_COMMAND_GET_SENSOR_ALTITUDE, altitude, 1);
+    return readRegister(GET_SENSOR_ALTITUDE, altitude, 1);
 }
 
 bool UnitSCD40::setAmbientPressure(const float pressure,
@@ -201,7 +203,7 @@ bool UnitSCD40::setAmbientPressure(const float pressure,
         return false;
     }
     uint16_t u16 = (uint16_t)(pressure / 100);
-    auto ret     = sendCommand(SCD4x_COMMAND_SET_AMBIENT_PRESSURE, u16);
+    auto ret     = sendCommand(SET_AMBIENT_PRESSURE, u16);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -225,7 +227,7 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(SCD4x_COMMAND_PERFORM_FORCED_CALIBRATION, concentration)) {
+    if (!sendCommand(PERFORM_FORCED_CALIBRATION, concentration)) {
         return false;
     }
 
@@ -252,7 +254,7 @@ bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(SCD4x_COMMAND_SET_AUTOMATIC_SELF_CALIBRATION_ENABLED,
+    auto ret = sendCommand(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED,
                            enabled ? 1 : 0);
     m5::utility::delay(delayMillis);
     return ret;
@@ -271,7 +273,7 @@ bool UnitSCD40::getAutomaticSelfCalibrationEnabled(bool& enabled) {
     }
     uint16_t u16{};
     auto ret = readRegister(
-        SCD4x_COMMAND_GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
+        GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
     enabled = (u16 == 0x0001);
     return ret;
 }
@@ -281,7 +283,7 @@ bool UnitSCD40::startLowPowerPeriodicMeasurement(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    _periodic = sendCommand(SCD4x_COMMAND_START_LOW_POWER_PERIODIC_MEASUREMENT);
+    _periodic = sendCommand(START_LOW_POWER_PERIODIC_MEASUREMENT);
     if (_periodic) {
         _interval = SIGNAL_INTERVAL_LOW_MS;
     }
@@ -290,7 +292,7 @@ bool UnitSCD40::startLowPowerPeriodicMeasurement(void) {
 
 bool UnitSCD40::getDataReadyStatus() {
     uint16_t res{};
-    return readRegister(SCD4x_COMMAND_GET_DATA_READY_STATUS, res, 1)
+    return readRegister(GET_DATA_READY_STATUS, res, 1)
                ? (res & 0x07FF) != 0
                : false;
 }
@@ -301,7 +303,7 @@ bool UnitSCD40::persistSettings(uint16_t delayMillis) {
         return false;
     }
 
-    auto ret = sendCommand(SCD4x_COMMAND_PERSIST_SETTINGS);
+    auto ret = sendCommand(PERSIST_SETTINGS);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -335,7 +337,7 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(SCD4x_COMMAND_GET_SERIAL_NUMBER)) {
+    if (!sendCommand(GET_SERIAL_NUMBER)) {
         return false;
     }
 
@@ -380,7 +382,7 @@ bool UnitSCD40::performSelfTest(bool& malfunction) {
 
     uint16_t response{};
     auto ret =
-        readRegister(SCD4x_COMMAND_PERFORM_SELF_TEST, response, 10 * 1000);
+        readRegister(PERFORM_SELF_TEST, response, 10 * 1000);
     malfunction = (response != 0);
     return ret;
 }
@@ -390,7 +392,7 @@ bool UnitSCD40::performFactoryReset(uint16_t delayMillis) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(SCD4x_COMMAND_PERFORM_FACTORY_RESET);
+    auto ret = sendCommand(PERFORM_FACTORY_RESET);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -401,7 +403,7 @@ bool UnitSCD40::reInit(uint16_t delayMillis) {
         return false;
     }
 
-    auto ret = sendCommand(SCD4x_COMMAND_REINIT);
+    auto ret = sendCommand(REINIT);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -416,7 +418,7 @@ bool UnitSCD41::measureSingleShot(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return sendCommand(SCD4x_COMMAND_MEASURE_SINGLE_SHOT);
+    return sendCommand(MEASURE_SINGLE_SHOT);
 }
 
 bool UnitSCD41::measureSingleShotRHTOnly(void) {
@@ -424,7 +426,7 @@ bool UnitSCD41::measureSingleShotRHTOnly(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return sendCommand(SCD4x_COMMAND_MEASURE_SINGLE_SHOT_RHT_ONLY);
+    return sendCommand(MEASURE_SINGLE_SHOT_RHT_ONLY);
 }
 
 }  // namespace unit

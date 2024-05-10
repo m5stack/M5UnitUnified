@@ -6,11 +6,10 @@
   @license Licensed under the MIT license. See LICENSE file in the project root
   for full license information.
 */
-#ifndef M5_SCD4x_UNIT_SCD4x_HPP
-#define M5_SCD4x_UNIT_SCD4x_HPP
+#ifndef M5_UNIT_ENV_UNIT_SCD4x_HPP
+#define M5_UNIT_ENV_UNIT_SCD4x_HPP
 
 #include <M5UnitComponent.hpp>
-#include <M5Utility.hpp>
 
 namespace m5 {
 namespace unit {
@@ -72,7 +71,7 @@ class UnitSCD40 : public Component {
     */
     bool startPeriodicMeasurement(void);
     /*!
-      @brief Start measurement
+      @brief Stop measurement
       @warning The sensor will only respond to other commands after waiting 500
       ms after issuing the stop_periodic_measurement command.
       @return True if successful
@@ -268,7 +267,7 @@ class UnitSCD40 : public Component {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
+    inline virtual const char *unit_device_name() const override {
         return name;
     }
     inline virtual types::uid_t unit_identifier() const override {
@@ -330,7 +329,7 @@ class UnitSCD41 : public UnitSCD40 {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
+    inline virtual const char *unit_device_name() const override {
         return name;
     }
     inline virtual types::uid_t unit_identifier() const override {
@@ -344,52 +343,39 @@ class UnitSCD41 : public UnitSCD40 {
 namespace scd4x {
 namespace command {
 // Basic Commands
-constexpr uint16_t SCD4x_COMMAND_START_PERIODIC_MEASUREMENT{0x21b1};
-constexpr uint16_t SCD4x_COMMAND_READ_MEASUREMENT{
-    0xec05};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_STOP_PERIODIC_MEASUREMENT{
-    0x3f86};  // execution time: 500ms
+constexpr uint16_t START_PERIODIC_MEASUREMENT{0x21b1};
+constexpr uint16_t READ_MEASUREMENT{0xec05};           // execution time: 1ms
+constexpr uint16_t STOP_PERIODIC_MEASUREMENT{0x3f86};  // execution time: 500ms
 
 // On-chip output signal compensation
-constexpr uint16_t SCD4x_COMMAND_SET_TEMPERATURE_OFFSET{
-    0x241d};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_GET_TEMPERATURE_OFFSET{
-    0x2318};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_SET_SENSOR_ALTITUDE{
-    0x2427};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_GET_SENSOR_ALTITUDE{
-    0x2322};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_SET_AMBIENT_PRESSURE{
-    0xe000};  // execution time: 1ms
+constexpr uint16_t SET_TEMPERATURE_OFFSET{0x241d};  // execution time: 1ms
+constexpr uint16_t GET_TEMPERATURE_OFFSET{0x2318};  // execution time: 1ms
+constexpr uint16_t SET_SENSOR_ALTITUDE{0x2427};     // execution time: 1ms
+constexpr uint16_t GET_SENSOR_ALTITUDE{0x2322};     // execution time: 1ms
+constexpr uint16_t SET_AMBIENT_PRESSURE{0xe000};    // execution time: 1ms
 
 // Field calibration
-constexpr uint16_t SCD4x_COMMAND_PERFORM_FORCED_CALIBRATION{
-    0x362f};  // execution time: 400ms
-constexpr uint16_t SCD4x_COMMAND_SET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
+constexpr uint16_t PERFORM_FORCED_CALIBRATION{0x362f};  // execution time: 400ms
+constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
     0x2416};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_GET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
+constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
     0x2313};  // execution time: 1ms
 
 // Low power
-constexpr uint16_t SCD4x_COMMAND_START_LOW_POWER_PERIODIC_MEASUREMENT{0x21ac};
-constexpr uint16_t SCD4x_COMMAND_GET_DATA_READY_STATUS{
-    0xe4b8};  // execution time: 1ms
+constexpr uint16_t START_LOW_POWER_PERIODIC_MEASUREMENT{0x21ac};
+constexpr uint16_t GET_DATA_READY_STATUS{0xe4b8};  // execution time: 1ms
 
 // Advanced features
-constexpr uint16_t SCD4x_COMMAND_PERSIST_SETTINGS{
-    0x3615};  // execution time: 800ms
-constexpr uint16_t SCD4x_COMMAND_GET_SERIAL_NUMBER{
-    0x3682};  // execution time: 1ms
-constexpr uint16_t SCD4x_COMMAND_PERFORM_SELF_TEST{
-    0x3639};  // execution time: 10000ms
-constexpr uint16_t SCD4x_COMMAND_PERFORM_FACTORY_RESET{
-    0x3632};                                      // execution time: 1200ms
-constexpr uint16_t SCD4x_COMMAND_REINIT{0x3646};  // execution time: 20ms
+constexpr uint16_t PERSIST_SETTINGS{0x3615};       // execution time: 800ms
+constexpr uint16_t GET_SERIAL_NUMBER{0x3682};      // execution time: 1ms
+constexpr uint16_t PERFORM_SELF_TEST{0x3639};      // execution time: 10000ms
+constexpr uint16_t PERFORM_FACTORY_RESET{0x3632};  // execution time: 1200ms
+constexpr uint16_t REINIT{0x3646};                 // execution time: 20ms
 
 // Low power single shot - SCD41 only
-constexpr uint16_t SCD4x_COMMAND_MEASURE_SINGLE_SHOT{0x219d};
+constexpr uint16_t MEASURE_SINGLE_SHOT{0x219d};
 // execution time: 5000ms
-constexpr uint16_t SCD4x_COMMAND_MEASURE_SINGLE_SHOT_RHT_ONLY{0x2196};
+constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY{0x2196};
 // execution time: 50ms
 
 }  // namespace command

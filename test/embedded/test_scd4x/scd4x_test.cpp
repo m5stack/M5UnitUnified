@@ -1,10 +1,9 @@
 /*!
-  @file scd4x_test.cpp
-  @brief Test for UnitSCD40/41
+  UnitTest for UnitSCD40/41
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  copyright M5Stack. All rights reserved.
+  Licensed under the MIT license. See LICENSE file in the project root for full
+  license information.
 */
 
 // Move to each libarry

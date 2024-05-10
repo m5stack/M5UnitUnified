@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include <unit/unit_SCD4x.hpp>
+#include <unit/unit_SHT3x.hpp>
 
 namespace {
 
@@ -41,6 +42,9 @@ void each_unit_test() {
             << u->deviceName() << " / " << e->deviceName();
     }
 
+    // Other test......
+
+    
     vec.push_back(u);
 }
 
@@ -49,6 +53,7 @@ void each_unit_test() {
 TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitSCD40>();
     each_unit_test<m5::unit::UnitSCD41>();
+    each_unit_test<m5::unit::UnitSHT3x>();
 
     for (auto&& e : vec) {
         delete e;
