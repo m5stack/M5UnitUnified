@@ -195,6 +195,53 @@ bool UnitSHT30::stopHeater() {
     return sendCommand(STOPE_HEATER) && delay1();
 }
 
+bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
+    serialNumber = 0;
+    if (inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are running");
+        return false;
+    }
+    if (!sendCommand(GET_SEREAL_NUMBER_ENABLE_STRETCH)) {
+        return false;
+    }
+
+    // m5::utility::delay(1);
+
+    std::array<uint8_t, 6> rbuf;
+    return readWithTransaction(
+        rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
+            utility::DataWithCRC data(rbuf.data(), 3);
+            bool valid[2] = {data.valid(0), data.valid(1)};
+            if (valid[0] && valid[1]) {
+                for (uint_fast8_t i = 0; i < 3; ++i) {
+                    serialNumber |= ((uint32_t)data.value(i >> 1))
+                                    << (16U * (1 - i));
+                }
+                return true;
+            }
+            return false;
+        });
+}
+
+bool UnitSHT30::getSerialNumber(char* serialNumber) {
+    if (!serialNumber) {
+        return false;
+    }
+
+    *serialNumber = '\0';
+    uint32_t sno{};
+    if (getSerialNumber(sno)) {
+        uint_fast8_t i{8};
+        while (i--) {
+            *serialNumber++ =
+                m5::utility::uintToHexChar((sno >> (i * 4)) & 0x0F);
+        }
+        *serialNumber = '\0';
+        return true;
+    }
+    return false;
+}
+
 bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {

@@ -252,3 +252,23 @@ TEST_P(TestSHT3x, Reset) {
     EXPECT_FALSE(s.command());
     EXPECT_FALSE(s.checksum());
 }
+
+TEST_P(TestSHT3x, Serial) {
+    SCOPED_TRACE(ustr);
+
+    EXPECT_TRUE(unit.stopPeriodicMeasurement());
+
+    {
+        uint32_t sno{};
+        char ssno[9]{};
+        EXPECT_TRUE(unit.getSerialNumber(sno));
+        EXPECT_TRUE(unit.getSerialNumber(ssno));
+
+        // M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
+
+        std::stringstream stream;
+        stream << std::uppercase << std::setw(8) << std::hex << sno;
+        std::string s(stream.str());
+        EXPECT_STREQ(s.c_str(), ssno);
+    }
+}

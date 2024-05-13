@@ -131,9 +131,9 @@ class UnitSHT30 : public Component {
       @brief Measurement single shot
       @param rep Repeatability accuracy level
       @param stretch Enable clock stretching if true
-      @warning Cannot be used during periodic measurements.
       @return True if successful
-     */
+      @warning During periodic detection runs, an error is returned
+    */
     bool measurementSingleShot(
         const sht3x::Repeatability rep = sht3x::Repeatability::High,
         const bool stretch             = true);
@@ -158,13 +158,15 @@ class UnitSHT30 : public Component {
     /*!
       @brief Check for fresh data and store
       @return True if fresh data is available
-     */
+      @warning Only available during periodic measurements.
+    */
     bool readMeasurement();
     /*!
       @brief set ART mode
       @details After issuing the ART command the sensor will start acquiring
       data with a frequency of 4Hz.
       @return True if successful
+      @warning Only available during periodic measurements.
     */
     bool accelerateResponseTime();
     ///@}
@@ -176,6 +178,7 @@ class UnitSHT30 : public Component {
       @details The sensor to reset its system controller and reloads calibration
       data from the memory.
       @return True if successful
+      @warning During periodic detection runs, an error is returned
     */
     bool softReset();
 #if 0
@@ -210,9 +213,35 @@ class UnitSHT30 : public Component {
       @brief Get status
       @param[out] s Status
       @return True if successful
-     */
+      @warning During periodic detection runs, an error is returned
+    */
     bool readStatus(sht3x::Status& s);
+    /*!
+      @brief Clear status
+      @note @sa Status
+      @return True if successful
+    */
     bool clearStatus();
+    ///@}
+
+    ///@name Serial
+    ///@{
+    /*!
+      @brief Get the serial number value
+      @param[out] serialNumber serial number value
+      @return True if successful
+      @note The serial number is 32 bit
+      @warning During periodic detection runs, an error is returned
+    */
+    bool getSerialNumber(uint32_t& serialNumber);
+    /*!
+      @brief Get the serial number string
+      @param[out] serialNumber Output buffer
+      @return True if successful
+      @warning Size must be at least 9 bytes
+      @warning During periodic detection runs, an error is returned
+    */
+    bool getSerialNumber(char* serialNumber);
     ///@}
 
    protected:
@@ -270,6 +299,9 @@ constexpr uint16_t STOPE_HEATER{0x3066};
 // Status
 constexpr uint16_t READ_STATUS{0xF32D};
 constexpr uint16_t CLEAR_STATUS{0x3041};
+// Serial
+constexpr uint16_t GET_SEREAL_NUMBER_ENABLE_STRETCH{0x3780};
+constexpr uint16_t GET_SEREAL_NUMBER_DISABLE_STRETCH{0x3780};
 }  // namespace command
 }  // namespace sht3x
 

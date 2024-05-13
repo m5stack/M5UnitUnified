@@ -285,6 +285,8 @@ TEST_P(TestSCD40, AdvancedFeatures) {
         EXPECT_TRUE(unit->getSerialNumber(sno));
         EXPECT_TRUE(unit->getSerialNumber(ssno));
 
+        //        M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
+
         std::stringstream stream;
         stream << std::uppercase << std::setw(12) << std::hex << sno;
         std::string s(stream.str());

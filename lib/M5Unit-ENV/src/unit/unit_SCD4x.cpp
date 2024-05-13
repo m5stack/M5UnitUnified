@@ -93,51 +93,6 @@ bool UnitSCD40::readMeasurement(void) {
 
     std::array<uint8_t, 9> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
-#if 0
-        m5::types::big_uint16_t co2{}, temp{}, humidity{};
-        bool valid_co2{}, valid_temp{}, valid_humidity{};
-        m5::utility::CRC8_Maxim crc;
-        uint_fast8_t idx{};
-        for (auto&& e : rbuf) {
-            switch (idx) {
-                case 0:
-                case 1:
-                    co2.u8[idx] = e;
-                    break;
-                case 2:
-                    valid_co2 = crc.get(co2.data(), co2.size()) == e;
-                    break;
-                case 3:
-                case 4:
-                    temp.u8[idx - 3] = e;
-                    break;
-                case 5:
-                    valid_temp = crc.get(temp.data(), temp.size()) == e;
-                    break;
-                case 6:
-                case 7:
-                    humidity.u8[idx - 6] = e;
-                    break;
-                case 8:
-                    valid_humidity =
-                        crc.get(humidity.data(), humidity.size()) == e;
-                    break;
-                default:
-                    break;
-            }
-            ++idx;
-        }
-        if (valid_co2) {
-            this->_co2 = co2.get();
-        }
-        if (valid_temp) {
-            this->_temperature = -45 + Temperature::toFloat(temp.get());
-        }
-        if (valid_humidity) {
-            this->_humidity = 100 * humidity.get() / 65536.f;
-        }
-        return valid_co2 && valid_temp && valid_humidity;
-#else
         utility::DataWithCRC data(rbuf.data(), 3);
         bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
 
@@ -151,7 +106,6 @@ bool UnitSCD40::readMeasurement(void) {
             this->_humidity = 100.f * data.value(2) / 65536.f;
         }
         return valid[0] && valid[1] && valid[2];
-#endif
     });
 }
 
@@ -364,29 +318,6 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
     std::array<uint8_t, 9> rbuf;
     return readWithTransaction(
         rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-
-#if 0
-            uint_fast8_t idx{};
-            m5::types::big_uint16_t tmp{};
-            m5::utility::CRC8_Maxim crc;
-            for (auto&& e : rbuf) {
-                switch (idx % 3) {
-                    case 0:
-                    case 1:
-                        tmp.u8[idx % 3] = e;
-                        break;
-                    default:
-                        if (crc.get(tmp.data(), 2) != e) {
-                            return false;
-                        }
-                        serialNumber |=
-                            ((uint64_t)tmp.get() << (2 - (idx / 3)) * 16U);
-                        break;
-                }
-                ++idx;
-            }
-            return true;
-#else
             utility::DataWithCRC data(rbuf.data(), 3);
             bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
             if (valid[0] && valid[1] && valid[2]) {
@@ -397,7 +328,6 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
                 return true;
             }
             return false;
-#endif
         });
 }
 
