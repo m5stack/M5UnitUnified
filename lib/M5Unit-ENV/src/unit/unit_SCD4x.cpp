@@ -14,7 +14,7 @@ using namespace m5::utility::mmh3;
 namespace {
 struct Temperature {
     constexpr static float toFloat(const uint16_t u16) {
-        return u16 * 175 / 65536.f;
+        return u16 * 175.f / 65536.f;
     }
     constexpr static uint16_t toUint16(const float f) {
         return f * 65536 / 175;
@@ -37,7 +37,10 @@ const types::uid_t UnitSCD40::attr{0};
 
 bool UnitSCD40::begin() {
     auto r = stopPeriodicMeasurement();
-    if(!r) { M5_LIB_LOGD("Failed to stop"); return false; }
+    if (!r) {
+        M5_LIB_LOGD("Failed to stop");
+        return false;
+    }
 
     return startPeriodicMeasurement();
 }
@@ -90,6 +93,7 @@ bool UnitSCD40::readMeasurement(void) {
 
     std::array<uint8_t, 9> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
+#if 0
         m5::types::big_uint16_t co2{}, temp{}, humidity{};
         bool valid_co2{}, valid_temp{}, valid_humidity{};
         m5::utility::CRC8_Maxim crc;
@@ -133,6 +137,21 @@ bool UnitSCD40::readMeasurement(void) {
             this->_humidity = 100 * humidity.get() / 65536.f;
         }
         return valid_co2 && valid_temp && valid_humidity;
+#else
+        utility::DataWithCRC data(rbuf.data(), 3);
+        bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
+
+        if (valid[0]) {
+            this->_co2 = data.value(0);
+        }
+        if (valid[1]) {
+            this->_temperature = -45 + Temperature::toFloat(data.value(1));
+        }
+        if (valid[2]) {
+            this->_humidity = 100.f * data.value(2) / 65536.f;
+        }
+        return valid[0] && valid[1] && valid[2];
+#endif
     });
 }
 
@@ -236,16 +255,16 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
     // correction) after waiting for 400 ms for the command to complete.
     m5::utility::delay(400);
 
-    std::array<uint8_t, 3> buf{};
-    if (!readWithTransaction(buf.data(), buf.size(), [this, &buf] {
-            m5::utility::CRC8_Maxim crc;
-            return crc.get(buf.data(), 2) == buf[2];
-        })) {
-        return false;
-    }
-    m5::types::big_uint16_t ub16{buf[0], buf[1]};
-    correction = (int16_t)(ub16.get() - 0x8000);
-    return (ub16.get() != 0xFFFF);
+    std::array<uint8_t, 3> rbuf{};
+    return readWithTransaction(
+        rbuf.data(), rbuf.size(), [this, &rbuf, &correction]() {
+            utility::DataWithCRC data(rbuf.data(), 1);
+            if (data.valid(0)) {
+                correction = (int16_t)(data.value(0) - 0x8000);
+                return data.value(0) != 0xFFFF;
+            }
+            return false;
+        });
 }
 
 bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
@@ -254,8 +273,8 @@ bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED,
-                           enabled ? 1 : 0);
+    auto ret =
+        sendCommand(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, enabled ? 1 : 0);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -272,9 +291,8 @@ bool UnitSCD40::getAutomaticSelfCalibrationEnabled(bool& enabled) {
         return false;
     }
     uint16_t u16{};
-    auto ret = readRegister(
-        GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
-    enabled = (u16 == 0x0001);
+    auto ret = readRegister(GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
+    enabled  = (u16 == 0x0001);
     return ret;
 }
 
@@ -292,9 +310,8 @@ bool UnitSCD40::startLowPowerPeriodicMeasurement(void) {
 
 bool UnitSCD40::getDataReadyStatus() {
     uint16_t res{};
-    return readRegister(GET_DATA_READY_STATUS, res, 1)
-               ? (res & 0x07FF) != 0
-               : false;
+    return readRegister(GET_DATA_READY_STATUS, res, 1) ? (res & 0x07FF) != 0
+                                                       : false;
 }
 
 bool UnitSCD40::persistSettings(uint16_t delayMillis) {
@@ -318,7 +335,8 @@ bool UnitSCD40::getSerialNumber(char* serialNumber) {
     if (getSerialNumber(sno)) {
         uint_fast8_t i{12};
         while (i--) {
-            *serialNumber++ = m5::utility::uintToHexChar((sno >> (i * 4)) & 0x0F);
+            *serialNumber++ =
+                m5::utility::uintToHexChar((sno >> (i * 4)) & 0x0F);
         }
         *serialNumber = '\0';
         return true;
@@ -343,13 +361,15 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
 
     m5::utility::delay(1);
 
-    std::array<uint8_t, 9> buf;
+    std::array<uint8_t, 9> rbuf;
     return readWithTransaction(
-        buf.data(), buf.size(), [this, &buf, &serialNumber]() {
+        rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
+
+#if 0
             uint_fast8_t idx{};
             m5::types::big_uint16_t tmp{};
             m5::utility::CRC8_Maxim crc;
-            for (auto&& e : buf) {
+            for (auto&& e : rbuf) {
                 switch (idx % 3) {
                     case 0:
                     case 1:
@@ -366,6 +386,18 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
                 ++idx;
             }
             return true;
+#else
+            utility::DataWithCRC data(rbuf.data(), 3);
+            bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
+            if (valid[0] && valid[1] && valid[2]) {
+                for (uint_fast8_t i = 0; i < 3; ++i) {
+                    serialNumber |= ((uint64_t)data.value(i >> 1))
+                                    << (16U * (2 - i));
+                }
+                return true;
+            }
+            return false;
+#endif
         });
 }
 
@@ -381,8 +413,7 @@ bool UnitSCD40::performSelfTest(bool& malfunction) {
     }
 
     uint16_t response{};
-    auto ret =
-        readRegister(PERFORM_SELF_TEST, response, 10 * 1000);
+    auto ret    = readRegister(PERFORM_SELF_TEST, response, 10 * 1000);
     malfunction = (response != 0);
     return ret;
 }

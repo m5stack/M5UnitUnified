@@ -23,15 +23,14 @@ namespace utility {
   @detail [uint8_t, uint8_t, uint8_t] [0][1]:data(big endian) [2]:CRC for data
  */
 class DataWithCRC {
-  public:
+   public:
     /*!
       @brief Constructor
       @param[in] ptr Data pointer
       @param[in] num Number of pairs (Not data length)
       @warning Be careful not to access out of range
      */
-    DataWithCRC(const uint8_t* ptr, const size_t num)
-        : _data(ptr), _num(num) {
+    DataWithCRC(const uint8_t* ptr, const size_t num) : _data(ptr), _num(num) {
         assert(ptr);
         assert(num);
     }
@@ -39,19 +38,18 @@ class DataWithCRC {
     /*!
       @brief Is data valid?
       @param[in] n Subscript indicating the number of pairs
+      @return True if valid
      */
     bool valid(const size_t n) const {
         return n < (_num) ? crc8.get(_data + n * 3, 2) == _data[n * 3 + 2]
-                             : false;
+                          : false;
     }
     /*!
       @brief Gets the value_
       @param[in] n Subscript indicating the number of pairs
     */
     uint16_t value(const size_t n) const {
-        
-
-        //        assert(n < _num);
+        assert(n < _num);
         return m5::types::big_uint16_t(_data[n * 3], _data[n * 3 + 1]).get();
     }
 

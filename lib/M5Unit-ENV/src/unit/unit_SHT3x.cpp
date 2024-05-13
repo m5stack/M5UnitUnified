@@ -199,13 +199,14 @@ bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
         utility::DataWithCRC data(rbuf.data(), 2);
-        if (data.valid(0)) {
+        bool valid[2] = {data.valid(0), data.valid(1)};
+        if (valid[0]) {
             this->_temperature = Temperature::toFloat(data.value(0));
         }
-        if (data.valid(1)) {
+        if (valid[1]) {
             this->_humidity = 100 * data.value(1) / 65536.f;
         }
-        return data.valid(0) && data.valid(1);
+        return valid[0] && valid[1];
     });
 }
 
