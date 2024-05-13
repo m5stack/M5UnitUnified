@@ -88,7 +88,7 @@ class UnitSHT30 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
-    UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+    explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
     }
     virtual ~UnitSHT30() {
     }
@@ -215,7 +215,7 @@ class UnitSHT30 : public Component {
       @return True if successful
       @warning During periodic detection runs, an error is returned
     */
-    bool readStatus(sht3x::Status& s);
+    bool getStatus(sht3x::Status& s);
     /*!
       @brief Clear status
       @note @sa Status

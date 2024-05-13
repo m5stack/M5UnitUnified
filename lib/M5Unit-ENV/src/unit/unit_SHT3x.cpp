@@ -157,7 +157,7 @@ bool UnitSHT30::accelerateResponseTime() {
     return false;
 }
 
-bool UnitSHT30::readStatus(sht3x::Status& s) {
+bool UnitSHT30::getStatus(sht3x::Status& s) {
     s.value = 0;
     return readRegister(READ_STATUS, s.value, 1);
 }

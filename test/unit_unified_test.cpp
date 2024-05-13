@@ -12,6 +12,7 @@
 
 #include <unit/unit_SCD4x.hpp>
 #include <unit/unit_SHT3x.hpp>
+#include <unit/unit_QMP6988.hpp>
 
 namespace {
 
@@ -53,6 +54,7 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitSCD40>();
     each_unit_test<m5::unit::UnitSCD41>();
     each_unit_test<m5::unit::UnitSHT30>();
+    each_unit_test<m5::unit::UnitQMP6988>();
 
     for (auto&& e : vec) {
         delete e;

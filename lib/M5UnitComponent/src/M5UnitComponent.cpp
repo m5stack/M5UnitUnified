@@ -179,6 +179,10 @@ m5::hal::error::error_t Component::writeWithTransaction(const uint8_t* data,
     return r;
 }
 
+bool Component::sendCommand(const uint8_t command) {
+    return (writeWithTransaction(&command, 1) == m5::hal::error::error_t::OK);
+}
+
 bool Component::sendCommand(const uint16_t command) {
     m5::types::big_uint16_t cmd{command};
     return (writeWithTransaction(cmd.data(), cmd.size()) ==
@@ -197,20 +201,30 @@ bool Component::sendCommand(const uint16_t command, const uint16_t arg) {
             m5::hal::error::error_t::OK);
 }
 
+bool Component::readRegister(const uint16_t addr, uint8_t& result,
+                             const uint16_t ms) {
+    if (!sendCommand(addr)) {
+        M5_LIB_LOGE("Failed to sendCommand");
+        return false;
+    }
+    m5::utility::delay(ms);
+    return (readWithTransaction(&result, 1) == m5::hal::error::error_t::OK);
+}
+
 bool Component::readRegister(const uint16_t addr, uint16_t& result,
                              const uint16_t ms) {
     if (!sendCommand(addr)) {
         M5_LIB_LOGE("Failed to sendCommand");
         return false;
     }
-
     m5::utility::delay(ms);
 
-    std::array<uint8_t, 3> buf{};
-    return readWithTransaction(buf.data(), buf.size(), [&buf, &result]() {
-        m5::utility::CRC8_Maxim crc;
-        result = (uint16_t)buf[0] << 8 | buf[1];
-        return buf[2] == crc.get(buf.data(), 2);
+    std::array<uint8_t, 3> rbuf{};
+    return readWithTransaction(rbuf.data(), rbuf.size(), [&rbuf, &result]() {
+        utility::DataWithCRC data(rbuf.data(), 1);
+        bool valid = data.valid(0);
+        result     = valid ? data.value(0) : 0;
+        return valid;
     });
 }
 

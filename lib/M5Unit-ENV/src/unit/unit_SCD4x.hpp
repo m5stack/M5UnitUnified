@@ -25,7 +25,7 @@ class UnitSCD40 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
-    UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+    explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
     }
     virtual ~UnitSCD40() {
     }
@@ -36,7 +36,9 @@ class UnitSCD40 : public Component {
     ///@name Properties
     ///@{
     /*! @brief In periodic measurement? */
-    bool inPeriodic() const { return _periodic; }
+    bool inPeriodic() const {
+        return _periodic;
+    }
     //! @brief Periodic measurement data updated?
     inline bool updated() const {
         return _updated;
@@ -304,7 +306,7 @@ class UnitSCD41 : public UnitSCD40 {
     static const types::attr_t attr;
     static const char name[];
 
-    UnitSCD41(const uint8_t addr = DEFAULT_ADDRESS) : UnitSCD40(addr) {
+    explicit UnitSCD41(const uint8_t addr = DEFAULT_ADDRESS) : UnitSCD40(addr) {
     }
 
     // API

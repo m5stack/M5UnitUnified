@@ -163,10 +163,15 @@ class Component {
     //! @brief Writeing data with transactions */
     m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
                                                  const size_t len);
+
+    //! @brief Writing of 8-bit command data
+    bool sendCommand(const uint8_t command);
     //! @brief Writing of 16-bit command data
     bool sendCommand(const uint16_t command);
     //! @brief Writing of 16-bit command data with argument
     bool sendCommand(const uint16_t command, const uint16_t arg);
+    //! @brief Reading register 8 bits
+    bool readRegister(const uint16_t addr, uint8_t& result, const uint16_t ms);
     //! @brief Reading register 16 bits
     bool readRegister(const uint16_t addr, uint16_t& result, const uint16_t ms);
     ///@}

@@ -216,18 +216,18 @@ TEST_P(TestSHT3x, HeaterAndStatus) {
 
     EXPECT_TRUE(unit.startHeater());
 
-    EXPECT_TRUE(unit.readStatus(s));
+    EXPECT_TRUE(unit.getStatus(s));
     // printStatus(s);
     EXPECT_TRUE(s.heater());
 
     // clearStatus will not clear heater status
     EXPECT_TRUE(unit.clearStatus());
-    EXPECT_TRUE(unit.readStatus(s));
+    EXPECT_TRUE(unit.getStatus(s));
     // printStatus(s);
     EXPECT_TRUE(s.heater());
 
     EXPECT_TRUE(unit.stopHeater());
-    EXPECT_TRUE(unit.readStatus(s));
+    EXPECT_TRUE(unit.getStatus(s));
     // printStatus(s);
 
     EXPECT_FALSE(s.heater());
@@ -243,7 +243,7 @@ TEST_P(TestSHT3x, Reset) {
     EXPECT_TRUE(unit.startHeater());
 
     EXPECT_TRUE(unit.softReset());
-    EXPECT_TRUE(unit.readStatus(s));
+    EXPECT_TRUE(unit.getStatus(s));
     EXPECT_FALSE(s.alertPending());
     EXPECT_FALSE(s.heater());
     EXPECT_FALSE(s.trackingAlertRH());
