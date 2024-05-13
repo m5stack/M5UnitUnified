@@ -1,6 +1,6 @@
 /*!
   @file unit_SHT3x.hpp
-  @brief SHT3x Unit for M5UnitUnified
+  @brief SHT3x fmalily Unit for M5UnitUnified
 
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root
@@ -14,89 +14,95 @@
 namespace m5 {
 namespace unit {
 
+namespace sht3x {
 /*!
-  @class UnitSHT3x
+  @enum Repeatability
+  @brief Repeatability accuracy level
+ */
+enum class Repeatability : uint8_t {
+    High,    //!< @brief High repeatability
+    Medium,  //!< @brief Medium repeatability
+    Low      //!< @brief Low repeatability
+};
+
+/*!
+  @enum MPS
+  @brief Measuring frequency
+ */
+enum class MPS : uint8_t {
+    MpsHalf,  //!< @brief 0.5 measurement per second
+    Mps1,     //!< @brief 1 measurement per second
+    Mps2,     //!< @brief 2 measurement per second
+    Mps10,    //!< @brief 10 measurement per second
+};
+
+/*!
+  @struct Status
+  @brief Accessor for Status
+  @note The order of the bit fields cannot be controlled, so bitwise
+  operations are used to obtain each value.
+  @note Items marked with (*) are subject to clear status
+ */
+struct Status {
+    //! @brief Alert pending status (*)
+    inline bool alertPending() const {
+        return value & (1U << 15);
+    }
+    //! @brief Heater status
+    inline bool heater() const {
+        return value & (1U << 13);
+    }
+    //! @brief RH tracking alert (*)
+    inline bool trackingAlertRH() const {
+        return value & (1U << 11);
+    }
+    //! @brief Tracking alert (*)
+    inline bool trackingAlert() const {
+        return value & (1U << 10);
+    }
+    //! @brief System reset detected (*)
+    inline bool reset() const {
+        return value & (1U << 4);
+    }
+    //! @brief Command staus
+    inline bool command() const {
+        return value & (1U << 1);
+    }
+    //! @brief Write data checksum status
+    inline bool checksum() const {
+        return value & (1U << 0);
+    }
+
+    uint16_t value{};
+};
+}  // namespace sht3x
+
+/*!
+  @class UnitSHT30
   @brief Temperature and humidity, sensor unit
 */
-class UnitSHT3x : public Component {
+class UnitSHT30 : public Component {
    public:
-    /*!
-      @enum Repeatability
-      @brief Repeatability accuracy level
-     */
-    enum class Repeatability : uint8_t {
-        High,    //!< @brief High repeatability
-        Medium,  //!< @brief Medium repeatability
-        Low      //!< @brief Low repeatability
-    };
-
-    /*!
-      @enum MPS
-      @brief Measuring frequency
-     */
-    enum class MPS : uint8_t {
-        MpsHalf,  //!< @brief 0.5 measurement per second
-        Mps1,     //!< @brief 1 measurement per second
-        Mps2,     //!< @brief 2 measurement per second
-        Mps10,    //!< @brief 10 measurement per second
-    };
-
-    /*!
-      @struct Status
-      @brief Accessor for Status
-      @note The order of the bit fields cannot be controlled, so bitwise
-      operations are used to obtain each value.
-      @note Items marked with (*) are subject to clear status
-     */
-    struct Status {
-        //! @brief Alert pending status (*)
-        inline bool alertPending() const {
-            return value & (1U << 15);
-        }
-        //! @brief Heater status
-        inline bool heater() const {
-            return value & (1U << 13);
-        }
-        //! @brief RH tracking alert (*)
-        inline bool trackingAlertRH() const {
-            return value & (1U << 11);
-        }
-        //! @brief Tracking alert (*)
-        inline bool trackingAlert() const {
-            return value & (1U << 10);
-        }
-        //! @brief System reset detected (*)
-        inline bool reset() const {
-            return value & (1U << 4);
-        }
-        //! @brief Command staus
-        inline bool command() const {
-            return value & (1U << 1);
-        }
-        //! @brief Write data checksum status
-        inline bool checksum() const {
-            return value & (1U << 0);
-        }
-
-        uint16_t value{};
-    };
-
     constexpr static uint8_t DEFAULT_ADDRESS{0x44};
     static const types::uid_t uid;
     static const types::attr_t attr;
     static const char name[];
 
-    UnitSHT3x(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+    UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
     }
-    virtual ~UnitSHT3x() {
+    virtual ~UnitSHT30() {
     }
 
     virtual bool begin() override;
     virtual void update() override;
 
-    ///@name Latest data
+    ///@name Properties
     ///@{
-    /*! @brief Has the measurement data been updated in update()? */
+    /*! @brief In periodic measurement? */
+    bool inPeriodic() const {
+        return _periodic;
+    }
+    //! @brief Periodic measurement data updated?
     inline bool updated() const {
         return _updated;
     }
@@ -108,11 +114,11 @@ class UnitSHT3x : public Component {
     inline unsigned long updatedMilliss() const {
         return _latest;
     }
-    //! @brief Measured temperature (Celsius)
+    //! @brief Latest neasured temperature (Celsius)
     inline float temperature() const {
         return _temperature;
     }
-    //! @brief Measured humidity (RH)
+    //! @brief Katest measured humidity (RH)
     inline float humidity() const {
         return _humidity;
     }
@@ -128,8 +134,9 @@ class UnitSHT3x : public Component {
       @warning Cannot be used during periodic measurements.
       @return True if successful
      */
-    bool measurementSingle(const Repeatability rep = Repeatability::High,
-                           const bool stretch      = true);
+    bool measurementSingleShot(
+        const sht3x::Repeatability rep = sht3x::Repeatability::High,
+        const bool stretch             = true);
     ///@}
 
     ///@name Periodic
@@ -141,8 +148,8 @@ class UnitSHT3x : public Component {
       @return True if successful
     */
     bool startPeriodicMeasurement(
-        const MPS mps           = MPS::Mps1,
-        const Repeatability rep = Repeatability::High);
+        const sht3x::MPS mps           = sht3x::MPS::Mps1,
+        const sht3x::Repeatability rep = sht3x::Repeatability::High);
     /*!
       @brief Stop measurement
       @return True if successful
@@ -171,14 +178,16 @@ class UnitSHT3x : public Component {
       @return True if successful
     */
     bool softReset();
+#if 0
     /*!
-      @brief Hard reset
+      @brief General reset
       @details Reset using I2C general call
       @warning All devices on the same I2C bus that support the general call
       mode will perform a reset
       @return True if successful
      */
-    bool hardReset();
+    bool generalReset();
+#endif
     ///@}
 
     ///@name Heater
@@ -202,7 +211,7 @@ class UnitSHT3x : public Component {
       @param[out] s Status
       @return True if successful
      */
-    bool readStatus(Status& s);
+    bool readStatus(sht3x::Status& s);
     bool clearStatus();
     ///@}
 
@@ -255,7 +264,6 @@ constexpr uint16_t ACCELERATED_RESPONSE_TIME{0x2B32};
 constexpr uint16_t READ_MEASUREMENT{0xE000};
 // Reset
 constexpr uint16_t SOFT_RESET{0x30A2};
-constexpr uint16_t GENERAL_RESET{0x0006};
 // Heater
 constexpr uint16_t START_HEATER{0x306D};
 constexpr uint16_t STOPE_HEATER{0x3066};

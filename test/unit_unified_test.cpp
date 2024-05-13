@@ -52,7 +52,7 @@ void each_unit_test() {
 TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitSCD40>();
     each_unit_test<m5::unit::UnitSCD41>();
-    each_unit_test<m5::unit::UnitSHT3x>();
+    each_unit_test<m5::unit::UnitSHT30>();
 
     for (auto&& e : vec) {
         delete e;

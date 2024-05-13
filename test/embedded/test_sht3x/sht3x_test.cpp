@@ -45,7 +45,7 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
         // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
 
 #if 0
         // SCD40/41 are same default address
@@ -67,7 +67,7 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
     }
 
     virtual void TearDown() override {
-        Wire.end();
+        // Wire.end();
     }
 
     virtual bool begin() {
@@ -89,7 +89,7 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
     }
 
     m5::unit::UnitUnified Units;
-    m5::unit::UnitSHT3x unit;
+    m5::unit::UnitSHT30 unit;
     std::string ustr{};
 };
 
@@ -103,195 +103,152 @@ TEST_P(TestSHT3x, SingleShot) {
 
     EXPECT_TRUE(unit.stopPeriodicMeasurement());
 
-    std::tuple<const char*, m5::unit::UnitSHT3x::Repeatability, bool> table[] =
-        {
-            {"HighTrue", m5::unit::UnitSHT3x::Repeatability::High, true},
-            {"MediumTrue", m5::unit::UnitSHT3x::Repeatability::Medium, true},
-            {"LowTrue", m5::unit::UnitSHT3x::Repeatability::Low, true},
-            {"HighFalse", m5::unit::UnitSHT3x::Repeatability::High, false},
-            {"MediumFalse", m5::unit::UnitSHT3x::Repeatability::Medium, false},
-            {"LowFalse", m5::unit::UnitSHT3x::Repeatability::Low, false},
-        };
+    std::tuple<const char*, m5::unit::sht3x::Repeatability, bool> table[] = {
+        {"HighTrue", m5::unit::sht3x::Repeatability::High, true},
+        {"MediumTrue", m5::unit::sht3x::Repeatability::Medium, true},
+        {"LowTrue", m5::unit::sht3x::Repeatability::Low, true},
+        {"HighFalse", m5::unit::sht3x::Repeatability::High, false},
+        {"MediumFalse", m5::unit::sht3x::Repeatability::Medium, false},
+        {"LowFalse", m5::unit::sht3x::Repeatability::Low, false},
+    };
 
     for (auto&& e : table) {
         const char* s{};
-        m5::unit::UnitSHT3x::Repeatability rep;
+        m5::unit::sht3x::Repeatability rep;
         bool stretch{};
         std::tie(s, rep, stretch) = e;
-        EXPECT_TRUE(unit.measurementSingle(rep, stretch)) << s;
+        int cnt{10};
+        while (cnt--) {
+            EXPECT_TRUE(unit.measurementSingleShot(rep, stretch))
+                << s << " " << cnt;
+        }
     }
 }
 
+TEST_P(TestSHT3x, Periodic) {
+    SCOPED_TRACE(ustr);
+
+    EXPECT_TRUE(unit.stopPeriodicMeasurement());
+
+    constexpr std::tuple<const char*, m5::unit::sht3x::MPS,
+                         m5::unit::sht3x::Repeatability>
+        table[] = {
+            {"HalfHigh", m5::unit::sht3x::MPS::MpsHalf,
+             m5::unit::sht3x::Repeatability::High},
+            {"HalfMedium", m5::unit::sht3x::MPS::MpsHalf,
+             m5::unit::sht3x::Repeatability::Medium},
+            {"HalfLow", m5::unit::sht3x::MPS::MpsHalf,
+             m5::unit::sht3x::Repeatability::Low},
+            {"1High", m5::unit::sht3x::MPS::Mps1,
+             m5::unit::sht3x::Repeatability::High},
+            {"1Medium", m5::unit::sht3x::MPS::Mps1,
+             m5::unit::sht3x::Repeatability::Medium},
+            {"1Low", m5::unit::sht3x::MPS::Mps1,
+             m5::unit::sht3x::Repeatability::Low},
+            {"2High", m5::unit::sht3x::MPS::Mps2,
+             m5::unit::sht3x::Repeatability::High},
+            {"2Medium", m5::unit::sht3x::MPS::Mps2,
+             m5::unit::sht3x::Repeatability::Medium},
+            {"2Low", m5::unit::sht3x::MPS::Mps2,
+             m5::unit::sht3x::Repeatability::Low},
+            {"10fHigh", m5::unit::sht3x::MPS::Mps10,
+             m5::unit::sht3x::Repeatability::High},
+            {"10Medium", m5::unit::sht3x::MPS::Mps10,
+             m5::unit::sht3x::Repeatability::Medium},
+            {"10Low", m5::unit::sht3x::MPS::Mps10,
+             m5::unit::sht3x::Repeatability::Low},
+        };
+    constexpr std::chrono::milliseconds timeout_table[] = {
+        std::chrono::milliseconds(2000 + 1000),
+        std::chrono::milliseconds(1000 + 500),
+        std::chrono::milliseconds(500 + 250),
+        std::chrono::milliseconds(100 + 50),
+    };
+
+    {
+        for (auto&& e : table) {
+            const char* s{};
+            m5::unit::sht3x::MPS mps;
+            m5::unit::sht3x::Repeatability rep;
+            std::tie(s, mps, rep) = e;
+
+            EXPECT_TRUE(unit.startPeriodicMeasurement(mps, rep)) << s;
+
+            auto timeout  = timeout_table[m5::stl::to_underlying(mps)];
+            auto start_at = std::chrono::steady_clock::now();
+            do {
+                Units.update();  // call readMeasurement in it
+                m5::utility::delay(50);
+            } while (!unit.updated() &&
+                     (std::chrono::steady_clock::now() - start_at) <= timeout);
+            EXPECT_TRUE(unit.updated()) << s;
+            EXPECT_TRUE(unit.stopPeriodicMeasurement()) << s;
+        }
+    }
+
+    // ART(4 mps)
+    EXPECT_TRUE(unit.startPeriodicMeasurement(
+        m5::unit::sht3x::MPS::MpsHalf, m5::unit::sht3x::Repeatability::High));
+    EXPECT_TRUE(unit.accelerateResponseTime());
+
+    auto timeout  = std::chrono::milliseconds(1000 / 4);
+    auto start_at = std::chrono::steady_clock::now();
+    do {
+        Units.update();  // call readMeasurement in it
+        m5::utility::delay(50);
+    } while (!unit.updated() &&
+             (std::chrono::steady_clock::now() - start_at) <= timeout);
+    EXPECT_TRUE(unit.updated());
+}
+
+namespace {
 #if 0
-TEST_P(TestSHT3x, BasicCommand) {
-    SCOPED_TRACE(ustr);
-
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    EXPECT_TRUE(unit.startPeriodicMeasurement());
-    // Return False if already started
-    EXPECT_FALSE(unit.startPeriodicMeasurement());
-
-    constexpr std::chrono::milliseconds TIMEOUT{5500};
-    auto start_at = std::chrono::steady_clock::now();
-    do {
-        Units.update();  // call readMeasurement in it
-        m5::utility::delay(500);
-    } while (!unit.updated() &&
-             (std::chrono::steady_clock::now() - start_at) <= TIMEOUT);
-    EXPECT_TRUE(unit.updated());
-
-    // These APIs result in an error during periodic detection
-    {
-        EXPECT_FALSE(unit.setTemperatureOffset(0));
-        float offset{};
-        EXPECT_FALSE(unit.getTemperatureOffset(offset));
-
-        EXPECT_FALSE(unit.setSensorAltitude(0));
-        uint16_t altitude{};
-        EXPECT_FALSE(unit.getSensorAltitude(altitude));
-
-        int16_t correction{};
-        EXPECT_FALSE(unit.performForcedRecalibration(0, correction));
-
-        EXPECT_FALSE(unit.setAutomaticSelfCalibrationEnabled(true));
-        bool enabled{};
-        EXPECT_FALSE(unit.getAutomaticSelfCalibrationEnabled(enabled));
-
-        EXPECT_FALSE(unit.startLowPowerPeriodicMeasurement());
-
-        EXPECT_FALSE(unit.persistSettings());
-
-        uint64_t sno{};
-        EXPECT_FALSE(unit.getSerialNumber(sno));
-
-        bool malfunction{};
-        EXPECT_FALSE(unit.performSelfTest(malfunction));
-
-        EXPECT_FALSE(unit.performFactoryReset());
-
-        EXPECT_FALSE(unit.reInit());
-    }
-    // These APIs can be used during periodic detection
-    EXPECT_TRUE(unit.setAmbientPressure(0.0f));
+void printStatus(const m5::unit::sht3x::Status& s) {
+    M5_LOGI("Status at begin: %u/%u/%u/%u/%u/%u/%u", s.alertPending(),
+            s.heater(), s.trackingAlertRH(), s.trackingAlert(), s.reset(),
+            s.command(), s.checksum());
 }
-
-TEST_P(TestSHT3x, OnChipOutputSignalCompensation) {
-    SCOPED_TRACE(ustr);
-
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    {
-        constexpr float OFFSET{1.234f};
-        EXPECT_TRUE(unit.setTemperatureOffset(OFFSET));
-        float offset{};
-        EXPECT_TRUE(unit.getTemperatureOffset(offset));
-        EXPECT_EQ(float_to_uint16(offset), float_to_uint16(OFFSET))
-            << "offset:" << offset << " OFFSET:" << OFFSET;
-    }
-
-    {
-        constexpr uint16_t ALTITUDE{3776};
-        EXPECT_TRUE(unit.setSensorAltitude(ALTITUDE));
-        uint16_t altitude{};
-        EXPECT_TRUE(unit.getSensorAltitude(altitude));
-        EXPECT_EQ(altitude, ALTITUDE);
-    }
-}
-
-TEST_P(TestSHT3x, FieldCalibration) {
-    SCOPED_TRACE(ustr);
-
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    {
-        int16_t correction{};
-        EXPECT_TRUE(unit.performForcedRecalibration(1234, correction));
-    }
-
-    {
-        EXPECT_TRUE(unit.setAutomaticSelfCalibrationEnabled(false));
-        bool enabled{};
-        EXPECT_TRUE(unit.getAutomaticSelfCalibrationEnabled(enabled));
-        EXPECT_FALSE(enabled);
-
-        EXPECT_TRUE(unit.setAutomaticSelfCalibrationEnabled(true));
-        EXPECT_TRUE(unit.getAutomaticSelfCalibrationEnabled(enabled));
-        EXPECT_TRUE(enabled);
-    }
-}
-
-TEST_P(TestSHT3x, LowPowerOperation) {
-    SCOPED_TRACE(ustr);
-
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    EXPECT_TRUE(unit.startLowPowerPeriodicMeasurement());
-    // Return False if already started
-    EXPECT_FALSE(unit.startLowPowerPeriodicMeasurement());
-
-    constexpr std::chrono::milliseconds TIMEOUT{30500};
-    auto start_at = std::chrono::steady_clock::now();
-    do {
-        Units.update();  // call readMeasurement in it
-        m5::utility::delay(500);
-    } while (!unit.updated() &&
-             (std::chrono::steady_clock::now() - start_at) <= TIMEOUT);
-    EXPECT_TRUE(unit.updated());
-}
-
-TEST_P(TestSHT3x, AdvancedFeatures) {
-    SCOPED_TRACE(ustr);
-
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    {
-        uint64_t sno{};
-        char ssno[13]{};
-        EXPECT_TRUE(unit.getSerialNumber(sno));
-        EXPECT_TRUE(unit.getSerialNumber(ssno));
-
-        std::stringstream stream;
-        stream << std::uppercase << std::setw(12) << std::hex << sno;
-        std::string s(stream.str());
-        EXPECT_STREQ(s.c_str(), ssno);
-    }
-
-    // Set
-    constexpr float OFFSET{1.234f};
-    EXPECT_TRUE(unit.setTemperatureOffset(OFFSET));
-    constexpr uint16_t ALTITUDE{3776};
-    EXPECT_TRUE(unit.setSensorAltitude(ALTITUDE));
-    EXPECT_TRUE(unit.setAutomaticSelfCalibrationEnabled(false));
-
-    EXPECT_TRUE(unit.persistSettings());  // Save EEPROM
-
-    // Overwrite settings
-    EXPECT_TRUE(unit.setTemperatureOffset(OFFSET * 2));
-    EXPECT_TRUE(unit.setSensorAltitude(ALTITUDE * 2));
-    EXPECT_TRUE(unit.setAutomaticSelfCalibrationEnabled(true));
-    EXPECT_EQ(float_to_uint16(unit.getTemperatureOffset()),
-              float_to_uint16(OFFSET * 2));
-    EXPECT_EQ(unit.getSensorAltitude(), ALTITUDE * 2);
-    EXPECT_TRUE(unit.getAutomaticSelfCalibrationEnabled());
-
-    EXPECT_TRUE(unit.reInit());  // Load EEPROM
-
-    // Check saved settings
-    EXPECT_EQ(float_to_uint16(unit.getTemperatureOffset()),
-              float_to_uint16(OFFSET));
-    EXPECT_EQ(unit.getSensorAltitude(), ALTITUDE);
-    EXPECT_FALSE(unit.getAutomaticSelfCalibrationEnabled());
-
-    bool malfunction{};
-    EXPECT_TRUE(unit.performSelfTest(malfunction));
-
-    EXPECT_TRUE(unit.performFactoryReset());  // Reset EEPROM
-
-    EXPECT_NE(float_to_uint16(unit.getTemperatureOffset()),
-              float_to_uint16(OFFSET));
-    EXPECT_NE(unit.getSensorAltitude(), ALTITUDE);
-    EXPECT_TRUE(unit.getAutomaticSelfCalibrationEnabled());
-}
-
 #endif
+}  // namespace
+
+TEST_P(TestSHT3x, HeaterAndStatus) {
+    m5::unit::sht3x::Status s{};
+
+    EXPECT_TRUE(unit.startHeater());
+
+    EXPECT_TRUE(unit.readStatus(s));
+    // printStatus(s);
+    EXPECT_TRUE(s.heater());
+
+    // clearStatus will not clear heater status
+    EXPECT_TRUE(unit.clearStatus());
+    EXPECT_TRUE(unit.readStatus(s));
+    // printStatus(s);
+    EXPECT_TRUE(s.heater());
+
+    EXPECT_TRUE(unit.stopHeater());
+    EXPECT_TRUE(unit.readStatus(s));
+    // printStatus(s);
+
+    EXPECT_FALSE(s.heater());
+}
+
+TEST_P(TestSHT3x, Reset) {
+    SCOPED_TRACE(ustr);
+
+    EXPECT_FALSE(unit.softReset());
+    EXPECT_TRUE(unit.stopPeriodicMeasurement());
+
+    m5::unit::sht3x::Status s{};
+    EXPECT_TRUE(unit.startHeater());
+
+    EXPECT_TRUE(unit.softReset());
+    EXPECT_TRUE(unit.readStatus(s));
+    EXPECT_FALSE(s.alertPending());
+    EXPECT_FALSE(s.heater());
+    EXPECT_FALSE(s.trackingAlertRH());
+    EXPECT_FALSE(s.trackingAlert());
+    EXPECT_FALSE(s.reset());
+    EXPECT_FALSE(s.command());
+    EXPECT_FALSE(s.checksum());
+}

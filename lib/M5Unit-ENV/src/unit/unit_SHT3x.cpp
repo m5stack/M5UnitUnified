@@ -1,6 +1,6 @@
 /*!
   @file unit_SHT3x.cpp
-  @brief SHT3x Unit for M5UnitUnified
+  @brief SHT3x family Unit for M5UnitUnified
 
   @copyright M5Stack. All rights reserved.
   @license Licensed under the MIT license. See LICENSE file in the project root
@@ -18,6 +18,11 @@ struct Temperature {
     }
 };
 
+bool delay1() {
+    m5::utility::delay(1);
+    return true;
+}
+
 }  // namespace
 
 namespace m5 {
@@ -25,57 +30,21 @@ namespace unit {
 
 using namespace sht3x::command;
 
-const char UnitSHT3x::name[] = "UnitSHT3x";
-const types::uid_t UnitSHT3x::uid{"UnitSHT3x"_mmh3};
-const types::uid_t UnitSHT3x::attr{0};
+const char UnitSHT30::name[] = "UnitSHT30";
+const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
+const types::uid_t UnitSHT30::attr{0};
 
-bool UnitSHT3x::begin() {
+bool UnitSHT30::begin() {
     auto r = stopPeriodicMeasurement();
     if (!r) {
         M5_LIB_LOGD("Failed to stop");
         return false;
     }
-
-#if 0
-    UnitSHT3x::Status s{};
-    r = readStatus(s);
-    if (r) {
-        M5_LIB_LOGI("Status at begin: %u/%u/%u/%u/%u/%u/%u", s.alertPending(),
-                    s.heater(), s.trackingAlertRH(), s.trackingAlert(),
-                    s.reset(), s.command(), s.checksum());
-    } else {
-        M5_LIB_LOGD("Failed to rad status");
-    }
-
-    startHeater();
-
-    r = readStatus(s);
-    if (r) {
-        M5_LIB_LOGI("Status at begin: %u/%u/%u/%u/%u/%u/%u", s.alertPending(),
-                    s.heater(), s.trackingAlertRH(), s.trackingAlert(),
-                    s.reset(), s.command(), s.checksum());
-    } else {
-        M5_LIB_LOGD("Failed to rad status");
-    }
-
-    clearStatus();
-    r = readStatus(s);
-    if (r) {
-        M5_LIB_LOGI("Status at begin: %u/%u/%u/%u/%u/%u/%u", s.alertPending(),
-                    s.heater(), s.trackingAlertRH(), s.trackingAlert(),
-                    s.reset(), s.command(), s.checksum());
-    } else {
-        M5_LIB_LOGD("Failed to rad status");
-    }
-
-    return startPeriodicMeasurement(MPS::Mps10, Repeatability::Medium) &&
-           accelerateResponseTime();
-#endif
     return startPeriodicMeasurement();
 }
 
-void UnitSHT3x::update() {
-    if (_periodic) {
+void UnitSHT30::update() {
+    if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
         if (!_latest || at >= _latest + _interval) {
             _updated = readMeasurement();
@@ -88,7 +57,8 @@ void UnitSHT3x::update() {
     }
 }
 
-bool UnitSHT3x::measurementSingle(Repeatability rep, const bool stretch) {
+bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
+                                      const bool stretch) {
     constexpr uint16_t cmd[] = {
         // Enable clock stretching
         SINGLE_SHOT_ENABLE_STRETCH_HIGH,
@@ -106,7 +76,7 @@ bool UnitSHT3x::measurementSingle(Repeatability rep, const bool stretch) {
         4,
     };
 
-    if (_periodic) {
+    if (inPeriodic()) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
@@ -119,8 +89,8 @@ bool UnitSHT3x::measurementSingle(Repeatability rep, const bool stretch) {
     return read_measurement();
 }
 
-bool UnitSHT3x::startPeriodicMeasurement(const MPS mps,
-                                         const Repeatability rep) {
+bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
+                                         const sht3x::Repeatability rep) {
     constexpr uint16_t cmd[] = {
         // 0.5 mps
         START_PERIODIC_MPS_HALF_HIGHT,
@@ -146,7 +116,7 @@ bool UnitSHT3x::startPeriodicMeasurement(const MPS mps,
         100,   // 10
     };
 
-    if (_periodic) {
+    if (inPeriodic()) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
@@ -155,93 +125,87 @@ bool UnitSHT3x::startPeriodicMeasurement(const MPS mps,
         cmd[m5::stl::to_underlying(mps) * 3 + m5::stl::to_underlying(rep)]);
     if (_periodic) {
         _interval = ms[m5::stl::to_underlying(mps)];
+        delay1();
     }
     return _periodic;
 }
 
-bool UnitSHT3x::stopPeriodicMeasurement() {
+bool UnitSHT30::stopPeriodicMeasurement() {
     if (sendCommand(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
+        delay1();
         return true;
     }
     return false;
 }
 
-bool UnitSHT3x::readMeasurement() {
+bool UnitSHT30::readMeasurement() {
+    if (!inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are NOT running");
+        return false;
+    }
     if (!sendCommand(READ_MEASUREMENT)) return false;
-    m5::utility::delay(1);
-    return read_measurement();
+    return read_measurement() && delay1();
 }
 
-bool UnitSHT3x::accelerateResponseTime() {
+bool UnitSHT30::accelerateResponseTime() {
     if (sendCommand(ACCELERATED_RESPONSE_TIME)) {
         _interval = 1000 / 4;  // 4mps
+        delay1();
         return true;
     }
     return false;
 }
 
-bool UnitSHT3x::readStatus(Status& s) {
+bool UnitSHT30::readStatus(sht3x::Status& s) {
     s.value = 0;
     return readRegister(READ_STATUS, s.value, 1);
 }
 
-bool UnitSHT3x::clearStatus() {
-    return sendCommand(CLEAR_STATUS);
+bool UnitSHT30::clearStatus() {
+    return sendCommand(CLEAR_STATUS) && delay1();
 }
 
-bool UnitSHT3x::softReset() {
-    return sendCommand(SOFT_RESET);
+bool UnitSHT30::softReset() {
+    if (inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are running");
+        return false;
+    }
+    return sendCommand(SOFT_RESET) && delay1();
 }
 
-bool UnitSHT3x::hardReset() {
-    return sendCommand(GENERAL_RESET);
+#if 0
+bool UnitSHT30::generalReset() {
+    // TODO
+    // How to use generic call with Wire/M5Bus?
+    //constexpr uint16_t GENERAL_RESET{0x0006};
+    if (inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are running");
+        return false;
+    }
+    return false;
+}
+#endif
+
+bool UnitSHT30::startHeater() {
+    return sendCommand(START_HEATER) && delay1();
 }
 
-bool UnitSHT3x::startHeater() {
-    return sendCommand(START_HEATER);
+bool UnitSHT30::stopHeater() {
+    return sendCommand(STOPE_HEATER) && delay1();
 }
 
-bool UnitSHT3x::stopHeater() {
-    return sendCommand(STOPE_HEATER);
-}
-
-bool UnitSHT3x::read_measurement() {
+bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
-        m5::utility::CRC8_Maxim crc;
-        m5::types::big_uint16_t temp{}, humidity{};
-        bool valid_temp{}, valid_humidity{};
-        uint_fast8_t idx{};
-        for (auto&& e : rbuf) {
-            switch (idx) {
-                case 0:
-                case 1:
-                    temp.u8[idx] = e;
-                    break;
-                case 2:
-                    valid_temp = crc.get(temp.data(), temp.size()) == e;
-                    break;
-                case 3:
-                case 4:
-                    humidity.u8[idx - 3] = e;
-                    break;
-                case 5:
-                    valid_humidity =
-                        crc.get(humidity.data(), humidity.size()) == e;
-                    break;
-                default:
-                    break;
-            }
-            ++idx;
+        utility::DataWithCRC data(rbuf.data(), 2);
+        if (data.valid(0)) {
+            this->_temperature = Temperature::toFloat(data.value(0));
         }
-        if (valid_temp) {
-            this->_temperature = Temperature::toFloat(temp.get());
+        if (data.valid(1)) {
+            this->_humidity = 100 * data.value(1) / 65536.f;
         }
-        if (valid_humidity) {
-            this->_humidity = 100 * humidity.get() / 65536.f;
-        }
-        return valid_temp && valid_humidity;
+        return data.valid(0) && data.valid(1);
     });
 }
 

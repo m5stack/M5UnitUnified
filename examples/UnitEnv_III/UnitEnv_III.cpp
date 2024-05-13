@@ -20,7 +20,7 @@ namespace {
 auto& lcd = M5.Display;
 
 m5::unit::UnitUnified Units;
-m5::unit::UnitSHT3x unitSHT3x;
+m5::unit::UnitSHT30 unitSHT30;
 #if defined(USING_PAHUB)
 m5::unit::UnitPaHub unitPaHub;
 #endif
@@ -45,7 +45,7 @@ void setup() {
     i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
     auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
 
-    if (!unitPaHub.add(unitSHT3x, USING_PAHUB) ||
+    if (!unitPaHub.add(unitSHT30, USING_PAHUB) ||
         !Units.add(unitPaHub, i2c_bus ? i2c_bus.value() : nullptr) ||
         !Units.begin()) {
         M5_LOGE("Failed to begin");
@@ -58,7 +58,7 @@ void setup() {
     // Using TwoWire
 #pragma message "Using Wire"
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-    if (!unitPaHub.add(unitSHT3x, USING_PAHUB) || !Units.add(unitPaHub, Wire) ||
+    if (!unitPaHub.add(unitSHT30, USING_PAHUB) || !Units.add(unitPaHub, Wire) ||
         !Units.begin()) {
         M5_LOGE("Failed to begin");
         lcd.clear(TFT_RED);
@@ -78,7 +78,7 @@ void setup() {
     i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
     i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
     auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-    if (!Units.add(unitSHT3x, i2c_bus ? i2c_bus.value() : nullptr) ||
+    if (!Units.add(unitSHT30, i2c_bus ? i2c_bus.value() : nullptr) ||
         !Units.begin()) {
         M5_LOGE("Failed to begin");
         lcd.clear(TFT_RED);
@@ -90,7 +90,7 @@ void setup() {
 #pragma message "Using Wire"
     // Using TwoWire
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-    if (!Units.add(unitSHT3x, Wire) || !Units.begin()) {
+    if (!Units.add(unitSHT30, Wire) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         lcd.clear(TFT_RED);
         while (true) {
@@ -103,7 +103,7 @@ void setup() {
 #if 0    
     // This is the imagined code that will happen after M5HAL is serviced and
     // M5Unified is modified accordingly.
-    if (!M5.Units.add(unitSHT3x, M5.PortA) || !M5.Units.begin()) {
+    if (!M5.Units.add(unitSHT30, M5.PortA) || !M5.Units.begin()) {
         M5_LOGE("Failed to begin");
         lcd.clear(TFT_RED);
         while (true) {
@@ -128,8 +128,8 @@ void loop() {
     M5.update(); // Call M5.Units.update() in it.
 #endif
 
-    if (unitSHT3x.updated()) {
-        M5_LOGI("Temperature:%2.2f Humidity:%2.2f", unitSHT3x.temperature(),
-                unitSHT3x.humidity());
+    if (unitSHT30.updated()) {
+        M5_LOGI("Temperature:%2.2f Humidity:%2.2f", unitSHT30.temperature(),
+                unitSHT30.humidity());
     }
 }

@@ -16,6 +16,7 @@
 
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
+#include "m5_unit_component/utility.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>

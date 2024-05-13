@@ -33,9 +33,11 @@ class UnitSCD40 : public Component {
     virtual bool begin() override;
     virtual void update() override;
 
-    ///@name Latest data
+    ///@name Properties
     ///@{
-    /*! @brief Has the measurement data been updated in update()? */
+    /*! @brief In periodic measurement? */
+    bool inPeriodic() const { return _periodic; }
+    //! @brief Periodic measurement data updated?
     inline bool updated() const {
         return _updated;
     }
@@ -47,15 +49,15 @@ class UnitSCD40 : public Component {
     inline unsigned long updatedMilliss() const {
         return _latest;
     }
-    //! @brief Measured CO2 concentration (ppm)
+    //! @brief Latest measured CO2 concentration (ppm)
     inline uint16_t co2() const {
         return _co2;
     }
-    //! @brief Measured temperature (Celsius)
+    //! @brief Latest measured temperature (Celsius)
     inline float temperature() const {
         return _temperature;
     }
-    //! @brief Measured humidity (RH)
+    //! @brief Katest measured humidity (RH)
     inline float humidity() const {
         return _humidity;
     }
