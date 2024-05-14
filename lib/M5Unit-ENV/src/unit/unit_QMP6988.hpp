@@ -78,6 +78,22 @@ enum class Accuracy : uint8_t {
     Acc24,    //!< @brief 24bits output
 };
 
+/*!
+  @enum StandbyTime
+  @brief Standby time setting for power mode Normal
+  @detail Measuerment interval
+ */
+enum class StandbyTime {
+    Time1ms,    //!< @brief 1 ms
+    Time5ms,    //!< @brief 5 ms
+    Time50ms,   //!< @brief 50 ms
+    Time250ms,  //!< @brief 250 ms
+    Time500ms,  //!< @brief 500 ms
+    Time1sec,   //!< @brief 1 seconds
+    Time2sec,   //!< @brief 2 seconds
+    Time4sec,   //!< @brief 4 seconds
+};
+
 };  // namespace qmp6988
 
 /*!
@@ -102,31 +118,6 @@ class UnitQMP6988 : public Component {
     virtual void update() override;
 
     // API
-    ///@name Measurement condition
-    ///@{
-    bool getMeasurementCondition(qmp6988::Average& ta, qmp6988::Average& pa,
-                                 qmp6988::PowerMode& mode);
-    bool setMeasurementCondition(const qmp6988::Average ta,
-                                 const qmp6988::Average pa,
-                                 const qmp6988::PowerMode mode);
-    bool setMeasurementCondition(const qmp6988::Average ta,
-                                 const qmp6988::Average pa);
-    bool setMeasurementCondition(const qmp6988::Average ta);
-
-    inline bool setTemperatureOversampling(const qmp6988::Average a) {
-        return setMeasurementCondition(a);
-    }
-    bool setPressureOversampling(const qmp6988::Average a);
-    bool setPowerMode(const qmp6988::PowerMode mode);
-
-    inline qmp6988::Accuracy getTemperatureAccuracy() const {
-        return _tempAcc;
-    }
-    inline qmp6988::Accuracy getPressureAccuracy() const {
-        return _pressureAcc;
-    }
-    ///@}
-
     ///@name Typical use case setup
     ///@{
     /*! @brief For weather monitoring */
@@ -161,12 +152,46 @@ class UnitQMP6988 : public Component {
     }
     ///@}
 
+    ///@name Measurement condition
+    ///@{
+    bool getMeasurementCondition(qmp6988::Average& ta, qmp6988::Average& pa,
+                                 qmp6988::PowerMode& mode);
+    bool setMeasurementCondition(const qmp6988::Average ta,
+                                 const qmp6988::Average pa,
+                                 const qmp6988::PowerMode mode);
+    bool setMeasurementCondition(const qmp6988::Average ta,
+                                 const qmp6988::Average pa);
+    bool setMeasurementCondition(const qmp6988::Average ta);
+
+    inline bool setTemperatureOversampling(const qmp6988::Average a) {
+        return setMeasurementCondition(a);
+    }
+    bool setPressureOversampling(const qmp6988::Average a);
+    bool setPowerMode(const qmp6988::PowerMode mode);
+
+    inline qmp6988::Accuracy getTemperatureAccuracy() const {
+        return _tempAcc;
+    }
+    inline qmp6988::Accuracy getPressureAccuracy() const {
+        return _pressureAcc;
+    }
+    ///@}
+
+    ///@name IIR filter co-efficient setting
+    ///@{
+    bool getFilterCoeff(qmp6988::Filter& f);
+    bool setFilterCoeff(const qmp6988::Filter& f);
+    ///@}
+
+    ///@name Standby time setting for power mode normal
+    ///@{
+    bool getStandbyTime(qmp6988::StandbyTime& st);
+    bool setStandbyTime(const qmp6988::StandbyTime st);
+    ///@}
+
     bool reset();
     bool softReset();
     bool getStatus(qmp6988::Status& s);
-
-    bool getFilterCoeff(qmp6988::Filter& f);
-    bool setFilterCoeff(const qmp6988::Filter& f);
 
    protected:
     inline virtual const char* unit_device_name() const override {
@@ -181,6 +206,8 @@ class UnitQMP6988 : public Component {
 
     bool get_measurement_condition(uint8_t& cond);
     bool set_measurement_condition(const uint8_t cond);
+    bool get_io_setup(uint8_t& s);
+    bool set_io_setup(const uint8_t s);
 
    protected:
     qmp6988::Accuracy _tempAcc{qmp6988::Accuracy::Unknown};
@@ -190,6 +217,7 @@ class UnitQMP6988 : public Component {
 namespace qmp6988 {
 namespace command {
 
+constexpr uint8_t IO_SETUP{0xF5};
 constexpr uint8_t CONTROL_MEASUREMENT{0xF4};
 constexpr uint8_t GET_STATUS{0xF3};
 constexpr uint8_t RESET{0xE0};

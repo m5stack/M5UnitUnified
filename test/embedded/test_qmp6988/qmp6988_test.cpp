@@ -275,6 +275,27 @@ TEST_P(TestQMP6988, UseCase) {
     }
 }
 
+TEST_P(TestQMP6988, Setup) {
+    constexpr m5::unit::qmp6988::StandbyTime table[] = {
+        m5::unit::qmp6988::StandbyTime::Time1ms,
+        m5::unit::qmp6988::StandbyTime::Time5ms,
+        m5::unit::qmp6988::StandbyTime::Time50ms,
+        m5::unit::qmp6988::StandbyTime::Time250ms,
+        m5::unit::qmp6988::StandbyTime::Time500ms,
+        m5::unit::qmp6988::StandbyTime::Time1sec,
+        m5::unit::qmp6988::StandbyTime::Time2sec,
+        m5::unit::qmp6988::StandbyTime::Time4sec,
+    };
+
+    for (auto&& e : table) {
+        EXPECT_TRUE(unit.setStandbyTime(e));
+
+        m5::unit::qmp6988::StandbyTime st;
+        EXPECT_TRUE(unit.getStandbyTime(st));
+        EXPECT_EQ(st, e);
+    }
+}
+
 TEST_P(TestQMP6988, Status) {
     SCOPED_TRACE(ustr);
 

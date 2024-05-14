@@ -34,6 +34,8 @@ constexpr uint8_t pressure_mask{0x07 << pressure_shift};
 constexpr uint8_t temperature_shift{5};
 constexpr uint8_t temperature_mask{0x07 << temperature_shift};
 
+constexpr uint8_t standby_shift{5};
+constexpr uint8_t standby_mask{0x07 << standby_shift};
 }  // namespace
 
 namespace m5 {
@@ -81,20 +83,6 @@ void UnitQMP6988::update() {
         }
     }
 #endif
-}
-
-bool UnitQMP6988::get_measurement_condition(uint8_t& cond) {
-    return readRegister8(CONTROL_MEASUREMENT, cond, 0);
-}
-
-bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
-    if (writeRegister8(CONTROL_MEASUREMENT, cond)) {
-        _tempAcc =
-            average_to_acc((cond & temperature_mask) >> temperature_shift);
-        _pressureAcc = average_to_acc((cond & pressure_mask) >> pressure_shift);
-        return true;
-    }
-    return false;
 }
 
 bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
@@ -171,20 +159,6 @@ bool UnitQMP6988::setPowerMode(const qmp6988::PowerMode mode) {
     return false;
 }
 
-bool UnitQMP6988::reset() {
-    uint8_t v{};
-    return writeRegister8(RESET, v);
-}
-
-bool UnitQMP6988::softReset() {
-    uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
-    return writeRegister8(RESET, v);
-}
-
-bool UnitQMP6988::getStatus(qmp6988::Status& s) {
-    return readRegister8(GET_STATUS, s.value, 1);
-}
-
 bool UnitQMP6988::getFilterCoeff(qmp6988::Filter& f) {
     constexpr qmp6988::Filter table[] = {
         qmp6988::Filter::Off,
@@ -208,6 +182,61 @@ bool UnitQMP6988::getFilterCoeff(qmp6988::Filter& f) {
 
 bool UnitQMP6988::setFilterCoeff(const qmp6988::Filter& f) {
     return writeRegister8(IIR_FILTER, m5::stl::to_underlying(f));
+}
+
+bool UnitQMP6988::getStandbyTime(qmp6988::StandbyTime& st) {
+    uint8_t v{};
+    if (get_io_setup(v)) {
+        st = static_cast<qmp6988::StandbyTime>((v & standby_mask) >>
+                                               standby_shift);
+        return true;
+    }
+    return false;
+}
+bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
+    uint8_t v{};
+    if (get_io_setup(v)) {
+        v &= ~standby_mask;
+        v |= m5::stl::to_underlying(st) << standby_shift;
+        return set_io_setup(v);
+    }
+    return false;
+}
+
+bool UnitQMP6988::reset() {
+    uint8_t v{};
+    return writeRegister8(RESET, v);
+}
+
+bool UnitQMP6988::softReset() {
+    uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
+    return writeRegister8(RESET, v);
+}
+
+bool UnitQMP6988::getStatus(qmp6988::Status& s) {
+    return readRegister8(GET_STATUS, s.value, 1);
+}
+
+bool UnitQMP6988::get_measurement_condition(uint8_t& cond) {
+    return readRegister8(CONTROL_MEASUREMENT, cond, 0);
+}
+
+bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
+    if (writeRegister8(CONTROL_MEASUREMENT, cond)) {
+        _tempAcc =
+            average_to_acc((cond & temperature_mask) >> temperature_shift);
+        _pressureAcc = average_to_acc((cond & pressure_mask) >> pressure_shift);
+        return true;
+    }
+    return false;
+}
+
+bool UnitQMP6988::get_io_setup(uint8_t& s) {
+    return readRegister8(IO_SETUP, s, 0);
+}
+
+bool UnitQMP6988::set_io_setup(const uint8_t s) {
+    return writeRegister8(IO_SETUP, s);
 }
 
 }  // namespace unit
