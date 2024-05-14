@@ -95,8 +95,7 @@ TEST_P(TestQMP6988, MeasurementCondition) {
     m5::unit::qmp6988::Average p;
     m5::unit::qmp6988::PowerMode m;
     EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
-
-    M5_LOGI("%x/%x/%x", (uint8_t)t, (uint8_t)p, (uint8_t)m);
+    // M5_LOGI("%x/%x/%x", (uint8_t)t, (uint8_t)p, (uint8_t)m);
 
     constexpr std::tuple<const char*, m5::unit::qmp6988::Average,
                          m5::unit::qmp6988::Average,
@@ -127,11 +126,159 @@ TEST_P(TestQMP6988, MeasurementCondition) {
 
         EXPECT_TRUE(unit.setMeasurementCondition(ta, pa, mode));
         EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, ta);
+        EXPECT_EQ(p, pa);
+        EXPECT_EQ(m, mode);
 
-        M5_LOGI("%x/%x/%x", (uint8_t)t, (uint8_t)p, (uint8_t)m);
+        EXPECT_TRUE(unit.setMeasurementCondition(ta, pa));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, ta);
+        EXPECT_EQ(p, pa);
+        EXPECT_EQ(m, mode);
 
+        EXPECT_TRUE(unit.setMeasurementCondition(ta));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, ta);
         EXPECT_EQ(p, pa);
         EXPECT_EQ(m, mode);
     }
+
+    {
+        EXPECT_TRUE(unit.setMeasurementCondition(
+            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
+            m5::unit::qmp6988::PowerMode::Sleep));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
+
+        EXPECT_TRUE(
+            unit.setTemperatureOversampling(m5::unit::qmp6988::Average::Avg64));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg64);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
+    }
+
+    {
+        EXPECT_TRUE(unit.setMeasurementCondition(
+            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
+            m5::unit::qmp6988::PowerMode::Sleep));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
+
+        EXPECT_TRUE(
+            unit.setPressureOversampling(m5::unit::qmp6988::Average::Avg64));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg64);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
+    }
+
+    {
+        EXPECT_TRUE(unit.setMeasurementCondition(
+            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
+            m5::unit::qmp6988::PowerMode::Sleep));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
+
+        EXPECT_TRUE(unit.setPowerMode(m5::unit::qmp6988::PowerMode::Normal));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
+        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Normal);
+    }
+}
+
+TEST_P(TestQMP6988, IIRFilter) {
+    SCOPED_TRACE(ustr);
+
+    constexpr m5::unit::qmp6988::Filter table[] = {
+        m5::unit::qmp6988::Filter::Off,     m5::unit::qmp6988::Filter::Coeff2,
+        m5::unit::qmp6988::Filter::Coeff4,  m5::unit::qmp6988::Filter::Coeff8,
+        m5::unit::qmp6988::Filter::Coeff16, m5::unit::qmp6988::Filter::Coeff32,
+
+    };
+
+    for (auto&& e : table) {
+        EXPECT_TRUE(unit.setFilterCoeff(e));
+
+        m5::unit::qmp6988::Filter f;
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_EQ(f, e);
+    }
+}
+
+TEST_P(TestQMP6988, UseCase) {
+    m5::unit::qmp6988::Filter f;
+    m5::unit::qmp6988::Average t;
+    m5::unit::qmp6988::Average p;
+    m5::unit::qmp6988::PowerMode m;
+
+    {
+        SCOPED_TRACE("Weather");
+        EXPECT_TRUE(unit.setWeathermonitoring());
+
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg2);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
+        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
+    }
+
+    {
+        SCOPED_TRACE("Drop");
+        EXPECT_TRUE(unit.setDropDetection());
+
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg4);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
+        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
+    }
+
+    {
+        SCOPED_TRACE("Elevator");
+        EXPECT_TRUE(unit.setElevatorDetection());
+
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg8);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
+        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff4);
+    }
+
+    {
+        SCOPED_TRACE("Stair");
+        EXPECT_TRUE(unit.setStairDetection());
+
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg16);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg2);
+        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff8);
+    }
+
+    {
+        SCOPED_TRACE("Indoor");
+        EXPECT_TRUE(unit.setIndoorNavigation());
+
+        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg32);
+        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg4);
+        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff32);
+    }
+}
+
+TEST_P(TestQMP6988, Status) {
+    SCOPED_TRACE(ustr);
+
+    m5::unit::qmp6988::Status s;
+    EXPECT_TRUE(unit.getStatus(s));
+    //    M5_LOGI("Measure:%d, OTP:%d", s.measure(), s.OTP());
 }

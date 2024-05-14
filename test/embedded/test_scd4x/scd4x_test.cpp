@@ -47,15 +47,6 @@ class TestSCD4x : public ::testing::TestWithParam<bool> {
         // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
         Wire.begin(pin_num_sda, pin_num_scl, 400000U);
 
-#if 0
-        // SCD40/41 are same default address
-        Wire.beginTransmission(m5::unit::UnitSCD40::DEFAULT_ADDRESS);
-        m5::utility::delay(1);
-        if (Wire.endTransmission() != 0) {
-            FAIL() << "SCD4x was not connected";
-            GTEST_SKIP();
-        }
-#endif
         unit = get_instance();
         if (!unit) {
             GTEST_SKIP() << "Skip as there are no instances";

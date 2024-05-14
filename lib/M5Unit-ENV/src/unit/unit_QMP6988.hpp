@@ -42,6 +42,15 @@ enum class PowerMode : uint8_t {
     Normal = 3,  //!< @brief Normally energized
 };
 
+enum class Filter : uint8_t {
+    Off,      //!< @brief Off filter
+    Coeff2,   //!< @brief co-efficient 2
+    Coeff4,   //!< @brief co-efficient 4
+    Coeff8,   //!< @brief co-efficient 8
+    Coeff16,  //!< @brief co-efficient 16
+    Coeff32,  //!< @brief co-efficient 32
+};
+
 /*!
   @struct Status
   @brief Accessor for Status
@@ -55,8 +64,18 @@ struct Status {
     inline bool OTP() const {
         return value & (1U << 0);
     }
-
     uint8_t value{};
+};
+
+/*!
+  @enum Accuracy
+  @brief Accuracy of ADC data
+ */
+enum class Accuracy : uint8_t {
+    Unknown,  //!< @brief Unknown
+    Acc22,    //!< @brief 22bits output
+    Acc23,    //!< @brief 23bits output
+    Acc24,    //!< @brief 24bits output
 };
 
 };  // namespace qmp6988
@@ -83,7 +102,6 @@ class UnitQMP6988 : public Component {
     virtual void update() override;
 
     // API
-
     ///@name Measurement condition
     ///@{
     bool getMeasurementCondition(qmp6988::Average& ta, qmp6988::Average& pa,
@@ -91,13 +109,64 @@ class UnitQMP6988 : public Component {
     bool setMeasurementCondition(const qmp6988::Average ta,
                                  const qmp6988::Average pa,
                                  const qmp6988::PowerMode mode);
+    bool setMeasurementCondition(const qmp6988::Average ta,
+                                 const qmp6988::Average pa);
+    bool setMeasurementCondition(const qmp6988::Average ta);
+
+    inline bool setTemperatureOversampling(const qmp6988::Average a) {
+        return setMeasurementCondition(a);
+    }
+    bool setPressureOversampling(const qmp6988::Average a);
     bool setPowerMode(const qmp6988::PowerMode mode);
-    bool setPresureOversampling(const qmp6988::Average a);
-    bool setTemperatureOversampling(const qmp6988::Average a);
+
+    inline qmp6988::Accuracy getTemperatureAccuracy() const {
+        return _tempAcc;
+    }
+    inline qmp6988::Accuracy getPressureAccuracy() const {
+        return _pressureAcc;
+    }
+    ///@}
+
+    ///@name Typical use case setup
+    ///@{
+    /*! @brief For weather monitoring */
+    inline bool setWeathermonitoring() {
+        return setMeasurementCondition(qmp6988::Average::Avg2,
+                                       qmp6988::Average::Avg1) &&
+               setFilterCoeff(qmp6988::Filter::Off);
+    }
+    //! @brief For drop detection
+    bool setDropDetection() {
+        return setMeasurementCondition(qmp6988::Average::Avg4,
+                                       qmp6988::Average::Avg1) &&
+               setFilterCoeff(qmp6988::Filter::Off);
+    }
+    //! @brief For elevator detection
+    bool setElevatorDetection() {
+        return setMeasurementCondition(qmp6988::Average::Avg8,
+                                       qmp6988::Average::Avg1) &&
+               setFilterCoeff(qmp6988::Filter::Coeff4);
+    }
+    //! @brief For stair detection
+    bool setStairDetection() {
+        return setMeasurementCondition(qmp6988::Average::Avg16,
+                                       qmp6988::Average::Avg2) &&
+               setFilterCoeff(qmp6988::Filter::Coeff8);
+    }
+    //! @brief For indoor navigation
+    bool setIndoorNavigation() {
+        return setMeasurementCondition(qmp6988::Average::Avg32,
+                                       qmp6988::Average::Avg4) &&
+               setFilterCoeff(qmp6988::Filter::Coeff32);
+    }
     ///@}
 
     bool reset();
+    bool softReset();
     bool getStatus(qmp6988::Status& s);
+
+    bool getFilterCoeff(qmp6988::Filter& f);
+    bool setFilterCoeff(const qmp6988::Filter& f);
 
    protected:
     inline virtual const char* unit_device_name() const override {
@@ -109,6 +178,13 @@ class UnitQMP6988 : public Component {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+
+    bool get_measurement_condition(uint8_t& cond);
+    bool set_measurement_condition(const uint8_t cond);
+
+   protected:
+    qmp6988::Accuracy _tempAcc{qmp6988::Accuracy::Unknown};
+    qmp6988::Accuracy _pressureAcc{qmp6988::Accuracy::Unknown};
 };
 
 namespace qmp6988 {
@@ -117,6 +193,7 @@ namespace command {
 constexpr uint8_t CONTROL_MEASUREMENT{0xF4};
 constexpr uint8_t GET_STATUS{0xF3};
 constexpr uint8_t RESET{0xE0};
+constexpr uint8_t IIR_FILTER{0xF1};
 
 }  // namespace command
 }  // namespace qmp6988

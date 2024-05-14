@@ -22,6 +22,15 @@ constexpr uint16_t float_to_uint16(const float f) {
     return f * 65536 / 175;
 }
 
+std::tuple<const char*, m5::unit::sht3x::Repeatability, bool> ss_table[] = {
+    {"HighTrue", m5::unit::sht3x::Repeatability::High, true},
+    {"MediumTrue", m5::unit::sht3x::Repeatability::Medium, true},
+    {"LowTrue", m5::unit::sht3x::Repeatability::Low, true},
+    {"HighFalse", m5::unit::sht3x::Repeatability::High, false},
+    {"MediumFalse", m5::unit::sht3x::Repeatability::Medium, false},
+    {"LowFalse", m5::unit::sht3x::Repeatability::Low, false},
+};
+
 }  // namespace
 
 #if 0
@@ -103,24 +112,20 @@ TEST_P(TestSHT3x, SingleShot) {
 
     EXPECT_TRUE(unit.stopPeriodicMeasurement());
 
-    std::tuple<const char*, m5::unit::sht3x::Repeatability, bool> table[] = {
-        {"HighTrue", m5::unit::sht3x::Repeatability::High, true},
-        {"MediumTrue", m5::unit::sht3x::Repeatability::Medium, true},
-        {"LowTrue", m5::unit::sht3x::Repeatability::Low, true},
-        {"HighFalse", m5::unit::sht3x::Repeatability::High, false},
-        {"MediumFalse", m5::unit::sht3x::Repeatability::Medium, false},
-        {"LowFalse", m5::unit::sht3x::Repeatability::Low, false},
-    };
+    // Cannot read periodic
+    EXPECT_FALSE(unit.readMeasurement());
 
-    for (auto&& e : table) {
+    for (auto&& e : ss_table) {
         const char* s{};
         m5::unit::sht3x::Repeatability rep;
         bool stretch{};
         std::tie(s, rep, stretch) = e;
-        int cnt{10};
+
+        SCOPED_TRACE(s);
+
+        int cnt{10};  // repeat 10 times
         while (cnt--) {
-            EXPECT_TRUE(unit.measurementSingleShot(rep, stretch))
-                << s << " " << cnt;
+            EXPECT_TRUE(unit.measurementSingleShot(rep, stretch));
         }
     }
 }
@@ -171,8 +176,9 @@ TEST_P(TestSHT3x, Periodic) {
             m5::unit::sht3x::MPS mps;
             m5::unit::sht3x::Repeatability rep;
             std::tie(s, mps, rep) = e;
+            SCOPED_TRACE(s);
 
-            EXPECT_TRUE(unit.startPeriodicMeasurement(mps, rep)) << s;
+            EXPECT_TRUE(unit.startPeriodicMeasurement(mps, rep));
 
             auto timeout  = timeout_table[m5::stl::to_underlying(mps)];
             auto start_at = std::chrono::steady_clock::now();
@@ -181,8 +187,8 @@ TEST_P(TestSHT3x, Periodic) {
                 m5::utility::delay(50);
             } while (!unit.updated() &&
                      (std::chrono::steady_clock::now() - start_at) <= timeout);
-            EXPECT_TRUE(unit.updated()) << s;
-            EXPECT_TRUE(unit.stopPeriodicMeasurement()) << s;
+            EXPECT_TRUE(unit.updated());
+            EXPECT_TRUE(unit.stopPeriodicMeasurement());
         }
     }
 
@@ -199,6 +205,17 @@ TEST_P(TestSHT3x, Periodic) {
     } while (!unit.updated() &&
              (std::chrono::steady_clock::now() - start_at) <= timeout);
     EXPECT_TRUE(unit.updated());
+
+    // Cannot read all singleshot
+    for (auto&& e : ss_table) {
+        const char* s{};
+        m5::unit::sht3x::Repeatability rep;
+        bool stretch{};
+        std::tie(s, rep, stretch) = e;
+
+        SCOPED_TRACE(s);
+        EXPECT_FALSE(unit.measurementSingleShot(rep, stretch));
+    }
 }
 
 namespace {
