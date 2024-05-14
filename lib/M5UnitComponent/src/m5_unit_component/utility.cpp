@@ -13,7 +13,7 @@ namespace m5 {
 namespace unit {
 namespace utility {
 
-m5::utility::CRC8_Maxim DataWithCRC::crc8;
+m5::utility::CRC8_Maxim WithCRC::crc8;
 
 }  // namespace utility
 }  // namespace unit

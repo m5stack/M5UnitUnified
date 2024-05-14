@@ -68,8 +68,7 @@ struct Status {
 */
 class UnitQMP6988 : public Component {
    public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x56};
-    constexpr static uint8_t DEFAULT_SLAVE_ADDRESS{0x70};  // For UnitENVx
+    constexpr static uint8_t DEFAULT_ADDRESS{0x70};
     static const types::uid_t uid;
     static const types::attr_t attr;
     static const char name[];

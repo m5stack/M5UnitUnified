@@ -79,7 +79,7 @@ class TestQMP6988 : public ::testing::TestWithParam<bool> {
     }
 
     m5::unit::UnitUnified Units;
-    m5::unit::UnitQMP6988 unit{m5::unit::UnitQMP6988::DEFAULT_SLAVE_ADDRESS};
+    m5::unit::UnitQMP6988 unit;
     std::string ustr{};
 };
 

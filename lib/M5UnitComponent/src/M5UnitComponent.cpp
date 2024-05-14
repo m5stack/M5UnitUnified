@@ -179,6 +179,7 @@ m5::hal::error::error_t Component::writeWithTransaction(const uint8_t* data,
     return r;
 }
 
+#if 0
 bool Component::sendCommand(const uint8_t command) {
     return (writeWithTransaction(&command, 1) == m5::hal::error::error_t::OK);
 }
@@ -189,26 +190,22 @@ bool Component::sendCommand(const uint16_t command) {
             m5::hal::error::error_t::OK);
 }
 
-bool Component::sendCommand(const uint16_t command, const uint16_t arg) {
-    uint8_t buf[2 + 2 + 1]{};
-    new (buf) m5::types::big_uint16_t(command);  // placement new
-    m5::types::big_uint16_t* value =
-        new (&buf[2]) m5::types::big_uint16_t(arg);  // placement new
-    m5::utility::CRC8_Maxim crc;
-    buf[4] = crc.get(value->data(), value->size());
-
-    return (writeWithTransaction(buf, m5::stl::size(buf)) ==
-            m5::hal::error::error_t::OK);
-}
 
 bool Component::readRegister(const uint16_t addr, uint8_t& result,
                              const uint16_t ms) {
+
+
     if (!sendCommand(addr)) {
         M5_LIB_LOGE("Failed to sendCommand");
         return false;
     }
     m5::utility::delay(ms);
-    return (readWithTransaction(&result, 1) == m5::hal::error::error_t::OK);
+    //    return (readWithTransaction(&result, 1) == m5::hal::error::error_t::OK);
+
+    auto r = readWithTransaction(&result, 1);
+    M5_LIB_LOGI("readReg8() <%x>: %d", addr, (bool)r);
+    return r == m5::hal::error::error_t::OK;
+
 }
 
 bool Component::readRegister(const uint16_t addr, uint16_t& result,
@@ -221,12 +218,119 @@ bool Component::readRegister(const uint16_t addr, uint16_t& result,
 
     std::array<uint8_t, 3> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [&rbuf, &result]() {
-        utility::DataWithCRC data(rbuf.data(), 1);
+        utility::ReadDataWithCRC16 data(rbuf.data(), 1);
         bool valid = data.valid(0);
         result     = valid ? data.value(0) : 0;
         return valid;
     });
 }
+#endif
+
+bool Component::sendCommand(const uint16_t command, const uint16_t arg) {
+    uint8_t buf[2 + 2 + 1]{};
+    new (buf) m5::types::big_uint16_t(command);  // placement new
+    m5::types::big_uint16_t* value =
+        new (&buf[2]) m5::types::big_uint16_t(arg);  // placement new
+    m5::utility::CRC8_Maxim crc;
+    buf[4] = crc.get(value->data(), value->size());
+    return (writeWithTransaction(buf, m5::stl::size(buf)) ==
+            m5::hal::error::error_t::OK);
+}
+
+template <typename Reg>
+bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
+                             const uint32_t delayMillis) {
+    static_assert(sizeof(reg) <= 2, "overflow");
+    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
+                  "Type must be unsigned integer");
+
+    if (!writeRegister(reg)) {
+        M5_LIB_LOGE("Failed to sendCommand");
+        return false;
+    }
+
+    m5::utility::delay(delayMillis);
+
+    return (readWithTransaction(rbuf, len) == m5::hal::error::error_t::OK);
+}
+
+template <typename Reg>
+bool Component::readRegister8(const Reg reg, uint8_t& result,
+                              const uint32_t delayMillis) {
+    static_assert(sizeof(reg) <= 2, "overflow");
+    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
+                  "Type must be unsigned integer");
+    return readRegister(reg, &result, 1, delayMillis);
+}
+
+template <typename Reg>
+bool Component::readRegister16(const Reg reg, uint16_t& result,
+                               const uint32_t delayMillis) {
+    static_assert(sizeof(reg) <= 2, "overflow");
+    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
+                  "Type must be unsigned integer");
+
+    m5::types::big_uint16_t buf{};
+    auto ret = readRegister(reg, buf.data(), buf.size(), delayMillis);
+    if (ret) {
+        result = buf.get();
+    }
+    return ret;
+}
+
+template <typename Reg>
+bool Component::writeRegister(const Reg reg, const uint8_t* buf,
+                              const size_t len) {
+    static_assert(sizeof(reg) <= 2, "overflow");
+    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
+                  "Type must be unsigned integer");
+
+    uint8_t wbuf[sizeof(Reg) + len]{};
+    new (wbuf)
+        m5::types::big_uint16_t(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
+    // Overwrite wbuf[1] if Reg is uint8_t
+    memcpy(wbuf + sizeof(Reg), buf, len);
+
+    return (writeWithTransaction(wbuf, sizeof(wbuf)) ==
+            m5::hal::error::error_t::OK);
+}
+
+template <typename Reg>
+bool Component::writeRegister8(const Reg reg, const uint8_t value) {
+    return writeRegister(reg, &value, 1);
+}
+
+template <typename Reg>
+bool Component::writeRegister16(const Reg reg, const uint16_t value) {
+    m5::types::big_uint16_t u16{value};
+    return writeRegister(reg, u16.data(), u16.size());
+}
+
+// Explicit template instantiation
+template bool Component::writeRegister<uint8_t>(const uint8_t, const uint8_t*,
+                                                const size_t);
+template bool Component::writeRegister<uint16_t>(const uint16_t, const uint8_t*,
+                                                 const size_t);
+template bool Component::writeRegister8<uint8_t>(const uint8_t, const uint8_t);
+template bool Component::writeRegister8<uint16_t>(const uint16_t,
+                                                  const uint8_t);
+template bool Component::writeRegister16<uint8_t>(const uint8_t,
+                                                  const uint16_t);
+template bool Component::writeRegister16<uint16_t>(const uint16_t,
+                                                   const uint16_t);
+
+template bool Component::readRegister<uint8_t>(const uint8_t, uint8_t*,
+                                               const size_t, const uint32_t);
+template bool Component::readRegister<uint16_t>(const uint16_t, uint8_t*,
+                                                const size_t, const uint32_t);
+template bool Component::readRegister8<uint8_t>(const uint8_t, uint8_t&,
+                                                const uint32_t);
+template bool Component::readRegister8<uint16_t>(const uint16_t, uint8_t&,
+                                                 const uint32_t);
+template bool Component::readRegister16<uint8_t>(const uint8_t, uint16_t&,
+                                                 const uint32_t);
+template bool Component::readRegister16<uint16_t>(const uint16_t, uint16_t&,
+                                                  const uint32_t);
 
 std::string Component::debugInfo() const {
     return m5::utility::formatString(

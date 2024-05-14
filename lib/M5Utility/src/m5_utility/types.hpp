@@ -59,9 +59,8 @@ union U16 {
     }
     template <typename H, typename L>
     U16& operator=(const std::pair<H, L>& o) {
-        static_assert(
-            std::is_integral<H>::value && std::is_integral<L>::value,
-            "HIGH & LOW Must be integral");
+        static_assert(std::is_integral<H>::value && std::is_integral<L>::value,
+                      "HIGH & LOW Must be integral");
         u8[0] = static_cast<uint8_t>(o.first);
         u8[1] = static_cast<uint8_t>(o.second);
         return *this;
@@ -76,6 +75,10 @@ union U16 {
     }
     /*! @brief To const uint8_t* */
     inline explicit operator const uint8_t*() const {
+        return data();
+    }
+    /*! @brief To uint8_t* */
+    inline explicit operator uint8_t*() const {
         return data();
     }
     //! @brief To uint16_t on processor endianness
@@ -110,11 +113,19 @@ union U16 {
         return r;
     };
     //! @brief Gets the high byte
-    inline uint8_t high() const { return u8[0]; }
+    inline uint8_t high() const {
+        return u8[0];
+    }
     //! @brief Gets the low byte
-    inline uint8_t low() const { return u8[1]; }
-    //! @brief Gets the array of uint8_t
+    inline uint8_t low() const {
+        return u8[1];
+    }
+    //! @brief Gets the const pointer
     inline const uint8_t* data() const {
+        return u8;
+    }
+    //! @brief Gets the pointer
+    inline uint8_t* data() {
         return u8;
     }
     //! @brief Gets size in uint8_t units.

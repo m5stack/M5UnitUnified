@@ -64,7 +64,7 @@ bool UnitSCD40::startPeriodicMeasurement(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    _periodic = sendCommand(START_PERIODIC_MEASUREMENT);
+    _periodic = writeRegister(START_PERIODIC_MEASUREMENT);
     if (_periodic) {
         _interval = SIGNAL_INTERVAL_MS;
     }
@@ -72,7 +72,7 @@ bool UnitSCD40::startPeriodicMeasurement(void) {
 }
 
 bool UnitSCD40::stopPeriodicMeasurement(const uint16_t delayMillis) {
-    if (sendCommand(STOP_PERIODIC_MEASUREMENT)) {
+    if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
         m5::utility::delay(delayMillis);
         return true;
@@ -85,7 +85,7 @@ bool UnitSCD40::readMeasurement(void) {
         M5_LIB_LOGD("Not ready");
         return false;
     }
-    if (!sendCommand(READ_MEASUREMENT)) {
+    if (!writeRegister(READ_MEASUREMENT)) {
         return false;
     }
 
@@ -93,7 +93,7 @@ bool UnitSCD40::readMeasurement(void) {
 
     std::array<uint8_t, 9> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
-        utility::DataWithCRC data(rbuf.data(), 3);
+        utility::ReadDataWithCRC16 data(rbuf.data(), 3);
         bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
 
         if (valid[0]) {
@@ -119,8 +119,9 @@ bool UnitSCD40::setTemperatureOffset(const float offset,
         M5_LIB_LOGE("offset is not a valid scope %f", offset);
         return false;
     }
-    uint16_t u16 = Temperature::toUint16(offset);
-    auto ret     = sendCommand(SET_TEMPERATURE_OFFSET, u16);
+
+    utility::WriteDataWithCRC16 wd(Temperature::toUint16(offset));
+    auto ret = writeRegister(SET_TEMPERATURE_OFFSET, wd.data(), wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -138,7 +139,7 @@ bool UnitSCD40::getTemperatureOffset(float& offset) {
         return false;
     }
     uint16_t u16{};
-    auto ret = readRegister(GET_TEMPERATURE_OFFSET, u16, 1);
+    auto ret = readRegister16(GET_TEMPERATURE_OFFSET, u16, 1);
     offset   = Temperature::toFloat(u16);
     return ret;
 }
@@ -149,7 +150,9 @@ bool UnitSCD40::setSensorAltitude(const uint16_t altitude,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(SET_SENSOR_ALTITUDE, altitude);
+
+    utility::WriteDataWithCRC16 wd(altitude);
+    auto ret = writeRegister(SET_SENSOR_ALTITUDE, wd.data(), wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -166,7 +169,7 @@ bool UnitSCD40::getSensorAltitude(uint16_t& altitude) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return readRegister(GET_SENSOR_ALTITUDE, altitude, 1);
+    return readRegister16(GET_SENSOR_ALTITUDE, altitude, 1);
 }
 
 bool UnitSCD40::setAmbientPressure(const float pressure,
@@ -175,11 +178,30 @@ bool UnitSCD40::setAmbientPressure(const float pressure,
         M5_LIB_LOGE("pressure is not a valid scope %f", pressure);
         return false;
     }
-    uint16_t u16 = (uint16_t)(pressure / 100);
-    auto ret     = sendCommand(SET_AMBIENT_PRESSURE, u16);
+
+    //uint16_t u16 = (uint16_t)(pressure / 100);
+    //    auto ret     = sendCommand(SET_AMBIENT_PRESSURE, u16);
+
+    utility::WriteDataWithCRC16 wd((uint16_t)(pressure / 100));
+    auto ret = writeRegister(SET_AMBIENT_PRESSURE, wd.data(), wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }
+/*
+[  6913][I][M5UnitComponent.cpp:241] sendCommand(): [0]:e0
+[  6914][I][M5UnitComponent.cpp:241] sendCommand(): [1]:0
+[  6914][I][M5UnitComponent.cpp:241] sendCommand(): [2]:0
+[  6918][I][M5UnitComponent.cpp:241] sendCommand(): [3]:0
+[  6923][I][M5UnitComponent.cpp:241] sendCommand(): [4]:81
+
+// NG
+[  6960][I][M5UnitComponent.cpp:296] writeRegister(): [0]:e0
+[  6960][I][M5UnitComponent.cpp:296] writeRegister(): [1]:0
+[  6960][I][M5UnitComponent.cpp:299] writeRegister(): [0]:0
+[  6965][I][M5UnitComponent.cpp:299] writeRegister(): [1]:0
+[  6970][I][M5UnitComponent.cpp:299] writeRegister(): [2]:81
+*/
+
 
 int16_t UnitSCD40::performForcedRecalibration(const uint16_t concentration) {
     int16_t correction{};
@@ -200,7 +222,9 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(PERFORM_FORCED_CALIBRATION, concentration)) {
+
+    utility::WriteDataWithCRC16 wd(concentration);
+    if (!writeRegister(PERFORM_FORCED_CALIBRATION, wd.data(), wd.size())) {
         return false;
     }
 
@@ -212,7 +236,7 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
     std::array<uint8_t, 3> rbuf{};
     return readWithTransaction(
         rbuf.data(), rbuf.size(), [this, &rbuf, &correction]() {
-            utility::DataWithCRC data(rbuf.data(), 1);
+            utility::ReadDataWithCRC16 data(rbuf.data(), 1);
             if (data.valid(0)) {
                 correction = (int16_t)(data.value(0) - 0x8000);
                 return data.value(0) != 0xFFFF;
@@ -227,8 +251,9 @@ bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret =
-        sendCommand(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, enabled ? 1 : 0);
+
+    utility::WriteDataWithCRC16 wd(enabled ? 1 : 0);
+    auto ret = writeRegister(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, wd.data(), wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -245,7 +270,7 @@ bool UnitSCD40::getAutomaticSelfCalibrationEnabled(bool& enabled) {
         return false;
     }
     uint16_t u16{};
-    auto ret = readRegister(GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
+    auto ret = readRegister16(GET_AUTOMATIC_SELF_CALIBRATION_ENABLED, u16, 1);
     enabled  = (u16 == 0x0001);
     return ret;
 }
@@ -255,7 +280,7 @@ bool UnitSCD40::startLowPowerPeriodicMeasurement(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    _periodic = sendCommand(START_LOW_POWER_PERIODIC_MEASUREMENT);
+    _periodic = writeRegister(START_LOW_POWER_PERIODIC_MEASUREMENT);
     if (_periodic) {
         _interval = SIGNAL_INTERVAL_LOW_MS;
     }
@@ -264,8 +289,8 @@ bool UnitSCD40::startLowPowerPeriodicMeasurement(void) {
 
 bool UnitSCD40::getDataReadyStatus() {
     uint16_t res{};
-    return readRegister(GET_DATA_READY_STATUS, res, 1) ? (res & 0x07FF) != 0
-                                                       : false;
+    return readRegister16(GET_DATA_READY_STATUS, res, 1) ? (res & 0x07FF) != 0
+                                                         : false;
 }
 
 bool UnitSCD40::persistSettings(uint16_t delayMillis) {
@@ -274,7 +299,7 @@ bool UnitSCD40::persistSettings(uint16_t delayMillis) {
         return false;
     }
 
-    auto ret = sendCommand(PERSIST_SETTINGS);
+    auto ret = writeRegister(PERSIST_SETTINGS);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -309,7 +334,7 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(GET_SERIAL_NUMBER)) {
+    if (!writeRegister(GET_SERIAL_NUMBER)) {
         return false;
     }
 
@@ -318,7 +343,7 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
     std::array<uint8_t, 9> rbuf;
     return readWithTransaction(
         rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-            utility::DataWithCRC data(rbuf.data(), 3);
+            utility::ReadDataWithCRC16 data(rbuf.data(), 3);
             bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
             if (valid[0] && valid[1] && valid[2]) {
                 for (uint_fast8_t i = 0; i < 3; ++i) {
@@ -343,7 +368,7 @@ bool UnitSCD40::performSelfTest(bool& malfunction) {
     }
 
     uint16_t response{};
-    auto ret    = readRegister(PERFORM_SELF_TEST, response, 10 * 1000);
+    auto ret    = readRegister16(PERFORM_SELF_TEST, response, 10 * 1000);
     malfunction = (response != 0);
     return ret;
 }
@@ -353,7 +378,7 @@ bool UnitSCD40::performFactoryReset(uint16_t delayMillis) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    auto ret = sendCommand(PERFORM_FACTORY_RESET);
+    auto ret = writeRegister(PERFORM_FACTORY_RESET);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -364,7 +389,7 @@ bool UnitSCD40::reInit(uint16_t delayMillis) {
         return false;
     }
 
-    auto ret = sendCommand(REINIT);
+    auto ret = writeRegister(REINIT);
     m5::utility::delay(delayMillis);
     return ret;
 }
@@ -379,7 +404,7 @@ bool UnitSCD41::measureSingleShot(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return sendCommand(MEASURE_SINGLE_SHOT);
+    return writeRegister(MEASURE_SINGLE_SHOT);
 }
 
 bool UnitSCD41::measureSingleShotRHTOnly(void) {
@@ -387,7 +412,7 @@ bool UnitSCD41::measureSingleShotRHTOnly(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return sendCommand(MEASURE_SINGLE_SHOT_RHT_ONLY);
+    return writeRegister(MEASURE_SINGLE_SHOT_RHT_ONLY);
 }
 
 }  // namespace unit

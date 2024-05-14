@@ -61,8 +61,8 @@ bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
     };
 
     uint8_t cond{};
-    if (readRegister(CONTROL_MEASUREMENT, cond, 0)) {
-        M5_LIB_LOGI("[%x]", cond);
+    if (readRegister8(CONTROL_MEASUREMENT, cond, 0)) {
+        M5_LIB_LOGI("====>> [%x]", cond);
 
         ta   = static_cast<qmp6988::Average>((cond >> 5U) & 0x07);
         pa   = static_cast<qmp6988::Average>((cond >> 2U) & 0x07);
@@ -74,6 +74,7 @@ bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
 bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
                                           const qmp6988::Average pa,
                                           const qmp6988::PowerMode mode) {
+#if 0
     m5::types::big_uint16_t cmd(CONTROL_MEASUREMENT,
                                 (uint8_t)((m5::stl::to_underlying(ta) << 5U) |
                                           (m5::stl::to_underlying(pa) << 2U) |
@@ -83,6 +84,12 @@ bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
 
     return (writeWithTransaction(cmd.data(), cmd.size()) ==
             m5::hal::error::error_t::OK);
+#else
+    uint8_t cond{(uint8_t)((m5::stl::to_underlying(ta) << 5U) |
+                           (m5::stl::to_underlying(pa) << 2U) |
+                           (m5::stl::to_underlying(mode)))};
+    return writeRegister8(CONTROL_MEASUREMENT, cond);
+#endif
 }
 
 bool UnitQMP6988::setPowerMode(const qmp6988::PowerMode mode) {
@@ -116,8 +123,14 @@ bool UnitQMP6988::setTemperatureOversampling(const qmp6988::Average ta) {
 }
 
 bool UnitQMP6988::reset() {
-    uint8_t buf[] = {RESET, 00};
-    return (writeWithTransaction(buf, 2) == m5::hal::error::error_t::OK);
+#if 0
+    m5::types::big_uint16_t cmd{RESET, 0};
+    return (writeWithTransaction(cmd.data(), cmd.size()) ==
+            m5::hal::error::error_t::OK);
+#else
+    uint8_t v{};
+    return writeRegister16(RESET, v);
+#endif
 }
 
 bool UnitQMP6988::getStatus(qmp6988::Status& s) {

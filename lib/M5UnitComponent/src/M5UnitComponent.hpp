@@ -160,20 +160,36 @@ class Component {
     /*! @brief Reading data with transactions */
     m5::hal::error::error_t readWithTransaction(uint8_t* data,
                                                 const size_t len);
+    //! @brief Read data from register
+    template <typename Reg>
+    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
+                      const uint32_t delayMillis);
+    //! @brief Read uint8_t from register
+    template <typename Reg>
+    bool readRegister8(const Reg reg, uint8_t& result,
+                       const uint32_t delayMillis);
+    //! @brief Read uint16_t from register
+    template <typename Reg>
+    bool readRegister16(const Reg reg, uint16_t& result,
+                        const uint32_t delayMillis);
+
     //! @brief Writeing data with transactions */
     m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
                                                  const size_t len);
+    //! @brief Write data to register
+    template <typename Reg>
+    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr,
+                       const size_t len = 0);
+    //! @brief Write uint8_t to register
+    template <typename Reg>
+    bool writeRegister8(const Reg reg, const uint8_t value);
+    //! @brief Write uint16_t to register
+    template <typename Reg>
+    bool writeRegister16(const Reg reg, const uint16_t value);
 
-    //! @brief Writing of 8-bit command data
-    bool sendCommand(const uint8_t command);
-    //! @brief Writing of 16-bit command data
-    bool sendCommand(const uint16_t command);
-    //! @brief Writing of 16-bit command data with argument
+
     bool sendCommand(const uint16_t command, const uint16_t arg);
-    //! @brief Reading register 8 bits
-    bool readRegister(const uint16_t addr, uint8_t& result, const uint16_t ms);
-    //! @brief Reading register 16 bits
-    bool readRegister(const uint16_t addr, uint16_t& result, const uint16_t ms);
+
     ///@}
 
     ///@name Children
@@ -299,11 +315,9 @@ class Component {
         return false;
     }
 
-    /*
-    template<typename T>
-    m5::stl::expected<T,m5::hal::error::error_t> readRegister(const uint16_t
-    addr, const uint8_t delayMillis = 1);
-    */
+
+    
+    
 
     bool add_child(Component* c);
 

@@ -80,7 +80,7 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(cmd[m5::stl::to_underlying(rep) + (stretch ? 0 : 3)])) {
+    if (!writeRegister(cmd[m5::stl::to_underlying(rep) + (stretch ? 0 : 3)])) {
         return false;
     }
     if (!stretch) {
@@ -121,7 +121,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
         return false;
     }
 
-    _periodic = sendCommand(
+    _periodic = writeRegister(
         cmd[m5::stl::to_underlying(mps) * 3 + m5::stl::to_underlying(rep)]);
     if (_periodic) {
         _interval = ms[m5::stl::to_underlying(mps)];
@@ -131,7 +131,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
 }
 
 bool UnitSHT30::stopPeriodicMeasurement() {
-    if (sendCommand(STOP_PERIODIC_MEASUREMENT)) {
+    if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
         delay1();
         return true;
@@ -144,12 +144,12 @@ bool UnitSHT30::readMeasurement() {
         M5_LIB_LOGD("Periodic measurements are NOT running");
         return false;
     }
-    if (!sendCommand(READ_MEASUREMENT)) return false;
+    if (!writeRegister(READ_MEASUREMENT)) return false;
     return read_measurement() && delay1();
 }
 
 bool UnitSHT30::accelerateResponseTime() {
-    if (sendCommand(ACCELERATED_RESPONSE_TIME)) {
+    if (writeRegister(ACCELERATED_RESPONSE_TIME)) {
         _interval = 1000 / 4;  // 4mps
         delay1();
         return true;
@@ -159,11 +159,11 @@ bool UnitSHT30::accelerateResponseTime() {
 
 bool UnitSHT30::getStatus(sht3x::Status& s) {
     s.value = 0;
-    return readRegister(READ_STATUS, s.value, 1);
+    return readRegister16(READ_STATUS, s.value, 1);
 }
 
 bool UnitSHT30::clearStatus() {
-    return sendCommand(CLEAR_STATUS) && delay1();
+    return writeRegister(CLEAR_STATUS) && delay1();
 }
 
 bool UnitSHT30::softReset() {
@@ -171,7 +171,7 @@ bool UnitSHT30::softReset() {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return sendCommand(SOFT_RESET) && delay1();
+    return writeRegister(SOFT_RESET) && delay1();
 }
 
 #if 0
@@ -188,11 +188,11 @@ bool UnitSHT30::generalReset() {
 #endif
 
 bool UnitSHT30::startHeater() {
-    return sendCommand(START_HEATER) && delay1();
+    return writeRegister(START_HEATER) && delay1();
 }
 
 bool UnitSHT30::stopHeater() {
-    return sendCommand(STOPE_HEATER) && delay1();
+    return writeRegister(STOPE_HEATER) && delay1();
 }
 
 bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
@@ -201,7 +201,7 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!sendCommand(GET_SEREAL_NUMBER_ENABLE_STRETCH)) {
+    if (!writeRegister(GET_SEREAL_NUMBER_ENABLE_STRETCH)) {
         return false;
     }
 
@@ -210,7 +210,7 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
     std::array<uint8_t, 6> rbuf;
     return readWithTransaction(
         rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-            utility::DataWithCRC data(rbuf.data(), 3);
+            utility::ReadDataWithCRC16 data(rbuf.data(), 3);
             bool valid[2] = {data.valid(0), data.valid(1)};
             if (valid[0] && valid[1]) {
                 for (uint_fast8_t i = 0; i < 3; ++i) {
@@ -245,7 +245,7 @@ bool UnitSHT30::getSerialNumber(char* serialNumber) {
 bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
-        utility::DataWithCRC data(rbuf.data(), 2);
+        utility::ReadDataWithCRC16 data(rbuf.data(), 2);
         bool valid[2] = {data.valid(0), data.valid(1)};
         if (valid[0]) {
             this->_temperature = Temperature::toFloat(data.value(0));

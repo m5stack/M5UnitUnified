@@ -16,21 +16,29 @@ namespace m5 {
 namespace unit {
 namespace utility {
 
+///@cond
+class WithCRC {
+   protected:
+    static m5::utility::CRC8_Maxim crc8;
+};
+///@endcond
+
 /*!
-  @class DataWithCRC
+  @class ReadDataWithCRC16
   @brief Accessors for big_uint16_t and crc8 pairs of sequences
-  @datail Accessors for processing typical read data<br>
+  @detail Accessors for processing typical read data<br>
   @detail [uint8_t, uint8_t, uint8_t] [0][1]:data(big endian) [2]:CRC for data
  */
-class DataWithCRC {
+class ReadDataWithCRC16 : public WithCRC {
    public:
     /*!
-      @brief Constructor
+      @brief Assign pointer
       @param[in] ptr Data pointer
       @param[in] num Number of pairs (Not data length)
       @warning Be careful not to access out of range
      */
-    DataWithCRC(const uint8_t* ptr, const size_t num) : _data(ptr), _num(num) {
+    ReadDataWithCRC16(const uint8_t* ptr, const size_t num)
+        : _data(ptr), _num(num) {
         assert(ptr);
         assert(num);
     }
@@ -56,8 +64,32 @@ class DataWithCRC {
    private:
     const uint8_t* _data{};
     const size_t _num{};
+};
 
-    static m5::utility::CRC8_Maxim crc8;
+/*!
+  @class WriteDataWithCRC16
+  @brief Make a array of uint16_t(big endian) and CRC8
+ */
+class WriteDataWithCRC16 : public WithCRC {
+   public:
+    /*!
+      @brief Set value and calculate CRC
+     */
+    explicit WriteDataWithCRC16(const uint16_t v = 0) {
+        new (_buf) m5::types::big_uint16_t(v);  // placement new
+        _buf[2] = crc8.get(_buf, 2);
+    }
+    //! @brief Gets the const pointer
+    const uint8_t* data() const {
+        return _buf;
+    }
+    //! @brief Gets size in uint8_t units.
+    size_t size() const {
+        return sizeof(_buf);
+    }
+
+   private:
+    uint8_t _buf[3]{};
 };
 
 }  // namespace utility

@@ -33,6 +33,7 @@ void each_unit_test() {
     U* u = new U();
 
     // Are the values the same via class and via instance?
+    EXPECT_EQ(+U::DEFAULT_ADDRESS, u->address());
     EXPECT_STREQ(U::name, u->deviceName());
     EXPECT_EQ(U::uid, u->identifier());
     EXPECT_EQ(U::attr, u->attribute());
