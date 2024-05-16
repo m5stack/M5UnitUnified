@@ -27,6 +27,7 @@
 #include "m5_utility/types.hpp"
 #include "m5_utility/crc.hpp"
 #include "m5_utility/string.hpp"
+#include "m5_utility/conversion.hpp"
 
 /*!
   @namespace m5

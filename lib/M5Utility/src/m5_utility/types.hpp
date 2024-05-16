@@ -19,26 +19,26 @@ namespace types {
 
 /*!
   @struct U16
-  @tparam DataEndianLittle Endian type specification<br> true: Little false: Big
+  @tparam DELittle Endian type specification<br> true: Little false: Big
   @brief Endian-compliant uint16
 */
-template <bool DataEndianLittle>
+template <bool DELittle>
 union U16 {
     /// @name Constrcutor
     ///@{
     constexpr U16() : u16{0} {
     }
 #if 0
-    template <bool ProcessorEndianLittle = m5::endian::little>
+    template <bool PELittle = m5::endian::little>
     constexpr explicit U16(const uint16_t v) : u8{
         static_cast<uint8_t>(
-            DataEndianLittle == ProcessorEndianLittle ? (v & 0XFF) : (v >> 8)),
+            DELittle == PELittle ? (v & 0XFF) : (v >> 8)),
         u8[1] = static_cast<uint8_t>(
-            DataEndianLittle == ProcessorEndianLittle ? (v >> 8) : (v & 0xFF)) } {}
+            DELittle == PELittle ? (v >> 8) : (v & 0xFF)) } {}
 #else
-    template <bool ProcessorEndianLittle = m5::endian::little>
+    template <bool PELittle = m5::endian::little>
     explicit U16(const uint16_t v) {
-        set<ProcessorEndianLittle>(v);
+        set<PELittle>(v);
     }
 
 #endif
@@ -52,9 +52,9 @@ union U16 {
     ///@{
     U16& operator=(const U16&) = default;
     U16& operator=(U16&&)      = default;
-    template <bool ProcessorEndianLittle = m5::endian::little>
+    template <bool PELittle = m5::endian::little>
     U16& operator=(const uint16_t v) {
-        set<ProcessorEndianLittle>(v);
+        set<PELittle>(v);
         return *this;
     }
     template <typename H, typename L>
@@ -89,11 +89,11 @@ union U16 {
 
     /*!
       @brief Set value with specified endianness
-      @tparam ProcessorEndianLittle Endianness (default as processor endianness)
+      @tparam PELittle Endianness (default as processor endianness)
     */
-    template <bool ProcessorEndianLittle = m5::endian::little>
+    template <bool PELittle = m5::endian::little>
     inline void set(const uint16_t v) {
-        if (DataEndianLittle == ProcessorEndianLittle) {
+        if (DELittle == PELittle) {
             u16 = v;
         } else {
             u8[0] = static_cast<uint8_t>(v >> 8);
@@ -102,13 +102,13 @@ union U16 {
     }
     /*!
       @brief Gets value with specified endianness
-      @tparam ProcessorEndianLittle Endianness (default as processor endianness)
+      @tparam PELittle Endianness (default as processor endianness)
      */
-    template <bool ProcessorEndianLittle = m5::endian::little>
+    template <bool PELittle = m5::endian::little>
     inline uint16_t get() const {
         uint16_t r{u16};
-        if (DataEndianLittle != ProcessorEndianLittle) {
-            r = U16<DataEndianLittle>{u8[1], u8[0]}.u16;
+        if (DELittle != PELittle) {
+            r = U16<DELittle>{u8[1], u8[0]}.u16;
         }
         return r;
     };
@@ -133,8 +133,8 @@ union U16 {
         return 2;
     }
 
-    uint16_t u16;     //!< @brief Raw value
-    uint8_t u8[2]{};  //!< @brief Raw value according to uint8_t
+    uint16_t u16{};  //!< @brief Raw value
+    uint8_t u8[2];   //!< @brief Raw value according to uint8_t
 };
 
 using big_uint16_t    = U16<false>;
