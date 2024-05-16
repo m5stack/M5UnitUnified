@@ -99,7 +99,7 @@ class UnitSHT30 : public Component {
     ///@name Properties
     ///@{
     /*! @brief In periodic measurement? */
-    bool inPeriodic() const {
+    inline bool inPeriodic() const {
         return _periodic;
     }
     //! @brief Periodic measurement data updated?
@@ -118,7 +118,7 @@ class UnitSHT30 : public Component {
     inline float temperature() const {
         return _temperature;
     }
-    //! @brief Katest measured humidity (RH)
+    //! @brief Latest measured humidity (RH)
     inline float humidity() const {
         return _humidity;
     }

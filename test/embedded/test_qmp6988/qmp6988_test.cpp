@@ -214,6 +214,8 @@ TEST_P(TestQMP6988, IIRFilter) {
 }
 
 TEST_P(TestQMP6988, UseCase) {
+    SCOPED_TRACE(ustr);
+
     m5::unit::qmp6988::Filter f;
     m5::unit::qmp6988::Average t;
     m5::unit::qmp6988::Average p;
@@ -276,6 +278,7 @@ TEST_P(TestQMP6988, UseCase) {
 }
 
 TEST_P(TestQMP6988, Setup) {
+    SCOPED_TRACE(ustr);
     constexpr m5::unit::qmp6988::StandbyTime table[] = {
         m5::unit::qmp6988::StandbyTime::Time1ms,
         m5::unit::qmp6988::StandbyTime::Time5ms,
@@ -302,4 +305,43 @@ TEST_P(TestQMP6988, Status) {
     m5::unit::qmp6988::Status s;
     EXPECT_TRUE(unit.getStatus(s));
     //    M5_LOGI("Measure:%d, OTP:%d", s.measure(), s.OTP());
+}
+
+TEST_P(TestQMP6988, Measurement) {
+    SCOPED_TRACE(ustr);
+
+    unit.setPowerMode(m5::unit::qmp6988::PowerMode::Force);
+    m5::utility::delay(10);
+
+    m5::unit::qmp6988::Average t;
+    m5::unit::qmp6988::Average p;
+    m5::unit::qmp6988::PowerMode m;
+
+    {
+        SCOPED_TRACE("22bit");
+        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg1,
+                                     m5::unit::qmp6988::Average::Avg1);
+
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+
+        EXPECT_TRUE(unit.readMeasurement());
+    }
+
+    {
+        SCOPED_TRACE("23bit");
+        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg2,
+                                     m5::unit::qmp6988::Average::Avg2);
+
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit.readMeasurement());
+    }
+
+    {
+        SCOPED_TRACE("24bit");
+        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg32,
+                                     m5::unit::qmp6988::Average::Avg32);
+
+        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit.readMeasurement());
+    }
 }

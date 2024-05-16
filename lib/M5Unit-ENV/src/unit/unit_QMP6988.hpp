@@ -68,17 +68,6 @@ struct Status {
 };
 
 /*!
-  @enum Accuracy
-  @brief Accuracy of ADC data
- */
-enum class Accuracy : uint8_t {
-    Unknown,  //!< @brief Unknown
-    Acc22,    //!< @brief 22bits output
-    Acc23,    //!< @brief 23bits output
-    Acc24,    //!< @brief 24bits output
-};
-
-/*!
   @enum StandbyTime
   @brief Standby time setting for power mode Normal
   @detail Measuerment interval
@@ -92,6 +81,12 @@ enum class StandbyTime {
     Time1sec,   //!< @brief 1 seconds
     Time2sec,   //!< @brief 2 seconds
     Time4sec,   //!< @brief 4 seconds
+};
+
+struct Calibration {
+    int32_t b00{}, bt1{}, bp1{};
+    int64_t bt2{};
+    int32_t b11{}, bp2{}, b12{}, b21{}, bp3{}, a0{}, a1{}, a2{};
 };
 
 };  // namespace qmp6988
@@ -116,6 +111,34 @@ class UnitQMP6988 : public Component {
 
     virtual bool begin() override;
     virtual void update() override;
+
+    ///@name Properties
+    ///@{
+    /*! @brief In periodic measurement? */
+    inline bool inPeriodic() const {
+        return _periodic;
+    }
+    //! @brief Periodic measurement data updated?
+    inline bool updated() const {
+        return _updated;
+    }
+    /*!
+      @brief Time elapsed since start-up when the measurement data was updated
+      in update()
+      @return Updated time (Unit: ms)
+    */
+    inline unsigned long updatedMilliss() const {
+        return _latest;
+    }
+    //! @brief Latest neasured temperature (Celsius)
+    inline float temperature() const {
+        return _temperature;
+    }
+    //! @brief Latest measured humidity (RH)
+    inline float pressure() const {
+        return _pressure;
+    }
+    ///@}
 
     // API
     ///@name Typical use case setup
@@ -168,13 +191,6 @@ class UnitQMP6988 : public Component {
     }
     bool setPressureOversampling(const qmp6988::Average a);
     bool setPowerMode(const qmp6988::PowerMode mode);
-
-    inline qmp6988::Accuracy getTemperatureAccuracy() const {
-        return _tempAcc;
-    }
-    inline qmp6988::Accuracy getPressureAccuracy() const {
-        return _pressureAcc;
-    }
     ///@}
 
     ///@name IIR filter co-efficient setting
@@ -188,6 +204,8 @@ class UnitQMP6988 : public Component {
     bool getStandbyTime(qmp6988::StandbyTime& st);
     bool setStandbyTime(const qmp6988::StandbyTime st);
     ///@}
+
+    bool readMeasurement();
 
     bool reset();
     bool softReset();
@@ -208,20 +226,37 @@ class UnitQMP6988 : public Component {
     bool set_measurement_condition(const uint8_t cond);
     bool get_io_setup(uint8_t& s);
     bool set_io_setup(const uint8_t s);
+    bool wait_measurement();
+    bool read_calibration(qmp6988::Calibration& c);
 
    protected:
-    qmp6988::Accuracy _tempAcc{qmp6988::Accuracy::Unknown};
-    qmp6988::Accuracy _pressureAcc{qmp6988::Accuracy::Unknown};
+    bool _periodic{};  // During periodic measurement?
+    bool _updated{};
+    unsigned long _latest{}, _interval{};
+    float _temperature{}, _pressure{};
+
+    qmp6988::Average _tempAvg{qmp6988::Average::Skip};
+    qmp6988::Average _pressureAvg{qmp6988::Average::Skip};
+    qmp6988::PowerMode _mode{qmp6988::PowerMode::Sleep};
+    qmp6988::Calibration _calibration{};
 };
 
 namespace qmp6988 {
 namespace command {
 
+constexpr uint8_t CHIP_ID{0xD1};
+
+constexpr uint8_t READ_TEMPERATURE{0xFA};  // ~ FC 3bytes
+constexpr uint8_t READ_PRESSURE{0xF7};     // ~ F9 3bytes
+
 constexpr uint8_t IO_SETUP{0xF5};
 constexpr uint8_t CONTROL_MEASUREMENT{0xF4};
 constexpr uint8_t GET_STATUS{0xF3};
-constexpr uint8_t RESET{0xE0};
 constexpr uint8_t IIR_FILTER{0xF1};
+
+constexpr uint8_t RESET{0xE0};
+
+constexpr uint8_t READ_COMPENSATION_COEFFICIENT{0xA0};  // ~ 0xB8 25 butes
 
 }  // namespace command
 }  // namespace qmp6988
