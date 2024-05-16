@@ -26,7 +26,7 @@ Component::Component(Component&& o)
     : _manager{o._manager},
       _adapter{std::move(o._adapter)},
       _order{o._order},
-      _cfg{o._cfg},
+      _uccfg{o._uccfg},
       _channel{o._channel},
       _addr{o._addr},
       _parent{o._parent},
@@ -35,7 +35,7 @@ Component::Component(Component&& o)
       _child{o._child} {
     o._manager = nullptr;
     o._order   = 0;
-    o._cfg     = {};
+    o._uccfg     = {};
     o._channel = -1;
     o._addr    = 0x00;
     o._parent = o._next = o._prev = o._child = nullptr;
@@ -46,7 +46,7 @@ Component& Component::operator=(Component&& o) {
         _manager = o._manager;
         _adapter = std::move(o._adapter);
         _order   = o._order;
-        _cfg     = o._cfg;
+        _uccfg     = o._uccfg;
         _channel = o._channel;
         _addr    = o._addr;
         _parent  = o._parent;
@@ -57,7 +57,7 @@ Component& Component::operator=(Component&& o) {
         o._manager = nullptr;
         o._adapter = nullptr;
         o._order   = 0;
-        o._cfg     = {};
+        o._uccfg     = {};
         o._channel = -1;
         o._addr    = 0x00;
         o._parent = o._next = o._prev = o._child = nullptr;
@@ -85,7 +85,7 @@ bool Component::exists(const uint8_t ch) const {
 }
 
 bool Component::add(Component& c, const int16_t ch) {
-    if (childrenSize() >= _cfg.max_children) {
+    if (childrenSize() >= _uccfg.max_children) {
         M5_LIB_LOGE("Can't connect any more");
         return false;
     }
@@ -179,64 +179,6 @@ m5::hal::error::error_t Component::writeWithTransaction(const uint8_t* data,
     return r;
 }
 
-#if 0
-bool Component::sendCommand(const uint8_t command) {
-    return (writeWithTransaction(&command, 1) == m5::hal::error::error_t::OK);
-}
-
-bool Component::sendCommand(const uint16_t command) {
-    m5::types::big_uint16_t cmd{command};
-    return (writeWithTransaction(cmd.data(), cmd.size()) ==
-            m5::hal::error::error_t::OK);
-}
-
-
-bool Component::readRegister(const uint16_t addr, uint8_t& result,
-                             const uint16_t ms) {
-
-
-    if (!sendCommand(addr)) {
-        M5_LIB_LOGE("Failed to sendCommand");
-        return false;
-    }
-    m5::utility::delay(ms);
-    //    return (readWithTransaction(&result, 1) == m5::hal::error::error_t::OK);
-
-    auto r = readWithTransaction(&result, 1);
-    M5_LIB_LOGI("readReg8() <%x>: %d", addr, (bool)r);
-    return r == m5::hal::error::error_t::OK;
-
-}
-
-bool Component::readRegister(const uint16_t addr, uint16_t& result,
-                             const uint16_t ms) {
-    if (!sendCommand(addr)) {
-        M5_LIB_LOGE("Failed to sendCommand");
-        return false;
-    }
-    m5::utility::delay(ms);
-
-    std::array<uint8_t, 3> rbuf{};
-    return readWithTransaction(rbuf.data(), rbuf.size(), [&rbuf, &result]() {
-        utility::ReadDataWithCRC16 data(rbuf.data(), 1);
-        bool valid = data.valid(0);
-        result     = valid ? data.value(0) : 0;
-        return valid;
-    });
-}
-#endif
-
-bool Component::sendCommand(const uint16_t command, const uint16_t arg) {
-    uint8_t buf[2 + 2 + 1]{};
-    new (buf) m5::types::big_uint16_t(command);  // placement new
-    m5::types::big_uint16_t* value =
-        new (&buf[2]) m5::types::big_uint16_t(arg);  // placement new
-    m5::utility::CRC8_Maxim crc;
-    buf[4] = crc.get(value->data(), value->size());
-    return (writeWithTransaction(buf, m5::stl::size(buf)) ==
-            m5::hal::error::error_t::OK);
-}
-
 template <typename Reg>
 bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
                              const uint32_t delayMillis) {
@@ -245,7 +187,7 @@ bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
                   "Type must be unsigned integer");
 
     if (!writeRegister(reg)) {
-        M5_LIB_LOGE("Failed to sendCommand");
+        M5_LIB_LOGE("Failed to write");
         return false;
     }
 

@@ -36,13 +36,18 @@ const types::uid_t UnitSCD40::uid{"UnitSCD40"_mmh3};
 const types::uid_t UnitSCD40::attr{0};
 
 bool UnitSCD40::begin() {
-    auto r = stopPeriodicMeasurement();
-    if (!r) {
-        M5_LIB_LOGD("Failed to stop");
+    if (!stopPeriodicMeasurement()) {
+        M5_LIB_LOGE("Failed to stop");
         return false;
     }
-
-    return startPeriodicMeasurement();
+    if (!setAutomaticSelfCalibrationEnabled(_cfg.auto_calibration)) {
+        M5_LIB_LOGE("Failed to set calibration");
+        return false;
+    }
+    return _cfg.start_periodic
+               ? (_cfg.low_power ? startLowPowerPeriodicMeasurement()
+                                 : startPeriodicMeasurement())
+               : true;
 }
 
 void UnitSCD40::update() {
@@ -179,29 +184,14 @@ bool UnitSCD40::setAmbientPressure(const float pressure,
         return false;
     }
 
-    //uint16_t u16 = (uint16_t)(pressure / 100);
-    //    auto ret     = sendCommand(SET_AMBIENT_PRESSURE, u16);
+    // uint16_t u16 = (uint16_t)(pressure / 100);
+    //     auto ret     = sendCommand(SET_AMBIENT_PRESSURE, u16);
 
     utility::WriteDataWithCRC16 wd((uint16_t)(pressure / 100));
     auto ret = writeRegister(SET_AMBIENT_PRESSURE, wd.data(), wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }
-/*
-[  6913][I][M5UnitComponent.cpp:241] sendCommand(): [0]:e0
-[  6914][I][M5UnitComponent.cpp:241] sendCommand(): [1]:0
-[  6914][I][M5UnitComponent.cpp:241] sendCommand(): [2]:0
-[  6918][I][M5UnitComponent.cpp:241] sendCommand(): [3]:0
-[  6923][I][M5UnitComponent.cpp:241] sendCommand(): [4]:81
-
-// NG
-[  6960][I][M5UnitComponent.cpp:296] writeRegister(): [0]:e0
-[  6960][I][M5UnitComponent.cpp:296] writeRegister(): [1]:0
-[  6960][I][M5UnitComponent.cpp:299] writeRegister(): [0]:0
-[  6965][I][M5UnitComponent.cpp:299] writeRegister(): [1]:0
-[  6970][I][M5UnitComponent.cpp:299] writeRegister(): [2]:81
-*/
-
 
 int16_t UnitSCD40::performForcedRecalibration(const uint16_t concentration) {
     int16_t correction{};
@@ -253,7 +243,8 @@ bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
     }
 
     utility::WriteDataWithCRC16 wd(enabled ? 1 : 0);
-    auto ret = writeRegister(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, wd.data(), wd.size());
+    auto ret = writeRegister(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, wd.data(),
+                             wd.size());
     m5::utility::delay(delayMillis);
     return ret;
 }

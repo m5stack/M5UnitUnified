@@ -63,9 +63,9 @@ const types::uid_t UnitPaHub::uid{"UnitPaHub"_mmh3};
 const types::uid_t UnitPaHub::attr{0};
 
 UnitPaHub::UnitPaHub(const uint8_t addr) : Component(addr) {
-    auto cfg         = config();
+    auto cfg         = component_config();
     cfg.max_children = MAX_CHANNEL;
-    config(cfg);
+    component_config(cfg);
 }
 
 UnitPaHub::UnitPaHub(UnitPaHub&& o)
@@ -82,7 +82,7 @@ UnitPaHub& UnitPaHub::operator=(UnitPaHub&& o) {
 
 Adapter* UnitPaHub::ensure_adapter(const uint8_t ch) {
     if (ch >= _adapters.size()) {
-        M5_LIB_LOGE("Ibvalid channel %u", ch);
+        M5_LIB_LOGE("Invalid channel %u", ch);
         return nullptr;
     }
 
@@ -104,11 +104,10 @@ m5::hal::error::error_t UnitPaHub::select_channel(const uint8_t ch) {
     M5_LIB_LOGV("Try current to %u / %u", ch, _current);
 
     if (ch != _current && ch < MAX_CHANNEL) {
-        _current = 0;
+        _current       = 0;
         uint8_t buf[1] = {static_cast<uint8_t>((1U << ch) & 0xFF)};
-        auto ret = writeWithTransaction(buf, 1);
-        if(ret == m5::hal::error::error_t::OK)
-        {
+        auto ret       = writeWithTransaction(buf, 1);
+        if (ret == m5::hal::error::error_t::OK) {
             _current = ch;
         }
         return ret;

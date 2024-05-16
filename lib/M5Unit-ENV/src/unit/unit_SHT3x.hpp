@@ -88,6 +88,21 @@ class UnitSHT30 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
+    /*!
+      @struct config_t
+      @brief Settings
+     */
+    struct config_t {
+        //! @brief Start periodic measurement on begin?
+        bool start_periodic{true};
+        //! @brief Measuring frequency if start periodic on begin
+        sht3x::MPS mps{sht3x::MPS::Mps1};
+        //! @brief Repeatability accuracy level if start periodic on begin
+        sht3x::Repeatability rep{sht3x::Repeatability::High};
+        //! @brief start heater on begin?
+        bool start_heater{false};
+    };
+
     explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
     }
     virtual ~UnitSHT30() {
@@ -95,6 +110,18 @@ class UnitSHT30 : public Component {
 
     virtual bool begin() override;
     virtual void update() override;
+
+    ///@name Settings
+    ///@{
+    /*! @brief Gets the configration */
+    config_t config() {
+        return _cfg;
+    }
+    //! @brief Set the configration
+    void config(const config_t& cfg) {
+        _cfg = cfg;
+    }
+    ///@}
 
     ///@name Properties
     ///@{
@@ -142,8 +169,8 @@ class UnitSHT30 : public Component {
     ///@name Periodic
     ///@{
     /*!
-      @brief Start measurement
-      @param[i] mps Measurement per second
+      @brief Start periodic measurement
+      @param[in] mps Measurement per second
       @param[in] rep Repeatability accuracy level
       @return True if successful
     */
@@ -151,7 +178,7 @@ class UnitSHT30 : public Component {
         const sht3x::MPS mps           = sht3x::MPS::Mps1,
         const sht3x::Repeatability rep = sht3x::Repeatability::High);
     /*!
-      @brief Stop measurement
+      @brief Stop periodic measurement
       @return True if successful
     */
     bool stopPeriodicMeasurement();
@@ -213,7 +240,6 @@ class UnitSHT30 : public Component {
       @brief Get status
       @param[out] s Status
       @return True if successful
-      @warning During periodic detection runs, an error is returned
     */
     bool getStatus(sht3x::Status& s);
     /*!
@@ -264,8 +290,11 @@ class UnitSHT30 : public Component {
     // latest data
     float _temperature{};  // C
     float _humidity{};     // RH
+
+    config_t _cfg{};
 };
 
+///@cond
 namespace sht3x {
 namespace command {
 // Measurement Commands for Single Shot Data Acquisition Mode
@@ -304,6 +333,7 @@ constexpr uint16_t GET_SEREAL_NUMBER_ENABLE_STRETCH{0x3780};
 constexpr uint16_t GET_SEREAL_NUMBER_DISABLE_STRETCH{0x3780};
 }  // namespace command
 }  // namespace sht3x
+///@endcond
 
 }  // namespace unit
 }  // namespace m5

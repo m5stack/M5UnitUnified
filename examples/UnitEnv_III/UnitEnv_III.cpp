@@ -13,6 +13,9 @@
 #include <unit/unit_SHT3x.hpp>
 #include <unit/unit_QMP6988.hpp>
 
+// Using single shot measurement If defined
+//#define USING_SINGLE_SHOT
+
 namespace {
 auto& lcd = M5.Display;
 
@@ -28,6 +31,19 @@ void setup() {
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
     auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
+
+#if defined(USING_SINGLE_SHOT)
+    {
+        auto cfg           = unitSHT30.config();
+        cfg.start_periodic = false;
+        unitSHT30.config(cfg);
+    }
+    {
+        auto cfg = unitQMP6988.config();
+        cfg.start_periodic = false;
+        unitQMP6988.config(cfg);
+    }
+#endif
 
 #if defined(USING_M5HAL)
 #pragma message "Using M5HAL"
@@ -75,6 +91,9 @@ void setup() {
     M5_LOGI("M5UnitUnified has been begun");
     M5_LOGI("%s", Units.debugInfo().c_str());
 
+    M5_LOGI("%d,%d", unitQMP6988.temperatureAverage(),
+            unitQMP6988.pressureAverage());
+
     lcd.clear(TFT_DARKGREEN);
 }
 
@@ -88,12 +107,25 @@ void loop() {
     M5.update(); // Call M5.Units.update() in it.
 #endif
 
+#if defined(USING_SINGLE_SHOT)
+    if (M5.BtnA.wasClicked()) {
+        if (unitSHT30.measurementSingleShot()) {
+            M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f",
+                    unitSHT30.temperature(), unitSHT30.humidity());
+        }
+        if (unitQMP6988.readMeasurement()) {
+            M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
+                    unitQMP6988.temperature(), unitQMP6988.pressure());
+        }
+    }
+#else
     if (unitSHT30.updated()) {
-        M5_LOGI("Temperature:%2.2f Humidity:%2.2f", unitSHT30.temperature(),
-                unitSHT30.humidity());
+        M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f",
+                unitSHT30.temperature(), unitSHT30.humidity());
     }
     if (unitQMP6988.updated()) {
-        M5_LOGI("Temperature:%2.2f Pressure:%.2f", unitQMP6988.temperature(),
-                unitQMP6988.pressure());
+        M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
+                unitQMP6988.temperature(), unitQMP6988.pressure());
     }
+#endif
 }

@@ -25,6 +25,19 @@ class UnitSCD40 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
+    /*!
+      @struct config_t
+      @brief Settings
+     */
+    struct config_t {
+        //! @brief Start periodic measurement on begin?
+        bool start_periodic{true};
+        //! @brief using low power mode if start peridodic on begin?
+        bool low_power{false};
+        //! @brief  Enable calibration on begin?
+        bool auto_calibration{true};
+    };
+
     explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
     }
     virtual ~UnitSCD40() {
@@ -32,6 +45,18 @@ class UnitSCD40 : public Component {
 
     virtual bool begin() override;
     virtual void update() override;
+
+    ///@name Settings
+    ///@{
+    /*! @brief Gets the configration */
+    config_t config() {
+        return _cfg;
+    }
+    //! @brief Set the configration
+    void config(const config_t &cfg) {
+        _cfg = cfg;
+    }
+    ///@}
 
     ///@name Properties
     ///@{
@@ -70,10 +95,10 @@ class UnitSCD40 : public Component {
     ///@{
     /*!
       @brief Start measurement
-      @note Receive data every 30 seconds
+      @note Receive data every 5 seconds
       @return True if successful
     */
-    bool startPeriodicMeasurement(void);
+    bool startPeriodicMeasurement();
     /*!
       @brief Stop measurement
       @warning The sensor will only respond to other commands after waiting 500
@@ -293,6 +318,8 @@ class UnitSCD40 : public Component {
     uint16_t _co2{};       // ppm
     float _temperature{};  // C
     float _humidity{};     // RH
+
+    config_t _cfg{};
 };
 
 /*!
@@ -344,6 +371,7 @@ class UnitSCD41 : public UnitSCD40 {
     }
 };
 
+///@cond
 namespace scd4x {
 namespace command {
 // Basic Commands
@@ -384,6 +412,7 @@ constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY{0x2196};
 
 }  // namespace command
 }  // namespace scd4x
+///@endcond
 
 }  // namespace unit
 }  // namespace m5

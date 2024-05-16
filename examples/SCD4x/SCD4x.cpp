@@ -6,8 +6,8 @@
   license information.
 */
 
-#define USING_PAHUB (2)  // Connection channel number for use via PaHub.
-//#define USING_M5HAL      // When using M5HAL
+// #define USING_PAHUB (2)  // Connection channel number for use via PaHub.
+// #define USING_M5HAL      // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
@@ -34,6 +34,12 @@ void setup() {
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
     auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
+
+#if 0
+    auto cfg           = unitSCD4x.config();
+    cfg.start_periodic = false;
+    unitSCD4x.config(cfg);
+#endif
 
 #if defined(USING_PAHUB)
 #pragma message "Using via PaHub"

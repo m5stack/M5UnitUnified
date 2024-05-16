@@ -39,7 +39,7 @@ enum class PowerMode : uint8_t {
         0,  //!< @brief Minimal power consumption, but no measurements are taken
     Force =
         1,  //!< @brief Energise the circuit for measurement only when measuring
-    Normal = 3,  //!< @brief Normally energized
+    Normal = 3,  //!< @brief Normally energized (periodic measurement)
 };
 
 enum class Filter : uint8_t {
@@ -70,7 +70,7 @@ struct Status {
 /*!
   @enum StandbyTime
   @brief Standby time setting for power mode Normal
-  @detail Measuerment interval
+  @details Measuerment interval
  */
 enum class StandbyTime {
     Time1ms,    //!< @brief 1 ms
@@ -83,11 +83,13 @@ enum class StandbyTime {
     Time4sec,   //!< @brief 4 seconds
 };
 
+///@cond
 struct Calibration {
     int32_t b00{}, bt1{}, bp1{};
     int64_t bt2{};
     int32_t b11{}, bp2{}, b12{}, b21{}, bp3{}, a0{}, a1{}, a2{};
 };
+///@endcond
 
 };  // namespace qmp6988
 
@@ -103,6 +105,23 @@ class UnitQMP6988 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
+    /*!
+      @struct config_t
+      @brief Settings
+     */
+    struct config_t {
+        //! @brief Start periodic measurement on begin?
+        bool start_periodic{true};
+        //! @brief pressure oversampling
+        qmp6988::Average pressure_avg{qmp6988::Average::Avg8};
+        //! @brief temperature oversampling
+        qmp6988::Average temperature_avg{qmp6988::Average::Avg1};
+        //! @brief IIR filter
+        qmp6988::Filter filter{qmp6988::Filter::Coeff4};
+        //! @brief Periodic measurement interval if start periodic on begin
+        qmp6988::StandbyTime standby_time{qmp6988::StandbyTime::Time1sec};
+    };
+
     explicit UnitQMP6988(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr) {
     }
@@ -111,6 +130,18 @@ class UnitQMP6988 : public Component {
 
     virtual bool begin() override;
     virtual void update() override;
+
+    ///@name Settings
+    ///@{
+    /*! @brief Gets the configration */
+    config_t config() {
+        return _cfg;
+    }
+    //! @brief Set the configration
+    void config(const config_t& cfg) {
+        _cfg = cfg;
+    }
+    ///@}
 
     ///@name Properties
     ///@{
@@ -134,13 +165,41 @@ class UnitQMP6988 : public Component {
     inline float temperature() const {
         return _temperature;
     }
-    //! @brief Latest measured humidity (RH)
+    //! @brief Latest measured pressure (Pa)
     inline float pressure() const {
         return _pressure;
     }
+    //! @brief temperature oversampling
+    inline qmp6988::Average temperatureAverage() const {
+        return _tempAvg;
+    }
+    //! @brief pressure oversampling
+    inline qmp6988::Average pressureAverage() const {
+        return _pressureAvg;
+    }
+
     ///@}
 
     // API
+    ///@name Basic Commands
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @return True if successful
+    */
+    bool startPeriodicMeasurement();
+    /*!
+      @brief Stop periodic measurement
+      @return True if successful
+    */
+    bool stopPeriodicMeasurement();
+    /*!
+      @brief Check for fresh data and store
+      @return True if fresh data is available
+     */
+    bool readMeasurement();
+    ///@}
+
     ///@name Typical use case setup
     ///@{
     /*! @brief For weather monitoring */
@@ -177,8 +236,23 @@ class UnitQMP6988 : public Component {
 
     ///@name Measurement condition
     ///@{
+    /*!
+      @brief Get the measurement conditions
+      @param[out] ta Temperature oversampling average
+      @param[out] pa Pressure oversampling average
+      @param[out] mode Power mode
+      @return True if successful
+    */
     bool getMeasurementCondition(qmp6988::Average& ta, qmp6988::Average& pa,
                                  qmp6988::PowerMode& mode);
+    /*!
+      @brief Set the measurement conditions
+      @param[in] ta Temperature oversampling average
+      @param[in] pa Pressure oversampling average
+      @param[in] mode Power mode
+      @note When mode is PowerMode::Normal, it becomes a periodic measurement.
+      @return True if successful
+    */
     bool setMeasurementCondition(const qmp6988::Average ta,
                                  const qmp6988::Average pa,
                                  const qmp6988::PowerMode mode);
@@ -195,20 +269,39 @@ class UnitQMP6988 : public Component {
 
     ///@name IIR filter co-efficient setting
     ///@{
+    /*!
+      @brief Gets the IIR filter co-efficient
+      @param[out] f filter
+      @return True if successful
+    */
     bool getFilterCoeff(qmp6988::Filter& f);
+    /*!
+      @brief Sets the IIR filter co-efficient
+      @param[in] f filter
+      @return True if successful
+    */
     bool setFilterCoeff(const qmp6988::Filter& f);
     ///@}
 
-    ///@name Standby time setting for power mode normal
+    ///@name Interval for periodic measurement
     ///@{
+    /*!
+      @brief Gets the standby time (same as interval)
+      @param[out] st standby time
+      @return True if successful
+     */
     bool getStandbyTime(qmp6988::StandbyTime& st);
+    /*!
+      @brief Sets the standby time (same as interval)
+      @param[in] st standby time
+      @return True if successful
+     */
     bool setStandbyTime(const qmp6988::StandbyTime st);
     ///@}
 
-    bool readMeasurement();
-
+    /*! @brief Software reset */
     bool reset();
-    bool softReset();
+    /*! @brief Gets the status */
     bool getStatus(qmp6988::Status& s);
 
    protected:
@@ -239,8 +332,11 @@ class UnitQMP6988 : public Component {
     qmp6988::Average _pressureAvg{qmp6988::Average::Skip};
     qmp6988::PowerMode _mode{qmp6988::PowerMode::Sleep};
     qmp6988::Calibration _calibration{};
+
+    config_t _cfg{};
 };
 
+///@cond
 namespace qmp6988 {
 namespace command {
 
@@ -260,6 +356,7 @@ constexpr uint8_t READ_COMPENSATION_COEFFICIENT{0xA0};  // ~ 0xB8 25 butes
 
 }  // namespace command
 }  // namespace qmp6988
+///@endcond
 
 }  // namespace unit
 }  // namespace m5

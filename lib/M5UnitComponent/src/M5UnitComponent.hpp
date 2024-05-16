@@ -51,15 +51,15 @@ namespace unit {
  */
 class Component {
    public:
-    // 基礎動作用 config
-    // 個別の config は派生先で必要に応じて整備
-    struct config_t {
-        //! @brief Does the user call Unit's update? (default: false)
-        bool self_update;
-        //! @brief Maximum number of devices that can be connected (default: 0)
-        uint8_t max_children;
-        //! @brief Type of bus requested
-        uint8_t bus_type;
+    /*!
+      @struct component_config_t
+      @brief UnitComponent basic settings
+     */
+    struct component_config_t {
+        //! @brief Does the user call Unit's update? (default as false)
+        bool self_update{};
+        //! @brief Maximum number of units that can be connected (default as 0)
+        uint8_t max_children{};
     };
 
     ///@name Fixed parameters for class
@@ -87,15 +87,15 @@ class Component {
 
     virtual ~Component() = default;
 
-    ///@name Configurate
+    ///@name Settings
     ///@{
     /*! @brief Gets the configuration */
-    config_t config() {
-        return _cfg;
+    component_config_t component_config() {
+        return _uccfg;
     }
     //! @brief Set the configuration
-    void config(const config_t& cfg) {
-        _cfg = cfg;
+    void component_config(const component_config_t& cfg) {
+        _uccfg = cfg;
     }
     ///@}
 
@@ -186,10 +186,6 @@ class Component {
     //! @brief Write uint16_t to register
     template <typename Reg>
     bool writeRegister16(const Reg reg, const uint16_t value);
-
-
-    bool sendCommand(const uint16_t command, const uint16_t arg);
-
     ///@}
 
     ///@name Children
@@ -315,10 +311,6 @@ class Component {
         return false;
     }
 
-
-    
-    
-
     bool add_child(Component* c);
 
    protected:
@@ -327,7 +319,7 @@ class Component {
 
    private:
     uint32_t _order{};
-    config_t _cfg{};
+    component_config_t _uccfg{};
     int16_t _channel{-1};  // valid [0...]
     uint8_t _addr{};
     bool _begun{};

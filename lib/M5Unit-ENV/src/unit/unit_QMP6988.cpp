@@ -111,20 +111,22 @@ bool UnitQMP6988::begin() {
         return false;
     }
 
-    if (!softReset() || !read_calibration(_calibration)) {
+    if (!reset() || !read_calibration(_calibration)) {
         M5_LIB_LOGE("Failed to read_calibration");
         return false;
     }
 
-    if (!getMeasurementCondition(_tempAvg, _pressureAvg, _mode)) {
-        M5_LIB_LOGE("Failed to getMeasurementCondition");
+    M5_LIB_LOGW("%d,%d", _cfg.temperature_avg, _cfg.pressure_avg);
+
+    if (!setMeasurementCondition(_cfg.temperature_avg, _cfg.pressure_avg) ||
+        !setFilterCoeff(_cfg.filter)) {
+        M5_LIB_LOGE("Failed to settings");
         return false;
     }
 
-    // Start periodic
-    return setWeathermonitoring() &&
-           setStandbyTime(qmp6988::StandbyTime::Time1sec) &&
-           setPowerMode(qmp6988::PowerMode::Normal);
+    return _cfg.start_periodic ? (setStandbyTime(_cfg.standby_time) &&
+                                  startPeriodicMeasurement())
+                               : setPowerMode(qmp6988::PowerMode::Force);
 }
 
 void UnitQMP6988::update() {
@@ -139,6 +141,20 @@ void UnitQMP6988::update() {
             _updated = false;
         }
     }
+}
+
+bool UnitQMP6988::startPeriodicMeasurement() {
+    if (inPeriodic()) {
+        return false;
+    }
+    return setPowerMode(qmp6988::PowerMode::Normal);
+}
+
+bool UnitQMP6988::stopPeriodicMeasurement() {
+    if (!inPeriodic()) {
+        return false;
+    }
+    return setPowerMode(qmp6988::PowerMode::Force);
 }
 
 bool UnitQMP6988::readMeasurement() {
@@ -292,11 +308,6 @@ bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
 }
 
 bool UnitQMP6988::reset() {
-    uint8_t v{};
-    return writeRegister8(RESET, v);
-}
-
-bool UnitQMP6988::softReset() {
     uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
     auto ret = writeRegister8(RESET, v);
     m5::utility::delay(10);  // Need delay
@@ -318,7 +329,9 @@ bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
         _pressureAvg = static_cast<qmp6988::Average>((cond & pressure_mask) >>
                                                      pressure_shift);
         _mode        = mode_table[cond & mode_mask];
-        _periodic    = _mode == qmp6988::PowerMode::Normal;
+        _periodic    = (_mode == qmp6988::PowerMode::Normal);
+
+        // M5_LIB_LOGV("%d,%d,%d,%d", _tempAvg, _pressureAvg, _mode, _periodic);
         return true;
     }
     return false;
@@ -345,7 +358,6 @@ bool UnitQMP6988::wait_measurement() {
             m5::utility::delay(1);
         } while (m5::utility::millis() <= timeout);
     }
-
     return false;
 }
 

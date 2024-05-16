@@ -35,12 +35,18 @@ const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
 const types::uid_t UnitSHT30::attr{0};
 
 bool UnitSHT30::begin() {
-    auto r = stopPeriodicMeasurement();
-    if (!r) {
-        M5_LIB_LOGD("Failed to stop");
+    if (!stopPeriodicMeasurement()) {
+        M5_LIB_LOGE("Failed to stop");
         return false;
     }
-    return startPeriodicMeasurement();
+
+    auto r = _cfg.start_heater ? startHeater() : stopHeater();
+    if (!r) {
+        M5_LIB_LOGE("Failed to heater %d", _cfg.start_heater);
+        return false;
+    }
+    return _cfg.start_periodic ? startPeriodicMeasurement(_cfg.mps, _cfg.rep)
+                               : true;
 }
 
 void UnitSHT30::update() {

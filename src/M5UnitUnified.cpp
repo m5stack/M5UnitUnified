@@ -101,7 +101,7 @@ bool UnitUnified::begin() {
 void UnitUnified::update() {
     // Order of registration
     for (auto&& u : _units) {
-        if (!u->_cfg.self_update && u->_begun) {
+        if (!u->_uccfg.self_update && u->_begun) {
             u->update();
         }
     }

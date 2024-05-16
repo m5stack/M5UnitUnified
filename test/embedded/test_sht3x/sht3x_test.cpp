@@ -56,15 +56,6 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
         // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
         // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
 
-#if 0
-        // SCD40/41 are same default address
-        Wire.beginTransmission(m5::unit::UnitSCD40::DEFAULT_ADDRESS);
-        m5::utility::delay(1);
-        if (Wire.endTransmission() != 0) {
-            FAIL() << "SCD4x was not connected";
-            GTEST_SKIP();
-        }
-#endif
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
         // printf("Test as %s\n", ustr.c_str());
@@ -260,6 +251,7 @@ TEST_P(TestSHT3x, Reset) {
     EXPECT_TRUE(unit.startHeater());
 
     EXPECT_TRUE(unit.softReset());
+
     EXPECT_TRUE(unit.getStatus(s));
     EXPECT_FALSE(s.alertPending());
     EXPECT_FALSE(s.heater());

@@ -33,8 +33,10 @@ class UnitPaHub : public Component {
     UnitPaHub(UnitPaHub&& o);
     UnitPaHub& operator=(UnitPaHub&& o);
 
-    uint8_t getCurrentChannel() const { return _current; }
-    
+    uint8_t getCurrentChannel() const {
+        return _current;
+    }
+
    protected:
     inline virtual const char* unit_device_name() const override {
         return name;
@@ -51,8 +53,8 @@ class UnitPaHub : public Component {
 
    protected:
     std::array<std::unique_ptr<Adapter>, +MAX_CHANNEL>
-        _adapters{};  // For children
-    uint8_t _current{}; // CurrentChannel 0:No current 1~MAX_CHANNEL: channel
+        _adapters{};     // For children
+    uint8_t _current{};  // current channel 0 ~ MAX_CHANNEL
 };
 
 }  // namespace unit
