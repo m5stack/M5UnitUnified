@@ -81,7 +81,7 @@ namespace m5 { namespace stl {
 #endif
 
 #define TL_OPTIONAL_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                                     \
-    tl::detail::is_trivially_copy_constructible<T>::value
+  stl::detail::is_trivially_copy_constructible<T>::value
 #define TL_OPTIONAL_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                                        \
   std::is_trivially_copy_assignable<T>::value
 #define TL_OPTIONAL_IS_TRIVIALLY_DESTRUCTIBLE(T) std::is_trivially_destructible<T>::value

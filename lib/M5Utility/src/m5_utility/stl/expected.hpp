@@ -100,7 +100,7 @@ struct is_trivially_copy_constructible<std::vector<T, A>> : std::false_type {};
 #endif
 
 #define TL_EXPECTED_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T)                         \
-  tl::detail::is_trivially_copy_constructible<T>
+  stl::detail::is_trivially_copy_constructible<T>
 #define TL_EXPECTED_IS_TRIVIALLY_COPY_ASSIGNABLE(T)                            \
   std::is_trivially_copy_assignable<T>
 #define TL_EXPECTED_IS_TRIVIALLY_DESTRUCTIBLE(T)                               \
