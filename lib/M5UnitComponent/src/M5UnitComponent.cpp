@@ -35,7 +35,7 @@ Component::Component(Component&& o)
       _child{o._child} {
     o._manager = nullptr;
     o._order   = 0;
-    o._uccfg     = {};
+    o._uccfg   = {};
     o._channel = -1;
     o._addr    = 0x00;
     o._parent = o._next = o._prev = o._child = nullptr;
@@ -46,7 +46,7 @@ Component& Component::operator=(Component&& o) {
         _manager = o._manager;
         _adapter = std::move(o._adapter);
         _order   = o._order;
-        _uccfg     = o._uccfg;
+        _uccfg   = o._uccfg;
         _channel = o._channel;
         _addr    = o._addr;
         _parent  = o._parent;
@@ -57,7 +57,7 @@ Component& Component::operator=(Component&& o) {
         o._manager = nullptr;
         o._adapter = nullptr;
         o._order   = 0;
-        o._uccfg     = {};
+        o._uccfg   = {};
         o._channel = -1;
         o._addr    = 0x00;
         o._parent = o._next = o._prev = o._child = nullptr;
@@ -142,6 +142,7 @@ Component* Component::child(const uint8_t ch) const {
         if (it->channel() == ch) {
             return const_cast<Component*>(&*it);
         }
+        ++it;
     }
     return nullptr;
 }
@@ -223,6 +224,7 @@ bool Component::readRegister16(const Reg reg, uint16_t& result,
 template <typename Reg>
 bool Component::writeRegister(const Reg reg, const uint8_t* buf,
                               const size_t len) {
+#if 1
     static_assert(sizeof(reg) <= 2, "overflow");
     static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
                   "Type must be unsigned integer");
@@ -235,6 +237,13 @@ bool Component::writeRegister(const Reg reg, const uint8_t* buf,
 
     return (writeWithTransaction(wbuf, sizeof(wbuf)) ==
             m5::hal::error::error_t::OK);
+#else
+    m5::types::big_uint16_t r(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
+    return writeWithTransaction(r.data(), sizeof(Reg)) ==
+               m5::hal::error::error_t::OK &&
+           writeWithTransaction(buf, len) == m5::hal::error::error_t::OK;
+
+#endif
 }
 
 template <typename Reg>

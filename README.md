@@ -2,6 +2,8 @@
 
 Work in progress  
 
+**Currently this document is a developer's memo.**
+
  The operation of TwoWire-based and experimental M5HAL-based components can be checked.  
 
 The final implementation will only use the M5HAL, but it has also been made to work on a TwoWire-based, so that development and testing can proceed without reliance on the M5HAL.
@@ -22,27 +24,37 @@ M5UnitComponent depends it.
 ### Add to existing libraries in the future
 
 - lib/M5Unit-ENV  
-UnitComponent for SCD40 and SCD41
+UnitComponent for SCD4x, SHT30, QMP6988...
 
-## How to try examples (PlatformIO only)
-- env:example\_SCD40\_foo
+## How to try examples (PlatformIO only) 
 
 If you want to try it on other devices, edit the ini accordingly.  
 **lib Once the repositories for each of the libraries below are in place, they can be compiled by ArduinoIDE.**
 
-### behavioural change
+**Note that the M5HAL experimental version is not up-to-date and may have glitches**
+
+### [env:example\_SCD40\_foo]
 
 [examples/SCD4x/SCD4x.cpp](examples/SCD4x/SCD4x.cpp )
 
 ```cpp
 #define USING_PAHUB (2) // Connection channel number for use via PaHub.
-#define USING_M5HAL  // When using M5HAL
+#define USING_M5HAL  // Using M5HAL is defined
 ```
 - Switch between TwoWire and M5HAL versions with and without USING_M5HAL defines
 - Switch between directly connected and via PaHub versions with and without USING_PAHUB defines  
 **Connecting the SCD40 to the USING_PAHUB numbered channel.**
 
+### [env:example\_ENV3\_foo]
 
+[examples/UnitENV\_III/UnitENV\_III.cpp](examples/UnitENV_III/UnitENV_III.cpp)
+
+```cpp
+#define USING_SINGLE_SHOT // Using single shot measurement If defined
+#define USING_ENV3 // Using combined unit if defined
+```
+- Switch between single instance versions of each chip and Env3 instance versions
+- Switch between periodic and voluntary measurements
 
 ## How to try UnitTest (PlatformIO only)
 This should be done with a direct connection, not via the Hub.
@@ -53,8 +65,18 @@ This should be done with a direct connection, not via the Hub.
 ### Choose target unit
 ```ini
 ;test_filter= embedded/test_sht3x
+;test_filter= embedded/test_qmp6988
 test_filter= embedded/test_scd4x
 ```
+
+## M5UnitComponent
+- Basically, a unit is created for each chip. (UnitSHT30, UnitQMP6988...)
+- When multiple chips are mounted, as in the case of ENVIII, it can be expressed as a form in which ENVIII holds each chip.  
+See also [unit\_ENV3.hpp](lib/M5Unit-ENV/src/unit/unit_ENV3.hpp) 
+
+**Should we create a unit with a product name, even if it is a single chip like a CO2 unit?**
+
+
 
 
 ## API Documentation 

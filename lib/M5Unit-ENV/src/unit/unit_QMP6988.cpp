@@ -111,12 +111,21 @@ bool UnitQMP6988::begin() {
         return false;
     }
 
+    /*
     if (!reset() || !read_calibration(_calibration)) {
+        M5_LIB_LOGE("Failed to reset or read_calibration");
+        return false;
+    }
+    */
+
+    if (!reset()) {
+        M5_LIB_LOGE("Failed to reset");
+        return false;
+    }
+    if (!read_calibration(_calibration)) {
         M5_LIB_LOGE("Failed to read_calibration");
         return false;
     }
-
-    M5_LIB_LOGW("%d,%d", _cfg.temperature_avg, _cfg.pressure_avg);
 
     if (!setMeasurementCondition(_cfg.temperature_avg, _cfg.pressure_avg) ||
         !setFilterCoeff(_cfg.filter)) {

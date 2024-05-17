@@ -12,17 +12,34 @@
 #include <M5UnitUnified.h>
 #include <unit/unit_SHT3x.hpp>
 #include <unit/unit_QMP6988.hpp>
+#include <unit/unit_ENV3.hpp>
 
+//
 // Using single shot measurement If defined
-//#define USING_SINGLE_SHOT
+// #define USING_SINGLE_SHOT
+// Using combined unit if defined
+// #define USING_ENV3
 
 namespace {
 auto& lcd = M5.Display;
-
 m5::unit::UnitUnified Units;
+
+#if defined(USING_ENV3)
+#pragma message "Using combined unit(ENV3)"
+m5::unit::UnitENV3 unitENV3;
+#else
+#pragma message "Using each unit"
 m5::unit::UnitSHT30 unitSHT30;
 m5::unit::UnitQMP6988 unitQMP6988;
+#endif
 
+#if defined(USING_ENV3)
+auto& sht30   = unitENV3.sht30;
+auto& qmp6988 = unitENV3.qmp6988;
+#else
+auto& sht30   = unitSHT30;
+auto& qmp6988 = unitQMP6988;
+#endif
 }  // namespace
 
 void setup() {
@@ -34,20 +51,49 @@ void setup() {
 
 #if defined(USING_SINGLE_SHOT)
     {
-        auto cfg           = unitSHT30.config();
+        auto cfg           = sht30.config();
         cfg.start_periodic = false;
-        unitSHT30.config(cfg);
+        sht30.config(cfg);
     }
     {
-        auto cfg = unitQMP6988.config();
+        auto cfg           = qmp6988.config();
         cfg.start_periodic = false;
-        unitQMP6988.config(cfg);
+        qmp6988.config(cfg);
     }
 #endif
 
+#if defined(USING_ENV3)
 #if defined(USING_M5HAL)
 #pragma message "Using M5HAL"
-    // Using M5HAL
+    m5::hal::bus::I2CBusConfig i2c_cfg;
+    i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
+    i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
+    auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
+    if (!Units.add(unitENV3, i2c_bus ? i2c_bus.value() : nullptr) ||
+        !Units.begin()) {
+        M5_LOGE("Failed to begin");
+        lcd.clear(TFT_RED);
+        while (true) {
+            m5::utility::delay(10000);
+        }
+    }
+#else
+#pragma message "Using Wire"
+    Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+
+    if (!Units.add(unitENV3, Wire) || !Units.begin()) {
+        M5_LOGE("Failed to begin");
+        lcd.clear(TFT_RED);
+        while (true) {
+            m5::utility::delay(10000);
+        }
+    }
+#endif
+
+#else
+
+#if defined(USING_M5HAL)
+#pragma message "Using M5HAL"
     m5::hal::bus::I2CBusConfig i2c_cfg;
     i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
     i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
@@ -63,7 +109,6 @@ void setup() {
     }
 #else
 #pragma message "Using Wire"
-    // Using TwoWire
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
     if (!Units.add(unitSHT30, Wire) || !Units.add(unitQMP6988, Wire) ||
         !Units.begin()) {
@@ -74,26 +119,13 @@ void setup() {
         }
     }
 #endif
-
-#if 0
-    // This is the imagined code that will happen after M5HAL is serviced and
-    // M5Unified is modified accordingly.
-    if (!M5.Units.add(unitSHT30, M5.PortA) ||
-        !M5.Units.add(unitQMP6988, M5.PortA) || !M5.Units.begin()) {
-        M5_LOGE("Failed to begin");
-        lcd.clear(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
-    }
 #endif
 
     M5_LOGI("M5UnitUnified has been begun");
     M5_LOGI("%s", Units.debugInfo().c_str());
-
-    M5_LOGI("%d,%d", unitQMP6988.temperatureAverage(),
-            unitQMP6988.pressureAverage());
-
+#if defined(USING_SINGLE_SHOT)
+    M5_LOGI("\n>>> Click BtnA to single shot measurement");
+#endif
     lcd.clear(TFT_DARKGREEN);
 }
 
@@ -101,31 +133,25 @@ void loop() {
     M5.update();
     Units.update();
 
-#if 0    
-    // This is the imagined code that will happen after M5HAL is serviced and
-    // M5Unified is modified accordingly.
-    M5.update(); // Call M5.Units.update() in it.
-#endif
-
 #if defined(USING_SINGLE_SHOT)
     if (M5.BtnA.wasClicked()) {
-        if (unitSHT30.measurementSingleShot()) {
+        if (sht30.measurementSingleShot()) {
             M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f",
-                    unitSHT30.temperature(), unitSHT30.humidity());
+                    sht30.temperature(), sht30.humidity());
         }
-        if (unitQMP6988.readMeasurement()) {
+        if (qmp6988.readMeasurement()) {
             M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
-                    unitQMP6988.temperature(), unitQMP6988.pressure());
+                    qmp6988.temperature(), qmp6988.pressure());
         }
     }
 #else
-    if (unitSHT30.updated()) {
-        M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f",
-                unitSHT30.temperature(), unitSHT30.humidity());
+    if (sht30.updated()) {
+        M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f", sht30.temperature(),
+                sht30.humidity());
     }
-    if (unitQMP6988.updated()) {
+    if (qmp6988.updated()) {
         M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
-                unitQMP6988.temperature(), unitQMP6988.pressure());
+                qmp6988.temperature(), qmp6988.pressure());
     }
 #endif
 }

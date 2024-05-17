@@ -39,7 +39,8 @@ bool UnitUnified::add(Component& u, TwoWire& wire) {
         return false;
     }
 
-    M5_LIB_LOGD("Add [%s]:0x%02x", u.deviceName(), u.address());
+    M5_LIB_LOGI("Add [%s]:0x%02x %zu", u.deviceName(), u.address(),
+                u.childrenSize());
     u._manager = this;
     u.assign(wire);
     u._order = ++_registerCount;
@@ -57,7 +58,6 @@ bool UnitUnified::add(Component& u, m5::unit::Adapter* ad) {
         M5_LIB_LOGE("Adapter null");
         return false;
     }
-
     M5_LIB_LOGD("Add [%s]:0x%02x", u.deviceName(), u.address());
 
     u._manager = this;
@@ -126,9 +126,8 @@ std::string UnitUnified::make_unit_info(const Component* u,
     if (u->hasChildren()) {
         s += make_unit_info(u->_child, indent + 1);
     }
-
     u = u->_next;
-    return u ? make_unit_info(u, indent) : s;
+    return u ? s += make_unit_info(u, indent) : s;
 }
 
 }  // namespace unit
