@@ -73,7 +73,7 @@ class UnitSCD40 : public Component {
       in update()
       @return Updated time (Unit: ms)
     */
-    inline unsigned long updatedMilliss() const {
+    inline unsigned long updatedMillis() const {
         return _latest;
     }
     //! @brief Latest measured CO2 concentration (ppm)
