@@ -1,6 +1,6 @@
 # M5UnitUnified
 
-Work in progress  
+**Work in progress**  
 
 **Currently this document is a developer's memo.**
 
@@ -25,6 +25,18 @@ M5UnitComponent depends it.
 
 - lib/M5Unit-ENV  
 UnitComponent for SCD4x, SHT30, QMP6988...
+
+
+## Implemented
+
+|Body \\ Unit|SCD40|SHT30|QMP6988|
+|---|---|---|---|
+|Core|test,example|test,example|test,example|
+|Core2|test,example|test,example|test,example|
+|Core3|test,example|test,example|test,example|
+|StampS3|test,example|test,example|test,example|
+|AtomS3|test,example|test,example|test,example|
+|NanoC6|test,example|test,example|test,example|
 
 ## How to try examples (PlatformIO only) 
 
