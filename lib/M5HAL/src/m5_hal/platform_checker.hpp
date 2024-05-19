@@ -31,7 +31,6 @@
     #include <sdkconfig.h>
     #endif
     #if defined ( CONFIG_IDF_TARGET )
-#pragma message "TARGET?"
         #if defined ( CONFIG_IDF_TARGET_ESP32C3 )
             #define M5HAL_TARGET_PLATFORM_NUMBER M5HAL_PLATFORM_NUMBER_ESP32C3
             #define M5HAL_TARGET_PLATFORM_PATH m5_hal/platforms/espressif/esp32c3

@@ -184,7 +184,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
                              const uint32_t delayMillis) {
     if (!writeRegister(reg)) {
@@ -201,7 +201,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::readRegister8(const Reg reg, uint8_t& result,
                               const uint32_t delayMillis) {
     return readRegister(reg, &result, 1, delayMillis);
@@ -211,7 +211,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::readRegister16(const Reg reg, uint16_t& result,
                                const uint32_t delayMillis) {
     m5::types::big_uint16_t buf{};
@@ -226,7 +226,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::writeRegister(const Reg reg, const uint8_t* buf,
                               const size_t len) {
 #if 1
@@ -255,7 +255,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::writeRegister8(const Reg reg, const uint8_t value) {
     return writeRegister(reg, &value, 1);
 }
@@ -264,7 +264,7 @@ template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value &&
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
-                                  std::nullptr_t>::type = nullptr>
+                                  std::nullptr_t>::type>
 bool Component::writeRegister16(const Reg reg, const uint16_t value) {
     m5::types::big_uint16_t u16{value};
     return writeRegister(reg, u16.data(), u16.size());

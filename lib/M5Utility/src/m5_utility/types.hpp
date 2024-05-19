@@ -10,9 +10,10 @@
 #define M5_UTILITY_TYPES_HPP
 
 #include <cstdint>
+#include <cstddef>
 #include <utility>
 #include <tuple>
-#include "./stl/endianness.hpp"
+#include "stl/endianness.hpp"
 
 namespace m5 {
 namespace types {

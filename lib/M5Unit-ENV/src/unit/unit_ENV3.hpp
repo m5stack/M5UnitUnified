@@ -9,6 +9,8 @@
 #ifndef M5_UNIT_ENV_UNIT_ENV3_HPP
 #define M5_UNIT_ENV_UNIT_ENV3_HPP
 
+#include <M5UnitComponent.hpp>
+#include <array>
 #include "unit_SHT3x.hpp"
 #include "unit_QMP6988.hpp"
 

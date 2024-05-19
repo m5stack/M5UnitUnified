@@ -77,7 +77,13 @@ class WriteDataWithCRC16 : public WithCRC {
       @brief Set value and calculate CRC
      */
     explicit WriteDataWithCRC16(const uint16_t v = 0) {
-        new (_buf) m5::types::big_uint16_t(v);  // placement new
+#if 0
+        new (_buf) m5::types::big_uint16_t(v);  // Placement new
+#else
+        m5::types::big_uint16_t tmp(v);
+        _buf[0] = tmp.u8[0];
+        _buf[1] = tmp.u8[1];
+#endif
         _buf[2] = crc8.get(_buf, 2);
     }
     //! @brief Gets the const pointer
