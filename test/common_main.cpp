@@ -25,7 +25,7 @@
 #elif defined(_MSC_VER)
 #pragma message "MSVC"
 #elif defined(__BORLANDC__)
-#pragma message "BORANDC"
+#pragma message "BORLANDC"
 #elif defined(__MINGW32__) || defined(__MINGW64__)
 #pragma message "MINGW"
 #elif defined(__INTEL_COMPILER)
