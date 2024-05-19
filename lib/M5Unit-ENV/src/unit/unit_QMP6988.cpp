@@ -8,6 +8,7 @@
 */
 #include "unit_QMP6988.hpp"
 #include <M5Utility.hpp>
+#include <limits> // NaN
 
 using namespace m5::utility::mmh3;
 
@@ -167,6 +168,8 @@ bool UnitQMP6988::stopPeriodicMeasurement() {
 }
 
 bool UnitQMP6988::readMeasurement() {
+    _temperature = _pressure = std::numeric_limits<float>::quiet_NaN();
+
     if (_mode == qmp6988::PowerMode::Sleep) {
         M5_LIB_LOGW("Sleeping");
         return false;
@@ -195,8 +198,12 @@ bool UnitQMP6988::readMeasurement() {
         int16_t t256 = convert_temperature256(dt, _calibration);
         int32_t p16  = convert_pressure16(dp, t256, _calibration);
 
-        _temperature = (float)t256 / 256.f;
-        _pressure    = (float)p16 / 16.0f;
+        if (_tempAvg != qmp6988::Average::Skip) {
+            _temperature = (float)t256 / 256.f;
+        }
+        if (_pressureAvg != qmp6988::Average::Skip) {
+            _pressure = (float)p16 / 16.0f;
+        }
         return true;
     }
 
@@ -307,7 +314,7 @@ bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
     uint8_t v{};
     if (get_io_setup(v)) {
         v &= ~standby_mask;
-        v |= m5::stl::to_underlying(st) << standby_shift;
+        v |= (m5::stl::to_underlying(st) << standby_shift) & standby_mask;
         if (set_io_setup(v)) {
             _interval = interval_table[m5::stl::to_underlying(st)];
             return true;
@@ -354,8 +361,12 @@ bool UnitQMP6988::set_io_setup(const uint8_t s) {
     return writeRegister8(IO_SETUP, s);
 }
 
+// Wait until measured if Force mode
 bool UnitQMP6988::wait_measurement() {
-    if (_mode != qmp6988::PowerMode::Sleep) {
+    if (_mode == qmp6988::PowerMode::Normal) {
+        return true;
+    }
+    if (_mode == qmp6988::PowerMode::Force) {
         auto start_at = m5::utility::millis();
         auto timeout  = start_at + 1000;  // 1 sec
 

@@ -305,7 +305,7 @@ constexpr uint16_t SINGLE_SHOT_DISABLE_STRETCH_HIGH{0x2400};
 constexpr uint16_t SINGLE_SHOT_DISABLE_STRETCH_MEDIUM{0x240B};
 constexpr uint16_t SINGLE_SHOT_DISABLE_STRETCH_LOW{0x2416};
 // Measurement Commands for Periodic Data Acquisition Mode
-constexpr uint16_t START_PERIODIC_MPS_HALF_HIGHT{0x2032};
+constexpr uint16_t START_PERIODIC_MPS_HALF_HIGH{0x2032};
 constexpr uint16_t START_PERIODIC_MPS_HALF_MEDIUM{0x2024};
 constexpr uint16_t START_PERIODIC_MPS_HALF_LOW{0x202f};
 constexpr uint16_t START_PERIODIC_MPS_1_HIGH{0x2130};
@@ -329,8 +329,8 @@ constexpr uint16_t STOPE_HEATER{0x3066};
 constexpr uint16_t READ_STATUS{0xF32D};
 constexpr uint16_t CLEAR_STATUS{0x3041};
 // Serial
-constexpr uint16_t GET_SEREAL_NUMBER_ENABLE_STRETCH{0x3780};
-constexpr uint16_t GET_SEREAL_NUMBER_DISABLE_STRETCH{0x3780};
+constexpr uint16_t GET_SERIAL_NUMBER_ENABLE_STRETCH{0x3780};
+constexpr uint16_t GET_SERIAL_NUMBER_DISABLE_STRETCH{0x3682};
 }  // namespace command
 }  // namespace sht3x
 ///@endcond

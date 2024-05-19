@@ -11,6 +11,7 @@
 
 #include <m5_utility/types.hpp>
 #include <m5_utility/crc.hpp>
+#include <cassert>
 
 namespace m5 {
 namespace unit {

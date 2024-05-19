@@ -8,6 +8,7 @@
 */
 #include "unit_SHT3x.hpp"
 #include <M5Utility.hpp>
+#include <limits> // NaN
 
 using namespace m5::utility::mmh3;
 
@@ -37,6 +38,11 @@ const types::uid_t UnitSHT30::attr{0};
 bool UnitSHT30::begin() {
     if (!stopPeriodicMeasurement()) {
         M5_LIB_LOGE("Failed to stop");
+        return false;
+    }
+
+    if (!softReset()) {
+        M5_LIB_LOGE("Failed to reset");
         return false;
     }
 
@@ -91,6 +97,8 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
     }
     if (!stretch) {
         m5::utility::delay(ms[m5::stl::to_underlying(rep)]);
+    } else {
+        m5::utility::delay(1);  // must need?
     }
     return read_measurement();
 }
@@ -99,7 +107,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
                                          const sht3x::Repeatability rep) {
     constexpr uint16_t cmd[] = {
         // 0.5 mps
-        START_PERIODIC_MPS_HALF_HIGHT,
+        START_PERIODIC_MPS_HALF_HIGH,
         START_PERIODIC_MPS_HALF_MEDIUM,
         START_PERIODIC_MPS_HALF_LOW,
         // 1 mps
@@ -131,7 +139,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
         cmd[m5::stl::to_underlying(mps) * 3 + m5::stl::to_underlying(rep)]);
     if (_periodic) {
         _interval = ms[m5::stl::to_underlying(mps)];
-        delay1();
+        m5::utility::delay(15);
     }
     return _periodic;
 }
@@ -139,7 +147,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
 bool UnitSHT30::stopPeriodicMeasurement() {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
-        delay1();
+        m5::utility::delay(15);
         return true;
     }
     return false;
@@ -150,14 +158,18 @@ bool UnitSHT30::readMeasurement() {
         M5_LIB_LOGD("Periodic measurements are NOT running");
         return false;
     }
-    if (!writeRegister(READ_MEASUREMENT)) return false;
-    return read_measurement() && delay1();
+
+    if (!writeRegister(READ_MEASUREMENT)) {
+        return false;
+    }
+    m5::utility::delay(1);
+    return read_measurement();
 }
 
 bool UnitSHT30::accelerateResponseTime() {
     if (writeRegister(ACCELERATED_RESPONSE_TIME)) {
         _interval = 1000 / 4;  // 4mps
-        delay1();
+        m5::utility::delay(15);
         return true;
     }
     return false;
@@ -204,23 +216,24 @@ bool UnitSHT30::stopHeater() {
 bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
     serialNumber = 0;
     if (inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are running");
-        return false;
-    }
-    if (!writeRegister(GET_SEREAL_NUMBER_ENABLE_STRETCH)) {
+        M5_LIB_LOGE("Periodic measurements are running");
         return false;
     }
 
-    // m5::utility::delay(1);
+    if (!writeRegister(GET_SERIAL_NUMBER_ENABLE_STRETCH)) {
+        return false;
+    }
+
+    m5::utility::delay(1);
 
     std::array<uint8_t, 6> rbuf;
     return readWithTransaction(
         rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-            utility::ReadDataWithCRC16 data(rbuf.data(), 3);
+            utility::ReadDataWithCRC16 data(rbuf.data(), 2);
             bool valid[2] = {data.valid(0), data.valid(1)};
             if (valid[0] && valid[1]) {
-                for (uint_fast8_t i = 0; i < 3; ++i) {
-                    serialNumber |= ((uint32_t)data.value(i >> 1))
+                for (uint_fast8_t i = 0; i < 2; ++i) {
+                    serialNumber |= ((uint32_t)data.value(i))
                                     << (16U * (1 - i));
                 }
                 return true;
@@ -250,6 +263,9 @@ bool UnitSHT30::getSerialNumber(char* serialNumber) {
 
 bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
+
+    _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
+    
     return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
         utility::ReadDataWithCRC16 data(rbuf.data(), 2);
         bool valid[2] = {data.valid(0), data.valid(1)};

@@ -39,7 +39,7 @@ bool UnitUnified::add(Component& u, TwoWire& wire) {
         return false;
     }
 
-    M5_LIB_LOGI("Add [%s]:0x%02x %zu", u.deviceName(), u.address(),
+    M5_LIB_LOGD("Add [%s]:0x%02x %zu", u.deviceName(), u.address(),
                 u.childrenSize());
     u._manager = this;
     u.assign(wire);

@@ -14,6 +14,7 @@
 #include <M5UnitUnified.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <chrono>
+#include <cmath>
 
 namespace {
 // flot t uu int16 (temperature)
@@ -44,7 +45,11 @@ class TestQMP6988 : public ::testing::TestWithParam<bool> {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
         // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        if(!GetParam())
+        {
+            Wire.end();
+            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        }
 
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
@@ -307,41 +312,124 @@ TEST_P(TestQMP6988, Status) {
     //    M5_LOGI("Measure:%d, OTP:%d", s.measure(), s.OTP());
 }
 
-TEST_P(TestQMP6988, Measurement) {
+TEST_P(TestQMP6988, SingleShot) {
     SCOPED_TRACE(ustr);
 
     unit.setPowerMode(m5::unit::qmp6988::PowerMode::Force);
-    m5::utility::delay(10);
 
     m5::unit::qmp6988::Average t;
     m5::unit::qmp6988::Average p;
     m5::unit::qmp6988::PowerMode m;
 
-    {
-        SCOPED_TRACE("22bit");
-        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg1,
-                                     m5::unit::qmp6988::Average::Avg1);
+    constexpr m5::unit::qmp6988::Average a_table[] = {
+        m5::unit::qmp6988::Average::Skip,  m5::unit::qmp6988::Average::Avg1,
+        m5::unit::qmp6988::Average::Avg2,  m5::unit::qmp6988::Average::Avg4,
+        m5::unit::qmp6988::Average::Avg8,  m5::unit::qmp6988::Average::Avg16,
+        m5::unit::qmp6988::Average::Avg32, m5::unit::qmp6988::Average::Avg64,
+    };
 
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+    for (auto&& ta : a_table) {
+        for (auto&& pa : a_table) {
+            auto s = m5::utility::formatString("Avg:%u/%u", ta, pa);
+            SCOPED_TRACE(s);
 
-        EXPECT_TRUE(unit.readMeasurement());
+            EXPECT_TRUE(unit.setMeasurementCondition(ta, pa));
+            EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+            EXPECT_EQ(t, ta);
+            EXPECT_EQ(p, pa);
+
+            if (ta == m5::unit::qmp6988::Average::Skip &&
+                pa == m5::unit::qmp6988::Average::Skip) {
+                EXPECT_FALSE(unit.readMeasurement());
+            } else {
+                EXPECT_TRUE(unit.readMeasurement());
+            }
+
+            if (ta != m5::unit::qmp6988::Average::Skip) {
+                EXPECT_FALSE(std::isnan(unit.temperature()));
+            } else {
+                EXPECT_TRUE(std::isnan(unit.temperature()));
+            }
+            if (pa != m5::unit::qmp6988::Average::Skip) {
+                EXPECT_FALSE(std::isnan(unit.pressure()));
+            } else {
+                EXPECT_TRUE(std::isnan(unit.pressure()));
+            }
+        }
     }
+}
 
-    {
-        SCOPED_TRACE("23bit");
-        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg2,
-                                     m5::unit::qmp6988::Average::Avg2);
+TEST_P(TestQMP6988, Periodic) {
+    constexpr m5::unit::qmp6988::StandbyTime st_table[] = {
+        m5::unit::qmp6988::StandbyTime::Time1ms,
+        m5::unit::qmp6988::StandbyTime::Time5ms,
+        m5::unit::qmp6988::StandbyTime::Time50ms,
+        m5::unit::qmp6988::StandbyTime::Time250ms,
+        m5::unit::qmp6988::StandbyTime::Time500ms,
+        m5::unit::qmp6988::StandbyTime::Time1sec,
+        m5::unit::qmp6988::StandbyTime::Time2sec,
+        m5::unit::qmp6988::StandbyTime::Time4sec,
+    };
 
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
-        EXPECT_TRUE(unit.readMeasurement());
-    }
+    constexpr std::chrono::milliseconds timeout_table[] = {
+        std::chrono::milliseconds(1+1),    std::chrono::milliseconds(5),
+        std::chrono::milliseconds(50),   std::chrono::milliseconds(250),
+        std::chrono::milliseconds(500),  std::chrono::milliseconds(1000),
+        std::chrono::milliseconds(2000), std::chrono::milliseconds(4000),
+    };
 
-    {
-        SCOPED_TRACE("24bit");
-        unit.setMeasurementCondition(m5::unit::qmp6988::Average::Avg32,
-                                     m5::unit::qmp6988::Average::Avg32);
+    
+    for (auto&& st : st_table) {
+        EXPECT_TRUE(unit.setStandbyTime(st));
+        m5::unit::qmp6988::StandbyTime s;
+        EXPECT_TRUE(unit.getStandbyTime(s));
+        EXPECT_EQ(s, st);
 
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
-        EXPECT_TRUE(unit.readMeasurement());
+        //        M5_LOGE("=======");
+
+
+        auto timeout  = timeout_table[m5::stl::to_underlying(st)];
+        auto start_at = std::chrono::steady_clock::now();
+
+#if 0        
+        // Wait until the latest measurement
+        {
+            bool done{};
+            m5::unit::qmp6988::Status s{};
+            do {
+                if (unit.getStatus(s) && !s.measure()) {
+                    done = true;
+                    start_at = std::chrono::steady_clock::now();
+                    break;
+                }
+            } while ((std::chrono::steady_clock::now() - start_at) <=
+                     std::chrono::milliseconds(5000));
+            if (!done) {
+                FAIL() << "Internal error";
+            }
+        }
+        #endif
+        
+        // Test
+        auto elapsed  = start_at;
+        bool done{};
+        do {
+            done = unit.readMeasurement();
+            //            M5_LIB_LOGE("%f/%f", unit.temperature(), unit.pressure());
+            elapsed = std::chrono::steady_clock::now();
+        } while (!done && (elapsed - start_at) <= timeout);
+
+        m5::utility::delay(1);
+        unit.readMeasurement();
+        //        M5_LIB_LOGE(">> %f/%f", unit.temperature(), unit.pressure());
+
+        auto e = std::chrono::duration_cast<std::chrono::microseconds>(
+            elapsed - start_at);
+
+        //        M5_LOGE("e:%lld", e.count());
+
+        EXPECT_TRUE(done);
+        EXPECT_LE(e, timeout) << "Elapsed:" << e.count()
+                              << "us Timeout:" << timeout.count() << "us";
     }
 }

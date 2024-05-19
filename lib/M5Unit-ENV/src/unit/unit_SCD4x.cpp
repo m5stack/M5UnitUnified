@@ -8,6 +8,7 @@
 */
 #include "unit_SCD4x.hpp"
 #include <M5Utility.hpp>
+#include <limits>  // NaN
 
 using namespace m5::utility::mmh3;
 
@@ -85,33 +86,13 @@ bool UnitSCD40::stopPeriodicMeasurement(const uint16_t delayMillis) {
     return false;
 }
 
-bool UnitSCD40::readMeasurement(void) {
+bool UnitSCD40::readMeasurement() {
     if (!getDataReadyStatus()) {
         M5_LIB_LOGD("Not ready");
         return false;
     }
-    if (!writeRegister(READ_MEASUREMENT)) {
-        return false;
-    }
 
-    m5::utility::delay(1);
-
-    std::array<uint8_t, 9> rbuf{};
-    return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
-        utility::ReadDataWithCRC16 data(rbuf.data(), 3);
-        bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
-
-        if (valid[0]) {
-            this->_co2 = data.value(0);
-        }
-        if (valid[1]) {
-            this->_temperature = -45 + Temperature::toFloat(data.value(1));
-        }
-        if (valid[2]) {
-            this->_humidity = 100.f * data.value(2) / 65536.f;
-        }
-        return valid[0] && valid[1] && valid[2];
-    });
+    return read_measurement();
 }
 
 bool UnitSCD40::setTemperatureOffset(const float offset,
@@ -338,7 +319,7 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
             bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
             if (valid[0] && valid[1] && valid[2]) {
                 for (uint_fast8_t i = 0; i < 3; ++i) {
-                    serialNumber |= ((uint64_t)data.value(i >> 1))
+                    serialNumber |= ((uint64_t)data.value(i))
                                     << (16U * (2 - i));
                 }
                 return true;
@@ -385,6 +366,35 @@ bool UnitSCD40::reInit(uint16_t delayMillis) {
     return ret;
 }
 
+// RHT only if false
+bool UnitSCD40::read_measurement(const bool all) {
+    if (!writeRegister(READ_MEASUREMENT)) {
+        return false;
+    }
+
+    m5::utility::delay(1);
+
+    _co2         = 0;
+    _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
+
+    std::array<uint8_t, 9> rbuf{};
+    return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf, &all] {
+        utility::ReadDataWithCRC16 data(rbuf.data(), 3);
+        bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
+
+        if (all && valid[0]) {
+            this->_co2 = data.value(0);
+        }
+        if (valid[1]) {
+            this->_temperature = -45 + Temperature::toFloat(data.value(1));
+        }
+        if (valid[2]) {
+            this->_humidity = 100.f * data.value(2) / 65536.f;
+        }
+        return (!all || valid[0]) && valid[1] && valid[2];
+    });
+}
+
 // class UnitSCD41
 const char UnitSCD41::name[] = "UnitSCD41";
 const types::uid_t UnitSCD41::uid{"UnitSCD41"_mmh3};
@@ -395,7 +405,11 @@ bool UnitSCD41::measureSingleShot(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return writeRegister(MEASURE_SINGLE_SHOT);
+    if (writeRegister(MEASURE_SINGLE_SHOT) && readMeasurement()) {
+        m5::utility::delay(5000);
+        return true;
+    }
+    return false;
 }
 
 bool UnitSCD41::measureSingleShotRHTOnly(void) {
@@ -403,7 +417,11 @@ bool UnitSCD41::measureSingleShotRHTOnly(void) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return writeRegister(MEASURE_SINGLE_SHOT_RHT_ONLY);
+    if (writeRegister(MEASURE_SINGLE_SHOT) && readMeasurement()) {
+        m5::utility::delay(50);
+        return true;
+    }
+    return false;
 }
 
 }  // namespace unit

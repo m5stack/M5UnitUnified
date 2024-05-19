@@ -180,13 +180,13 @@ m5::hal::error::error_t Component::writeWithTransaction(const uint8_t* data,
     return r;
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
                              const uint32_t delayMillis) {
-    static_assert(sizeof(reg) <= 2, "overflow");
-    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
-                  "Type must be unsigned integer");
-
     if (!writeRegister(reg)) {
         M5_LIB_LOGE("Failed to write");
         return false;
@@ -197,22 +197,23 @@ bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
     return (readWithTransaction(rbuf, len) == m5::hal::error::error_t::OK);
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::readRegister8(const Reg reg, uint8_t& result,
                               const uint32_t delayMillis) {
-    static_assert(sizeof(reg) <= 2, "overflow");
-    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
-                  "Type must be unsigned integer");
     return readRegister(reg, &result, 1, delayMillis);
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::readRegister16(const Reg reg, uint16_t& result,
                                const uint32_t delayMillis) {
-    static_assert(sizeof(reg) <= 2, "overflow");
-    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
-                  "Type must be unsigned integer");
-
     m5::types::big_uint16_t buf{};
     auto ret = readRegister(reg, buf.data(), buf.size(), delayMillis);
     if (ret) {
@@ -221,7 +222,11 @@ bool Component::readRegister16(const Reg reg, uint16_t& result,
     return ret;
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::writeRegister(const Reg reg, const uint8_t* buf,
                               const size_t len) {
 #if 1
@@ -246,12 +251,20 @@ bool Component::writeRegister(const Reg reg, const uint8_t* buf,
 #endif
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::writeRegister8(const Reg reg, const uint8_t value) {
     return writeRegister(reg, &value, 1);
 }
 
-template <typename Reg>
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type = nullptr>
 bool Component::writeRegister16(const Reg reg, const uint16_t value) {
     m5::types::big_uint16_t u16{value};
     return writeRegister(reg, u16.data(), u16.size());

@@ -45,9 +45,13 @@ class WireImpl : public Adapter::Impl {
         if (data) {
             _wire->beginTransmission(_addr);
             _wire->write(data, len);
-            return (_wire->endTransmission() == 0)
-                       ? m5::hal::error::error_t::OK
-                    : m5::hal::error::error_t::I2C_BUS_ERROR;
+
+            auto ret = _wire->endTransmission();
+            if (ret) {
+                M5_LIB_LOGD("%d endTransmission", ret);
+            }
+            return (ret == 0) ? m5::hal::error::error_t::OK
+                              : m5::hal::error::error_t::I2C_BUS_ERROR;
         }
         return m5::hal::error::error_t::UNKNOWN_ERROR;
     }
@@ -129,8 +133,7 @@ Adapter::Adapter(TwoWire& wire, const uint8_t addr)
 }
 #else
 #pragma message "Not support TwoWire on native"
-Adapter::Adapter(TwoWire& wire, const uint8_t addr)
-    : _impl{new Impl(addr)} {
+Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new Impl(addr)} {
     assert(_impl);
     M5_LIB_LOGE("Not support TwoWire on native");
 }

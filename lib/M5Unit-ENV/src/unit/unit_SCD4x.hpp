@@ -306,6 +306,9 @@ class UnitSCD40 : public Component {
         return attr;
     }
 
+    bool read_measurement(const bool all = true);
+
+    
    protected:
     constexpr static unsigned long SIGNAL_INTERVAL_MS{5000};
     constexpr static unsigned long SIGNAL_INTERVAL_LOW_MS{30 * 1000};

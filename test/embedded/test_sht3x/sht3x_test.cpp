@@ -33,7 +33,6 @@ std::tuple<const char*, m5::unit::sht3x::Repeatability, bool> ss_table[] = {
 
 }  // namespace
 
-#if 0
 class GlobalFixture : public ::testing::Environment {
        public:
         void SetUp() override {
@@ -45,21 +44,24 @@ class GlobalFixture : public ::testing::Environment {
     };
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture);
-#endif
 
 // bool true: Using bus false: using wire
 class TestSHT3x : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        if(!GetParam())
+        {
+            Wire.end();
+            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
+            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        }
 
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
-        // printf("Test as %s\n", ustr.c_str());
-
+        //printf("Test as %s\n", ustr.c_str());
+        
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
             GTEST_SKIP();
@@ -67,7 +69,6 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
     }
 
     virtual void TearDown() override {
-        // Wire.end();
     }
 
     virtual bool begin() {
@@ -94,9 +95,10 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
 };
 
 // true:Bus false:Wire
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
-//                         ::testing::Values(true, false));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
+ INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
+                         ::testing::Values(true, false));
+//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
+//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
 
 TEST_P(TestSHT3x, SingleShot) {
     SCOPED_TRACE(ustr);
@@ -116,7 +118,7 @@ TEST_P(TestSHT3x, SingleShot) {
 
         int cnt{10};  // repeat 10 times
         while (cnt--) {
-            EXPECT_TRUE(unit.measurementSingleShot(rep, stretch));
+            EXPECT_TRUE(unit.measurementSingleShot(rep, stretch)) << cnt;
         }
     }
 }
@@ -155,10 +157,10 @@ TEST_P(TestSHT3x, Periodic) {
              m5::unit::sht3x::Repeatability::Low},
         };
     constexpr std::chrono::milliseconds timeout_table[] = {
-        std::chrono::milliseconds(2000 + 1000),
-        std::chrono::milliseconds(1000 + 500),
-        std::chrono::milliseconds(500 + 250),
-        std::chrono::milliseconds(100 + 50),
+        std::chrono::milliseconds(2000 + 1),  // 0.5mps
+        std::chrono::milliseconds(1000 + 1),  // 1mps
+        std::chrono::milliseconds(500 + 1),   // 2mps
+        std::chrono::milliseconds(100 + 1),   // 10mps
     };
 
     {
@@ -169,33 +171,42 @@ TEST_P(TestSHT3x, Periodic) {
             std::tie(s, mps, rep) = e;
             SCOPED_TRACE(s);
 
-            EXPECT_TRUE(unit.startPeriodicMeasurement(mps, rep));
+            ASSERT_TRUE(unit.startPeriodicMeasurement(mps, rep));
 
             auto timeout  = timeout_table[m5::stl::to_underlying(mps)];
             auto start_at = std::chrono::steady_clock::now();
+            auto elapsed  = start_at;
+            bool done{};
+
             do {
-                Units.update();  // call readMeasurement in it
-                m5::utility::delay(50);
-            } while (!unit.updated() &&
-                     (std::chrono::steady_clock::now() - start_at) <= timeout);
-            EXPECT_TRUE(unit.updated());
-            EXPECT_TRUE(unit.stopPeriodicMeasurement());
+                done    = unit.readMeasurement();  // delay1 in read
+                elapsed = std::chrono::steady_clock::now();
+            } while (!done && (elapsed - start_at) <= timeout);
+
+            EXPECT_TRUE(done);
+            EXPECT_LE(elapsed - start_at, timeout) << timeout.count();
+
+            ASSERT_TRUE(unit.stopPeriodicMeasurement());
         }
     }
 
     // ART(4 mps)
-    EXPECT_TRUE(unit.startPeriodicMeasurement(
+    ASSERT_TRUE(unit.startPeriodicMeasurement(
         m5::unit::sht3x::MPS::MpsHalf, m5::unit::sht3x::Repeatability::High));
     EXPECT_TRUE(unit.accelerateResponseTime());
 
-    auto timeout  = std::chrono::milliseconds(1000 / 4);
+    auto timeout  = std::chrono::milliseconds(250 + 1);  // 4mps
     auto start_at = std::chrono::steady_clock::now();
+    auto elapsed  = start_at;
+    bool done{};
+
     do {
-        Units.update();  // call readMeasurement in it
-        m5::utility::delay(50);
-    } while (!unit.updated() &&
-             (std::chrono::steady_clock::now() - start_at) <= timeout);
-    EXPECT_TRUE(unit.updated());
+        done    = unit.readMeasurement();
+        elapsed = std::chrono::steady_clock::now();
+    } while (!done && (elapsed - start_at) <= timeout);
+
+    EXPECT_TRUE(done);
+    EXPECT_LE(elapsed - start_at, timeout);
 
     // Cannot read all singleshot
     for (auto&& e : ss_table) {
@@ -268,12 +279,24 @@ TEST_P(TestSHT3x, Serial) {
     EXPECT_TRUE(unit.stopPeriodicMeasurement());
 
     {
+        // Read direct [MSB] SNB_3, SNB_2, CRC, SNB_1, SNB_0, CRC [LSB]
+        std::array<uint8_t, 6> rbuf{};
+        EXPECT_TRUE(unit.readRegister(
+            m5::unit::sht3x::command::GET_SEREAL_NUMBER_ENABLE_STRETCH,
+            rbuf.data(), rbuf.size(), 1));
+        uint32_t d_sno = (((uint32_t)rbuf[0]) << 24) |
+                         (((uint32_t)rbuf[1]) << 16) |
+                         (((uint32_t)rbuf[3]) << 8) | ((uint32_t)rbuf[4]);
+
+        //
         uint32_t sno{};
         char ssno[9]{};
         EXPECT_TRUE(unit.getSerialNumber(sno));
         EXPECT_TRUE(unit.getSerialNumber(ssno));
 
-        // M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
+        EXPECT_EQ(sno, d_sno);
+
+        // M5_LOGI("s:[%s] uint32:[%x]", ssno, sno);
 
         std::stringstream stream;
         stream << std::uppercase << std::setw(8) << std::hex << sno;

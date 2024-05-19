@@ -24,28 +24,29 @@ constexpr uint16_t float_to_uint16(const float f) {
 
 }  // namespace
 
-#if 0
 class GlobalFixture : public ::testing::Environment {
-       public:
-        void SetUp() override {
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-        }
-    };
+   public:
+    void SetUp() override {
+        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
+        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+    }
+};
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture);
-#endif
 
 // bool true: Using bus false: using wire
 class TestSCD4x : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        if (!GetParam()) {
+            Wire.end();
+            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
+            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        }
 
         unit = get_instance();
         if (!unit) {
@@ -63,7 +64,6 @@ class TestSCD4x : public ::testing::TestWithParam<bool> {
     }
 
     virtual void TearDown() override {
-        Wire.end();
     }
 
     virtual m5::unit::UnitSCD40* get_instance() {
@@ -99,25 +99,6 @@ class TestSCD40 : public TestSCD4x {
     virtual m5::unit::UnitSCD40* get_instance() override {
         return &unitSCD4x;
     }
-#if 0
-    virtual bool begin() override {
-        if (GetParam()) {
-            // Bus
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-
-            m5::hal::bus::I2CBusConfig i2c_cfg;
-            i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-            i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-            auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-
-            return Units.add(unitSCD4x, i2c_bus ? i2c_bus.value() : nullptr) &&
-                   Units.begin();
-        }
-        // Wire
-        return Units.add(unitSCD4x, Wire) && Units.begin();
-    }
-#endif
 
 #if defined(UNIT_TEST_SCD41)
     // TEST as SCD41
@@ -140,12 +121,13 @@ class TestSCD41 : public TestSCD4x {
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40,
                          ::testing::Values(true, false));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(false));
 
 #if defined(UNIT_TEST_SCD41)
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41,
                          ::testing::Values(true, false));
-
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(false));
 #endif
 
 TEST_P(TestSCD40, BasicCommand) {
@@ -271,12 +253,33 @@ TEST_P(TestSCD40, AdvancedFeatures) {
     EXPECT_TRUE(unit->stopPeriodicMeasurement());
 
     {
+        // Read direct [MSB] SNB_3, SNB_2, CRC, SNB_1, SNB_0, CRC [LSB]
+        std::array<uint8_t, 9> rbuf{};
+        EXPECT_TRUE(
+            unit->readRegister(m5::unit::scd4x::command::GET_SERIAL_NUMBER,
+                               rbuf.data(), rbuf.size(), 1));
+
+        // M5_LOGI("%02x%02x%02x%02x%02x%02x", rbuf[0], rbuf[1], rbuf[3],
+        // rbuf[4],
+        //          rbuf[6], rbuf[7]);
+
+        m5::types::big_uint16_t w0(rbuf[0], rbuf[1]);
+        m5::types::big_uint16_t w1(rbuf[3], rbuf[4]);
+        m5::types::big_uint16_t w2(rbuf[6], rbuf[7]);
+        uint64_t d_sno = (((uint64_t)w0.get()) << 32) |
+                         (((uint64_t)w1.get()) << 16) | ((uint64_t)w2.get());
+
+        // M5_LOGI("d_sno[%llX]", d_sno);
+
+        //
         uint64_t sno{};
         char ssno[13]{};
         EXPECT_TRUE(unit->getSerialNumber(sno));
         EXPECT_TRUE(unit->getSerialNumber(ssno));
 
-        //        M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
+        // M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
+
+        EXPECT_EQ(sno, d_sno);
 
         std::stringstream stream;
         stream << std::uppercase << std::setw(12) << std::hex << sno;
