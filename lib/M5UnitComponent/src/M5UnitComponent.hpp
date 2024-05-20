@@ -305,36 +305,6 @@ class Component {
         return m5::hal::error::error_t::OK;
     }
 
-    // Helper
-    template <typename Func, typename... Args>
-    auto readWithTransaction(uint8_t* out, const size_t len, Func func,
-                             Args&&... args) ->
-        typename std::enable_if<
-            std::is_same<decltype(func(std::forward<Args>(args)...)),
-                         bool>::value,
-            bool>::type {
-        if (_adapter && _adapter->readWithTransaction(out, len) ==
-                            m5::hal::error::error_t::OK) {
-            return func(std::forward<Args>(args)...);
-        }
-        return false;
-    }
-
-    template <typename Func, typename... Args>
-    auto readWithTransaction(uint8_t* out, const size_t len, Func func,
-                             Args&&... args) ->
-        typename std::enable_if<
-            !std::is_same<decltype(func(std::forward<Args>(args)...)),
-                          bool>::value,
-            bool>::type {
-        if (_adapter && _adapter->readWithTransaction(out, len) ==
-                            m5::hal::error::error_t::OK) {
-            func(std::forward<Args>(args)...);
-            return true;
-        }
-        return false;
-    }
-
     bool add_child(Component* c);
 
    protected:

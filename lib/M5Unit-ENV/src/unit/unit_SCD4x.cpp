@@ -9,6 +9,7 @@
 #include "unit_SCD4x.hpp"
 #include <M5Utility.hpp>
 #include <limits>  // NaN
+#include <array>
 
 using namespace m5::utility::mmh3;
 
@@ -205,15 +206,15 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
     m5::utility::delay(400);
 
     std::array<uint8_t, 3> rbuf{};
-    return readWithTransaction(
-        rbuf.data(), rbuf.size(), [this, &rbuf, &correction]() {
-            utility::ReadDataWithCRC16 data(rbuf.data(), 1);
-            if (data.valid(0)) {
-                correction = (int16_t)(data.value(0) - 0x8000);
-                return data.value(0) != 0xFFFF;
-            }
-            return false;
-        });
+    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+        m5::hal::error::error_t::OK) {
+        utility::ReadDataWithCRC16 data(rbuf.data(), 1);
+        if (data.valid(0)) {
+            correction = (int16_t)(data.value(0) - 0x8000);
+            return data.value(0) != 0xFFFF;
+        }
+    }
+    return false;
 }
 
 bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
@@ -313,19 +314,18 @@ bool UnitSCD40::getSerialNumber(uint64_t& serialNumber) {
     m5::utility::delay(1);
 
     std::array<uint8_t, 9> rbuf;
-    return readWithTransaction(
-        rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-            utility::ReadDataWithCRC16 data(rbuf.data(), 3);
-            bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
-            if (valid[0] && valid[1] && valid[2]) {
-                for (uint_fast8_t i = 0; i < 3; ++i) {
-                    serialNumber |= ((uint64_t)data.value(i))
-                                    << (16U * (2 - i));
-                }
-                return true;
+    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+        m5::hal::error::error_t::OK) {
+        utility::ReadDataWithCRC16 data(rbuf.data(), 3);
+        bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
+        if (valid[0] && valid[1] && valid[2]) {
+            for (uint_fast8_t i = 0; i < 3; ++i) {
+                serialNumber |= ((uint64_t)data.value(i)) << (16U * (2 - i));
             }
-            return false;
-        });
+            return true;
+        }
+    }
+    return false;
 }
 
 bool UnitSCD40::performSelfTest(void) {
@@ -378,7 +378,8 @@ bool UnitSCD40::read_measurement(const bool all) {
     _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
 
     std::array<uint8_t, 9> rbuf{};
-    return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf, &all] {
+    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+        m5::hal::error::error_t::OK) {
         utility::ReadDataWithCRC16 data(rbuf.data(), 3);
         bool valid[3] = {data.valid(0), data.valid(1), data.valid(2)};
 
@@ -392,7 +393,8 @@ bool UnitSCD40::read_measurement(const bool all) {
             this->_humidity = 100.f * data.value(2) / 65536.f;
         }
         return (!all || valid[0]) && valid[1] && valid[2];
-    });
+    }
+    return false;
 }
 
 // class UnitSCD41

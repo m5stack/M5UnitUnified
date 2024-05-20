@@ -8,7 +8,8 @@
 */
 #include "unit_SHT3x.hpp"
 #include <M5Utility.hpp>
-#include <limits> // NaN
+#include <limits>  // NaN
+#include <array>
 
 using namespace m5::utility::mmh3;
 
@@ -227,19 +228,18 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
     m5::utility::delay(1);
 
     std::array<uint8_t, 6> rbuf;
-    return readWithTransaction(
-        rbuf.data(), rbuf.size(), [this, &rbuf, &serialNumber]() {
-            utility::ReadDataWithCRC16 data(rbuf.data(), 2);
-            bool valid[2] = {data.valid(0), data.valid(1)};
-            if (valid[0] && valid[1]) {
-                for (uint_fast8_t i = 0; i < 2; ++i) {
-                    serialNumber |= ((uint32_t)data.value(i))
-                                    << (16U * (1 - i));
-                }
-                return true;
+    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+        m5::hal::error::error_t::OK) {
+        utility::ReadDataWithCRC16 data(rbuf.data(), 2);
+        bool valid[2] = {data.valid(0), data.valid(1)};
+        if (valid[0] && valid[1]) {
+            for (uint_fast8_t i = 0; i < 2; ++i) {
+                serialNumber |= ((uint32_t)data.value(i)) << (16U * (1 - i));
             }
-            return false;
-        });
+            return true;
+        }
+    }
+    return false;
 }
 
 bool UnitSHT30::getSerialNumber(char* serialNumber) {
@@ -265,8 +265,9 @@ bool UnitSHT30::read_measurement() {
     std::array<uint8_t, 6> rbuf{};
 
     _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
-    
-    return readWithTransaction(rbuf.data(), rbuf.size(), [this, &rbuf] {
+
+    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+        m5::hal::error::error_t::OK) {
         utility::ReadDataWithCRC16 data(rbuf.data(), 2);
         bool valid[2] = {data.valid(0), data.valid(1)};
         if (valid[0]) {
@@ -276,7 +277,8 @@ bool UnitSHT30::read_measurement() {
             this->_humidity = 100 * data.value(1) / 65536.f;
         }
         return valid[0] && valid[1];
-    });
+    }
+    return false;
 }
 
 }  // namespace unit

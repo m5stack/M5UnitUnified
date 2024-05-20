@@ -18,21 +18,21 @@ namespace utility {
 /*!
   @brief Returns the number of milliseconds passed since the Arduino board began running the current program
  */
-unsigned long millis();
+__attribute__((weak)) unsigned long millis();
 /*!
   @brief Returns the number of microseconds since the Arduino board began running the current program
 */
-unsigned long micros();
+__attribute__((weak)) unsigned long micros();
 /*!
   @brief Pauses the program for the amount of time (in milliseconds) specified as parameter.
   @warning Accuracy varies depending on the environment.
 */
-void delay(const unsigned long ms);
+__attribute__((weak)) void delay(const unsigned long ms);
 /*!
   @brief Pauses the program for the amount of time (in microseconds) specified by the parameter. 
   @warning Accuracy varies depending on the environment.
 */
-void delayMicroseconds(const unsigned int us);
+__attribute__((weak)) void delayMicroseconds(const unsigned int us);
 ///@}
 
 }  // namespace utility

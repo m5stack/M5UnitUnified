@@ -10,6 +10,7 @@
 #define M5_UTILITY_STRING_HPP
 
 #include <string>
+#include <cstdint>
 
 namespace m5 {
 namespace utility {

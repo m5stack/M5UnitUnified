@@ -11,6 +11,16 @@
 #include <M5Utility.hpp>
 #include <algorithm>
 #include <array>
+// For alloca() see also (*1)
+#if __has_include(<alloca.h>)
+#include <alloca.h>
+#else
+#include <stdlib.h>
+#include <malloc.h>
+#ifndef alloca
+#define alloca _alloca
+#endif
+#endif
 
 namespace m5 {
 namespace unit {
@@ -149,12 +159,16 @@ Component* Component::child(const uint8_t ch) const {
 }
 
 bool Component::assign(m5::hal::bus::Bus* bus) {
-    _adapter.reset(new Adapter(bus, _addr));
+    if (_addr) {
+        _adapter.reset(new Adapter(bus, _addr));
+    }
     return static_cast<bool>(_adapter);
 }
 
 bool Component::assign(TwoWire& wire) {
-    _adapter.reset(new Adapter(wire, _addr));
+    if (_addr) {
+        _adapter.reset(new Adapter(wire, _addr));
+    }
     return static_cast<bool>(_adapter);
 }
 
@@ -235,14 +249,17 @@ bool Component::writeRegister(const Reg reg, const uint8_t* buf,
     static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
                   "Type must be unsigned integer");
 
-    uint8_t wbuf[sizeof(Reg) + len]{};
+    // TODO : Change to a form that does not use alloca() (*1)
+
+    const size_t bsize = sizeof(reg) + len;
+    uint8_t* wbuf      = static_cast<uint8_t*>(alloca(bsize));
+    // Placement new
     new (wbuf)
         m5::types::big_uint16_t(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
     // Overwrite wbuf[1] if Reg is uint8_t
-    memcpy(wbuf + sizeof(Reg), buf, len);
+    memcpy(wbuf + sizeof(reg), buf, len);
 
-    return (writeWithTransaction(wbuf, sizeof(wbuf)) ==
-            m5::hal::error::error_t::OK);
+    return (writeWithTransaction(wbuf, bsize) == m5::hal::error::error_t::OK);
 #else
     m5::types::big_uint16_t r(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
     return writeWithTransaction(r.data(), sizeof(Reg)) ==

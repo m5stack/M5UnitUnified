@@ -38,9 +38,10 @@
 
 /*
   For native test, this main() is used.
-  For embedded test, overwrite by main() in library.
+  If the Arduino framework is used, the framework library main is used.
 */
-__attribute__((weak)) int main(int argc, char **argv) {
+#if !defined(ARDUINO)
+int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
 
 #ifdef GTEST_FILTER
@@ -54,3 +55,4 @@ __attribute__((weak)) int main(int argc, char **argv) {
     // Always return zero-code and allow PlatformIO to parse results
     return 0;
 }
+#endif

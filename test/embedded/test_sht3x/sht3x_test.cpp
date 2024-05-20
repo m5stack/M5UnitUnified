@@ -281,7 +281,7 @@ TEST_P(TestSHT3x, Serial) {
         // Read direct [MSB] SNB_3, SNB_2, CRC, SNB_1, SNB_0, CRC [LSB]
         std::array<uint8_t, 6> rbuf{};
         EXPECT_TRUE(unit.readRegister(
-            m5::unit::sht3x::command::GET_SEREAL_NUMBER_ENABLE_STRETCH,
+            m5::unit::sht3x::command::GET_SERIAL_NUMBER_ENABLE_STRETCH,
             rbuf.data(), rbuf.size(), 1));
         uint32_t d_sno = (((uint32_t)rbuf[0]) << 24) |
                          (((uint32_t)rbuf[1]) << 16) |
