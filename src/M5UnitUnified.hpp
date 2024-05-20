@@ -40,7 +40,8 @@ class UnitUnified {
     ///@name Assignment
     ///@{
     UnitUnified& operator=(const UnitUnified&) = delete;
-    UnitUnified& operator=(UnitUnified&&)      = default;
+
+    UnitUnified& operator=(UnitUnified&&) = default;
     ///@}
 
     ///@name Adding unit to be managed
