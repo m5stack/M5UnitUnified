@@ -13,8 +13,7 @@
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 ///
 //
-// modified by M5Stack for M5 Utility
-// namespace "tl" to "m5::stl"
+// Modified for M5 Utility by M5Stack
 //
 #ifndef M5_UTILITY_STL_OPTIONAL_HPP
 #define M5_UTILITY_STL_OPTIONAL_HPP

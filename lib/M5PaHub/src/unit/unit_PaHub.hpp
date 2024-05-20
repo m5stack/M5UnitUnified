@@ -2,9 +2,9 @@
   @file unit_PaHub.hpp
   @brief PaHub Unit for M5UnitUnified
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_PAHUB_UNIT_PAHUB_HPP
 #define M5_PAHUB_UNIT_PAHUB_HPP

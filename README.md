@@ -86,17 +86,24 @@ test_filter= embedded/test_scd4x
 - When multiple chips are mounted, as in the case of ENVIII, it can be expressed as a form in which ENVIII holds each chip.  
 See also [unit\_ENV3.hpp](lib/M5Unit-ENV/src/unit/unit_ENV3.hpp) 
 
-**Should we create a unit with a product name, even if it is a single chip like a CO2 unit?**
-
-
+**Should I create a unit with a product name, even if it is a single chip like a CO2 unit?**
 
 
 ## API Documentation 
 doxygen and pcregrep required
+
 ```.sh
 bash docs/doxy.sh
 open docs/html/index.html
 ```
+Running the command with the respective current will output the respective document
+
+- M5UnitUnified
+- lib/M5UnitComponent
+- lib/M5Utility
+- lib/M5Unit-ENV
+
+
 
 By adding to existing libraries, the reference manual can be developed from the source.  
 It would be useful to use GitHub Action to automatically generate documentation and publish it on GitHub Pages or m5doc upon master release.

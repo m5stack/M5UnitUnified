@@ -2,9 +2,9 @@
   @file endianness.hpp
   @brief Compile-time endian identification
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_STL_ENDIANESS_HPP
 #define M5_UTILITY_STL_ENDIANESS_HPP

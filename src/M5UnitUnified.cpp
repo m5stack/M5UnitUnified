@@ -2,9 +2,9 @@
   @file M5UnitUnified.cpp
   @brief class UnitUnified
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #include "M5UnitUnified.hpp"
 #include <M5Utility.hpp>

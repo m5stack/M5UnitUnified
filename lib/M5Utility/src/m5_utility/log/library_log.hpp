@@ -2,9 +2,9 @@
   @file library_log.hpp
   @brief Logging for libraries
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_LOG_LIBRARY_LOG_HPP
 #define M5_UTILITY_LOG_LIBRARY_LOG_HPP

@@ -1,15 +1,13 @@
-/*!
+/*
   UnitTest for M5Utility
-
-  copyright M5Stack. All rights reserved.
-  Licensed under the MIT license. See LICENSE file in the project root for full
-  license information.
 
   Each split by test_filter creates a separate binary. So they are combined by
   including cpp. Note that the /optional files are not compiled directly if not
   set to test_filter
 
-  PlatformIO's test_filter and the hierarchy rules seem counter-intuitive.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 
 #include "optional/assignment.cpp"

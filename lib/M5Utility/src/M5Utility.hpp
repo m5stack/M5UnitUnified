@@ -3,13 +3,11 @@
   @brief Main header of M5Utility
 
   @mainpage M5Utility
-  Llibrary containing utilities common to M5 products.<br>
-  C++11 or later
+  Llibrary containing utilities common to M5 products.  C++11 or later
 
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_HPP
 #define M5_UTILITY_HPP

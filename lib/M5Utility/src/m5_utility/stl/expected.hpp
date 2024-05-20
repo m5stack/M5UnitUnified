@@ -13,11 +13,9 @@
 // <http://creativecommons.org/publicdomain/zero/1.0/>.
 ///
 //
-// modified by M5Stack for M5 Utility
-// namespace "tl" to "m5::stl"
+// Modified for M5 Utility by M5Stack
 //
 ///
-
 #ifndef M5_UTILITY_STL_EXPECTED_HPP
 #define M5_UTILITY_STL_EXPECTED_HPP
 
@@ -2045,7 +2043,7 @@ public:
     return bool(*this) ? std::move(**this) : static_cast<T>(std::forward<U>(v));
   }
 
-  // Add by GOB
+  // Add by N5Stack
   template<class G = E> constexpr E error_or(G&& e) const & {
     static_assert(std::is_copy_constructible<E>::value &&
                       std::is_convertible<G, E>::value,

@@ -1,3 +1,10 @@
+/*!
+  @file M5UnitComponent.h
+
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
+*/
 #ifndef M5_UNIT_COMPONENT_H
 #define M5_UNIT_COMPONENT_H
 

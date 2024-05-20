@@ -4,12 +4,12 @@
 
   @mainpage M5UnitComponent
   Library for componentising the functions of each device so that they can be
-  handled by M5UnitUnified<br>
+  handled by M5UnitUnified.
   C++11 or later
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_COMPONENT_HPP
 #define M5_UNIT_COMPONENT_HPP

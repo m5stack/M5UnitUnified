@@ -1,3 +1,10 @@
+/*!
+  @file M5Utility.h
+
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
+*/
 #ifndef M5_UTILITY_H
 #define M5_UTILITY_H
 

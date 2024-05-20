@@ -2,9 +2,9 @@
   @file types.hpp
   @brief Type and enumerator definitions
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_COMPONENT_TYPES_HPP
 #define M5_UNIT_COMPONENT_TYPES_HPP

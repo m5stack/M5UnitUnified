@@ -1,9 +1,9 @@
-/*!
+/*
   Example using M5UnitUnified for SCD40/41
 
-  copyright M5Stack. All rights reserved.
-  Licensed under the MIT license. See LICENSE file in the project root for full
-  license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 
 // #define USING_PAHUB (2)  // Connection channel number for use via PaHub.

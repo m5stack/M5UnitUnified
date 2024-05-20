@@ -1,10 +1,14 @@
 /*!
   @file murmurhash3.hpp
-  @brief MurmurHash3 by compile-time calculation
+  @brief MurmurHash3
 
   MurmurHash (public domain) by Austin Appleby in 2008
   @sa https://en.wikipedia.org/wiki/MurmurHash
- */
+
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
+*/
 #ifndef M5_UTILITY_MURMURHASH3_HPP
 #define M5_UTILITY_MURMURHASH3_HPP
 
@@ -108,7 +112,7 @@ constexpr uint32_t finalize(uint32_t h, size_t len) {
 /// @endcond
 
 /*!
-  @brief Calculate MurmurHash3
+  @brief MurmurHash3 by compile-time calculation
   @param str String
   @param len Length of string
   @return 32bit MurmurHash3 from input string

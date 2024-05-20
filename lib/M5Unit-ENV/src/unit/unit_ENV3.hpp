@@ -2,9 +2,9 @@
   @file unit_ENV3.hpp
   @brief ENV III Unit for M5UnitUnified
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_ENV_UNIT_ENV3_HPP
 #define M5_UNIT_ENV_UNIT_ENV3_HPP

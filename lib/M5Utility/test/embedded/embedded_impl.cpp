@@ -1,9 +1,9 @@
-/*!
+/*
   Replace to Arduino functions
 
-  copyright M5Stack. All rights reserved.
-  Licensed under the MIT license. See LICENSE file in the project root for full
-  license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #include <gtest/gtest.h>
 #include <M5Utility.hpp>

@@ -1,7 +1,11 @@
 /*!
   @file murmurhash3.cpp
-  @brief MurmurHash3 by compile-time calculation
- */
+  @brief MurmurHash3
+
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
+*/
 #include "murmurhash3.hpp"
 
 namespace m5 {

@@ -2,9 +2,9 @@
   @file unit_SCD4x.hpp
   @brief SCD4X family Unit for M5UnitUnified
 
-  @copyright M5Stack. All rights reserved.
-  @license Licensed under the MIT license. See LICENSE file in the project root
-  for full license information.
+  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+
+  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_ENV_UNIT_SCD4x_HPP
 #define M5_UNIT_ENV_UNIT_SCD4x_HPP
