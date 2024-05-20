@@ -45,8 +45,7 @@ class TestQMP6988 : public ::testing::TestWithParam<bool> {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
         // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        if(!GetParam())
-        {
+        if (!GetParam()) {
             Wire.end();
             Wire.begin(pin_num_sda, pin_num_scl, 400000U);
         }
@@ -372,13 +371,12 @@ TEST_P(TestQMP6988, Periodic) {
     };
 
     constexpr std::chrono::milliseconds timeout_table[] = {
-        std::chrono::milliseconds(1+1),    std::chrono::milliseconds(5),
-        std::chrono::milliseconds(50),   std::chrono::milliseconds(250),
-        std::chrono::milliseconds(500),  std::chrono::milliseconds(1000),
-        std::chrono::milliseconds(2000), std::chrono::milliseconds(4000),
+        std::chrono::milliseconds(1 + 1), std::chrono::milliseconds(5),
+        std::chrono::milliseconds(50),    std::chrono::milliseconds(250),
+        std::chrono::milliseconds(500),   std::chrono::milliseconds(1000),
+        std::chrono::milliseconds(2000),  std::chrono::milliseconds(4000),
     };
 
-    
     for (auto&& st : st_table) {
         EXPECT_TRUE(unit.setStandbyTime(st));
         m5::unit::qmp6988::StandbyTime s;
@@ -386,7 +384,6 @@ TEST_P(TestQMP6988, Periodic) {
         EXPECT_EQ(s, st);
 
         //        M5_LOGE("=======");
-
 
         auto timeout  = timeout_table[m5::stl::to_underlying(st)];
         auto start_at = std::chrono::steady_clock::now();
@@ -408,14 +405,15 @@ TEST_P(TestQMP6988, Periodic) {
                 FAIL() << "Internal error";
             }
         }
-        #endif
-        
+#endif
+
         // Test
-        auto elapsed  = start_at;
+        auto elapsed = start_at;
         bool done{};
         do {
             done = unit.readMeasurement();
-            //            M5_LIB_LOGE("%f/%f", unit.temperature(), unit.pressure());
+            //            M5_LIB_LOGE("%f/%f", unit.temperature(),
+            //            unit.pressure());
             elapsed = std::chrono::steady_clock::now();
         } while (!done && (elapsed - start_at) <= timeout);
 

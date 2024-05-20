@@ -34,14 +34,14 @@ std::tuple<const char*, m5::unit::sht3x::Repeatability, bool> ss_table[] = {
 }  // namespace
 
 class GlobalFixture : public ::testing::Environment {
-       public:
-        void SetUp() override {
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-        }
-    };
+   public:
+    void SetUp() override {
+        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
+        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+    }
+};
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture);
 
@@ -49,8 +49,7 @@ const ::testing::Environment* global_fixture =
 class TestSHT3x : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-        if(!GetParam())
-        {
+        if (!GetParam()) {
             Wire.end();
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
@@ -60,8 +59,8 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
 
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
-        //printf("Test as %s\n", ustr.c_str());
-        
+        // printf("Test as %s\n", ustr.c_str());
+
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
             GTEST_SKIP();
@@ -95,10 +94,10 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
 };
 
 // true:Bus false:Wire
- INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
                          ::testing::Values(true, false));
-//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
-//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
 
 TEST_P(TestSHT3x, SingleShot) {
     SCOPED_TRACE(ustr);
