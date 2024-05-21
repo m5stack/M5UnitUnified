@@ -8,6 +8,7 @@
 */
 #include "compatibility_feature.hpp"
 #include <ctime>
+#include <chrono>
 #include <thread>
 
 namespace {
@@ -19,20 +20,17 @@ const clock::time_point start_at = clock::now();
 namespace m5 {
 namespace utility {
 
-//! @weak
-__attribute__((weak)) unsigned long millis() {
+unsigned long millis() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() -
-                                                                 start_at)
+                                                                 ::start_at)
         .count();
 }
-//! @weak
-__attribute__((weak)) unsigned long micros() {
+unsigned long micros() {
     return std::chrono::duration_cast<std::chrono::microseconds>(clock::now() -
-                                                                 start_at)
+                                                                 ::start_at)
         .count();
 }
-//! @weak
-__attribute__((weak)) void delay(const unsigned long ms) {
+void delay(const unsigned long ms) {
 #if 0
     auto abst = clock::now() + std::chrono::milliseconds(ms);
     std::this_thread::sleep_until(abst);
@@ -41,8 +39,7 @@ __attribute__((weak)) void delay(const unsigned long ms) {
 #endif
 }
 
-//! @weak
-__attribute__((weak)) void delayMicroseconds(const unsigned int us) {
+void delayMicroseconds(const unsigned int us) {
 #if 0
     auto abst = clock::now() + std::chrono::microseconds(us);
     std::this_thread::sleep_until(abst);

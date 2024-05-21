@@ -132,10 +132,10 @@ Adapter::Adapter(TwoWire& wire, const uint8_t addr)
     assert(_impl);
 }
 #else
-#pragma message "Not support TwoWire on native"
+#pragma message "Not support TwoWire"
 Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new Impl(addr)} {
     assert(_impl);
-    M5_LIB_LOGE("Not support TwoWire on native");
+    M5_LIB_LOGE("Not support TwoWire");
 }
 #endif
 

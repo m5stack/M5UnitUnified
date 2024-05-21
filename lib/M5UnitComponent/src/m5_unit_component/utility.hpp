@@ -1,13 +1,13 @@
 /*!
   @file utility.hpp
-  @brief Utilities for M5UnitUnified
+  @brief Utilities for M5UnitComponent
 
   SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
 
   SPDX-License-Identifier: MIT
 */
-#ifndef M5_UNIT_UNIFIED_UTILITY_HPP
-#define M5_UNIT_UNIFIED_UTILITY_HPP
+#ifndef M5_UNIT_COMPONENT_UTILITY_HPP
+#define M5_UNIT_COMPONENT_UTILITY_HPP
 
 #include <m5_utility/types.hpp>
 #include <m5_utility/crc.hpp>
@@ -19,6 +19,10 @@ namespace utility {
 
 ///@cond
 class WithCRC {
+   public:
+    WithCRC() {
+    }
+
    protected:
     static m5::utility::CRC8_Maxim crc8;
 };
@@ -39,7 +43,7 @@ class ReadDataWithCRC16 : public WithCRC {
       @warning Be careful not to access out of range
      */
     ReadDataWithCRC16(const uint8_t* ptr, const size_t num)
-        : _data(ptr), _num(num) {
+        : WithCRC(), _data(ptr), _num(num) {
         assert(ptr);
         assert(num);
     }
@@ -76,7 +80,7 @@ class WriteDataWithCRC16 : public WithCRC {
     /*!
       @brief Set value and calculate CRC
      */
-    explicit WriteDataWithCRC16(const uint16_t v = 0) {
+    explicit WriteDataWithCRC16(const uint16_t v = 0) : WithCRC() {
 #if 0
         new (_buf) m5::types::big_uint16_t(v);  // Placement new
 #else
