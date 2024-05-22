@@ -230,6 +230,8 @@ void printStatus(const m5::unit::sht3x::Status& s) {
 }  // namespace
 
 TEST_P(TestSHT3x, HeaterAndStatus) {
+    SCOPED_TRACE(ustr);
+
     m5::unit::sht3x::Status s{};
 
     EXPECT_TRUE(unit.startHeater());

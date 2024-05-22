@@ -257,8 +257,9 @@ bool Component::writeRegister(const Reg reg, const uint8_t* buf,
     new (wbuf)
         m5::types::big_uint16_t(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
     // Overwrite wbuf[1] if Reg is uint8_t
-    memcpy(wbuf + sizeof(reg), buf, len);
-
+    if (buf && len) {
+        memcpy(wbuf + sizeof(reg), buf, len);
+    }
     return (writeWithTransaction(wbuf, bsize) == m5::hal::error::error_t::OK);
 #else
     m5::types::big_uint16_t r(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
