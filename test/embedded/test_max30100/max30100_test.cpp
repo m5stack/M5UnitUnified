@@ -16,14 +16,18 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 class GlobalFixture : public ::testing::Environment {
    public:
     void SetUp() override {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
+
+        // Too fast for some devices, e.g. Capsule
+        // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+        Wire.begin(pin_num_sda, pin_num_scl, 100000U);
     }
 };
 const ::testing::Environment* global_fixture =
@@ -33,14 +37,16 @@ const ::testing::Environment* global_fixture =
 class TestMAX30100 : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
+#if 0
         if (!GetParam()) {
             Wire.end();
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
             // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+            //      Wire.begin(pin_num_sda, pin_num_scl, 100000U);
+            Wire.begin(pin_num_sda, pin_num_scl, 100000U);
         }
-
+#endif
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
         // printf("Test as %s\n", ustr.c_str());
@@ -80,8 +86,9 @@ class TestMAX30100 : public ::testing::TestWithParam<bool> {
 // true:Bus false:Wire
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
 //                         ::testing::Values(true, false));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100, ::testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
+// ::testing::Values(false));
 
 namespace {
 using namespace m5::unit::max30100;
@@ -108,39 +115,10 @@ bool is_allowed_settings(const Mode mode, const SamplingRate rate,
            (1U << m5::stl::to_underlying(pw));
 }
 
-void initialize(m5::unit::UnitMAX30100& u) {
-    EXPECT_TRUE(u.reset());
-
-#if 1
-    // set SPO2, Sampling50, PW200, Current50
-    EXPECT_TRUE(u.setMode(m5::unit::max30100::Mode::SPO2));
-
-    m5::unit::max30100::SpO2Configuration sc{};
-    sc.samplingRate(m5::unit::max30100::SamplingRate::Sampling50);
-    sc.ledPulseWidth(m5::unit::max30100::LedPulseWidth::PW200);
-    sc.highResolution(true);
-    EXPECT_TRUE(u.setSpO2Configuration(sc));
-
-    EXPECT_TRUE(u.getSpO2Configuration(sc));
-    EXPECT_TRUE(sc.highResolution());
-    EXPECT_EQ(sc.samplingRate(), m5::unit::max30100::SamplingRate::Sampling50);
-    EXPECT_EQ(sc.ledPulseWidth(), m5::unit::max30100::LedPulseWidth::PW200);
-
-    EXPECT_TRUE(u.setLedCurrent(m5::unit::max30100::CurrentControl::mA50_0,
-                                m5::unit::max30100::CurrentControl::mA50_0));
-    m5::unit::max30100::LedConfiguration lc{};
-    EXPECT_TRUE(u.getLedConfiguration(lc));
-    EXPECT_EQ(lc.irLed(), m5::unit::max30100::CurrentControl::mA50_0);
-    EXPECT_EQ(lc.redLed(), m5::unit::max30100::CurrentControl::mA50_0);
-#endif
-}
-
 }  // namespace
 
 TEST_P(TestMAX30100, Configration) {
     SCOPED_TRACE(ustr);
-
-    initialize(unit);
 
     {
         constexpr m5::unit::max30100::Mode table[] = {
@@ -205,7 +183,6 @@ TEST_P(TestMAX30100, Configration) {
 
         {
             SCOPED_TRACE("SPO2");
-            initialize(unit);
 
             EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
             for (auto&& rate : sr_table) {
@@ -241,7 +218,6 @@ TEST_P(TestMAX30100, Configration) {
         }
         {
             SCOPED_TRACE("HROnly");
-            initialize(unit);
 
             EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::HROnly));
             for (auto&& rate : sr_table) {
@@ -310,32 +286,68 @@ TEST_P(TestMAX30100, Configration) {
             m5::unit::max30100::CurrentControl::mA50_0,
         };
 
-        for (auto&& ir : cc_table) {
-            for (auto&& red : cc_table) {
-                m5::unit::max30100::LedConfiguration lc{};
+        // In the heart-rate only mode, the red LED is inactive,
+        {
+            SCOPED_TRACE("SPO2");
+            EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
+            for (auto&& ir : cc_table) {
+                for (auto&& red : cc_table) {
+                    m5::unit::max30100::LedConfiguration lc{};
 
-                EXPECT_TRUE(unit.setLedCurrent(ir, red))
-                    << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_TRUE(unit.setLedCurrent(ir, red))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
 
-                EXPECT_TRUE(unit.getLedConfiguration(lc))
-                    << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_TRUE(unit.getLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.irLed(), ir)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.redLed(), red)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
 
-                EXPECT_EQ(lc.irLed(), ir)
-                    << "IR:" << (int)ir << " RED:" << (int)red;
-                EXPECT_EQ(lc.redLed(), red)
-                    << "IR:" << (int)ir << " RED:" << (int)red;
+                    lc.irLed(ir);
+                    lc.redLed(red);
+                    EXPECT_TRUE(unit.setLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
 
-                lc.irLed(ir);
-                lc.redLed(red);
-                EXPECT_TRUE(unit.setLedConfiguration(lc))
-                    << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_TRUE(unit.getLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.irLed(), ir)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.redLed(), red)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                }
+            }
+        }
 
-                EXPECT_TRUE(unit.getLedConfiguration(lc))
-                    << "IR:" << (int)ir << " RED:" << (int)red;
-                EXPECT_EQ(lc.irLed(), ir)
-                    << "IR:" << (int)ir << " RED:" << (int)red;
-                EXPECT_EQ(lc.redLed(), red)
-                    << "IR:" << (int)ir << " RED:" << (int)red;
+        {
+            SCOPED_TRACE("HRONLY");
+            EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
+            for (auto&& ir : cc_table) {
+                for (auto&& red : cc_table) {
+                    m5::unit::max30100::LedConfiguration lc{};
+
+                    EXPECT_TRUE(unit.setLedCurrent(ir, red))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+
+                    EXPECT_TRUE(unit.getLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.irLed(), ir)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.redLed(), red)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+
+                    lc.irLed(ir);
+                    lc.redLed(red);
+                    EXPECT_TRUE(unit.setLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+
+                    EXPECT_TRUE(unit.getLedConfiguration(lc))
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.irLed(), ir)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                    EXPECT_EQ(lc.redLed(), red)
+                        << "IR:" << (int)ir << " RED:" << (int)red;
+                }
             }
         }
     }
@@ -344,30 +356,119 @@ TEST_P(TestMAX30100, Configration) {
 TEST_P(TestMAX30100, Temperature) {
     SCOPED_TRACE(ustr);
 
-    //    initialize(unit);
+    EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
+    EXPECT_TRUE(unit.disablePowerSave());
+    m5::unit::max30100::SpO2Configuration sc{};
+    sc.samplingRate(m5::unit::max30100::SamplingRate::Sampling100);
+    sc.ledPulseWidth(m5::unit::max30100::LedPulseWidth::PW1600);
+    sc.highResolution(true);
+    EXPECT_TRUE(unit.setSpO2Configuration(sc));
 
-    //    EXPECT_TRUE(unit.disablePowerSave());
-    //    m5::utility::delay(500);
+    EXPECT_TRUE(unit.setLedCurrent(m5::unit::max30100::CurrentControl::mA7_6,
+                                   m5::unit::max30100::CurrentControl::mA7_6));
 
-    EXPECT_TRUE(unit.measurementTemperature());
+    constexpr int times{5};
+    int cnt{};
+    float temperature{};
+    std::vector<float> temps;
 
-    auto timeout  = std::chrono::seconds(1);
-    auto start_at = std::chrono::steady_clock::now();
-    auto elapsed  = start_at;
-    bool done{};
+    while (cnt < times) {
+        auto start_at = m5::utility::millis();
+        EXPECT_TRUE(unit.startMeasurementTemperature());
+        while (!unit.isMeasurementTemperature()) {
+            if (m5::utility::millis() - start_at > 1000) {
+                break;
+            }
+        }
+        EXPECT_TRUE(unit.readMeasurementTemperature(temperature));
+        EXPECT_TRUE(std::isfinite(temperature));
+        temps.push_back(temperature);
 
+        M5_LOGI("temp:%f", temperature);
+        m5::utility::delay(50);
+        ++cnt;
+    }
+    EXPECT_EQ(cnt, times);
+    EXPECT_EQ(temps.size(), times);
+}
+
+TEST_P(TestMAX30100, Reset) {
+    EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
+    EXPECT_TRUE(unit.enablePowerSave());
+
+    m5::unit::max30100::SpO2Configuration sc{};
+    sc.samplingRate(m5::unit::max30100::SamplingRate::Sampling100);
+    sc.ledPulseWidth(m5::unit::max30100::LedPulseWidth::PW1600);
+    sc.highResolution(true);
+    EXPECT_TRUE(unit.setSpO2Configuration(sc));
+
+    EXPECT_TRUE(unit.setLedCurrent(m5::unit::max30100::CurrentControl::mA7_6,
+                                   m5::unit::max30100::CurrentControl::mA7_6));
+
+    // reset
+    EXPECT_TRUE(unit.reset());
+
+    {
+        m5::unit::max30100::ModeConfiguration mc{};
+        m5::unit::max30100::SpO2Configuration sc{};
+        m5::unit::max30100::LedConfiguration lc{};
+
+        EXPECT_TRUE(unit.getModeConfiguration(mc));
+        EXPECT_EQ(mc.value, 0);
+        EXPECT_TRUE(unit.getSpO2Configuration(sc));
+        EXPECT_EQ(sc.value, 0);
+        EXPECT_TRUE(unit.getLedConfiguration(lc));
+        EXPECT_EQ(lc.value, 0);
+    }
+}
+
+TEST_P(TestMAX30100, FIFO) {
+    SCOPED_TRACE(ustr);
+
+    EXPECT_TRUE(unit.setMode(m5::unit::max30100::Mode::SPO2));
+    EXPECT_TRUE(unit.disablePowerSave());
+    m5::unit::max30100::SpO2Configuration sc{};
+    sc.samplingRate(m5::unit::max30100::SamplingRate::Sampling100);  // *1
+    sc.ledPulseWidth(m5::unit::max30100::LedPulseWidth::PW1600);
+    sc.highResolution(true);
+    EXPECT_TRUE(unit.setSpO2Configuration(sc));
+
+    EXPECT_TRUE(unit.setLedCurrent(m5::unit::max30100::CurrentControl::mA7_6,
+                                   m5::unit::max30100::CurrentControl::mA7_6));
+
+    uint16_t ir{}, red{};
+    auto start_at = m5::utility::millis();
+
+    // wait first read (timeout 1sec)
     do {
-        M5_LOGE(">");
-        done    = unit.isMeasurementTemperature();
-        elapsed = std::chrono::steady_clock::now();
-    } while (!done && (elapsed - start_at) <= timeout);
+        unit.update();
+        m5::utility::delay(10);
+    } while (!unit.updated() && m5::utility::millis() - start_at <= 1000);
+    EXPECT_TRUE(unit.updated());
+    EXPECT_GT(unit.retrived(), 0U);
+    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+        EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
+        M5_LOGI("ir:%u red:%u", ir, red);
+    }
 
-    EXPECT_TRUE(done);
-    EXPECT_LE(elapsed - start_at, timeout);
+    m5::utility::delay(100);  // about sampling 10 times (*1)
 
-    float temp{};
-    EXPECT_TRUE(unit.readMeasurementTemperature(temp));
-    EXPECT_TRUE(std::isfinite(temp));
+    unit.update();
+    EXPECT_TRUE(unit.updated());
+    EXPECT_GE(unit.retrived(), 10U);
+    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+        EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
+        M5_LOGI("ir:%u red:%u", ir, red);
+    }
 
-    M5_LOGI("temp:%f", temp);
+    m5::utility::delay(200);  // about sampling 20 times (*1)
+
+    unit.update();
+    EXPECT_TRUE(unit.updated());
+    EXPECT_EQ(unit.retrived(), m5::unit::max30100::MAX_FIFO_DEPTH);
+    EXPECT_GT(unit.overflow(), 0U);
+    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+        EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
+        M5_LOGI("ir:%u red:%u", ir, red);
+    }
 }

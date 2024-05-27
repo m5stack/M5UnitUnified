@@ -189,10 +189,23 @@ m5::hal::error::error_t Component::readWithTransaction(uint8_t* data,
 }
 
 m5::hal::error::error_t Component::writeWithTransaction(const uint8_t* data,
-                                                        const size_t len) {
+                                                        const size_t len,
+                                                        const bool stop) {
     selectChannel(channel());
-    auto r = _adapter->writeWithTransaction(data, len);
-    return r;
+    return _adapter->writeWithTransaction(data, len, stop);
+}
+
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value &&
+                                      std::is_unsigned<Reg>::value &&
+                                      sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type>
+m5::hal::error::error_t Component::writeWithTransaction(const Reg reg,
+                                                        const uint8_t* data,
+                                                        const size_t len,
+                                                        const bool stop) {
+    selectChannel(channel());
+    return _adapter->writeWithTransaction(reg, data, len, stop);
 }
 
 template <typename Reg,
@@ -201,8 +214,8 @@ template <typename Reg,
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
 bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
-                             const uint32_t delayMillis) {
-    if (!writeRegister(reg)) {
+                             const uint32_t delayMillis, const bool stop) {
+    if (!writeRegister(reg, nullptr, 0U, stop)) {
         M5_LIB_LOGE("Failed to write");
         return false;
     }
@@ -218,8 +231,8 @@ template <typename Reg,
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
 bool Component::readRegister8(const Reg reg, uint8_t& result,
-                              const uint32_t delayMillis) {
-    return readRegister(reg, &result, 1, delayMillis);
+                              const uint32_t delayMillis, const bool stop) {
+    return readRegister(reg, &result, 1, delayMillis, stop);
 }
 
 template <typename Reg,
@@ -228,9 +241,9 @@ template <typename Reg,
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
 bool Component::readRegister16(const Reg reg, uint16_t& result,
-                               const uint32_t delayMillis) {
+                               const uint32_t delayMillis, const bool stop) {
     m5::types::big_uint16_t buf{};
-    auto ret = readRegister(reg, buf.data(), buf.size(), delayMillis);
+    auto ret = readRegister(reg, buf.data(), buf.size(), delayMillis, stop);
     if (ret) {
         result = buf.get();
     }
@@ -243,31 +256,11 @@ template <typename Reg,
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
 bool Component::writeRegister(const Reg reg, const uint8_t* buf,
-                              const size_t len) {
-#if 1
-    static_assert(sizeof(reg) <= 2, "overflow");
-    static_assert(std::is_integral<Reg>::value && std::is_unsigned<Reg>::value,
-                  "Type must be unsigned integer");
-
-    // TODO : Change to a form that does not use alloca() (*1)
-
-    const size_t bsize = sizeof(reg) + len;
-    uint8_t* wbuf      = static_cast<uint8_t*>(alloca(bsize));
-    // Placement new
-    new (wbuf)
-        m5::types::big_uint16_t(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
-    // Overwrite wbuf[1] if Reg is uint8_t
-    if (buf && len) {
-        memcpy(wbuf + sizeof(reg), buf, len);
-    }
-    return (writeWithTransaction(wbuf, bsize) == m5::hal::error::error_t::OK);
-#else
-    m5::types::big_uint16_t r(sizeof(Reg) == 2 ? reg : ((uint16_t)reg) << 8U);
-    return writeWithTransaction(r.data(), sizeof(Reg)) ==
-               m5::hal::error::error_t::OK &&
-           writeWithTransaction(buf, len) == m5::hal::error::error_t::OK;
-
-#endif
+                              const size_t len, const bool stop) {
+    return (sizeof(Reg) == 2
+                ? writeWithTransaction(reg, buf, len, stop)
+                : writeWithTransaction((uint8_t)(reg & 0xFF), buf, len,
+                                       stop)) == m5::hal::error::error_t::OK;
 }
 
 template <typename Reg,
@@ -275,8 +268,9 @@ template <typename Reg,
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
-bool Component::writeRegister8(const Reg reg, const uint8_t value) {
-    return writeRegister(reg, &value, 1);
+bool Component::writeRegister8(const Reg reg, const uint8_t value,
+                               const bool stop) {
+    return writeRegister(reg, &value, 1, stop);
 }
 
 template <typename Reg,
@@ -284,36 +278,11 @@ template <typename Reg,
                                       std::is_unsigned<Reg>::value &&
                                       sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
-bool Component::writeRegister16(const Reg reg, const uint16_t value) {
+bool Component::writeRegister16(const Reg reg, const uint16_t value,
+                                const bool stop) {
     m5::types::big_uint16_t u16{value};
-    return writeRegister(reg, u16.data(), u16.size());
+    return writeRegister(reg, u16.data(), u16.size(), stop);
 }
-
-// Explicit template instantiation
-template bool Component::writeRegister<uint8_t>(const uint8_t, const uint8_t*,
-                                                const size_t);
-template bool Component::writeRegister<uint16_t>(const uint16_t, const uint8_t*,
-                                                 const size_t);
-template bool Component::writeRegister8<uint8_t>(const uint8_t, const uint8_t);
-template bool Component::writeRegister8<uint16_t>(const uint16_t,
-                                                  const uint8_t);
-template bool Component::writeRegister16<uint8_t>(const uint8_t,
-                                                  const uint16_t);
-template bool Component::writeRegister16<uint16_t>(const uint16_t,
-                                                   const uint16_t);
-
-template bool Component::readRegister<uint8_t>(const uint8_t, uint8_t*,
-                                               const size_t, const uint32_t);
-template bool Component::readRegister<uint16_t>(const uint16_t, uint8_t*,
-                                                const size_t, const uint32_t);
-template bool Component::readRegister8<uint8_t>(const uint8_t, uint8_t&,
-                                                const uint32_t);
-template bool Component::readRegister8<uint16_t>(const uint16_t, uint8_t&,
-                                                 const uint32_t);
-template bool Component::readRegister16<uint8_t>(const uint8_t, uint16_t&,
-                                                 const uint32_t);
-template bool Component::readRegister16<uint16_t>(const uint16_t, uint16_t&,
-                                                  const uint32_t);
 
 std::string Component::debugInfo() const {
     return m5::utility::formatString(
@@ -321,6 +290,40 @@ std::string Component::debugInfo() const {
         deviceName(), identifier(), address(), _adapter->address(), hasParent(),
         childrenSize());
 }
+
+// Explicit template instantiation
+template bool Component::readRegister<uint8_t>(const uint8_t, uint8_t*,
+                                               const size_t, const uint32_t,
+                                               const bool);
+template bool Component::readRegister<uint16_t>(const uint16_t, uint8_t*,
+                                                const size_t, const uint32_t,
+                                                const bool);
+template bool Component::readRegister8<uint8_t>(const uint8_t, uint8_t&,
+                                                const uint32_t, const bool);
+template bool Component::readRegister8<uint16_t>(const uint16_t, uint8_t&,
+                                                 const uint32_t, const bool);
+template bool Component::readRegister16<uint8_t>(const uint8_t, uint16_t&,
+                                                 const uint32_t, const bool);
+template bool Component::readRegister16<uint16_t>(const uint16_t, uint16_t&,
+                                                  const uint32_t, const bool);
+
+template bool Component::writeRegister<uint8_t>(const uint8_t, const uint8_t*,
+                                                const size_t, const bool);
+template bool Component::writeRegister<uint16_t>(const uint16_t, const uint8_t*,
+                                                 const size_t, const bool);
+template bool Component::writeRegister8<uint8_t>(const uint8_t, const uint8_t,
+                                                 const bool);
+template bool Component::writeRegister8<uint16_t>(const uint16_t, const uint8_t,
+                                                  const bool);
+template bool Component::writeRegister16<uint8_t>(const uint8_t, const uint16_t,
+                                                  const bool);
+template bool Component::writeRegister16<uint16_t>(const uint16_t,
+                                                   const uint16_t, const bool);
+
+template m5::hal::error::error_t Component::writeWithTransaction<uint8_t>(
+    const uint8_t reg, const uint8_t* data, const size_t len, const bool stop);
+template m5::hal::error::error_t Component::writeWithTransaction<uint16_t>(
+    const uint16_t reg, const uint8_t* data, const size_t len, const bool stop);
 
 }  // namespace unit
 }  // namespace m5

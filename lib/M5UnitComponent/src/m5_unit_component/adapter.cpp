@@ -29,6 +29,7 @@ class WireImpl : public Adapter::Impl {
 
     virtual m5::hal::error::error_t readWithTransaction(
         uint8_t* data, const size_t len) override {
+        assert(_addr);
         if (data && _wire->requestFrom(_addr, len)) {
             auto count = std::min(len, (size_t)_wire->available());
             for (size_t i = 0; i < count; ++i) {
@@ -41,19 +42,56 @@ class WireImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(
-        const uint8_t* data, const size_t len) override {
+        const uint8_t* data, const size_t len, const bool stop) override {
+        assert(_addr);
+        _wire->beginTransmission(_addr);
         if (data) {
-            _wire->beginTransmission(_addr);
             _wire->write(data, len);
-
-            auto ret = _wire->endTransmission();
-            if (ret) {
-                M5_LIB_LOGD("%d endTransmission", ret);
-            }
-            return (ret == 0) ? m5::hal::error::error_t::OK
-                              : m5::hal::error::error_t::I2C_BUS_ERROR;
         }
-        return m5::hal::error::error_t::UNKNOWN_ERROR;
+        auto ret = _wire->endTransmission(stop);
+        if (ret) {
+            M5_LIB_LOGE("%d endTransmission", ret);
+        }
+        return (ret == 0) ? m5::hal::error::error_t::OK
+                          : m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+
+    // TODO: rename to writeRegisterWithTransaction()
+    virtual m5::hal::error::error_t writeWithTransaction(
+        const uint8_t reg, const uint8_t* data, const size_t len,
+        const bool stop) override {
+        assert(_addr);
+
+        _wire->beginTransmission(_addr);
+        _wire->write(reg);
+        if (data && len) {
+            _wire->write(data, len);
+        }
+        auto ret = _wire->endTransmission(stop);
+        if (ret) {
+            M5_LIB_LOGE("%d endTransmission", ret);
+        }
+        return (ret == 0) ? m5::hal::error::error_t::OK
+                          : m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+
+    virtual m5::hal::error::error_t writeWithTransaction(
+        const uint16_t reg, const uint8_t* data, const size_t len,
+        const bool stop) override {
+        assert(_addr);
+
+        types::big_uint16_t r(reg);
+        _wire->beginTransmission(_addr);
+        _wire->write(r.data(), r.size());
+        if (data && len) {
+            _wire->write(data, len);
+        }
+        auto ret = _wire->endTransmission(stop);
+        if (ret) {
+            M5_LIB_LOGE("%d endTransmission", ret);
+        }
+        return (ret == 0) ? m5::hal::error::error_t::OK
+                          : m5::hal::error::error_t::I2C_BUS_ERROR;
     }
 
     virtual Impl* duplicate(const uint8_t addr) override {
@@ -93,16 +131,98 @@ struct BusImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(
-        const uint8_t* data, const size_t len) override {
-        if (_bus && data) {
+        const uint8_t* data, const size_t len, const bool stop) override {
+        if (_bus) {
             auto acc = _bus->beginAccess(_access_cfg);
             if (acc) {
-                auto trans = acc.value();
-                auto result =
-                    trans->startWrite().and_then([&trans, &data, &len]() {
-                        return trans->write(data, len).and_then(
-                            [&trans](size_t&&) { return trans->stop(); });
+                auto trans  = acc.value();
+                auto result = trans->startWrite().and_then([&trans, &data, &len,
+                                                            &stop]() {
+                    return trans->write(data, len).and_then(
+                        [&trans, &stop](size_t&&) {
+                            return stop ? trans->stop()
+                                        : m5::stl::expected<
+                                              void, m5::hal::error::error_t>();
+                        });
+                });
+                // Clean-up must be called
+                auto eresult = this->_bus->endAccess(std::move(trans));
+                return result.error_or(eresult);
+            }
+            return acc.error();
+        }
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+
+    virtual m5::hal::error::error_t writeWithTransaction(
+        const uint8_t reg, const uint8_t* data, const size_t len,
+        const bool stop) override {
+        assert(_addr);
+
+        if (_bus) {
+            auto acc = _bus->beginAccess(_access_cfg);
+            if (acc) {
+                M5_LIB_LOGE("acc");
+                auto trans  = acc.value();
+                auto result = trans->startWrite().and_then([&trans, &reg, &data,
+                                                            &len, &stop]() {
+                    M5_LIB_LOGI("Reg:%x", reg);
+                    return trans->write(&reg, 1).and_then([&trans, &data, &len,
+                                                           &stop](size_t&&) {
+                        M5_LIB_LOGI(">>>>>%zu %p", len, data);
+                        return ((data && len)
+                                    ? trans->write(data, len)
+                                    : m5::stl::expected<
+                                          size_t, m5::hal::error::error_t>(
+                                          (size_t)0UL))
+                            .and_then([&trans, &stop](size_t&&) {
+                                M5_LIB_LOGI("=== stop:%d", stop);
+
+                                return stop ? trans->stop()
+                                            : m5::stl::expected<
+                                                  void,
+                                                  m5::hal::error::error_t>();
+                            });
                     });
+                });
+                // Clean-up must be called
+                auto eresult = this->_bus->endAccess(std::move(trans));
+                return result.error_or(eresult);
+            }
+            return acc.error();
+        }
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+
+    virtual m5::hal::error::error_t writeWithTransaction(
+        const uint16_t reg, const uint8_t* data, const size_t len,
+        const bool stop) override {
+        assert(_addr);
+
+        if (_bus) {
+            auto acc = _bus->beginAccess(_access_cfg);
+            if (acc) {
+                types::big_uint16_t r(reg);
+                auto trans  = acc.value();
+                auto result = trans->startWrite().and_then([&trans, &r, &data,
+                                                            &len, &stop]() {
+                    return trans->write(r.data(), r.size())
+                        .and_then([&trans, &data, &len, &stop](size_t&&) {
+                            return ((data && len)
+                                        ? trans->write(data, len)
+                                        : m5::stl::expected<
+                                              size_t, m5::hal::error::error_t>(
+                                              (size_t)0UL))
+                                .and_then([&trans, &stop](size_t&&) {
+                                    return stop
+                                               ? trans->stop()
+                                               : m5::stl::expected<
+                                                     void,
+                                                     m5::hal::error::error_t>();
+                                });
+                        });
+                });
+
                 // Clean-up must be called
                 auto eresult = this->_bus->endAccess(std::move(trans));
                 return result.error_or(eresult);

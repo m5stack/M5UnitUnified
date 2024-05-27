@@ -17,6 +17,95 @@
 namespace m5 {
 namespace container {
 
+/// @cond
+template <class CB>
+class CircularBufferIterator {
+   public:
+    using value_type      = typename CB::value_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer         = typename CB::value_type*;
+    using reference       = typename CB::reference;
+    //    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
+
+    CircularBufferIterator(CB& cb, std::size_t tail) : _cb(&cb), _idx(tail) {
+    }
+    CircularBufferIterator(const CircularBufferIterator& o) = default;
+    CircularBufferIterator& operator=(const CircularBufferIterator& o) =
+        default;
+
+    inline typename CB::const_reference operator*() {
+        return this->_cb->_buf[_idx % _cb->capacity()];
+    }
+
+    inline pointer operator->() {
+        return &(this->_cb->_buf[_idx % _cb->capacity()]);
+    }
+
+    inline CircularBufferIterator& operator++() {
+        ++_idx;
+        return *this;
+    }
+    inline CircularBufferIterator& operator--() {
+        --_idx;
+        return *this;
+    }
+    inline CircularBufferIterator operator++(int) {
+        CircularBufferIterator it = *this;
+        ++*this;
+        return it;
+    }
+    inline CircularBufferIterator operator--(int) {
+        CircularBufferIterator it = *this;
+        --*this;
+        return it;
+    }
+
+    inline CircularBufferIterator& operator+=(std::size_t n) {
+        _idx += n;
+        return *this;
+    }
+    inline CircularBufferIterator& operator-=(std::size_t n) {
+        _idx -= n;
+        return *this;
+    }
+    inline CircularBufferIterator operator+(std::size_t n) const {
+        return CircularBufferIterator(*this) += n;
+    }
+    inline CircularBufferIterator operator-(std::size_t n) const {
+        return CircularBufferIterator(*this) -= n;
+    }
+    inline std::size_t operator-(const CircularBufferIterator& o) {
+        assert(_cb == o._cb && "Diffrent iterators of container");
+        assert(_idx >= o._idx && "o must be lesser than this.");
+        return _idx - o._idx;
+    }
+
+    inline bool operator==(const CircularBufferIterator& b) const {
+        return (_cb == b._cb) && _idx == b._idx;
+    }
+    inline bool operator<(const CircularBufferIterator& b) const {
+        return _idx < b._idx;
+    }
+    inline bool operator!=(const CircularBufferIterator& b) const {
+        return !(*this == b);
+    }
+    inline bool operator>(const CircularBufferIterator& b) const {
+        return b < (*this);
+    }
+    inline bool operator<=(const CircularBufferIterator& b) const {
+        return !(*this > b);
+    }
+    inline bool operator>=(const CircularBufferIterator& b) const {
+        return !(*this < b);
+    }
+
+   private:
+    CB* _cb{};
+    std::size_t _idx{};
+};
+/// @endcond
+
 /*!
   @class CircularBuffer
   @brief Container called ring buffer or circular buffer
@@ -31,6 +120,8 @@ class CircularBuffer {
     using reference       = T&;
     using const_reference = const T&;
     using return_type     = m5::stl::optional<value_type>;
+    friend class CircularBufferIterator<CircularBuffer>;
+    using const_iterator = CircularBufferIterator<CircularBuffer>;
 
     ///@name Constructor
     ///@{
@@ -142,7 +233,7 @@ class CircularBuffer {
         if (sz == 0) {
             return sz;
         }
-        auto tail = _tail;
+        auto tail        = _tail;
         auto src         = &_buf[tail];
         std::size_t elms = std::min(N - tail, sz);
 
@@ -159,6 +250,23 @@ class CircularBuffer {
             ret += elms;
         }
         return ret;
+    }
+    /// @}
+
+    /// @name Iterators
+    /// @brief This class has const_iterator only.
+    /// @{
+    const_iterator begin() noexcept {
+        return const_iterator(*this, _tail);
+    }
+    const_iterator end() noexcept {
+        return const_iterator(*this, _tail + size());
+    }
+    const_iterator cbegin() noexcept {
+        return const_iterator(*this, _tail);
+    }
+    const_iterator cend() noexcept {
+        return const_iterator(*this, _tail + size());
     }
     /// @}
 

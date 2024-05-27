@@ -17,6 +17,7 @@
 #include <m5_hal/error.hpp>
 
 class TwoWire;
+
 namespace m5 {
 namespace hal {
 namespace bus {
@@ -53,15 +54,28 @@ class Adapter {
     ///@name R/W
     ///@{
     /*! @brief Reading data with transactions */
-    m5::hal::error::error_t readWithTransaction(uint8_t* data,
-                                                const size_t len) {
+    inline m5::hal::error::error_t readWithTransaction(uint8_t* data,
+                                                       const size_t len) {
         return _impl->readWithTransaction(data, len);
     }
     //! @brief Writeing data with transactions */
-    m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
-                                                 const size_t len) {
-        return _impl->writeWithTransaction(data, len);
+    inline m5::hal::error::error_t writeWithTransaction(
+        const uint8_t* data, const size_t len, const bool stop = true) {
+        return _impl->writeWithTransaction(data, len, stop);
     }
+
+    inline m5::hal::error::error_t writeWithTransaction(
+        const uint8_t reg, const uint8_t* data, const size_t len,
+        const bool stop = true) {
+        return _impl->writeWithTransaction(reg, data, len, stop);
+    }
+
+    inline m5::hal::error::error_t writeWithTransaction(
+        const uint16_t reg, const uint8_t* data, const size_t len,
+        const bool stop = true) {
+        return _impl->writeWithTransaction(reg, data, len, stop);
+    }
+
     ///@}
 
     inline uint8_t address() const {
@@ -80,8 +94,21 @@ class Adapter {
                                                             const size_t) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(
-            const uint8_t*, const size_t) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t*,
+                                                             const size_t,
+                                                             const bool) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t,
+                                                             const uint8_t*,
+                                                             const size_t,
+                                                             const bool) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t,
+                                                             const uint8_t*,
+                                                             const size_t,
+                                                             const bool) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
         virtual Impl* duplicate(const uint8_t addr) {

@@ -11,6 +11,7 @@
 
 #include <M5UnitComponent.hpp>
 #include "m5_utility/stl/extension.hpp"
+#include "m5_utility/container/circular_buffer.hpp"
 
 namespace m5 {
 namespace unit {
@@ -202,6 +203,9 @@ struct LedConfiguration {
     uint8_t value{};
 };
 
+//! @brief FIFO depth
+constexpr uint8_t MAX_FIFO_DEPTH{16};
+
 }  // namespace max30100
 
 /*!
@@ -215,20 +219,28 @@ class UnitMAX30100 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
-#if 0
     /*!
       @struct config_t
       @brief Settings
      */
     struct config_t {
-        //! @brief Start periodic measurement on begin?
-        bool start_periodic{true};
-        //! @brief using low power mode if start peridodic on begin?
-        bool low_power{false};
-        //! @brief  Enable calibration on begin?
-        bool auto_calibration{true};
+        //! @brief Operating mode
+        max30100::Mode mode{max30100::Mode::HROnly};
+        //! @brief Sampling rate
+        max30100::SamplingRate samplingRate{
+            m5::unit::max30100::SamplingRate::Sampling100};
+        //! @brief Led pulse width
+        max30100::LedPulseWidth pulseWidth{
+            m5::unit::max30100::LedPulseWidth::PW1600};
+        //! @brief The SpO2 ADC resolution
+        bool highResolution{true};
+        //! @brief Led current for IR
+        m5::unit::max30100::CurrentControl irCurrent{
+            m5::unit::max30100::CurrentControl::mA7_6};
+        //! @brief Led current for Red
+        m5::unit::max30100::CurrentControl redCurrent{
+            m5::unit::max30100::CurrentControl::mA7_6};
     };
-#endif
 
     explicit UnitMAX30100(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr) {
@@ -239,7 +251,6 @@ class UnitMAX30100 : public Component {
     virtual bool begin() override;
     virtual void update() override;
 
-#if 0    
     ///@name Settings
     ///@{
     /*! @brief Gets the configration */
@@ -247,11 +258,45 @@ class UnitMAX30100 : public Component {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t &cfg) {
+    void config(const config_t& cfg) {
         _cfg = cfg;
     }
     ///@}
-#endif
+
+    ///@name Properties
+    ///@{
+    /*! @brief Periodic measurement data updated? */
+    inline bool updated() const {
+        return _updated;
+    }
+    /*!
+      @brief Time elapsed since start-up when the measurement data was updated
+      in update()
+      @return Updated time (Unit: ms)
+    */
+    inline unsigned long updatedMillis() const {
+        return _latest;
+    }
+    //! @brief Number of data last retrieved
+    inline uint8_t retrived() const {
+        return _retrived;
+    }
+    /*!
+      @brief The number of samples lost.
+      @note It saturates at 15
+     */
+    inline uint8_t overflow() const {
+        return _overflow;
+    }
+
+    /*!
+      @brief Gets the latest data
+      @param[out] ir,red Outout latest data
+      @param[in] prev Forward offset if more than one data set is retrieved
+      0:latest, 1: one previous, 2: two previous...
+    */
+    bool getRawData(uint16_t& ir, uint16_t& red, uint8_t prev = 0);
+    ///@}
 
     // API
     ///@name Status
@@ -291,6 +336,9 @@ class UnitMAX30100 : public Component {
     ///@}
 
     ///@name LED Configuration
+    ///@warning In the heart-rate only mode, the red LED is inactive.
+    /// and only the IR LED is used to capture optical data and determine the
+    /// heart rate.
     ///@{
     bool getLedConfiguration(max30100::LedConfiguration& lc);
     bool setLedConfiguration(const max30100::LedConfiguration lc);
@@ -298,16 +346,21 @@ class UnitMAX30100 : public Component {
                        const max30100::CurrentControl red);
     ///@}
 
-    bool reset();
-
+    ///@name FIFO
+    ///@{
+    bool resetFIFO();
     bool readFIFOData();
+    ///@}
 
     ///@name Temperature
     ///@{
-    bool measurementTemperature();
+    bool startMeasurementTemperature();
     bool isMeasurementTemperature();
     bool readMeasurementTemperature(float& temp);
+
     ///@}
+
+    bool reset();
 
    protected:
     inline virtual const char* unit_device_name() const override {
@@ -328,31 +381,49 @@ class UnitMAX30100 : public Component {
     bool enable_high_resolution(const bool enabled);
     bool get_led_configration(uint8_t& c);
     bool set_led_configration(const uint8_t c);
+
+    bool read_register(const uint8_t reg, uint8_t* buf, const size_t len);
+    bool read_register8(const uint8_t reg, uint8_t& v);
+
+   protected:
+    max30100::Mode _mode{};
+    max30100::SamplingRate _samplingRate{};
+    unsigned long _latest{}, _interval{};
+    size_t _latestCoount{};
+    bool _periodic{}, _updated{};
+    uint8_t _retrived{};  // Number of elements last retrieved.
+    uint8_t _overflow{};
+
+    struct Measured {
+        uint16_t ir;
+        uint16_t red;
+    };
+    m5::container::CircularBuffer<Measured, max30100::MAX_FIFO_DEPTH> _buffer;
+
+    config_t _cfg{};
 };
 
 ///@cond
 namespace max30100 {
-
-constexpr uint8_t MAX_FIFO_DEPTH{16};
-
 namespace command {
 // STATUS
-constexpr uint8_t INTERRUPT_STATUS{0x00};
+constexpr uint8_t READ_INTERRUPT_STATUS{0x00};
 constexpr uint8_t INTERRUPT_ENABLE{0x01};
 // FIFO
 constexpr uint8_t FIFO_WRITE_POINTER{0x02};
-constexpr uint8_t OVER_FLOW_COUNTER{0x03};
+constexpr uint8_t FIFO_OVERFLOW_COUNTER{0x03};
 constexpr uint8_t FIFO_READ_POINTER{0x04};
+// Note that FIFO_DATA_REGISTER cannot be burst read.
 constexpr uint8_t FIFO_DATA_REGISTER{0x05};
 // CONFIGURATION
 constexpr uint8_t MODE_CONFIGURATION{0x06};
 constexpr uint8_t SPO2_CONFIGURATION{0x07};
 constexpr uint8_t LED_CONFIGURATION{0x09};
 // TEMPERATURE
-constexpr uint8_t READ_TEMP_INTEGER{0x16};
-constexpr uint8_t READ_TEMP_FRACTION{0x17};
+constexpr uint8_t TEMP_INTEGER{0x16};
+constexpr uint8_t TEMP_FRACTION{0x17};
 // PART ID
-constexpr uint8_t REVISION_ID{0xFE};
+constexpr uint8_t READ_REVISION_ID{0xFE};
 constexpr uint8_t PART_ID{0xFF};
 
 }  // namespace command

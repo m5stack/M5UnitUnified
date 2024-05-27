@@ -315,10 +315,97 @@ void cb_read() {
     EXPECT_EQ(*rb.back(), 227);
 }
 
+void cb_iterator_test() {
+    SCOPED_TRACE("Iterators");
+
+    CircularBuffer<int, 4> rb = {0, 1, 2};
+    CircularBuffer<int, 4> rb2;
+    int c = 0;
+    for (auto it = rb.cbegin(); it != rb.cend(); ++it) {
+        EXPECT_EQ(*it, c++);
+    }
+
+    rb.clear();
+    rb.push_back(9);
+    rb.push_back(8);
+    rb.push_back(7);
+    rb.push_back(6);
+    c = 9;
+    for (auto&& e : rb) {
+        EXPECT_EQ(e, c--);
+    }
+    c = 9;
+    std::for_each(std::begin(rb), std::end(rb),
+                  [&c](const int& e) { EXPECT_EQ(e, c--); });
+
+    c = 6;
+    for (auto it = rb.cend(); it != rb.cbegin(); /**/) {
+        --it;
+        EXPECT_EQ(*it, c++);
+    }
+#if 0
+    {
+        auto it = rb.begin();
+        // *it = 1; // Compile error. it is const reference.
+    }
+#endif
+
+    using Iter = CircularBuffer<int, 4>::const_iterator;
+    {
+        Iter it = rb.begin();
+        EXPECT_EQ(*it++, 9);
+        EXPECT_EQ(*it--, 8);
+        EXPECT_EQ(*++it, 8);
+        EXPECT_EQ(*--it, 9);
+    }
+
+    {
+        Iter it = rb.begin();
+        it      = it + 3;
+        EXPECT_EQ(*it, 6);
+        it = it - 2;
+        EXPECT_EQ(*it, 8);
+    }
+
+    {
+        Iter it_o = rb2.begin();
+        Iter it0  = rb.begin() + 0;
+        Iter it1  = rb.begin() + 1;
+        Iter it2  = rb.begin() + 2;
+        Iter it3  = rb.begin() + 3;
+        Iter it11 = rb.begin();
+        Iter it22 = rb.begin();
+        Iter it33 = rb.begin();
+        ++it11;
+        it22++;
+        ++it22;
+        ++it33;
+        it33++;
+        ++it33;
+
+        EXPECT_FALSE(it1 == it_o);
+        EXPECT_TRUE(it1 == it11);
+        EXPECT_TRUE(it1 != it2);
+        EXPECT_TRUE(it0 < it1);
+        EXPECT_TRUE(it2 > it0);
+        EXPECT_TRUE(it2 <= it22);
+        EXPECT_TRUE(it2 <= it33);
+        EXPECT_TRUE(it3 >= it33);
+        EXPECT_TRUE(it3 >= it11);
+
+        EXPECT_EQ(rb.end() - it0, 4U);
+        EXPECT_EQ(it3 - it0, 3U);
+        EXPECT_EQ(it2 - it0, 2U);
+        EXPECT_EQ(it1 - it0, 1U);
+        EXPECT_EQ(it0 - rb.begin(), 0U);
+    }
+}
+
 }  // namespace
 
 TEST(Utility, CircularBuffer) {
     cb_basic_test();
     cb_constructor_test();
     cb_read();
+    cb_iterator_test();
 }

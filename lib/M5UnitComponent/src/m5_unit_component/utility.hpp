@@ -31,8 +31,8 @@ class WithCRC {
 /*!
   @class ReadDataWithCRC16
   @brief Accessors for big_uint16_t and crc8 pairs of sequences
-  @detail Accessors for processing typical read data<br>
-  @detail [uint8_t, uint8_t, uint8_t] [0][1]:data(big endian) [2]:CRC for data
+  @details Accessors for processing typical read data<br>
+  @details [uint8_t, uint8_t, uint8_t] [0][1]:data(big endian) [2]:CRC for data
  */
 class ReadDataWithCRC16 : public WithCRC {
    public:
@@ -58,7 +58,7 @@ class ReadDataWithCRC16 : public WithCRC {
                           : false;
     }
     /*!
-      @brief Gets the value_
+      @brief Gets the value
       @param[in] n Subscript indicating the number of pairs
     */
     uint16_t value(const size_t n) const {

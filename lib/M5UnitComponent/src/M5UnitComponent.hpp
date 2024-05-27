@@ -167,7 +167,7 @@ class Component {
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
     bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
-                      const uint32_t delayMillis);
+                      const uint32_t delayMillis, const bool stop = true);
     //! @brief Read uint8_t from register
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value &&
@@ -175,7 +175,7 @@ class Component {
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
     bool readRegister8(const Reg reg, uint8_t& result,
-                       const uint32_t delayMillis);
+                       const uint32_t delayMillis, const bool stop = true);
     //! @brief Read uint16_t from register
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value &&
@@ -183,11 +183,23 @@ class Component {
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
     bool readRegister16(const Reg reg, uint16_t& result,
-                        const uint32_t delayMillis);
+                        const uint32_t delayMillis, const bool stop = true);
 
     //! @brief Writeing data with transactions */
     m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
-                                                 const size_t len);
+                                                 const size_t len,
+                                                 const bool stop = true);
+
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    m5::hal::error::error_t writeWithTransaction(const Reg reg,
+                                                 const uint8_t* data,
+                                                 const size_t len,
+                                                 const bool stop = true);
+
     //! @brief Write data to register
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value &&
@@ -195,21 +207,23 @@ class Component {
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
     bool writeRegister(const Reg reg, const uint8_t* buf = nullptr,
-                       const size_t len = 0);
+                       const size_t len = 0U, const bool stop = true);
     //! @brief Write uint8_t to register
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value &&
                                           std::is_unsigned<Reg>::value &&
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool writeRegister8(const Reg reg, const uint8_t value);
+    bool writeRegister8(const Reg reg, const uint8_t value,
+                        const bool stop = true);
     //! @brief Write uint16_t to register
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value &&
                                           std::is_unsigned<Reg>::value &&
                                           sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool writeRegister16(const Reg reg, const uint16_t value);
+    bool writeRegister16(const Reg reg, const uint16_t value,
+                         const bool stop = true);
     ///@}
 
     ///@name Children
