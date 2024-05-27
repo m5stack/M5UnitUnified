@@ -11,7 +11,6 @@
 TEST(Utility, Conversion) {
     {
         SCOPED_TRACE("8bit:4");
-        int8_t i8{};
         std::pair<uint8_t, int8_t> table[] = {
             // zero
             {0x00, 0},
@@ -30,7 +29,6 @@ TEST(Utility, Conversion) {
 
     {
         SCOPED_TRACE("8bit:8");
-        int8_t i8{};
         std::pair<uint8_t, int8_t> table[] = {
             // zero
             {0, 0},
@@ -49,7 +47,6 @@ TEST(Utility, Conversion) {
 
     {
         SCOPED_TRACE("16bit:10");
-        int16_t i8{};
         std::pair<uint16_t, int16_t> table[] = {
             // zero
             {0x0000, 0},
@@ -70,7 +67,6 @@ TEST(Utility, Conversion) {
 
     {
         SCOPED_TRACE("32bit:20");
-        int32_t i8{};
         std::pair<uint32_t, int32_t> table[] = {
             // zero
             {0x00000000, 0},
@@ -90,23 +86,22 @@ TEST(Utility, Conversion) {
     }
 
     {
-        SCOPED_TRACE("64bit:52");
-        int32_t i8{};
-        std::pair<uint32_t, int32_t> table[] = {
+        SCOPED_TRACE("64bit:47");
+        std::pair<uint64_t, int64_t> table[] = {
             // zero
-            {0x0000000000000000, 0},
+            {0x0000000000000000ULL, 0},
             // only sign bit
-            {0x0008000000000000, -4503599627370496},
+            {0x0000400000000000ULL, -70368744177664LL},
             // all bits
-            {0x000FFFFFFFFFFFF, -1},
+            {0x00007FFFFFFFFFFFULL, -1LL},
             // all signed bits
-            {0x0007FFFFFFFFFFF, 4503599627370495},
+            {0x00003FFFFFFFFFFFULL, 70368744177663LL},
             //
-            {0x000400000000000, 2251799813685248},
+            {0x0000200000000000ULL, 35184372088832},
         };
         for (auto&& e : table) {
-            EXPECT_EQ(m5::utility::unsigned_to_signed<20>(e.first), e.second)
-                << e.first;
+            EXPECT_EQ(m5::utility::unsigned_to_signed<47>(e.first), e.second)
+                << e.second;
         }
     }
 }

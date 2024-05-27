@@ -19,6 +19,8 @@
 
 #include "m5_utility/log/library_log.hpp"
 
+#include "m5_utility/container/circular_buffer.hpp"
+
 #include "m5_utility/bit_segment.hpp"
 #include "m5_utility/compatibility_feature.hpp"
 #include "m5_utility/murmurhash3.hpp"
@@ -26,6 +28,7 @@
 #include "m5_utility/crc.hpp"
 #include "m5_utility/string.hpp"
 #include "m5_utility/conversion.hpp"
+#include "m5_utility/math.hpp"
 
 /*!
   @namespace m5
