@@ -7,6 +7,14 @@ namespace hal {
 namespace bus {
 namespace i2c {
 
+void delayCycle(uint32_t count)
+{
+    for (uint32_t i = count; i > 0; --i)
+    {
+        __asm__ __volatile__("nop");
+    }
+}
+
 m5::stl::expected<I2CBus*, m5::hal::error::error_t> getBus(const I2CBusConfig& config)
 {
     // @TODO ソフトウェアSPIの複数のインスタンスを管理できるようにすること。
@@ -21,15 +29,20 @@ error::error_t SoftwareI2CBus::init(const BusConfig& config) {
         return error::error_t::INVALID_ARGUMENT;
     }
     _config = static_cast<const I2CBusConfig&>(config);
+    if (_config.pin_scl == nullptr || _config.pin_sda == nullptr) {
+      M5_LIB_LOGE("SoftwareI2C::init: error %s", __PRETTY_FUNCTION__);
+      return error::error_t::INVALID_ARGUMENT;
+    }
     M5_LIB_LOGV("SoftwareI2C::init: ok %s", __PRETTY_FUNCTION__);
-    if (_config.pin_scl) {
-        _config.pin_scl->setMode(m5::hal::types::gpio_mode_t::Output_OpenDrain);
-        _config.pin_scl->writeHigh();
-    }
-    if (_config.pin_sda) {
-        _config.pin_sda->setMode(m5::hal::types::gpio_mode_t::Output_OpenDrain);
-        _config.pin_sda->writeHigh();
-    }
+
+    _config.pin_scl->setMode(m5::hal::types::gpio_mode_t::Output_OpenDrain);
+    _config.pin_scl->writeLow();
+    _config.pin_sda->setMode(m5::hal::types::gpio_mode_t::Output_OpenDrain);
+    _config.pin_sda->writeLow();
+    _config.pin_scl->writeHigh();
+    delayCycle(128);
+    _config.pin_sda->writeHigh();
+
     return error::error_t::OK;
 }
 
@@ -48,14 +61,6 @@ m5::stl::expected<m5::hal::bus::Accessor*, m5::hal::error::error_t> SoftwareI2CB
     _Accessor.reset(result);
     M5_LIB_LOGV("SoftwareI2C::beginAccess: ok %s", __PRETTY_FUNCTION__);
     return result;
-}
-
-void delayCycle(uint32_t count)
-{
-    for (uint32_t i = count; i > 0; --i)
-    {
-        __asm__ __volatile__("nop");
-    }
 }
 
 m5::stl::expected<void, m5::hal::error::error_t> I2CMasterAccessor::sendDummyClockWhileSdaLow(size_t count)
