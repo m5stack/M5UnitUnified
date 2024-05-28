@@ -42,12 +42,13 @@ const ::testing::Environment* global_fixture =
 class TestQMP6988 : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        if (!GetParam()) {
+        if (!GetParam() && !wire) {
+            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
             Wire.end();
             Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+            wire = true;
         }
 
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
@@ -85,12 +86,14 @@ class TestQMP6988 : public ::testing::TestWithParam<bool> {
     m5::unit::UnitUnified Units;
     m5::unit::UnitQMP6988 unit;
     std::string ustr{};
+    bool wire{};
 };
 
 // true:Bus false:Wire
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988,
-//                         ::testing::Values(true, false));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988,
+                         ::testing::Values(true, false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(false));
 
 TEST_P(TestQMP6988, MeasurementCondition) {
     SCOPED_TRACE(ustr);

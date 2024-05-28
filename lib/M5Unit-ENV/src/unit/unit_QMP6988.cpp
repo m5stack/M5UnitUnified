@@ -8,7 +8,7 @@
 */
 #include "unit_QMP6988.hpp"
 #include <M5Utility.hpp>
-#include <limits> // NaN
+#include <limits>  // NaN
 
 using namespace m5::utility::mmh3;
 
@@ -18,15 +18,6 @@ using namespace m5::unit::qmp6988;
 constexpr uint8_t chip_id{0x5C};
 
 constexpr size_t calibration_length{25};
-
-constexpr uint8_t mode_shift{0};
-constexpr uint8_t mode_mask{0x03};
-constexpr uint8_t pressure_shift{2};
-constexpr uint8_t pressure_mask{0x07 << pressure_shift};
-constexpr uint8_t temperature_shift{5};
-constexpr uint8_t temperature_mask{0x07 << temperature_shift};
-constexpr uint8_t standby_shift{5};
-constexpr uint8_t standby_mask{0x07 << standby_shift};
 
 constexpr uint32_t sub_raw{8388608};  // 2^23
 
@@ -108,21 +99,15 @@ const types::uid_t UnitQMP6988::attr{0};
 bool UnitQMP6988::begin() {
     uint8_t id{};
     if (!readRegister8(CHIP_ID, id, 0) || id != chip_id) {
-        M5_LIB_LOGE("This unit is NOT QMP6988");
+        M5_LIB_LOGE("This unit is NOT QMP6988 %x", id);
         return false;
     }
-
-    /*
-    if (!reset() || !read_calibration(_calibration)) {
-        M5_LIB_LOGE("Failed to reset or read_calibration");
-        return false;
-    }
-    */
-
+    
     if (!reset()) {
         M5_LIB_LOGE("Failed to reset");
         return false;
     }
+
     if (!read_calibration(_calibration)) {
         M5_LIB_LOGE("Failed to read_calibration");
         return false;
@@ -213,13 +198,11 @@ bool UnitQMP6988::readMeasurement() {
 bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
                                           qmp6988::Average& pa,
                                           qmp6988::PowerMode& mode) {
-    uint8_t cond{};
-    if (get_measurement_condition(cond)) {
-        ta   = static_cast<qmp6988::Average>((cond & temperature_mask) >>
-                                             temperature_shift);
-        pa   = static_cast<qmp6988::Average>((cond & pressure_mask) >>
-                                             pressure_shift);
-        mode = mode_table[cond & mode_mask];
+    qmp6988::CtrlMeasurement cm{};
+    if (get_measurement_condition(cm.value)) {
+        ta   = cm.temperatureAvg();
+        pa   = cm.pressureAvg();
+        mode = mode_table[m5::stl::to_underlying(cm.mode())];
         return true;
     }
     return false;
@@ -227,51 +210,48 @@ bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
 
 bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
                                           const qmp6988::Average pa,
-                                          const qmp6988::PowerMode mode) {
-    uint8_t cond{(uint8_t)((m5::stl::to_underlying(ta) << temperature_shift) |
-                           (m5::stl::to_underlying(pa) << pressure_shift) |
-                           (m5::stl::to_underlying(mode)))};
-    return set_measurement_condition(cond);
+                                          const qmp6988::PowerMode m) {
+    qmp6988::CtrlMeasurement cm{};
+    cm.temperatureAvg(ta);
+    cm.pressureAvg(pa);
+    cm.mode(m);
+    return set_measurement_condition(cm.value);
 }
 
 bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
                                           const qmp6988::Average pa) {
-    uint8_t cond{};
-    if (get_measurement_condition(cond)) {
-        cond &= ~(temperature_mask | pressure_mask);
-        cond |= (uint8_t)((m5::stl::to_underlying(ta) << temperature_shift) |
-                          (m5::stl::to_underlying(pa) << pressure_shift));
-        return set_measurement_condition(cond);
+    qmp6988::CtrlMeasurement cm{};
+    if (get_measurement_condition(cm.value)) {
+        cm.temperatureAvg(ta);
+        cm.pressureAvg(pa);
+        return set_measurement_condition(cm.value);
     }
     return false;
 }
 
 bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta) {
-    uint8_t cond{};
-    if (get_measurement_condition(cond)) {
-        cond &= ~temperature_mask;
-        cond |= (uint8_t)(m5::stl::to_underlying(ta) << temperature_shift);
-        return set_measurement_condition(cond);
+    qmp6988::CtrlMeasurement cm{};
+    if (get_measurement_condition(cm.value)) {
+        cm.temperatureAvg(ta);
+        return set_measurement_condition(cm.value);
     }
     return false;
 }
 
 bool UnitQMP6988::setPressureOversampling(const qmp6988::Average pa) {
-    uint8_t cond{};
-    if (get_measurement_condition(cond)) {
-        cond &= ~pressure_mask;
-        cond |= (uint8_t)(m5::stl::to_underlying(pa) << pressure_shift);
-        return set_measurement_condition(cond);
+    qmp6988::CtrlMeasurement cm{};
+    if (get_measurement_condition(cm.value)) {
+        cm.pressureAvg(pa);
+        return set_measurement_condition(cm.value);
     }
     return false;
 }
 
-bool UnitQMP6988::setPowerMode(const qmp6988::PowerMode mode) {
-    uint8_t cond{};
-    if (get_measurement_condition(cond)) {
-        cond &= ~mode_mask;
-        cond |= (uint8_t)(m5::stl::to_underlying(mode));
-        return set_measurement_condition(cond);
+bool UnitQMP6988::setPowerMode(const qmp6988::PowerMode m) {
+    qmp6988::CtrlMeasurement cm{};
+    if (get_measurement_condition(cm.value)) {
+        cm.mode(m);
+        return set_measurement_condition(cm.value);
     }
     return false;
 }
@@ -302,20 +282,18 @@ bool UnitQMP6988::setFilterCoeff(const qmp6988::Filter& f) {
 }
 
 bool UnitQMP6988::getStandbyTime(qmp6988::StandbyTime& st) {
-    uint8_t v{};
-    if (get_io_setup(v)) {
-        st = static_cast<qmp6988::StandbyTime>((v & standby_mask) >>
-                                               standby_shift);
+    qmp6988::IOSetup is{};
+    if (get_io_setup(is.value)) {
+        st = is.standby();
         return true;
     }
     return false;
 }
 bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
-    uint8_t v{};
-    if (get_io_setup(v)) {
-        v &= ~standby_mask;
-        v |= (m5::stl::to_underlying(st) << standby_shift) & standby_mask;
-        if (set_io_setup(v)) {
+    qmp6988::IOSetup is{};
+    if (get_io_setup(is.value)) {
+        is.standby(st);
+        if (set_io_setup(is.value)) {
             _interval = interval_table[m5::stl::to_underlying(st)];
             return true;
         }
@@ -326,8 +304,12 @@ bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
 bool UnitQMP6988::reset() {
     uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
     auto ret = writeRegister8(RESET, v);
+    (void)ret;
+    // TODO / WARNING
+    // Reset causes a NO ACK error, but ignore it.
     m5::utility::delay(10);  // Need delay
-    return ret;
+
+    return writeRegister(RESET, 0x00); // Nothing to happen
 }
 
 bool UnitQMP6988::getStatus(qmp6988::Status& s) {
@@ -340,14 +322,14 @@ bool UnitQMP6988::get_measurement_condition(uint8_t& cond) {
 
 bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
     if (writeRegister8(CONTROL_MEASUREMENT, cond)) {
-        _tempAvg = static_cast<qmp6988::Average>((cond & temperature_mask) >>
-                                                 temperature_shift);
-        _pressureAvg = static_cast<qmp6988::Average>((cond & pressure_mask) >>
-                                                     pressure_shift);
-        _mode        = mode_table[cond & mode_mask];
+        qmp6988::CtrlMeasurement cm;
+        cm.value     = cond;
+        _tempAvg     = cm.temperatureAvg();
+        _pressureAvg = cm.pressureAvg();
+        _mode        = cm.mode();
         _periodic    = (_mode == qmp6988::PowerMode::Normal);
 
-        // M5_LIB_LOGV("%d,%d,%d,%d", _tempAvg, _pressureAvg, _mode, _periodic);
+        //M5_LIB_LOGI(">>> %d,%d,%d,%d", _tempAvg, _pressureAvg, _mode, _periodic);
         return true;
     }
     return false;

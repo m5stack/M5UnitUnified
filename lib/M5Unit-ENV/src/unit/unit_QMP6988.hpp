@@ -10,6 +10,7 @@
 #define M5_UNIT_ENV_UNIT_QMP6988_HPP
 
 #include <M5UnitComponent.hpp>
+#include <m5_utility/stl/extension.hpp>
 
 namespace m5 {
 namespace unit {
@@ -42,6 +43,40 @@ enum class PowerMode : uint8_t {
     Normal = 3,  //!< @brief Normally energized (periodic measurement)
 };
 
+/*!
+  @struct CtrlMeasurement
+  @brief Accessor for CtrlMeasurement
+ */
+struct CtrlMeasurement {
+    ///@name Getter
+    ///@{
+    Average temperatureAvg() const {
+        return static_cast<Average>((value >> 5) & 0x07);
+    }
+    Average pressureAvg() const {
+        return static_cast<Average>((value >> 2) & 0x07);
+    }
+    PowerMode mode() const {
+        return static_cast<PowerMode>(value & 0x03);
+    }
+    ///@}
+    ///@name Setter
+    ///@{
+    void temperatureAvg(const Average a) {
+        value =
+            (value & ~(0x07 << 5)) | ((m5::stl::to_underlying(a) & 0x07) << 5);
+    }
+    void pressureAvg(const Average a) {
+        value =
+            (value & ~(0x07 << 2)) | ((m5::stl::to_underlying(a) & 0x07) << 2);
+    }
+    void mode(const PowerMode m) {
+        value = (value & ~0x03) | (m5::stl::to_underlying(m) & 0x03);
+    }
+    ///@}
+    uint8_t value{};
+};
+
 enum class Filter : uint8_t {
     Off,      //!< @brief Off filter
     Coeff2,   //!< @brief co-efficient 2
@@ -56,7 +91,7 @@ enum class Filter : uint8_t {
   @brief Accessor for Status
  */
 struct Status {
-    //! @brief Device operation status. T
+    //! @brief Device operation status
     inline bool measure() const {
         return value & (1U << 3);
     }
@@ -81,6 +116,21 @@ enum class StandbyTime {
     Time1sec,   //!< @brief 1 seconds
     Time2sec,   //!< @brief 2 seconds
     Time4sec,   //!< @brief 4 seconds
+};
+
+/*!
+  @struct IOSetup
+  @brief Accessor for IOSetup
+ */
+struct IOSetup {
+    StandbyTime standby() const {
+        return static_cast<StandbyTime>((value >> 5) & 0x07);
+    }
+    void standby(const StandbyTime s) {
+        value =
+            (value & ~(0x07 << 5)) | ((m5::stl::to_underlying(s) & 0x07) << 5);
+    }
+    uint8_t value{};
 };
 
 ///@cond

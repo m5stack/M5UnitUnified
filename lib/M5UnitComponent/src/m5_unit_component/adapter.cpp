@@ -162,22 +162,17 @@ struct BusImpl : public Adapter::Impl {
         if (_bus) {
             auto acc = _bus->beginAccess(_access_cfg);
             if (acc) {
-                M5_LIB_LOGE("acc");
                 auto trans  = acc.value();
                 auto result = trans->startWrite().and_then([&trans, &reg, &data,
                                                             &len, &stop]() {
-                    M5_LIB_LOGI("Reg:%x", reg);
                     return trans->write(&reg, 1).and_then([&trans, &data, &len,
                                                            &stop](size_t&&) {
-                        M5_LIB_LOGI(">>>>>%zu %p", len, data);
                         return ((data && len)
                                     ? trans->write(data, len)
                                     : m5::stl::expected<
                                           size_t, m5::hal::error::error_t>(
                                           (size_t)0UL))
                             .and_then([&trans, &stop](size_t&&) {
-                                M5_LIB_LOGI("=== stop:%d", stop);
-
                                 return stop ? trans->stop()
                                             : m5::stl::expected<
                                                   void,

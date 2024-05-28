@@ -99,7 +99,7 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
     if (!stretch) {
         m5::utility::delay(ms[m5::stl::to_underlying(rep)]);
     } else {
-        m5::utility::delay(1);  // must need?
+        m5::utility::delay(1);  // must need? (depends Wire.setTimeout() ?)
     }
     return read_measurement();
 }

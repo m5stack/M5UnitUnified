@@ -24,6 +24,7 @@ constexpr uint16_t float_to_uint16(const float f) {
 
 }  // namespace
 
+#if 0
 class GlobalFixture : public ::testing::Environment {
    public:
     void SetUp() override {
@@ -35,17 +36,19 @@ class GlobalFixture : public ::testing::Environment {
 };
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture);
+#endif
 
 // bool true: Using bus false: using wire
 class TestSCD4x : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-        if (!GetParam()) {
+        if (!GetParam() && !wire) {
             Wire.end();
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
             // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
             Wire.begin(pin_num_sda, pin_num_scl, 400000U);
+            wire = true;
         }
 
         unit = get_instance();
@@ -90,6 +93,7 @@ class TestSCD4x : public ::testing::TestWithParam<bool> {
     m5::unit::UnitUnified Units;
     m5::unit::UnitSCD40* unit{};  // SCD40 or SCD41
     std::string ustr{};
+    bool wire{};
 };
 
 // #define UNIT_TEST_SCD41

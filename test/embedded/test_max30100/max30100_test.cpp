@@ -18,6 +18,7 @@
 #include <iostream>
 #include <vector>
 
+#if 0
 class GlobalFixture : public ::testing::Environment {
    public:
     void SetUp() override {
@@ -27,26 +28,24 @@ class GlobalFixture : public ::testing::Environment {
 
         // Too fast for some devices, e.g. Capsule
         // Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-        Wire.begin(pin_num_sda, pin_num_scl, 100000U);
+        //Wire.begin(pin_num_sda, pin_num_scl, 100000U);
     }
 };
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture);
+#endif
 
 // bool true: Using bus false: using wire
 class TestMAX30100 : public ::testing::TestWithParam<bool> {
    protected:
     virtual void SetUp() override {
-#if 0
-        if (!GetParam()) {
-            Wire.end();
+        if (!GetParam() && !wire) {
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            //      Wire.begin(pin_num_sda, pin_num_scl, 100000U);
+            Wire.end();
             Wire.begin(pin_num_sda, pin_num_scl, 100000U);
+            wire = true;
         }
-#endif
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
         // printf("Test as %s\n", ustr.c_str());
@@ -81,6 +80,7 @@ class TestMAX30100 : public ::testing::TestWithParam<bool> {
     m5::unit::UnitUnified Units;
     m5::unit::UnitMAX30100 unit;
     std::string ustr{};
+    bool wire{};
 };
 
 // true:Bus false:Wire
@@ -104,10 +104,10 @@ bool is_allowed_settings(const Mode mode, const SamplingRate rate,
         // LSB:200 MSG:1600
         0x0F, 0x0F, 0x07, 0x07, 0x03, 0x03, 0x03, 0x03,
 #else
-        // The description on the data sheet is as above,
-        // but some invalid values can be set. (bug or spec?)
         // LSB:200 MSG:1600
         0x0F, 0x0F, 0x0F, 0x0F, 0x07, 0x03, 0x03, 0x03,
+    // The description on the data sheet is as above,
+    // but some invalid values can be set. (bug or spec?)
 #endif
     };
     return (mode == Mode::SPO2 ? spo2_table
