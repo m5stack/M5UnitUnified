@@ -100,15 +100,12 @@ bool is_allowed_settings(const Mode mode, const SamplingRate rate,
         0x0F, 0x0F, 0x07, 0x07, 0x03, 0x01, 0x01, 0x01,
     };
     constexpr uint8_t hr_table[] = {
-#if 0
         // LSB:200 MSG:1600
-        0x0F, 0x0F, 0x07, 0x07, 0x03, 0x03, 0x03, 0x03,
-#else
+        // 0x0F, 0x0F, 0x07, 0x07, 0x03, 0x03, 0x03, 0x03,
         // LSB:200 MSG:1600
         0x0F, 0x0F, 0x0F, 0x0F, 0x07, 0x03, 0x03, 0x03,
-    // The description on the data sheet is as above,
-    // but some invalid values can be set. (bug or spec?)
-#endif
+        // The description on the data sheet is as above,
+        // but some invalid values can be set. (bug or spec?)
     };
     return (mode == Mode::SPO2 ? spo2_table
                                : hr_table)[m5::stl::to_underlying(rate)] &
