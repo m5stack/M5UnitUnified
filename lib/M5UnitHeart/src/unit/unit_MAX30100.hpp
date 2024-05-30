@@ -6,8 +6,8 @@
 
   SPDX-License-Identifier: MIT
 */
-#ifndef M5_UNIT_ENV_UNIT_MAX30100_HPP
-#define M5_UNIT_ENV_UNIT_MAX30100_HPP
+#ifndef M5_UNIT_HEART_UNIT_MAX30100_HPP
+#define M5_UNIT_HEART_UNIT_MAX30100_HPP
 
 #include <M5UnitComponent.hpp>
 #include "m5_utility/stl/extension.hpp"

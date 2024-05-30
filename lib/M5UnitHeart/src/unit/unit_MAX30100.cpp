@@ -11,8 +11,6 @@
 #include <limits>  // NaN
 #include <cassert>
 
-#include <Wire.h>
-
 using namespace m5::utility::mmh3;
 
 namespace {
