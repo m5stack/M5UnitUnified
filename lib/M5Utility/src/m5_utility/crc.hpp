@@ -46,7 +46,7 @@ class CRC8 {
                              const uint8_t init, const uint8_t polynomial,
                              const bool refIn, const bool refOut,
                              const uint8_t xorout) {
-        uint8_t crc = init;
+        uint8_t crc{init};
         while (len--) {
             uint8_t e = refIn ? reverseBitOrder(*data) : *data;
             ++data;
@@ -113,7 +113,7 @@ class CRC16 {
                               const uint16_t init, const uint16_t polynomial,
                               const bool refIn, const bool refOut,
                               const uint16_t xorout) {
-        uint16_t crc = init;
+        uint16_t crc{init};
         while (len--) {
             uint8_t e{refIn ? reverseBitOrder(*data) : *data};
             ++data;

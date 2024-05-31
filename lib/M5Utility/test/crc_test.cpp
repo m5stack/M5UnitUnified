@@ -19,6 +19,7 @@ struct CRCType {
     const uint32_t xorout;
 };
 
+// https://crccalc.com/?crc=0123456789abcdef&method=crc8&datatype=hex&outtype=0
 CRCType crc8_table[] = {
     // name, result, poly, init, refIn, refOut, xorout
     {"CRC-8", 0x1E, 0x07, 0x00, false, false, 0x00},
@@ -50,14 +51,14 @@ CRCType crc16_table[] = {
     {"CRC-16/MAXIM", 0x0C59, 0x8005, 0x0000, true, true, 0xFFFF},
     {"CRC-16/MCRF4XX", 0x26B0, 0x1021, 0xFFFF, true, true, 0x0000},
     {"CRC-16/MODBUS", 0xF8E6, 0x8005, 0xFFFF, true, true, 0x0000},
-    {"CRC-16/RIELLO", 0x077C, 0x1021, 0xB2AA, true, true, 0x0000},
+    {"CRC-16/RIELLO", 0x077C, 0x1021, 0xB2AA, true, true, 0x0000},  // 0x554D
     {"CRC-16/T10-DIF", 0x4FF0, 0x8BB7, 0x0000, false, false, 0x0000},
     {"CRC-16/TELEDISK", 0x3267, 0xA097, 0x0000, false, false, 0x0000},
-    {"CRC-16/TMS37157", 0x5A4B, 0x1021, 0x89EC, true, true, 0x0000},
+    {"CRC-16/TMS37157", 0x5A4B, 0x1021, 0x89EC, true, true, 0x0000},  // 0x3791
     {"CRC-16/USB", 0x0719, 0x8005, 0xFFFF, true, true, 0xFFFF},
     {"CRC-16/X-25", 0xD94F, 0x1021, 0xFFFF, true, true, 0xFFFF},
     {"CRC-16/XMODEM", 0xA955, 0x1021, 0x0000, false, false, 0x0000},
-    {"CRC-A", 0x0F06, 0x1021, 0xC6C6, true, true, 0x0000},
+    {"CRC-A", 0x0F06, 0x1021, 0xC6C6, true, true, 0x0000},  // 0x6363
 };
 
 const std::vector<uint8_t> tdata = {

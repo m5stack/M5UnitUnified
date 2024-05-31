@@ -16,7 +16,8 @@ namespace utility {
 
 //! @brief Reversing the bit order
 inline uint8_t reverseBitOrder(const uint8_t u8) {
-#if defined(__clang__)
+#if defined(__clang__) && 0
+#pragma message "Using clang builtin"
     return __builtin_bitreverse8(u8);
 #else
     uint8_t v{u8};
@@ -29,7 +30,8 @@ inline uint8_t reverseBitOrder(const uint8_t u8) {
 
 //! @brief Reversing the bit order
 inline uint16_t reverseBitOrder(const uint16_t u16) {
-#if defined(__clang__)
+#if defined(__clang__) && 0
+#pragma message "Using clang builtin"
     return __builtin_bitreverse16(u16);
 #else
     uint16_t v{u16};
