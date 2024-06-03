@@ -402,9 +402,18 @@ bool UnitMFRC522::activate(UID& uid, const bool specific) {
     uint8_t len{sizeof(ATOA)};
     uint8_t len2{sizeof(ATOA)};
 
-    // REQ for IDLE, WUPA for HALT
-    // To READY if successful
-    if (commandREQA(ATOA, len) || commandWUPA(ATOA2, len2)) {
+    if (!writeRegister8(TX_MODE_REG, 0x00) ||
+        // Rset Rx bit rate
+        !writeRegister8(RX_MODE_REG, 0x00) ||
+        // Reset modulation width
+        !writeRegister8(MOD_WIDTH_REG, 0x26)) {
+        return false;
+    }
+
+    // REQ for IDLE
+    Error err{};
+    if (commandREQA(err, ATOA, len) || err.collision()) {
+        M5_LIB_LOGE("sel");
         // To ACTIVE if successful
         return commandSelect(uid, specific);
     }
@@ -493,11 +502,11 @@ bool UnitMFRC522::executeCommand(Error& err, const mfrc522::Command cmd,
                     return false;
                 }
                 // Is last received byte valid?
-                if (!readRegister8(CONTROL_REG, _validBits, 0) ||
-                    (_validBits & 0x07)) {
+                if (!readRegister8(CONTROL_REG, _validBits, 0)) {
                     M5_LIB_LOGE("Failed to read control reg");
                     return false;
                 }
+                _validBits &= 0x07;
                 if (validBits) {
                     *validBits = _validBits;
                 }
@@ -528,12 +537,13 @@ bool UnitMFRC522::executeCommand(Error& err, const mfrc522::Command cmd,
         // controlBuffer.
         uint16_t crc16{};
         if (!calculateCRC(&backData[0], *backLen - 2, crc16) ||
-            (backData[*backLen - 2] != ((crc16 >> 8) & 0xFF) ||
-             backData[*backLen - 1] != (crc16 & 0xFF))) {
+            (backData[*backLen - 1] != ((crc16 >> 8) & 0xFF) ||
+             backData[*backLen - 2] != (crc16 & 0xFF))) {
             M5_LIB_LOGE("CRC error %x", crc16);
             return false;
         }
     }
+
     return true;
 }
 
@@ -693,20 +703,17 @@ bool UnitMFRC522::readMifare(const uint8_t addr, uint8_t* buf, uint8_t& len) {
     if (!buf || len < 16) {
         return false;
     }
+
     uint8_t cmd[4]{m5::stl::to_underlying(PICCCommand::READ), addr};
     uint16_t crc{};
     if (!calculateCRC(cmd, 2, crc)) {
-        M5_LIB_LOGE("CRC");
         return false;
     }
     cmd[2] = crc & 0xFF;
     cmd[3] = (crc >> 8) & 0xFF;
+
     Error err{};
-    if (transceiveData(err, cmd, sizeof(cmd), buf, &len, nullptr, 0, true)) {
-        return true;
-    }
-    M5_LIB_LOGE("ERR:%x", err.value);
-    return false;
+    return transceiveData(err, cmd, 4, buf, &len, nullptr, 0, true);
 }
 
 //
@@ -758,25 +765,21 @@ bool UnitMFRC522::write_pcd_command(const Command cmd) {
     return writeRegister8(COMMAND_REG, cr.value);
 }
 
-bool UnitMFRC522::write_picc_command_short_frame(const PICCCommand piccCmd,
+bool UnitMFRC522::write_picc_command_short_frame(Error& err,
+                                                 const PICCCommand piccCmd,
                                                  uint8_t* ATQA, uint8_t& len) {
-    if (ATQA == NULL || len < 2) {  // The ATQA response is 2 bytes long.
+    if (!ATQA || len < 2) {  // The ATQA response is 2 bytes long.
+        M5_LIB_LOGE("Illgal arg");
         return false;
     }
 
-    uint8_t col{};
-    if (!readRegister8(COLL_REG, col, 0) ||
-        !writeRegister8(COLL_REG, (col & ~0x80))) {
-        return false;
-    }
-
-    uint8_t validBits{7};
+    uint8_t vbit{0x07};
     uint8_t cmd{m5::stl::to_underlying(piccCmd)};
-    Error err{};
-    if (!transceiveData(err, &cmd, 1U, ATQA, &len, &validBits)) {
+    if (!mask_register_bit(COLL_REG, 0x80) ||
+        !transceiveData(err, &cmd, 1U, ATQA, &len, &vbit)) {
         return false;
     }
-    return (len == 2 && validBits);
+    return (len == 2 && !vbit);
 }
 
 // RATS (Request Answer To Select)
@@ -818,7 +821,7 @@ bool UnitMFRC522::read_mifare_sector(const UID& uid, const MifareKey& key,
         return false;
     }
 
-    uint8_t buf[18]{};
+    uint8_t buf[16 + 2 /*crc*/]{};
     uint8_t blen{sizeof(buf)};
 
     M5_LIB_LOGE("addr:%u", addr);
@@ -826,7 +829,10 @@ bool UnitMFRC522::read_mifare_sector(const UID& uid, const MifareKey& key,
         M5_LIB_LOGE("Failed to readMifare");
         return false;
     }
-    M5_DUMPE(buf, blen);
+
+    m5::utility::log::dump(buf, blen - 2, false);
+    // 00 00 00 00 00 00 FF 07 80 69 FF FF FF FF FF FF
+    // 00 00 00 00 00 00 FF 07 80 69 FF FF FF FF FF FF
 
     return true;
 }

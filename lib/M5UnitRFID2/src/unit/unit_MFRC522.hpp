@@ -307,9 +307,9 @@ class UnitMFRC522 : public Component {
       @note This command is executed for RF tags in the IDLE state.
       After the process is completed, the RF tag moves to the READY1 state.
      */
-    inline bool commandREQA(uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(mfrc522::PICCCommand::REQA, ATOA,
-                                              len);
+    inline bool commandREQA(mfrc522::Error &err, uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(err, mfrc522::PICCCommand::REQA,
+                                              ATOA, len);
     }
     /*!
       @brief ISO/IEC 14443-3 WUPA
@@ -317,9 +317,9 @@ class UnitMFRC522 : public Component {
       After the process is completed, the RF tag transits to the READY1 or
       READY1* state.
      */
-    bool commandWUPA(uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(mfrc522::PICCCommand::WUPA, ATOA,
-                                              len);
+    bool commandWUPA(mfrc522::Error &err, uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(err, mfrc522::PICCCommand::WUPA,
+                                              ATOA, len);
     }
 
     /*!
@@ -419,7 +419,8 @@ class UnitMFRC522 : public Component {
     bool mask_register_bit(const uint8_t reg, const uint8_t bit);
 
     bool write_pcd_command(const mfrc522::Command cmd);
-    bool write_picc_command_short_frame(const mfrc522::PICCCommand cmd,
+    bool write_picc_command_short_frame(mfrc522::Error &err,
+                                        const mfrc522::PICCCommand cmd,
                                         uint8_t *ATQA, uint8_t &len);
 
     bool anti_collision(const uint8_t clv, bool &collision, uint8_t *res,
