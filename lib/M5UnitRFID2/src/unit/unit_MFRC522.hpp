@@ -400,6 +400,7 @@ class UnitMFRC522 : public Component {
     void dump(const mfrc522::UID &uid);
     void dumpClassic(const mfrc522::UID &uid,
                      const mfrc522::MifareKey &key = DEFAULT_CLASSIC_KEY_A);
+    void dumpUltralight();
     ///@}
 
     ///@name PICC (Proximity IC Card)

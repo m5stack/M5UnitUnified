@@ -932,6 +932,8 @@ void UnitMFRC522::dump(const UID& uid) {
         case PICCType::MIFARE_Classic_4K:
             dumpClassic(uid);
             break;
+        case PICCType::MIFARE_UltraLight:
+            dumpUltralight();
         default:
             break;
     }
@@ -958,6 +960,31 @@ void UnitMFRC522::dumpClassic(const UID& uid, const MifareKey& key) {
         "----------------------------------------------------------------");
     for (int8_t i = sectors - 1; i >= 0; --i) {
         dump_mifare_classic_sector(uid, key, i);
+    }
+    piccHLTA();
+    stopCrypto1();
+}
+
+void UnitMFRC522::dumpUltralight() {
+    uint8_t buf[16 + 2 /*CRC*/]{};
+    uint8_t blen{18};
+
+    puts(
+        "Page:00 01 02 03"
+        "----------------");
+
+    for (uint8_t page = 0; page < 16; page += 4) {
+        if (!mifareRead(page, buf, blen).and_then([&buf, &page]() {
+                for (uint8_t offset = 0; offset < 4; ++offset) {
+                    uint8_t p = page + offset;
+                    printf("[%02d]:%02X %02X %02X %02X\n", p,
+                           buf[offset * 4 + 0], buf[offset * 4 + 1],
+                           buf[offset * 4 + 2], buf[offset * 4 + 3]);
+                }
+                return result_t();
+            })) {
+            break;
+        }
     }
     piccHLTA();
     stopCrypto1();
