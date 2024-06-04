@@ -12,6 +12,7 @@
 #include <cassert>
 #include <array>
 #include <thread>
+#include <cstdio>
 
 namespace {
 using namespace m5::unit::mfrc522;
@@ -78,11 +79,64 @@ constexpr ReceiverGain receiver_gain_table[] = {
 constexpr uint8_t tx_control_tx12ref{0x03};  // Tx1RFEn | Tx2RFEn
 constexpr uint8_t CASCADE_TAG{0x88};
 
-constexpr static PICCCommand select_command_table[] = {
-    PICCCommand::SELECT_CL1,
-    PICCCommand::SELECT_CL2,
-    PICCCommand::SELECT_CL3,
+constexpr static ISO14443Command select_command_table[] = {
+    ISO14443Command::SELECT_CL1,
+    ISO14443Command::SELECT_CL2,
+    ISO14443Command::SELECT_CL3,
 };
+
+void dump_block(const uint8_t* buf, const uint8_t len, const int16_t block = -1,
+                const int8_t sector = -1, const uint8_t ab = 0xFF,
+                const bool aberror = false) {
+    char tmp[128 + 1] = "   ";
+    uint32_t left{};
+    // Sector
+    if (sector >= 0) {
+        left = snprintf(tmp, 4, "%02d)", sector);
+    } else {
+        left = 3;
+    }
+    // Block
+    if (block >= 0) {
+        left += snprintf(tmp + left, 7, "[%03d]:", block);
+    } else {
+        strcat(tmp, "      ");
+        left += 6;
+    }
+    // Data
+    for (uint8_t i = 0; i < len; ++i) {
+        left += snprintf(tmp + left, 4, "%02X ", buf[i]);
+    }
+    // Access bits
+    if (ab != 0xFF) {
+        if (!aberror) {
+            snprintf(tmp + left, 8, "[%d %d %d]", (ab >> 2) & 1, (ab >> 1) & 1,
+                     (ab & 1));
+        } else {
+            strcat(tmp + left, "[ERROR]");
+        }
+    }
+    printf("%s\n", tmp);
+}
+
+// tdata must be 3 bytes or largeer
+// out must be 4 bytes or larger
+bool getAccessBit(uint8_t* out, const uint8_t* tdata) {
+    uint8_t c1 = (tdata[1] >> 4) & 0x0F;
+    uint8_t c2 = tdata[2] & 0x0F;
+    uint8_t c3 = (tdata[2] >> 4) & 0x0F;
+    uint8_t i1 = (tdata[0] >> 4) & 0x0F;
+    uint8_t i2 = tdata[0] & 0x0F;
+    uint8_t i3 = tdata[1] & 0x0F;
+
+    out[0] = ((c1 & 1) << 2) | ((c2 & 1) << 1) | ((c3 & 1) << 0);
+    out[1] = ((c1 & 2) << 1) | ((c2 & 2) << 0) | ((c3 & 2) >> 1);
+    out[2] = ((c1 & 4) << 0) | ((c2 & 4) >> 1) | ((c3 & 4) >> 2);
+    out[3] = ((c1 & 8) >> 1) | ((c2 & 8) >> 2) | ((c3 & 8) >> 3);
+
+    bool error = c1 != (~i1 & 0x0F) || c2 != (~i2 & 0x0F) || c3 != (~i3 & 0x0F);
+    return !error;
+}
 
 }  // namespace
 
@@ -136,6 +190,8 @@ using namespace mfrc522::command;
 const char UnitMFRC522::name[] = "UnitMFRC522";
 const types::uid_t UnitMFRC522::uid{"UnitMFRC522"_mmh3};
 const types::uid_t UnitMFRC522::attr{0};
+const MifareKey UnitMFRC522::DEFAULT_CLASSIC_KEY_A{0xFF, 0xFF, 0xFF,
+                                                   0xFF, 0xFF, 0xFF};
 
 bool UnitMFRC522::begin() {
     if (!reset()) {
@@ -460,7 +516,7 @@ UnitMFRC522::result_t UnitMFRC522::getLatestErrorStatus(Error& err) {
     return read_register8(ERROR_REG, err.value);
 }
 
-UnitMFRC522::result_t UnitMFRC522::activate(UID& uid, const bool specific) {
+UnitMFRC522::result_t UnitMFRC522::piccActivate(UID& uid, const bool specific) {
     uint8_t ATOA[2]{};
     uint8_t len{sizeof(ATOA)};
 
@@ -479,11 +535,11 @@ UnitMFRC522::result_t UnitMFRC522::activate(UID& uid, const bool specific) {
     }
 
     // REQ for IDLE
-    result = commandREQA(ATOA, len);
+    result = piccREQA(ATOA, len);
     if (result || result.error() == function_error_t::COLLISION) {
         M5_LIB_LOGE("sel");
         // To ACTIVE if successful
-        return commandSelect(uid, specific);
+        return piccSelect(uid, specific);
     }
     return result;
 }
@@ -494,7 +550,6 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
     uint8_t* validBits, const uint8_t rxAlign, const bool checkCRC) {
     uint8_t _validBits{};
 
-#if 1
     // Prepare values for BitFramingReg
     uint8_t txLastBit  = validBits ? *validBits : 0U;
     uint8_t bitFraming = (rxAlign << 4) + txLastBit;
@@ -622,131 +677,11 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
                 });
     }
     return {};
-
-#else
-    // Prepare values for BitFramingReg
-    uint8_t txLastBit  = validBits ? *validBits : 0U;
-    uint8_t bitFraming = (rxAlign << 4) + txLastBit;
-
-    // To idle
-    if (!write_pcd_command(Command::Idle) ||
-        // Enable all IRQ
-        !writeRegister8(COM_IRQ_REG, 0x7F) ||
-        // Flush FIFO
-        //! set_register_bit(FIFO_LEVEL_REG, 0x80) ||
-        !writeRegister8(FIFO_LEVEL_REG, 0x80) ||
-        // Write data to FIFO
-        !writeRegister(FIFO_DATA_REG, sendData, sendLen) ||
-        // Adjustments for bit-oriented frames
-        !writeRegister8(BIT_FRAMING_REG, bitFraming) ||
-        // Execute command
-        !write_pcd_command(cmd)) {
-        M5_LIB_LOGE("Failed to execute %x", cmd);
-        return false;
-    }
-
-    if (cmd == Command::Transceive) {
-        uint8_t v{};
-        if (!readRegister8(BIT_FRAMING_REG, v, 0) ||
-            !writeRegister8(BIT_FRAMING_REG, (v | 0x80))) {
-            M5_LIB_LOGE("Failed to transceive");
-        }
-    }
-
-    // Wait for complete (timeout 100ms)
-    auto start_at = m5::utility::millis();
-    bool done{};
-    uint8_t irq{};
-    do {
-        if (readRegister8(COM_IRQ_REG, irq, 0) && (irq & waitIRQ)) {
-            done = true;
-            break;
-        }
-        // Timeout?
-        if (irq & 1) {
-            break;
-        }
-        std::this_thread::yield();
-    } while (!done && m5::utility::millis() - start_at <= 40);
-    if (!done) {
-        if (waitIRQ != 0x30) {
-            M5_LIB_LOGE("Timeout occurred:%d", irq & 1);
-        }
-        return false;
-    }
-
-    // Failed if deteced errors (protocol, parity, overflow)
-    if (!getLatestErrorStatus(err) || (err.value & 0x13)) {
-        M5_LIB_LOGE("Error occurred %x", err.value);
-        return false;
-    }
-
-    // If the caller wants data back, get it from the MFRC522
-    if (backData && backLen) {
-        uint8_t len{};
-        if (readRegister8(FIFO_LEVEL_REG, len, 0)) {
-            if (*backLen < len) {
-                M5_LIB_LOGE("backLen is not large enough %u / %u", len,
-                            *backLen);
-                return false;
-            }
-            if (len) {
-                *backLen = len;
-                // Read FIFO
-                if (!readRegister(FIFO_DATA_REG, backData, len, 0)) {
-                    M5_LIB_LOGE("Failed to read");
-                    return false;
-                }
-                // Is last received byte valid?
-                if (!readRegister8(CONTROL_REG, _validBits, 0)) {
-                    M5_LIB_LOGE("Failed to read control reg");
-                    return false;
-                }
-                _validBits &= 0x07;
-                if (validBits) {
-                    *validBits = _validBits;
-                }
-            }
-        }
-    }
-
-    // Collision error?
-    if (err.collision()) {
-        M5_LIB_LOGE("Collision Error occurred %x", err.value);
-        return false;
-    }
-
-    // CRC validation
-    if (backData && backLen && checkCRC) {
-        // In this case a MIFARE Classic NAK is not OK.
-        if (*backLen == 1 && _validBits == 4) {
-            M5_LIB_LOGE("NAK");
-            return false;
-        }
-        // We need at least the CRC_A value and all 8 bits of the last
-        // uint8_t must be received.
-        if (*backLen < 2 || _validBits != 0) {
-            M5_LIB_LOGE("CRC");
-            return false;
-        }
-        // Verify CRC_A - do our own calculation and store the control in
-        // controlBuffer.
-        uint16_t crc16{};
-        if (!calculateCRC(&backData[0], *backLen - 2, crc16) ||
-            (backData[*backLen - 1] != ((crc16 >> 8) & 0xFF) ||
-             backData[*backLen - 2] != (crc16 & 0xFF))) {
-            M5_LIB_LOGE("CRC error %x", crc16);
-            return false;
-        }
-    }
-
-    return true;
-#endif
 }
 
 //
-UnitMFRC522::result_t UnitMFRC522::commandSelect(mfrc522::UID& uid,
-                                                 const bool specific) {
+UnitMFRC522::result_t UnitMFRC522::piccSelect(mfrc522::UID& uid,
+                                              const bool specific) {
     // Clear ValuesAfterColl
     auto result = mask_register_bit(COLL_REG, 0x80);
     if (!result) {
@@ -819,8 +754,10 @@ UnitMFRC522::result_t UnitMFRC522::commandSelect(mfrc522::UID& uid,
             }
             // Not completed
             // so incrase cascade level and restart anti collision loop
+        } else {
+            M5_LIB_LOGE("select error:%u", result.error());
         }
-        M5_LIB_LOGE("Failed select:%d", cascadeLevel);
+        M5_LIB_LOGE("Failed select:%d:SAK:%u %x", cascadeLevel, slen, sak[0]);
     } while (++cascadeLevel < 3);
 
     return m5::stl::make_unexpected(function_error_t::ERROR);
@@ -872,8 +809,8 @@ UnitMFRC522::result_t UnitMFRC522::select(const uint8_t clv, const uint8_t* uid,
         });
 }
 
-UnitMFRC522::result_t UnitMFRC522::commandHLTA() {
-    uint8_t cmd[4] = {m5::stl::to_underlying(PICCCommand::HLTA), 0x00};
+UnitMFRC522::result_t UnitMFRC522::piccHLTA() {
+    uint8_t cmd[4] = {m5::stl::to_underlying(ISO14443Command::HLTA), 0x00};
     uint16_t crc{};
     return calculateCRC(cmd, 2, crc).and_then([this, &crc, &cmd]() {
         cmd[2]      = crc & 0xFF;
@@ -884,14 +821,21 @@ UnitMFRC522::result_t UnitMFRC522::commandHLTA() {
                : result.error() == function_error_t::TIMEOUT ? result_t()
                                                              : result;
     });
+    /*
+      TODO : Should success include NACK?
+      6.3.3
+      If the PICC responds with any modulation during a period of 1 ms after the
+      end of the frame containing the HLTA Command, this response shall be
+      interpreted as 'not acknowledge'.
+    */
 }
 
-UnitMFRC522::result_t UnitMFRC522::commandAuthenticate(const PICCCommand cmd,
-                                                       const UID& uid,
-                                                       const MifareKey& key,
-                                                       const uint8_t block) {
-    if (cmd != PICCCommand::AUTH_WITH_KEY_A &&
-        cmd != PICCCommand::AUTH_WITH_KEY_B) {
+UnitMFRC522::result_t UnitMFRC522::piccAuthenticate(const ISO14443Command cmd,
+                                                    const UID& uid,
+                                                    const MifareKey& key,
+                                                    const uint8_t block) {
+    if (cmd != ISO14443Command::AUTH_WITH_KEY_A &&
+        cmd != ISO14443Command::AUTH_WITH_KEY_B) {
         return m5::stl::make_unexpected(function_error_t::ARG);
     }
     // 10.3.1.9
@@ -907,26 +851,94 @@ UnitMFRC522::result_t UnitMFRC522::stopCrypto1() {
     return mask_register_bit(STATUS2_REG, 0x80);
 }
 
-bool UnitMFRC522::readMifare(const uint8_t addr, uint8_t* buf, uint8_t& len) {
-    if (!buf || len < 16) {
-        return false;
+UnitMFRC522::result_t UnitMFRC522::mifareRead(const uint8_t addr, uint8_t* buf,
+                                              uint8_t& len) {
+    if (!buf || len < 18) {
+        return m5::stl::make_unexpected(function_error_t::ARG);
     }
 
-    uint8_t cmd[4]{m5::stl::to_underlying(PICCCommand::READ), addr};
+    uint8_t cmd[4]{m5::stl::to_underlying(ISO14443Command::READ), addr};
     uint16_t crc{};
-    if (!calculateCRC(cmd, 2, crc)) {
-        return false;
-    }
-    cmd[2] = crc & 0xFF;
-    cmd[3] = (crc >> 8) & 0xFF;
+    return calculateCRC(cmd, 2, crc).and_then([this, &crc, &cmd, &buf, &len]() {
+        cmd[2] = crc & 0xFF;
+        cmd[3] = (crc >> 8) & 0xFF;
+        return transceiveData(cmd, 4, buf, &len, nullptr, 0, true);
+    });
+}
 
-    return (bool)transceiveData(cmd, 4, buf, &len, nullptr, 0, true);
+/*
+  For MIFARE Ultralight the operation is called "COMPATIBILITY WRITE".
+  Even though 16 bytes are transferred to the Ultralight PICC, only the
+  least significant 4 bytes (bytes 0 to 3) are written to the specified
+  address. It is recommended to set the remaining bytes 04h to 0Fh to all
+  logic 0.
+ */
+UnitMFRC522::result_t UnitMFRC522::mifareWrite(const uint8_t addr,
+                                               const uint8_t* buf,
+                                               const uint8_t len) {
+    if (!buf || len > 16) {
+        return m5::stl::make_unexpected(function_error_t::ARG);
+    }
+    uint8_t cmd[2]{m5::stl::to_underlying(ISO14443Command::WRITE), addr};
+    // Send write command with address
+    return mifareTransceive(cmd, 2).and_then(
+        // Send Data
+        [this, &buf, &len]() { return mifareTransceive(buf, len); });
+}
+
+UnitMFRC522::result_t UnitMFRC522::mifareTransceive(const uint8_t* buf,
+                                                    const uint8_t len,
+                                                    const bool ignoreTimeout) {
+    if (!buf || len > 16) {
+        return m5::stl::make_unexpected(function_error_t::ARG);
+    }
+    uint8_t cmd[16 + 2 /*CRC*/]{};
+    std::memcpy(cmd, buf, std::min((uint8_t)16U, len));
+    uint16_t crc{};
+    return calculateCRC(cmd, len, crc)
+        .and_then([this, &len, &crc, &cmd, &ignoreTimeout]() {
+            cmd[len]     = crc & 0xFF;
+            cmd[len + 1] = ((crc >> 8) & 0xFF);
+
+            uint8_t rbuf[2]{};
+            uint8_t rlen{2};
+            uint8_t vbits{};
+            auto result = transceiveData(cmd, len + 2, rbuf, &rlen, &vbits);
+            if (ignoreTimeout &&
+                (result.has_error() &&
+                 result.error() == function_error_t::TIMEOUT)) {
+                return result_t();
+            }
+            if (!result) {
+                return result;
+            }
+            if (rlen != 1 || vbits != 4) {
+                return result_t(
+                    m5::stl::make_unexpected(function_error_t::ERROR));
+            }
+            if (rbuf[0] != 0x0A) {  // 4bits ACK
+                return result_t(
+                    m5::stl::make_unexpected(function_error_t::NACK));
+            }
+            return result;
+        });
 }
 
 //
 void UnitMFRC522::dump(const UID& uid) {
-    uint8_t sectors{};
+    switch (uid.type) {
+        case PICCType::MIFARE_Classic:
+        case PICCType::MIFARE_Classic_1K:
+        case PICCType::MIFARE_Classic_4K:
+            dumpClassic(uid);
+            break;
+        default:
+            break;
+    }
+}
 
+void UnitMFRC522::dumpClassic(const UID& uid, const MifareKey& key) {
+    uint8_t sectors{};
     switch (uid.type) {
         case PICCType::MIFARE_Classic:
             sectors = 5;
@@ -938,24 +950,16 @@ void UnitMFRC522::dump(const UID& uid) {
             sectors = 40;
             break;
         default:
-            break;
+            return;
     }
-    if (!sectors) {
-        M5_LIB_LOGE("Not supported");
-        return;
+    puts(
+        "Sec  Blk:00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F "
+        "[Access]\n"
+        "----------------------------------------------------------------");
+    for (int8_t i = sectors - 1; i >= 0; --i) {
+        dump_mifare_classic_sector(uid, key, i);
     }
-
-    MifareKey key;
-    // All keys are set to FFFFFFFFFFFFh at chip delivery from the factory
-    key.fill(0xFF);
-
-    uint8_t res[128]{};
-    uint8_t rlen{128};
-    //    for (uint8_t i = sectors - 1; i >= 0; --i) {
-    read_mifare_sector(uid, key, sectors - 1, res);
-    //    }
-
-    commandHLTA();
+    piccHLTA();
     stopCrypto1();
 }
 
@@ -1015,7 +1019,7 @@ UnitMFRC522::result_t UnitMFRC522::write_pcd_command(const Command cmd) {
 }
 
 UnitMFRC522::result_t UnitMFRC522::write_picc_command_short_frame(
-    const PICCCommand piccCmd, uint8_t* ATQA, uint8_t& len) {
+    const ISO14443Command piccCmd, uint8_t* ATQA, uint8_t& len) {
     if (!ATQA || len < 2) {  // The ATQA response is 2 bytes long.
         return m5::stl::make_unexpected(function_error_t::ARG);
     }
@@ -1050,80 +1054,64 @@ bool UnitMFRC522::exists_RATS(bool& available) {
     });
 }
 
-bool UnitMFRC522::read_mifare_sector(const UID& uid, const MifareKey& key,
-                                     const uint8_t sector, uint8_t* res) {
+UnitMFRC522::result_t UnitMFRC522::dump_mifare_classic_sector(
+    const UID& uid, const MifareKey& key, const uint8_t sector) {
     if (sector >= 40) {
-        M5_LIB_LOGE("Illegal sector:%u", sector);
-        return false;
+        return m5::stl::make_unexpected(function_error_t::ARG);
     }
 
     // Sector 0~31 has 4 blocks, 32-39 has 16 blocks
-    uint8_t blocks = (sector < 32) ? 4U : 16U;
-    uint8_t first =
+    const uint8_t blocks = (sector < 32) ? 4U : 16U;
+    const uint8_t first =
         (sector < 32) ? sector * blocks : 128U + (sector - 32) * blocks;
 
-    // First: sector trailer
-    uint8_t addr = first + (blocks - 1);
-    M5_LIB_LOGI(">>>> first:%u", first);
-    if (!commandAuthenticateWithKeyA(uid, key, first)) {
-        M5_LIB_LOGE("Failed to authenticate");
-        return false;
+    uint8_t buf[16 + 2 /*CRC*/];
+    uint8_t blen{18};
+    int8_t offset = blocks - 1;
+    uint8_t addr  = first + offset;
+    uint8_t vboff = blocks == 4 ? offset : offset / 5;
+
+    // Sector trailer
+    auto result = piccAuthenticateWithKeyA(uid, key, first)
+                      .and_then([this, &addr, &buf, &blen]() {
+                          return mifareRead(addr, buf, blen);
+                      });
+    if (!result) {
+        return result;
     }
+    uint8_t abits[4]{};
+    bool error = !getAccessBit(abits, buf + 6 /* Access bit offset */);
+    dump_block(buf, 16, addr, sector, abits[vboff], error);
 
-    uint8_t buf[16 + 2 /*crc*/]{};
-    uint8_t blen{sizeof(buf)};
+    // Data
+    for (offset = blocks - 2; offset >= 0; --offset) {
+        addr = first + offset;
+        if (!mifareRead(addr, buf, blen)) {
+            break;
+        }
+        uint8_t vboff = (blocks == 4) ? offset : offset / 5;
+        bool fig =
+            (blocks == 4) ? true : (vboff == 3) || (vboff != (offset + 1) / 5);
 
-    M5_LIB_LOGE("addr:%u", addr);
-    if (!readMifare(addr, buf, blen)) {
-        M5_LIB_LOGE("Failed to readMifare");
-        return false;
-    }
+        dump_block(buf, 16, addr, -1, fig ? abits[vboff] : 0xFF, error);
 
-    m5::utility::log::dump(buf, blen - 2, false);
-
-    return true;
-}
+        if (vboff != 3 &&
+            (abits[vboff] == 1 ||
+             abits[vboff] == 6)) {  // Not a sector trailer, a value block
+            int32_t value = (int32_t(buf[3]) << 24) | (int32_t(buf[2]) << 16) |
+                            (int32_t(buf[1]) << 8) | int32_t(buf[0]);
 
 #if 0
-    
-    // Read block
-    byteCount = sizeof(buffer);
-    status    = MIFARE_Read(blockAddr, buffer, &byteCount);
-    if (status != STATUS_OK) {
-        Serial.print(F("MIFARE_Read() failed: "));
-        Serial.println(GetStatusCodeName(status));
-        continue;
-    }
-    // Dump data
-    for (uint8_t index = 0; index < 16; index++) {
-        if (buffer[index] < 0x10)
-            Serial.print(F(" 0"));
-        else
-            Serial.print(F(" "));
-        Serial.print(buffer[index], HEX);
-        if ((index % 4) == 3) {
-            Serial.print(F(" "));
+            Serial.print(F(" Value=0x"));
+            Serial.print(value, HEX);
+            Serial.print(F(" Adr=0x"));
+            Serial.print(buffer[12], HEX);
+#endif
+            // TODO: KEY-B is not key (any value)
         }
     }
-    // Parse sector trailer data
-    if (isSectorTrailer) {
-        c1            = buffer[7] >> 4;
-        c2            = buffer[8] & 0xF;
-        c3            = buffer[8] >> 4;
-        c1_           = buffer[6] & 0xF;
-        c2_           = buffer[6] >> 4;
-        c3_           = buffer[7] & 0xF;
-        invertedError = (c1 != (~c1_ & 0xF)) || (c2 != (~c2_ & 0xF)) ||
-                        (c3 != (~c3_ & 0xF));
-        g[0]            = ((c1 & 1) << 2) | ((c2 & 1) << 1) | ((c3 & 1) << 0);
-        g[1]            = ((c1 & 2) << 1) | ((c2 & 2) << 0) | ((c3 & 2) >> 1);
-        g[2]            = ((c1 & 4) << 0) | ((c2 & 4) >> 1) | ((c3 & 4) >> 2);
-        g[3]            = ((c1 & 8) >> 1) | ((c2 & 8) >> 2) | ((c3 & 8) >> 3);
-        isSectorTrailer = false;
-    }
-
+    return {};
 }
-#endif
 
 }  // namespace unit
 }  // namespace m5

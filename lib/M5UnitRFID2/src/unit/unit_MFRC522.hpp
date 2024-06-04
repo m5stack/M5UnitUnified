@@ -20,6 +20,7 @@ namespace unit {
 namespace mfrc522 {
 
 ///@cond
+// PCD command
 enum class Command : uint8_t {
     Idle,
     Mem,
@@ -62,7 +63,7 @@ struct CommandReg {
 
 /*!
   @struct Error
-  @brief Errors returned by PCD
+  @brief Group of bits that identify errors
  */
 struct Error {
     //! @brief data is written into the FIFO buffer by the host during the
@@ -114,9 +115,6 @@ enum class ReceiverGain : uint8_t {
     dB48,         //!< @brief 48 decibel
 };
 
-//! @typedef m5::unit::mfrc522::MiFareKey
-using MifareKey = std::array<uint8_t, 6>;  //!< @brief A Mifare Crypto1 key
-
 /*!
   @enum PICCType
   @brief Type of the PICC
@@ -166,12 +164,13 @@ struct UID {
 };
 
 /*!
-  @enum PICCCommand
-  @brief MIFARE classic command
+  @enum ISO14443Command
+  @brief ISO 14443-3 compliant commands
  */
-enum class PICCCommand : uint8_t {
-    REQA = 0x26,
-    WUPA = 0x52,
+enum class ISO14443Command : uint8_t {
+    REQA = 0x26,  //!< @brief Probe the field for PICCs of Type A (for IDLE)
+    WUPA =
+        0x52,  //!< @brief Probe the field for PICCs of Type A (For IDLE/HALT)
     HLTA = 0x50,
     //! @brief ANTICOLLISION / SELECT if NVB is 40 bits (cascade level 1)
     SELECT_CL1 = 0x93,
@@ -185,8 +184,16 @@ enum class PICCCommand : uint8_t {
     PERSONALIZE_UID_USAGE = 0x40,
     SET_MOD_TYPE          = 0x43,
     READ                  = 0x30,
+    WRITE                 = 0xA0,
+    RATS                  = 0x0e,
 
 };
+
+/*!
+  @typedef MifareKey
+  @brief MIFARE Key
+*/
+using MifareKey = std::array<uint8_t, 6>;
 
 }  // namespace mfrc522
 
@@ -221,6 +228,9 @@ class UnitMFRC522 : public Component {
       @brief Result of function
     */
     using result_t = m5::stl::expected<void, function_error_t>;
+
+    //! @brief KEY A of factory default
+    static const mfrc522::MifareKey DEFAULT_CLASSIC_KEY_A;
 
 #if 0
     /*!
@@ -307,7 +317,7 @@ class UnitMFRC522 : public Component {
     bool setAntennaGain(const mfrc522::ReceiverGain gain);
     ///@}
 
-    ///@name ISO14443-3 command
+    ///@name PICC communication
     ///@{
     /*!
       @brief Transition the PICC to the Active state
@@ -318,7 +328,7 @@ class UnitMFRC522 : public Component {
       @return True if successful
       @note Processing can be carried out normally in both IDLE and HALT states
     */
-    result_t activate(mfrc522::UID &uid, const bool specific = false);
+    result_t piccActivate(mfrc522::UID &uid, const bool specific = false);
 
     /*!
       @brief ISO/IEC 14443-3 REQA
@@ -328,9 +338,9 @@ class UnitMFRC522 : public Component {
       @note This command is executed for RF tags in the IDLE state.
       After the process is completed, the RF tag moves to the READY1 state.
      */
-    inline result_t commandREQA(uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(mfrc522::PICCCommand::REQA, ATOA,
-                                              len);
+    inline result_t piccREQA(uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(mfrc522::ISO14443Command::REQA,
+                                              ATOA, len);
     }
     /*!
       @brief ISO/IEC 14443-3 WUPA
@@ -338,52 +348,58 @@ class UnitMFRC522 : public Component {
       After the process is completed, the RF tag transits to the READY1 or
       READY1* state.
      */
-    result_t commandWUPA(uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(mfrc522::PICCCommand::WUPA, ATOA,
-                                              len);
+    result_t piccWUPA(uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(mfrc522::ISO14443Command::WUPA,
+                                              ATOA, len);
     }
 
     /*!
       @brief ISO/IEC 14443-3 SELECT
      */
-    result_t commandSelect(mfrc522::UID &uid, const bool specific);
+    result_t piccSelect(mfrc522::UID &uid, const bool specific);
 
     /*!
       @brief ISO/IEC 14443-3 HLTA
       @note Valid in ACTIVE or ACTIVE* state (after select)
       After the process is completed, the RF Tag transits to the HALT state
      */
-    result_t commandHLTA();
+    result_t piccHLTA();
 
-    result_t commandAuthenticate(const mfrc522::PICCCommand cmd,
-                                 const mfrc522::UID &uid,
-                                 const mfrc522::MifareKey &key,
-                                 const uint8_t block);
-    inline result_t commandAuthenticateWithKeyA(const mfrc522::UID &uid,
-                                                const mfrc522::MifareKey &key,
-                                                const uint8_t block) {
-        return commandAuthenticate(mfrc522::PICCCommand::AUTH_WITH_KEY_A, uid,
-                                   key, block);
+    result_t piccAuthenticate(const mfrc522::ISO14443Command cmd,
+                              const mfrc522::UID &uid,
+                              const mfrc522::MifareKey &key,
+                              const uint8_t block);
+    inline result_t piccAuthenticateWithKeyA(const mfrc522::UID &uid,
+                                             const mfrc522::MifareKey &key,
+                                             const uint8_t block) {
+        return piccAuthenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_A, uid,
+                                key, block);
     }
-    inline result_t commandAuthenticateWithKeyB(const mfrc522::UID &uid,
-                                                const mfrc522::MifareKey &key,
-                                                const uint8_t block) {
-        return commandAuthenticate(mfrc522::PICCCommand::AUTH_WITH_KEY_B, uid,
-                                   key, block);
+    inline result_t piccAuthenticateWithKeyB(const mfrc522::UID &uid,
+                                             const mfrc522::MifareKey &key,
+                                             const uint8_t block) {
+        return piccAuthenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_B, uid,
+                                key, block);
     }
 
     result_t stopCrypto1();
-
     ///@}
 
     ///@name MIFARE
     ///@{
-    bool readMifare(const uint8_t addr, uint8_t *buf, uint8_t &len);
+    result_t mifareRead(const uint8_t addr, uint8_t *buf, uint8_t &len);
+    result_t mifareWrite(const uint8_t addr, const uint8_t *buf,
+                         const uint8_t len);
+    result_t mifareTransceive(const uint8_t *buf, const uint8_t len,
+                              const bool ignoreTimeout = false);
+
     ///@}
 
     ///@name For debug
     ///@{
     void dump(const mfrc522::UID &uid);
+    void dumpClassic(const mfrc522::UID &uid,
+                     const mfrc522::MifareKey &key = DEFAULT_CLASSIC_KEY_A);
     ///@}
 
     ///@name PICC (Proximity IC Card)
@@ -451,19 +467,19 @@ class UnitMFRC522 : public Component {
     result_t mask_register_bit(const uint8_t reg, const uint8_t bit);
 
     result_t write_pcd_command(const mfrc522::Command cmd);
-    result_t write_picc_command_short_frame(const mfrc522::PICCCommand cmd,
+    result_t write_picc_command_short_frame(const mfrc522::ISO14443Command cmd,
                                             uint8_t *ATQA, uint8_t &len);
 
-    result_t anti_collision(const uint8_t clv, uint8_t *res,
-                        uint8_t &rlen, const uint8_t collPos = 0);
+    result_t anti_collision(const uint8_t clv, uint8_t *res, uint8_t &rlen,
+                            const uint8_t collPos = 0);
     result_t select(const uint8_t clv, const uint8_t *uid, const uint8_t len,
-                uint8_t *res, uint8_t &rlen);
+                    uint8_t *res, uint8_t &rlen);
 
     bool exists_RATS(bool &available);
 
-    bool read_mifare_sector(const mfrc522::UID &uid,
-                            const mfrc522::MifareKey &key, const uint8_t sector,
-                            uint8_t *res);
+    result_t dump_mifare_classic_sector(const mfrc522::UID &uid,
+                                        const mfrc522::MifareKey &key,
+                                        const uint8_t sector);
 };
 
 ///@cond
