@@ -11,6 +11,7 @@
 
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
+#include <m5_utility/stl/expected.hpp>
 #include <array>
 
 namespace m5 {
@@ -61,7 +62,7 @@ struct CommandReg {
 
 /*!
   @struct Error
-  @brief Error status
+  @brief Errors returned by PCD
  */
 struct Error {
     //! @brief data is written into the FIFO buffer by the host during the
@@ -202,6 +203,25 @@ class UnitMFRC522 : public Component {
     static const types::attr_t attr;
     static const char name[];
 
+    /*!
+      @enum error_r
+      @brief Error status
+     */
+    enum class function_error_t {
+        TIMEOUT = 1,  //!< @brief Timeout occurred
+        COLLISION,    //!<@brief Collisions caused by multiple PICCs
+        ARG,          //!<@brief Invalid arguments
+        CRC,          //!< @brief CRC error occurred
+        NACK,         //!< @brief PICC responded with NACK
+        I2C,          //!< @brief I2C R/W error
+        ERROR,        //!< @brief Misc errors
+    };
+    /*!
+      @typedef result_t
+      @brief Result of function
+    */
+    using result_t = m5::stl::expected<void, function_error_t>;
+
 #if 0
     /*!
       @struct config_t
@@ -239,7 +259,7 @@ class UnitMFRC522 : public Component {
       @param err Error status
       @return True if successful
     */
-    bool getLatestErrorStatus(mfrc522::Error &err);
+    result_t getLatestErrorStatus(mfrc522::Error &err);
 
     bool reset();
     virtual bool selfTest();
@@ -252,7 +272,8 @@ class UnitMFRC522 : public Component {
       @return True if successful
       @warning The calculation algorithm is dependent on the value of MODE_REG
     */
-    bool calculateCRC(const uint8_t *buf, const size_t len, uint16_t &result);
+    result_t calculateCRC(const uint8_t *buf, const size_t len,
+                          uint16_t &result);
 
     ///@name Antenna
     ///@{
@@ -297,7 +318,7 @@ class UnitMFRC522 : public Component {
       @return True if successful
       @note Processing can be carried out normally in both IDLE and HALT states
     */
-    bool activate(mfrc522::UID &uid, const bool specific = false);
+    result_t activate(mfrc522::UID &uid, const bool specific = false);
 
     /*!
       @brief ISO/IEC 14443-3 REQA
@@ -307,9 +328,9 @@ class UnitMFRC522 : public Component {
       @note This command is executed for RF tags in the IDLE state.
       After the process is completed, the RF tag moves to the READY1 state.
      */
-    inline bool commandREQA(mfrc522::Error &err, uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(err, mfrc522::PICCCommand::REQA,
-                                              ATOA, len);
+    inline result_t commandREQA(uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(mfrc522::PICCCommand::REQA, ATOA,
+                                              len);
     }
     /*!
       @brief ISO/IEC 14443-3 WUPA
@@ -317,39 +338,42 @@ class UnitMFRC522 : public Component {
       After the process is completed, the RF tag transits to the READY1 or
       READY1* state.
      */
-    bool commandWUPA(mfrc522::Error &err, uint8_t *ATOA, uint8_t &len) {
-        return write_picc_command_short_frame(err, mfrc522::PICCCommand::WUPA,
-                                              ATOA, len);
+    result_t commandWUPA(uint8_t *ATOA, uint8_t &len) {
+        return write_picc_command_short_frame(mfrc522::PICCCommand::WUPA, ATOA,
+                                              len);
     }
 
     /*!
       @brief ISO/IEC 14443-3 SELECT
      */
-    bool commandSelect(mfrc522::UID &uid, const bool specific);
+    result_t commandSelect(mfrc522::UID &uid, const bool specific);
 
     /*!
       @brief ISO/IEC 14443-3 HLTA
       @note Valid in ACTIVE or ACTIVE* state (after select)
       After the process is completed, the RF Tag transits to the HALT state
      */
-    bool commandHLTA();
+    result_t commandHLTA();
 
-    bool commandAuthenticate(const mfrc522::PICCCommand cmd,
-                             const mfrc522::UID &uid,
-                             const mfrc522::MifareKey &key,
-                             const uint8_t block);
-    inline bool commandAuthenticateWithKeyA(const mfrc522::UID &uid,
-                                            const mfrc522::MifareKey &key,
-                                            const uint8_t block) {
+    result_t commandAuthenticate(const mfrc522::PICCCommand cmd,
+                                 const mfrc522::UID &uid,
+                                 const mfrc522::MifareKey &key,
+                                 const uint8_t block);
+    inline result_t commandAuthenticateWithKeyA(const mfrc522::UID &uid,
+                                                const mfrc522::MifareKey &key,
+                                                const uint8_t block) {
         return commandAuthenticate(mfrc522::PICCCommand::AUTH_WITH_KEY_A, uid,
                                    key, block);
     }
-    inline bool commandAuthenticateWithKeyB(const mfrc522::UID &uid,
-                                            const mfrc522::MifareKey &key,
-                                            const uint8_t block) {
+    inline result_t commandAuthenticateWithKeyB(const mfrc522::UID &uid,
+                                                const mfrc522::MifareKey &key,
+                                                const uint8_t block) {
         return commandAuthenticate(mfrc522::PICCCommand::AUTH_WITH_KEY_B, uid,
                                    key, block);
     }
+
+    result_t stopCrypto1();
+
     ///@}
 
     ///@name MIFARE
@@ -386,20 +410,23 @@ class UnitMFRC522 : public Component {
       @note CRC validation can only be done if backData and backLen are
       specified
      */
-    bool executeCommand(mfrc522::Error &err, const mfrc522::Command cmd,
-                        const uint8_t waitIRQ, const uint8_t *sendData,
-                        const uint8_t sendLen, uint8_t *backData = nullptr,
-                        uint8_t *backLen   = nullptr,
-                        uint8_t *validBits = nullptr, const uint8_t rxAlign = 0,
-                        const bool checkCRC = false);
+    result_t executeCommand(const mfrc522::Command cmd, const uint8_t waitIRQ,
+                            const uint8_t *sendData, const uint8_t sendLen,
+                            uint8_t *backData     = nullptr,
+                            uint8_t *backLen      = nullptr,
+                            uint8_t *validBits    = nullptr,
+                            const uint8_t rxAlign = 0,
+                            const bool checkCRC   = false);
 
     //!@ brief Transceive data
-    inline bool transceiveData(mfrc522::Error &err, const uint8_t *sendData,
-                               const uint8_t sendLen, uint8_t *backData,
-                               uint8_t *backLen, uint8_t *validBits = nullptr,
-                               const uint8_t rxAlign = 0,
-                               const bool checkCRC   = false) {
-        return executeCommand(err, mfrc522::Command::Transceive,
+    inline result_t transceiveData(const uint8_t *sendData,
+                                   const uint8_t sendLen,
+                                   uint8_t *backData     = nullptr,
+                                   uint8_t *backLen      = nullptr,
+                                   uint8_t *validBits    = nullptr,
+                                   const uint8_t rxAlign = 0,
+                                   const bool checkCRC   = false) {
+        return executeCommand(mfrc522::Command::Transceive,
                               0x30 /*Rx and Idle */, sendData, sendLen,
                               backData, backLen, validBits, rxAlign, checkCRC);
     }
@@ -415,17 +442,21 @@ class UnitMFRC522 : public Component {
         return attr;
     }
 
-    bool set_register_bit(const uint8_t reg, const uint8_t bit);
-    bool mask_register_bit(const uint8_t reg, const uint8_t bit);
+    result_t read_register8(const uint8_t reg, uint8_t &ret);
+    result_t read_register(const uint8_t reg, uint8_t *buf, const size_t len);
+    result_t write_register8(const uint8_t reg, const uint8_t value);
+    result_t write_register(const uint8_t reg, const uint8_t *buf,
+                            const size_t size);
+    result_t set_register_bit(const uint8_t reg, const uint8_t bit);
+    result_t mask_register_bit(const uint8_t reg, const uint8_t bit);
 
-    bool write_pcd_command(const mfrc522::Command cmd);
-    bool write_picc_command_short_frame(mfrc522::Error &err,
-                                        const mfrc522::PICCCommand cmd,
-                                        uint8_t *ATQA, uint8_t &len);
+    result_t write_pcd_command(const mfrc522::Command cmd);
+    result_t write_picc_command_short_frame(const mfrc522::PICCCommand cmd,
+                                            uint8_t *ATQA, uint8_t &len);
 
-    bool anti_collision(const uint8_t clv, bool &collision, uint8_t *res,
+    result_t anti_collision(const uint8_t clv, uint8_t *res,
                         uint8_t &rlen, const uint8_t collPos = 0);
-    bool select(const uint8_t clv, const uint8_t *uid, const uint8_t len,
+    result_t select(const uint8_t clv, const uint8_t *uid, const uint8_t len,
                 uint8_t *res, uint8_t &rlen);
 
     bool exists_RATS(bool &available);
@@ -446,6 +477,7 @@ constexpr uint8_t COM_IRQ_REG{0x04};
 constexpr uint8_t DIV_IRQ_REG{0x05};
 constexpr uint8_t ERROR_REG{0x06};
 
+constexpr uint8_t STATUS2_REG{0x08};
 constexpr uint8_t FIFO_DATA_REG{0x09};
 constexpr uint8_t FIFO_LEVEL_REG{0x0A};
 
