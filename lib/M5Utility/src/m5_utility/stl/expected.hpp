@@ -1980,8 +1980,8 @@ public:
     TL_ASSERT(has_value());
     return std::move(val());
   }
-
   constexpr bool has_value() const noexcept { return this->m_has_val; }
+  constexpr bool has_error() const noexcept { return !(this->has_value()); } // Add by M5Stack
   constexpr explicit operator bool() const noexcept { return this->m_has_val; }
 
   template <class U = T,
@@ -2043,7 +2043,7 @@ public:
     return bool(*this) ? std::move(**this) : static_cast<T>(std::forward<U>(v));
   }
 
-  // Add by N5Stack
+  // Add by M5Stack
   template<class G = E> constexpr E error_or(G&& e) const & {
     static_assert(std::is_copy_constructible<E>::value &&
                       std::is_convertible<G, E>::value,
