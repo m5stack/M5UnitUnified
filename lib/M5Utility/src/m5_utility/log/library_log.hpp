@@ -77,7 +77,9 @@ constexpr const char* pathToFilename(const char* path) {
 }
 
 //! @brief Output formatted strings
-void log_printf(const char* format, ...);
+void logPrintf(const char* format, ...);
+//! @brief Output dump
+void dump(const void* addr, const size_t len, const bool align = true);
 
 using elapsed_time_t = std::chrono::milliseconds;
 // using elapsed_time_t = std::chrono::microseconds;
@@ -98,62 +100,117 @@ elapsed_time_t elapsedTime();
   @def M5_LIB_LOGE
   @brief Output log (level ERROR)
  */
-#define M5_LIB_LOGE(format, ...)                                           \
-    do {                                                                   \
-        if (m5::utility::log::logOutputLevel >=                            \
-            m5::utility::log::log_level_t::ERROR) {                        \
-            m5::utility::log::log_printf(M5_UTILITY_LOG_FORMAT(E, format), \
-                                         ##__VA_ARGS__);                   \
-        }                                                                  \
+#define M5_LIB_LOGE(format, ...)                                          \
+    do {                                                                  \
+        if (m5::utility::log::logOutputLevel >=                           \
+            m5::utility::log::log_level_t::ERROR) {                       \
+            m5::utility::log::logPrintf(M5_UTILITY_LOG_FORMAT(E, format), \
+                                        ##__VA_ARGS__);                   \
+        }                                                                 \
     } while (0)
 /*!
   @def M5_LIB_LOGW
   @brief Output log (level WARN)
  */
-#define M5_LIB_LOGW(format, ...)                                           \
-    do {                                                                   \
-        if (m5::utility::log::logOutputLevel >=                            \
-            m5::utility::log::log_level_t::WARN) {                         \
-            m5::utility::log::log_printf(M5_UTILITY_LOG_FORMAT(W, format), \
-                                         ##__VA_ARGS__);                   \
-        }                                                                  \
+#define M5_LIB_LOGW(format, ...)                                          \
+    do {                                                                  \
+        if (m5::utility::log::logOutputLevel >=                           \
+            m5::utility::log::log_level_t::WARN) {                        \
+            m5::utility::log::logPrintf(M5_UTILITY_LOG_FORMAT(W, format), \
+                                        ##__VA_ARGS__);                   \
+        }                                                                 \
     } while (0)
 /*!
   @def M5_LIB_LOGI
   @brief Output log (level INFO)
  */
-#define M5_LIB_LOGI(format, ...)                                           \
-    do {                                                                   \
-        if (m5::utility::log::logOutputLevel >=                            \
-            m5::utility::log::log_level_t::INFO) {                         \
-            m5::utility::log::log_printf(M5_UTILITY_LOG_FORMAT(I, format), \
-                                         ##__VA_ARGS__);                   \
-        }                                                                  \
+#define M5_LIB_LOGI(format, ...)                                          \
+    do {                                                                  \
+        if (m5::utility::log::logOutputLevel >=                           \
+            m5::utility::log::log_level_t::INFO) {                        \
+            m5::utility::log::logPrintf(M5_UTILITY_LOG_FORMAT(I, format), \
+                                        ##__VA_ARGS__);                   \
+        }                                                                 \
     } while (0)
 /*!
   @def M5_LIB_LOGD
   @brief Output log (level DEBUG)
  */
-#define M5_LIB_LOGD(format, ...)                                           \
-    do {                                                                   \
-        if (m5::utility::log::logOutputLevel >=                            \
-            m5::utility::log::log_level_t::DEBUG) {                        \
-            m5::utility::log::log_printf(M5_UTILITY_LOG_FORMAT(D, format), \
-                                         ##__VA_ARGS__);                   \
-        }                                                                  \
+#define M5_LIB_LOGD(format, ...)                                          \
+    do {                                                                  \
+        if (m5::utility::log::logOutputLevel >=                           \
+            m5::utility::log::log_level_t::DEBUG) {                       \
+            m5::utility::log::logPrintf(M5_UTILITY_LOG_FORMAT(D, format), \
+                                        ##__VA_ARGS__);                   \
+        }                                                                 \
     } while (0)
-
 /*!
   @def M5_LIB_LOGV
   @brief Output log (level VERBOSE)
  */
-#define M5_LIB_LOGV(format, ...)                                           \
-    do {                                                                   \
-        if (m5::utility::log::logOutputLevel >=                            \
-            m5::utility::log::log_level_t::VERBOSE) {                      \
-            m5::utility::log::log_printf(M5_UTILITY_LOG_FORMAT(V, format), \
-                                         ##__VA_ARGS__);                   \
-        }                                                                  \
+#define M5_LIB_LOGV(format, ...)                                          \
+    do {                                                                  \
+        if (m5::utility::log::logOutputLevel >=                           \
+            m5::utility::log::log_level_t::VERBOSE) {                     \
+            m5::utility::log::logPrintf(M5_UTILITY_LOG_FORMAT(V, format), \
+                                        ##__VA_ARGS__);                   \
+        }                                                                 \
+    } while (0)
+
+/*!
+  @def M5_DUMPE
+  @brief Output log (level ERROR)
+ */
+#define M5_DUMPE(addr, len)                         \
+    do {                                            \
+        if (m5::utility::log::logOutputLevel >=     \
+            m5::utility::log::log_level_t::ERROR) { \
+            m5::utility::log::dump((addr), (len));  \
+        }                                           \
+    } while (0)
+/*!
+  @def M5_DUMPW
+  @brief Output log (level WARN)
+ */
+#define M5_DUMPW(addr, len)                        \
+    do {                                           \
+        if (m5::utility::log::logOutputLevel >=    \
+            m5::utility::log::log_level_t::WARN) { \
+            m5::utility::log::dump((addr), (len)); \
+        }                                          \
+    } while (0)
+/*!
+  @def M5_DUMPI
+  @brief Output log (level INFO)
+ */
+#define M5_DUMPI(addr, len)                        \
+    do {                                           \
+        if (m5::utility::log::logOutputLevel >=    \
+            m5::utility::log::log_level_t::INFO) { \
+            m5::utility::log::dump((addr), (len)); \
+        }                                          \
+    } while (0)
+/*!
+  @def M5_DUMPD
+  @brief Output log (level DEBUG)
+ */
+#define M5_DUMPD(addr, len)                         \
+    do {                                            \
+        if (m5::utility::log::logOutputLevel >=     \
+            m5::utility::log::log_level_t::DEBUG) { \
+            m5::utility::log::dump((addr), (len));  \
+        }                                           \
+    } while (0)
+/*!
+  @def M5_DUMPV
+  @brief Output log (level VERBOSE)
+ */
+#define M5_DUMPV(addr, len)                           \
+    do {                                              \
+        if (m5::utility::log::logOutputLevel >=       \
+            m5::utility::log::log_level_t::VERBOSE) { \
+            m5::utility::log::dump((addr), (len));    \
+        }                                             \
     } while (0)
 
 }  // namespace log
