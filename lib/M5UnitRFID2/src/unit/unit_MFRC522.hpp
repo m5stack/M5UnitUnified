@@ -179,14 +179,18 @@ enum class ISO14443Command : uint8_t {
     //! @brief ANTICOLLISION / SELECT if NVB is 40 bits (cascade level 3)
     SELECT_CL3 = 0x97,
 
-    AUTH_WITH_KEY_A       = 0x60,
-    AUTH_WITH_KEY_B       = 0x61,
+    AUTH_WITH_KEY_A = 0x60,
+    AUTH_WITH_KEY_B = 0x61,
+    AUTH_UL         = 0x1A,
+
     PERSONALIZE_UID_USAGE = 0x40,
     SET_MOD_TYPE          = 0x43,
-    READ                  = 0x30,
-    WRITE                 = 0xA0,
-    RATS                  = 0x0e,
 
+    READ     = 0x30,
+    WRITE    = 0xA0,
+    WRITE_UL = 0xA2,  //!< @brief For UltraLight (write 4 bytes)
+
+    RATS = 0x0e,
 };
 
 /*!
@@ -270,6 +274,9 @@ class UnitMFRC522 : public Component {
       @return True if successful
     */
     result_t getLatestErrorStatus(mfrc522::Error &err);
+
+    bool enablePowerDownMode();
+    bool disablePowerDownMode();
 
     bool reset();
     virtual bool selfTest();
@@ -365,42 +372,80 @@ class UnitMFRC522 : public Component {
      */
     result_t piccHLTA();
 
-    result_t piccAuthenticate(const mfrc522::ISO14443Command cmd,
-                              const mfrc522::UID &uid,
-                              const mfrc522::MifareKey &key,
-                              const uint8_t block);
+    /*!
+      @brief Authentication by KEY A
+      @param uid PICC UID
+      @param key Authentication key
+      @param block Sector trailer block address
+      @warning Before a new communication can be initiated, the stopCrypto1()
+      must be called and the authentication state terminated
+     */
     inline result_t piccAuthenticateWithKeyA(const mfrc522::UID &uid,
                                              const mfrc522::MifareKey &key,
                                              const uint8_t block) {
-        return piccAuthenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_A, uid,
-                                key, block);
+        return picc_authenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_A, uid,
+                                 key, block);
     }
+    /*!
+      @brief Authentication by KEY B
+      @copydetails piccAuthenticateWithKeyA
+     */
     inline result_t piccAuthenticateWithKeyB(const mfrc522::UID &uid,
                                              const mfrc522::MifareKey &key,
                                              const uint8_t block) {
-        return piccAuthenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_B, uid,
-                                key, block);
+        return picc_authenticate(mfrc522::ISO14443Command::AUTH_WITH_KEY_B, uid,
+                                 key, block);
     }
-
+    //! @breif Exit authentication state
     result_t stopCrypto1();
     ///@}
 
     ///@name MIFARE
     ///@{
+    /*!
+      @brief Read data block
+      @param addr Block address
+      @param[out] buf Buffer for storing data
+      @param[in,out] len in:Length of the buffer (>= 18)<br>
+      out: Stored bytes
+      @note Must be authenticated
+      @note The last 2 bytes of the output are CRC
+      @warning The buffer length must be at least 18 bytes including the CRC
+      @warning Read in units of 16 bytes
+    */
     result_t mifareRead(const uint8_t addr, uint8_t *buf, uint8_t &len);
+    /*!
+      @brief Write data block for Classic
+      @param addr Block address
+      @param buf Data to be written
+      @param len Length of the buffer (<= 16)
+      @note Must be authenticated
+      @warning Some addresses are not writable.
+      (See also MIFARE Specification)
+    */
     result_t mifareWrite(const uint8_t addr, const uint8_t *buf,
                          const uint8_t len);
+    /*!
+      @brief Write data block for Ultralight
+      @param page Page number
+      @param buf Data to be written
+      @param len Length of the buffer (<= 4)
+    */
+    result_t mifareUltralightWrite(const uint8_t page, const uint8_t *buf,
+                                   const uint8_t len);
+
+    //! @brief Transceiver data for MIFARE
     result_t mifareTransceive(const uint8_t *buf, const uint8_t len,
                               const bool ignoreTimeout = false);
-
     ///@}
 
     ///@name For debug
     ///@{
     void dump(const mfrc522::UID &uid);
-    void dumpClassic(const mfrc522::UID &uid,
-                     const mfrc522::MifareKey &key = DEFAULT_CLASSIC_KEY_A);
-    void dumpUltralight();
+    void dumpMifareClassic(
+        const mfrc522::UID &uid,
+        const mfrc522::MifareKey &key = DEFAULT_CLASSIC_KEY_A);
+    void dumpMifareUltralight();
     ///@}
 
     ///@name PICC (Proximity IC Card)
@@ -415,8 +460,8 @@ class UnitMFRC522 : public Component {
       @param sendLen Number of bytes to transfer to the FIFO
       @param backData nullptr or pointer to buffer if data should be read
       back after executing the command
-      @param backLen[in,out] in: Max number of bytes to write to backData<br>
-      out:The number of bytes returned
+      @param backLen[in,out] in: Max number of bytes to write to
+      backData<br> out:The number of bytes returned
       @param[in,out] validBit The number of valid bits in the last byte
       (0 for 8 valid bits)
       @param rxAlign Defines the bit position in backData[0] for the first
@@ -461,6 +506,7 @@ class UnitMFRC522 : public Component {
 
     result_t read_register8(const uint8_t reg, uint8_t &ret);
     result_t read_register(const uint8_t reg, uint8_t *buf, const size_t len);
+    result_t read_register_rxAlign(const uint8_t reg, uint8_t *buf, const size_t len, const uint8_t rxAlign);
     result_t write_register8(const uint8_t reg, const uint8_t value);
     result_t write_register(const uint8_t reg, const uint8_t *buf,
                             const size_t size);
@@ -475,6 +521,11 @@ class UnitMFRC522 : public Component {
                             const uint8_t collPos = 0);
     result_t select(const uint8_t clv, const uint8_t *uid, const uint8_t len,
                     uint8_t *res, uint8_t &rlen);
+
+    result_t picc_authenticate(const mfrc522::ISO14443Command cmd,
+                               const mfrc522::UID &uid,
+                               const mfrc522::MifareKey &key,
+                               const uint8_t block);
 
     bool exists_RATS(bool &available);
 

@@ -219,6 +219,12 @@ bool UnitMFRC522::begin() {
         return false;
     }
 
+    setAntennaGain(ReceiverGain::dB18);
+    ReceiverGain gain{};
+    if (getAntennaGain(gain)) {
+        M5_LIB_LOGE("Gain:%u", (int)gain);
+    }
+
     // Mode
     // defines the preset value for the CRC coprocess to 6363h
     // return writeRegister8(MODE_REG, 0x29) && turnOnAntenna();
@@ -336,6 +342,28 @@ UnitMFRC522::result_t UnitMFRC522::calculateCRC(const uint8_t* buf,
 
     return write_pcd_command(Command::Idle);
 #endif
+}
+
+bool UnitMFRC522::enablePowerDownMode() {
+    return (bool)set_register_bit(COMMAND_REG, 0x10);
+}
+
+bool UnitMFRC522::disablePowerDownMode() {
+    return (bool)mask_register_bit(COMMAND_REG, 0x10).and_then([this]() {
+        // Wait until power-down bit has been cleared
+        auto timeout_at = m5::utility::millis() + 1000;
+        bool done{};
+        do {
+            uint8_t v{};
+            if (this->read_register8(COMMAND_REG, v) && ((v & 0x10) == 0)) {
+                done = true;
+                break;
+            }
+            std::this_thread::yield();
+        } while (!done && m5::utility::millis() <= timeout_at);
+        return done ? result_t()
+                    : m5::stl::make_unexpected(function_error_t::TIMEOUT);
+    });
 }
 
 bool UnitMFRC522::reset() {
@@ -517,10 +545,10 @@ UnitMFRC522::result_t UnitMFRC522::getLatestErrorStatus(Error& err) {
 }
 
 UnitMFRC522::result_t UnitMFRC522::piccActivate(UID& uid, const bool specific) {
-    uint8_t ATOA[2]{};
-    uint8_t len{sizeof(ATOA)};
+    uint8_t ATQA[2]{};
+    uint8_t alen{sizeof(ATQA)};
 
-    // Rset Tx bit rate
+    // Reset Tx bit rate
     auto result = write_register8(TX_MODE_REG, 0x00)
                       .and_then([this]() {
                           // Rset Rx bit rate
@@ -534,14 +562,17 @@ UnitMFRC522::result_t UnitMFRC522::piccActivate(UID& uid, const bool specific) {
         return result;
     }
 
-    // REQ for IDLE
-    result = piccREQA(ATOA, len);
-    if (result || result.error() == function_error_t::COLLISION) {
-        M5_LIB_LOGE("sel");
-        // To ACTIVE if successful
-        return piccSelect(uid, specific);
+    bool ready{};
+
+    // REQA for IDLE
+    result = piccREQA(ATQA, alen);
+    ready  = (bool)result || result.error() == function_error_t::COLLISION;
+    if (!ready) {
+        // WUPA for HALT
+        result = piccWUPA(ATQA, alen);
+        ready  = (bool)result || result.error() == function_error_t::COLLISION;
     }
-    return result;
+    return ready ? piccSelect(uid, specific) : result;
 }
 
 UnitMFRC522::result_t UnitMFRC522::executeCommand(
@@ -551,7 +582,10 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
     uint8_t _validBits{};
 
     // Prepare values for BitFramingReg
-    uint8_t txLastBit  = validBits ? *validBits : 0U;
+    uint8_t txLastBit =
+        validBits
+            ? *validBits  // used for transmission of bit oriented frames
+            : 0U;  // 0 means all bits of the last byte will be transmitted
     uint8_t bitFraming = (rxAlign << 4) + txLastBit;
 
     auto result =
@@ -617,6 +651,8 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
         return result;
     }
     if (err.value & 0x13) {
+        M5_LIB_LOGE(">>>>: %x: %02x%02x%02x", err.value, sendData[0],
+                    sendData[1], sendData[2]);
         return m5::stl::make_unexpected(function_error_t::ERROR);
     }
 
@@ -626,7 +662,7 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
         result =
             // Get length
             read_register8(FIFO_LEVEL_REG, len)
-                .and_then([this, &backData, &backLen, &len]() {
+                .and_then([this, &backData, &backLen, &len, &rxAlign]() {
                     // Read FIFO
                     if (*backLen < len) {
                         M5_LIB_LOGE("backLen is not large enough %u / %u", len,
@@ -635,7 +671,8 @@ UnitMFRC522::result_t UnitMFRC522::executeCommand(
                             m5::stl::make_unexpected(function_error_t::ARG));
                     }
                     *backLen = len;
-                    return this->read_register(FIFO_DATA_REG, backData, len);
+                    return this->read_register_rxAlign(FIFO_DATA_REG, backData,
+                                                       len, rxAlign);
                 })
                 .and_then([this, &_validBits]() {
                     // Is last received byte valid?
@@ -720,6 +757,19 @@ UnitMFRC522::result_t UnitMFRC522::piccSelect(mfrc522::UID& uid,
             if (result.has_error() &&
                 result.error() != function_error_t::COLLISION) {
                 M5_LIB_LOGE(">>>>>>>>>>>>> COLLISION");
+
+                uint8_t coll{};
+                result = read_register8(COLL_REG, coll);
+                if (result && coll & 0x20) {
+                    return m5::stl::make_unexpected(
+                        function_error_t::COLLISION);
+                }
+                if (!result) {
+                    return result;
+                }
+
+                coll &= 0x1F;  // 5bits
+                collPos = coll == 0 ? 32 : coll;
             }
         }
 
@@ -730,8 +780,8 @@ UnitMFRC522::result_t UnitMFRC522::piccSelect(mfrc522::UID& uid,
                 return m5::stl::make_unexpected(function_error_t::ERROR);
             }
 
-            M5_DUMPE(sak, sizeof(sak));
-            // M5_DUMPE(res, rlen);
+            // M5_DUMPE(sak, sizeof(sak));
+            //  M5_DUMPE(res, rlen);
 
             // Copy the finalised part
             std::memcpy(uid.uid + cascadeLevel * 3,
@@ -821,19 +871,12 @@ UnitMFRC522::result_t UnitMFRC522::piccHLTA() {
                : result.error() == function_error_t::TIMEOUT ? result_t()
                                                              : result;
     });
-    /*
-      TODO : Should success include NACK?
-      6.3.3
-      If the PICC responds with any modulation during a period of 1 ms after the
-      end of the frame containing the HLTA Command, this response shall be
-      interpreted as 'not acknowledge'.
-    */
 }
 
-UnitMFRC522::result_t UnitMFRC522::piccAuthenticate(const ISO14443Command cmd,
-                                                    const UID& uid,
-                                                    const MifareKey& key,
-                                                    const uint8_t block) {
+UnitMFRC522::result_t UnitMFRC522::picc_authenticate(const ISO14443Command cmd,
+                                                     const UID& uid,
+                                                     const MifareKey& key,
+                                                     const uint8_t block) {
     if (cmd != ISO14443Command::AUTH_WITH_KEY_A &&
         cmd != ISO14443Command::AUTH_WITH_KEY_B) {
         return m5::stl::make_unexpected(function_error_t::ARG);
@@ -848,7 +891,7 @@ UnitMFRC522::result_t UnitMFRC522::piccAuthenticate(const ISO14443Command cmd,
 
 UnitMFRC522::result_t UnitMFRC522::stopCrypto1() {
     // Clear MFCrypto1On
-    return mask_register_bit(STATUS2_REG, 0x80);
+    return mask_register_bit(STATUS2_REG, 0x08);
 }
 
 UnitMFRC522::result_t UnitMFRC522::mifareRead(const uint8_t addr, uint8_t* buf,
@@ -866,17 +909,10 @@ UnitMFRC522::result_t UnitMFRC522::mifareRead(const uint8_t addr, uint8_t* buf,
     });
 }
 
-/*
-  For MIFARE Ultralight the operation is called "COMPATIBILITY WRITE".
-  Even though 16 bytes are transferred to the Ultralight PICC, only the
-  least significant 4 bytes (bytes 0 to 3) are written to the specified
-  address. It is recommended to set the remaining bytes 04h to 0Fh to all
-  logic 0.
- */
 UnitMFRC522::result_t UnitMFRC522::mifareWrite(const uint8_t addr,
                                                const uint8_t* buf,
                                                const uint8_t len) {
-    if (!buf || len > 16) {
+    if (!buf || len < 16) {
         return m5::stl::make_unexpected(function_error_t::ARG);
     }
     uint8_t cmd[2]{m5::stl::to_underlying(ISO14443Command::WRITE), addr};
@@ -886,6 +922,23 @@ UnitMFRC522::result_t UnitMFRC522::mifareWrite(const uint8_t addr,
         [this, &buf, &len]() { return mifareTransceive(buf, len); });
 }
 
+UnitMFRC522::result_t UnitMFRC522::mifareUltralightWrite(const uint8_t page,
+                                                         const uint8_t* buf,
+                                                         const uint8_t len) {
+    if (!buf || len < 4) {
+        return m5::stl::make_unexpected(function_error_t::ARG);
+    }
+    // page and data
+    uint8_t cmd[6]{m5::stl::to_underlying(ISO14443Command::WRITE_UL),
+                   page,
+                   buf[0],
+                   buf[1],
+                   buf[2],
+                   buf[3]};
+    // M5_DUMPE(cmd, 6);
+    return mifareTransceive(cmd, sizeof(cmd));
+}
+
 UnitMFRC522::result_t UnitMFRC522::mifareTransceive(const uint8_t* buf,
                                                     const uint8_t len,
                                                     const bool ignoreTimeout) {
@@ -893,30 +946,35 @@ UnitMFRC522::result_t UnitMFRC522::mifareTransceive(const uint8_t* buf,
         return m5::stl::make_unexpected(function_error_t::ARG);
     }
     uint8_t cmd[16 + 2 /*CRC*/]{};
-    std::memcpy(cmd, buf, std::min((uint8_t)16U, len));
+    std::memcpy(cmd, buf, len);
     uint16_t crc{};
     return calculateCRC(cmd, len, crc)
         .and_then([this, &len, &crc, &cmd, &ignoreTimeout]() {
             cmd[len]     = crc & 0xFF;
             cmd[len + 1] = ((crc >> 8) & 0xFF);
 
-            uint8_t rbuf[2]{};
-            uint8_t rlen{2};
+            uint8_t rbuf[1]{};
+            uint8_t rlen{1};
             uint8_t vbits{};
+
+            // M5_DUMPE(cmd, len + 2);
+
             auto result = transceiveData(cmd, len + 2, rbuf, &rlen, &vbits);
             if (ignoreTimeout &&
                 (result.has_error() &&
                  result.error() == function_error_t::TIMEOUT)) {
+                // Timeout is deemed a success if ignoreTimeout is true
                 return result_t();
             }
             if (!result) {
                 return result;
             }
+            // Check 4bitACK
             if (rlen != 1 || vbits != 4) {
                 return result_t(
                     m5::stl::make_unexpected(function_error_t::ERROR));
             }
-            if (rbuf[0] != 0x0A) {  // 4bits ACK
+            if (rbuf[0] != 0x0A) {
                 return result_t(
                     m5::stl::make_unexpected(function_error_t::NACK));
             }
@@ -930,16 +988,17 @@ void UnitMFRC522::dump(const UID& uid) {
         case PICCType::MIFARE_Classic:
         case PICCType::MIFARE_Classic_1K:
         case PICCType::MIFARE_Classic_4K:
-            dumpClassic(uid);
+            dumpMifareClassic(uid);
             break;
         case PICCType::MIFARE_UltraLight:
-            dumpUltralight();
+            dumpMifareUltralight();
         default:
             break;
     }
+    piccHLTA();
 }
 
-void UnitMFRC522::dumpClassic(const UID& uid, const MifareKey& key) {
+void UnitMFRC522::dumpMifareClassic(const UID& uid, const MifareKey& key) {
     uint8_t sectors{};
     switch (uid.type) {
         case PICCType::MIFARE_Classic:
@@ -965,7 +1024,7 @@ void UnitMFRC522::dumpClassic(const UID& uid, const MifareKey& key) {
     stopCrypto1();
 }
 
-void UnitMFRC522::dumpUltralight() {
+void UnitMFRC522::dumpMifareUltralight() {
     uint8_t buf[16 + 2 /*CRC*/]{};
     uint8_t blen{18};
 
@@ -986,8 +1045,6 @@ void UnitMFRC522::dumpUltralight() {
             break;
         }
     }
-    piccHLTA();
-    stopCrypto1();
 }
 
 //
@@ -1004,6 +1061,22 @@ UnitMFRC522::result_t UnitMFRC522::read_register(const uint8_t reg,
     return readRegister(reg, buf, len, 0)
                ? result_t()
                : m5::stl::make_unexpected(function_error_t::I2C);
+}
+
+UnitMFRC522::result_t UnitMFRC522::read_register_rxAlign(
+    const uint8_t reg, uint8_t* buf, const size_t len, const uint8_t rxAlign) {
+    uint8_t tmp[len + 1]{};
+    auto result = read_register(reg, tmp, len + 1);
+#if 0
+    //    buf [in,out] ???
+    if (result) {
+        uint8_t mask = (0xFFU << rxAlign) & 0xFF;
+                        buf[0] = 
+                        
+        buf[0] = ((buf[0] & mask) | (buf[0] & ~mask)) >> rxAlign;
+    }
+#endif
+    return result;
 }
 
 UnitMFRC522::result_t UnitMFRC522::write_register8(const uint8_t reg,
