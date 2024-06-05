@@ -15,6 +15,7 @@
 #include <unit/unit_QMP6988.hpp>
 #include <unit/unit_ENV3.hpp>
 #include <unit/unit_MAX30100.hpp>
+#include <unit/unit_WS1850S.hpp>
 
 namespace {
 
@@ -60,6 +61,7 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitQMP6988>();
     each_unit_test<m5::unit::UnitENV3>();
     each_unit_test<m5::unit::UnitMAX30100>();
+    each_unit_test<m5::unit::UnitWS1850S>();
 
     for (auto&& e : vec) {
         delete e;
