@@ -49,7 +49,14 @@ class Adapter {
     Adapter& operator=(Adapter&&)      = default;
     ~Adapter()                         = default;
 
+    inline uint8_t address() const {
+        return _impl->address();
+    }
+
     Adapter* duplicate(const uint8_t addr);
+
+    //! @brief write to address zero (general call)
+    m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len);
 
     ///@name R/W
     ///@{
@@ -75,12 +82,7 @@ class Adapter {
         const bool stop = true) {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
-
     ///@}
-
-    inline uint8_t address() const {
-        return _impl->address();
-    }
 
     ///@cond
     class Impl {
@@ -89,6 +91,14 @@ class Adapter {
         explicit Impl(const uint8_t addr) : _addr(addr) {
         }
         virtual ~Impl() = default;
+
+        inline uint8_t address() const {
+            return _addr;
+        }
+
+        virtual Impl* duplicate(const uint8_t addr) {
+            return new Impl(addr);
+        }
 
         virtual m5::hal::error::error_t readWithTransaction(uint8_t*,
                                                             const size_t) {
@@ -111,11 +121,10 @@ class Adapter {
                                                              const bool) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual Impl* duplicate(const uint8_t addr) {
-            return new Impl(addr);
-        }
-        inline uint8_t address() const {
-            return _addr;
+
+        virtual m5::hal::error::error_t generalCall(const uint8_t* data,
+                                                    const size_t len) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
        protected:

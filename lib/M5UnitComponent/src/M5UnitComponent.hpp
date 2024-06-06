@@ -75,7 +75,7 @@ class Component {
     ///@{
     explicit Component(const uint8_t addr = 0x00);
     Component(const Component&) = delete;
-    Component(Component&&);
+    Component(Component&&) noexcept;
     ///@}
 
     ///@name Assignment
@@ -224,6 +224,9 @@ class Component {
                                       std::nullptr_t>::type = nullptr>
     bool writeRegister16(const Reg reg, const uint16_t value,
                          const bool stop = true);
+
+    //! @brief General call
+    bool generalCall(const uint8_t* data, const size_t len);
     ///@}
 
     ///@name Children

@@ -33,7 +33,7 @@ Component::Component(const uint8_t addr)
     : _adapter{new Adapter(addr)}, _addr{addr} {
 }
 
-Component::Component(Component&& o)
+Component::Component(Component&& o) noexcept
     : _manager{o._manager},
       _adapter{std::move(o._adapter)},
       _order{o._order},
@@ -282,6 +282,10 @@ bool Component::writeRegister16(const Reg reg, const uint16_t value,
                                 const bool stop) {
     m5::types::big_uint16_t u16{value};
     return writeRegister(reg, u16.data(), u16.size(), stop);
+}
+
+bool Component::generalCall(const uint8_t* data, const size_t len) {
+    return _adapter->generalCall(data, len) == m5::hal::error::error_t::OK;
 }
 
 std::string Component::debugInfo() const {

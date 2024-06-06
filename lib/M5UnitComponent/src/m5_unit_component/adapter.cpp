@@ -41,19 +41,9 @@ class WireImpl : public Adapter::Impl {
         return m5::hal::error::error_t::UNKNOWN_ERROR;
     }
 
-    virtual m5::hal::error::error_t writeWithTransaction(
+    inline virtual m5::hal::error::error_t writeWithTransaction(
         const uint8_t* data, const size_t len, const bool stop) override {
-        assert(_addr);
-        _wire->beginTransmission(_addr);
-        if (data) {
-            _wire->write(data, len);
-        }
-        auto ret = _wire->endTransmission(stop);
-        if (ret) {
-            M5_LIB_LOGE("%d endTransmission", ret);
-        }
-        return (ret == 0) ? m5::hal::error::error_t::OK
-                          : m5::hal::error::error_t::I2C_BUS_ERROR;
+        return write_with_transaction(_addr, data, len, stop);
     }
 
     // TODO: rename to writeRegisterWithTransaction()
@@ -98,6 +88,28 @@ class WireImpl : public Adapter::Impl {
         return new WireImpl(*_wire, addr);
     }
 
+    inline virtual m5::hal::error::error_t generalCall(
+        const uint8_t* data, const size_t len) override {
+        return write_with_transaction(0x00, data, len, true);
+    }
+
+   protected:
+    m5::hal::error::error_t write_with_transaction(const uint8_t addr,
+                                                   const uint8_t* data,
+                                                   const size_t len,
+                                                   const bool stop) {
+        _wire->beginTransmission(addr);
+        if (data) {
+            _wire->write(data, len);
+        }
+        auto ret = _wire->endTransmission(stop);
+        if (ret) {
+            M5_LIB_LOGE("%d endTransmission", ret);
+        }
+        return (ret == 0) ? m5::hal::error::error_t::OK
+                          : m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+
    private:
     TwoWire* _wire{};
 };
@@ -108,6 +120,10 @@ struct BusImpl : public Adapter::Impl {
     BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr)
         : Adapter::Impl(addr), _bus(bus) {
         _access_cfg.i2c_addr = addr;
+    }
+
+    virtual Impl* duplicate(const uint8_t addr) override {
+        return new BusImpl(_bus, addr);
     }
 
     virtual m5::hal::error::error_t readWithTransaction(
@@ -227,8 +243,38 @@ struct BusImpl : public Adapter::Impl {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
-    virtual Impl* duplicate(const uint8_t addr) override {
-        return new BusImpl(_bus, addr);
+    virtual m5::hal::error::error_t generalCall(const uint8_t* data,
+                                                const size_t len) override {
+        m5::hal::bus::I2CMasterAccessConfig gcfg = _access_cfg;
+        gcfg.i2c_addr                            = 0x00;
+        return write_with_transaction(gcfg, data, len, true);
+    }
+
+   protected:
+    m5::hal::error::error_t write_with_transaction(
+        const m5::hal::bus::I2CMasterAccessConfig& cfg, const uint8_t* data,
+        const size_t len, const bool stop) {
+        if (_bus) {
+            auto acc = _bus->beginAccess(cfg);
+            if (acc) {
+                auto trans = acc.value();
+                auto result =
+                    trans->startWrite()
+                        .and_then([&trans, &data, &len]() {
+                            return trans->write(data, len);
+                        })
+                        .and_then([&trans, &stop](size_t&&) {
+                            return stop ? trans->stop()
+                                        : m5::stl::expected<
+                                              void, m5::hal::error::error_t>();
+                        });
+                // Clean-up must be called
+                auto eresult = this->_bus->endAccess(std::move(trans));
+                return result.error_or(eresult);
+            }
+            return acc.error();
+        }
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
    private:
@@ -270,6 +316,11 @@ Adapter* Adapter::duplicate(const uint8_t addr) {
     }
     M5_LIB_LOGE("Failed to duplicate");
     return nullptr;
+}
+
+m5::hal::error::error_t Adapter::generalCall(const uint8_t* data,
+                                             const size_t len) {
+    return _impl->generalCall(data, len);
 }
 
 }  // namespace unit
