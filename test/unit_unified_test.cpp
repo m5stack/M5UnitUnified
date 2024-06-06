@@ -9,13 +9,16 @@
 #include <M5UnitComponent.hpp>
 #include <M5UnitUnified.hpp>
 #include <algorithm>
+#include <utility>
 
 #include <unit/unit_SCD4x.hpp>
 #include <unit/unit_SHT3x.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <unit/unit_ENV3.hpp>
 #include <unit/unit_MAX30100.hpp>
+#include <unit/unit_MFRC522.hpp>
 #include <unit/unit_WS1850S.hpp>
+#include <unit/unit_ADS111x.hpp>
 
 namespace {
 
@@ -46,9 +49,18 @@ void each_unit_test() {
         EXPECT_NE(u->identifier(), e->identifier())
             << u->deviceName() << " / " << e->deviceName();
     }
-
-    // Other test......
-
+#if 0
+    // Move
+    {
+        U tmp;
+        // Move constructor
+        U mc(std::move(tmp));
+        // assign by move
+        U mc2;
+        mc2 = std::move(mc);
+    }
+#endif
+    
     vec.push_back(u);
 }
 
@@ -61,7 +73,11 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitQMP6988>();
     each_unit_test<m5::unit::UnitENV3>();
     each_unit_test<m5::unit::UnitMAX30100>();
+    each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();
+    each_unit_test<m5::unit::UnitADS1113>();
+    each_unit_test<m5::unit::UnitADS1114>();
+    each_unit_test<m5::unit::UnitADS1115>();
 
     for (auto&& e : vec) {
         delete e;
