@@ -99,14 +99,15 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
 };
 
 // true:Bus false:Wire
-//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
-//                         ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
+                         ::testing::Values(false, true));
 
 //::testing::Values(true, false));
-// TODO: clock stretching with HAL -> Wire がエラーになる HAL側がまだ実験なので保保留
+// TODO: clock stretching with HAL -> Wire がエラーになる
+// HAL側がまだ実験なので保保留
 
-//INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
 
 TEST_P(TestSHT3x, SingleShot) {
     SCOPED_TRACE(ustr);
