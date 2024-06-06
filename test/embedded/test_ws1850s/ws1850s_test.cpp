@@ -166,40 +166,62 @@ TEST_P(TestWS1850S, coporcessorCRC) {
 TEST_P(TestWS1850S, Antenna) {
     SCOPED_TRACE(ustr);
 
+    uint8_t prev{}, now{};
     bool onoff{};
     EXPECT_TRUE(unit.isAntennaOn(onoff));
     EXPECT_FALSE(onoff);
 
+    EXPECT_TRUE(unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG,
+                                   prev, 0));
+
     EXPECT_TRUE(unit.turnOnAntenna());
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG, now, 0));
     EXPECT_TRUE(unit.isAntennaOn(onoff));
     EXPECT_TRUE(onoff);
+    EXPECT_NE(now, prev);
 
+    prev = now;
     EXPECT_TRUE(unit.turnOffAntenna());
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG, now, 0));
     EXPECT_TRUE(unit.isAntennaOn(onoff));
     EXPECT_FALSE(onoff);
+    EXPECT_NE(now, prev);
 
     constexpr ReceiverGain table[] = {
         ReceiverGain::dB18, ReceiverGain::dB23, ReceiverGain::dB33,
         ReceiverGain::dB38, ReceiverGain::dB43, ReceiverGain::dB48,
     };
+
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::RFC_FG_REG, prev, 0));
+
     for (auto&& e : table) {
         EXPECT_TRUE(unit.setAntennaGain(e)) << (int)e;
+        EXPECT_TRUE(
+            unit.readRegister8(m5::unit::mfrc522::command::RFC_FG_REG, now, 0));
+
         ReceiverGain gain{};
         EXPECT_TRUE(unit.getAntennaGain(gain)) << (int)e;
         EXPECT_EQ(gain, e) << (int)e;
+        EXPECT_NE(now, prev);
+        prev = now;
     }
 }
 
-TEST_P(TestWS1850S, PwoerDown) {
+TEST_P(TestWS1850S, Power) {
     uint8_t v{};
-    
+
     EXPECT_TRUE(unit.enablePowerDownMode());
 
-    EXPECT_TRUE(unit.readRegister8(0x01, v, 0));
-    EXPECT_EQ(( v & 0x10), 0x10);
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, v, 0));
+    EXPECT_EQ((v & 0x10), 0x10);
 
     EXPECT_TRUE(unit.disablePowerDownMode());
 
-    EXPECT_TRUE(unit.readRegister8(0x01, v, 0));
-    EXPECT_EQ(( v & 0x10), 0x00);
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, v, 0));
+    EXPECT_EQ((v & 0x10), 0x00);
 }
