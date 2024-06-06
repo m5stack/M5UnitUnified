@@ -30,6 +30,7 @@ bool delay1() {
 namespace m5 {
 namespace unit {
 
+using namespace sht3x;
 using namespace sht3x::command;
 
 const char UnitSHT30::name[] = "UnitSHT30";
@@ -93,20 +94,25 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    if (!writeRegister(cmd[m5::stl::to_underlying(rep) + (stretch ? 0 : 3)])) {
+
+    uint32_t idx = m5::stl::to_underlying(rep) + (stretch ? 0 : 3);
+    if (idx >= m5::stl::size(cmd)) {
+        M5_LIB_LOGE("Internal error");
         return false;
     }
-    if (!stretch) {
-        m5::utility::delay(ms[m5::stl::to_underlying(rep)]);
-    } else {
-        m5::utility::delay(1);  // must need? (depends Wire.setTimeout() ?)
+
+    if (writeRegister(cmd[idx])) {
+        if (!stretch) {
+            m5::utility::delay(ms[m5::stl::to_underlying(rep)]);
+        }
+        return read_measurement();
     }
-    return read_measurement();
+    return false;
 }
 
 bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
                                          const sht3x::Repeatability rep) {
-    constexpr uint16_t cmd[] = {
+    constexpr static uint16_t periodic_cmd[] = {
         // 0.5 mps
         START_PERIODIC_MPS_HALF_HIGH,
         START_PERIODIC_MPS_HALF_MEDIUM,
@@ -119,15 +125,20 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
         START_PERIODIC_MPS_2_HIGH,
         START_PERIODIC_MPS_2_MEDIUM,
         START_PERIODIC_MPS_2_LOW,
+        // 4 mps
+        START_PERIODIC_MPS_4_HIGH,
+        START_PERIODIC_MPS_4_MEDIUM,
+        START_PERIODIC_MPS_4_LOW,
         // 10 mps
         START_PERIODIC_MPS_10_HIGH,
         START_PERIODIC_MPS_10_MEDIUM,
         START_PERIODIC_MPS_10_LOW,
     };
-    constexpr unsigned long ms[] = {
+    constexpr static unsigned long interval_table[] = {
         2000,  // 0.5
         1000,  // 1
         500,   // 2
+        250,   // 4
         100,   // 10
     };
 
@@ -136,10 +147,10 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
         return false;
     }
 
-    _periodic = writeRegister(
-        cmd[m5::stl::to_underlying(mps) * 3 + m5::stl::to_underlying(rep)]);
+    _periodic = writeRegister(periodic_cmd[m5::stl::to_underlying(mps) * 3 +
+                                           m5::stl::to_underlying(rep)]);
     if (_periodic) {
-        _interval = ms[m5::stl::to_underlying(mps)];
+        _interval = interval_table[m5::stl::to_underlying(mps)];
         m5::utility::delay(15);
     }
     return _periodic;
@@ -177,8 +188,15 @@ bool UnitSHT30::accelerateResponseTime() {
 }
 
 bool UnitSHT30::getStatus(sht3x::Status& s) {
-    s.value = 0;
-    return readRegister16(READ_STATUS, s.value, 1);
+    std::array<uint8_t, 3> rbuf{};
+    if (readRegister(READ_STATUS, rbuf.data(), rbuf.size(), 0)) {
+        utility::ReadDataWithCRC16 data(rbuf.data(), 1);
+        if (data.valid(0)) {
+            s.value = data.value(0);
+            return true;
+        }
+    }
+    return false;
 }
 
 bool UnitSHT30::clearStatus() {
@@ -190,28 +208,44 @@ bool UnitSHT30::softReset() {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
-    return writeRegister(SOFT_RESET) && delay1();
-}
 
-#if 0
-bool UnitSHT30::generalReset() {
-    // TODO
-    // How to use generic call with Wire/M5Bus?
-    //constexpr uint16_t GENERAL_RESET{0x0006};
-    if (inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are running");
+    if (!clearStatus() || !writeRegister(SOFT_RESET)) {
         return false;
     }
-    return false;
+    m5::utility::delay(2);
+    return true;
 }
-#endif
+
+bool UnitSHT30::generalReset() {
+    uint8_t cmd{0x06};  // reset command
+
+    if (!clearStatus()) {
+        return false;
+    }
+    // Reset does not return ACK, which is an error, but should be ignored
+    generalCall(&cmd, 1);
+
+    auto timeout_at = m5::utility::millis() + 10;
+    bool done{};
+    do {
+        Status s{};
+        // The ALERT pin will also become active (high) after powerup and after
+        // resets
+        if (getStatus(s) && (s.reset() || s.alertPending())) {
+            done = true;
+            break;
+        }
+        m5::utility::delay(1);
+    } while (!done && m5::utility::millis() <= timeout_at);
+    return done;
+}
 
 bool UnitSHT30::startHeater() {
     return writeRegister(START_HEATER) && delay1();
 }
 
 bool UnitSHT30::stopHeater() {
-    return writeRegister(STOPE_HEATER) && delay1();
+    return writeRegister(STOP_HEATER) && delay1();
 }
 
 bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {

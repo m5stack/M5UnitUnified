@@ -33,6 +33,7 @@ enum class MPS : uint8_t {
     MpsHalf,  //!< @brief 0.5 measurement per second
     Mps1,     //!< @brief 1 measurement per second
     Mps2,     //!< @brief 2 measurement per second
+    Mps4,     //!< @brief 2 measurement per second
     Mps10,    //!< @brief 10 measurement per second
 };
 
@@ -41,7 +42,7 @@ enum class MPS : uint8_t {
   @brief Accessor for Status
   @note The order of the bit fields cannot be controlled, so bitwise
   operations are used to obtain each value.
-  @note Items marked with (*) are subject to clear status
+  @note Items marked with (*) are subjects to clear status
  */
 struct Status {
     //! @brief Alert pending status (*)
@@ -160,6 +161,8 @@ class UnitSHT30 : public Component {
       @param stretch Enable clock stretching if true
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning  After sending a command to the sensor a minimal waiting time of
+      **1ms** is needed before another command can be received by the sensor
     */
     bool measurementSingleShot(
         const sht3x::Repeatability rep = sht3x::Repeatability::High,
@@ -208,16 +211,14 @@ class UnitSHT30 : public Component {
       @warning During periodic detection runs, an error is returned
     */
     bool softReset();
-#if 0
     /*!
       @brief General reset
       @details Reset using I2C general call
-      @warning All devices on the same I2C bus that support the general call
-      mode will perform a reset
+      @waning This is a reset by General command, the command is also sent to
+      all devices with I2C connections
       @return True if successful
      */
     bool generalReset();
-#endif
     ///@}
 
     ///@name Heater
@@ -280,6 +281,7 @@ class UnitSHT30 : public Component {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+
     bool read_measurement();
 
    protected:
@@ -308,15 +310,23 @@ constexpr uint16_t SINGLE_SHOT_DISABLE_STRETCH_LOW{0x2416};
 constexpr uint16_t START_PERIODIC_MPS_HALF_HIGH{0x2032};
 constexpr uint16_t START_PERIODIC_MPS_HALF_MEDIUM{0x2024};
 constexpr uint16_t START_PERIODIC_MPS_HALF_LOW{0x202f};
+
 constexpr uint16_t START_PERIODIC_MPS_1_HIGH{0x2130};
 constexpr uint16_t START_PERIODIC_MPS_1_MEDIUM{0x2126};
 constexpr uint16_t START_PERIODIC_MPS_1_LOW{0x212D};
+
 constexpr uint16_t START_PERIODIC_MPS_2_HIGH{0x2236};
 constexpr uint16_t START_PERIODIC_MPS_2_MEDIUM{0x2220};
 constexpr uint16_t START_PERIODIC_MPS_2_LOW{0x222B};
+
+constexpr uint16_t START_PERIODIC_MPS_4_HIGH{0x2334};
+constexpr uint16_t START_PERIODIC_MPS_4_MEDIUM{0x2322};
+constexpr uint16_t START_PERIODIC_MPS_4_LOW{0x2329};
+
 constexpr uint16_t START_PERIODIC_MPS_10_HIGH{0x2737};
 constexpr uint16_t START_PERIODIC_MPS_10_MEDIUM{0x2721};
 constexpr uint16_t START_PERIODIC_MPS_10_LOW{0x272A};
+
 constexpr uint16_t STOP_PERIODIC_MEASUREMENT{0x3093};
 constexpr uint16_t ACCELERATED_RESPONSE_TIME{0x2B32};
 constexpr uint16_t READ_MEASUREMENT{0xE000};
@@ -324,7 +334,7 @@ constexpr uint16_t READ_MEASUREMENT{0xE000};
 constexpr uint16_t SOFT_RESET{0x30A2};
 // Heater
 constexpr uint16_t START_HEATER{0x306D};
-constexpr uint16_t STOPE_HEATER{0x3066};
+constexpr uint16_t STOP_HEATER{0x3066};
 // Status
 constexpr uint16_t READ_STATUS{0xF32D};
 constexpr uint16_t CLEAR_STATUS{0x3041};
