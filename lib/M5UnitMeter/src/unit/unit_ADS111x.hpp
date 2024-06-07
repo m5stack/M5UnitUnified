@@ -23,14 +23,14 @@ namespace ads111x {
   @warning This feature serve nofunction on the ADS1113 and ADS1114
 */
 enum class Mux : uint8_t {
-    AIN_01,  //!< @brief AIN0 and AINn = AIN1 as default
-    AIN_03,  //!< @brief AIN0 and AINn = AIN3
-    AIN_13,  //!< @brief AIN1 and AINn = AIN3
-    AIN_23,  //!< @brief AIN2 and AINn = AIN3
-    GND_0,   //!< @brief AIN0 and AINn = GND
-    GND_1,   //!< @brief AIN1 and AINn = GND
-    GND_2,   //!< @brief AIN2 and AINn = GND
-    GND_3,   //!< @brief AIN3 and AINn = GND
+    AIN_01,  //!< @brief Positive:AIN0 Negative:AIN1 as default
+    AIN_03,  //!< @brief Positive:AIN0 Negative:AIN3
+    AIN_13,  //!< @brief Positive:AIN1 Negative:AIN3
+    AIN_23,  //!< @brief Positive:AIN2 Negative:AIN3
+    GND_0,   //!< @brief Positive:AIN0 Negative:AIN3
+    GND_1,   //!< @brief Positive:AIN1 Negative:GND
+    GND_2,   //!< @brief Positive:AIN2 Negative:GND
+    GND_3,   //!< @brief Positive:AIN3 Negative:GND
 };
 
 /*!
@@ -96,7 +96,7 @@ struct Config {
         return static_cast<Mux>((value >> 12) & 0x07);
     }
     /*!
-      @brief Programmable gain ampli
+      @brief Programmable gain amplifier
       @warning This feature serve nofunction on the ADS1113
     */
     inline Gain pga() const {
@@ -192,6 +192,7 @@ class UnitADS111x : public Component {
       @brief Settings
      */
     struct config_t {
+        bool periodic{true};
     };
 #endif
 
@@ -222,7 +223,7 @@ class UnitADS111x : public Component {
     ///@{
     /*! @brief In periodic measurement? */
     inline bool inPeriodic() const {
-        return _periodic;
+        return !_adsCfg.mode();
     }
     //! @brief Periodic measurement data updated?
     inline bool updated() const {
@@ -236,52 +237,144 @@ class UnitADS111x : public Component {
     inline unsigned long updatedMillis() const {
         return _latest;
     }
-
-    inline ads111x::Mux mux() const {
-        return _adsCfg.mux();
+    //! @brief Gets the latest periodic measurements
+    uint16_t latestData() const {
+        return _value;
     }
-    inline ads111x::Gain gain() const {
-        return _adsCfg.pga();
-    }
-    inline ads111x::Rate rate() const {
-        return _adsCfg.dr();
-    }
-    inline ads111x::ComparatorQueue compQueue() const {
-        return _adsCfg.comp_que();
+    //! @breif Coefficient calculated from gain
+    float coefficient() const {
+        return _coefficient;
     }
     ///@}
 
     ///@name Configration
+    ///@warning ADS1113, ADS1114 and ADS1115 differ in the items that can be set
     ///@{
-    bool setMultiplexer(const ads111x::Mux mux);
-    bool setGain(const ads111x::Gain gain);
+    /*! @brief Gets the input multiplexer */
+    inline ads111x::Mux multiplexer() const {
+        return _adsCfg.mux();
+    }
+    //! @brief Gets the programmable gain amplifier
+    ads111x::Gain gain() const;
+    //! @brief Gets the data rate
+    inline ads111x::Rate rate() const {
+        return _adsCfg.dr();
+    }
+    /*!
+      @brief Gets the comparator mode
+      @retval true Window comparator
+      @retval false Traditional comparator
+     */
+    inline bool comparatorMode() const {
+        return _adsCfg.comp_mode();
+    }
+    /*!
+      @brief Gets the comparator polarity
+      @retval true Active high
+      @retval false Active low
+     */
+    inline bool comparatorPolarity() const {
+        return _adsCfg.comp_pol();
+    }
+    /*!
+      @brief Gets the Latching comparator
+      @retval true Latching comparator
+      @retval false Nonlatching comparator
+    */
+    inline bool latchingComparator() const {
+        return _adsCfg.comp_lat();
+    }
+    //! @brief Gets the comparator queue
+    inline ads111x::ComparatorQueue comparatorQueue() const {
+        return _adsCfg.comp_que();
+    }
+
+    //! @brief Set the input multiplexer
+    virtual bool setMultiplexer(const ads111x::Mux mux) = 0;
+    /*!
+      @brief Set the programmable gain amplifier
+      @warning the threshould values  must be updated whenever the PGA settings
+      are changed (@sa setThreshould)
+     */
+    virtual bool setGain(const ads111x::Gain gain) = 0;
+    /*! @brief Set the data rate  */
     bool setRate(const ads111x::Rate rate);
-    bool setComparatorQueue(const ads111x::ComparatorQueue c);
+    //! @brief Set the comparator mode
+    virtual bool setComparatorMode(const bool b) = 0;
+    //! @brief Set the comparator polarity
+    virtual bool setComparatorPolarity(const bool b) = 0;
+    //! @brief Set the latching comparator
+    virtual bool setLatchingComparator(const bool b) = 0;
+    //! @brief Set the comparator queue
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) = 0;
     ///@}
 
-    ///@name Periodic
+    ///@name Measurement
     ///@{
+    /*!
+      @brief Start periodic measurement
+      @return True if successful
+      @note Frequencies etc. must already be set
+     */
     bool startPeriodicMeasurement();
+    /*!
+      @brief Stop periodic measurement
+      @return True if successful
+    */
     bool stopPeriodicMeasurement();
-    ///@}
-
-    ///@name Single shot
-    ///@{
+    /*!
+      @brief Start single measurement
+      @return True if successful
+      @note After calling this function, the value can be retrieved after the
+      conversion has been completed
+      @warning Not measured periodic
+     */
     bool startSingleMeasurement();
-
+    //! @brief In conversion?
     bool inConversion();  // TODO: to const
+    /*!
+      @brief Get raw value
+      @param raw[out] Raw value
+      @return True if successful
+      @warning Not under conversion
+     */
+    bool getAdcRaw(uint16_t& raw);
+    /*!
+      @brief Read value using single measurement
+      @param[out] raw Raw value
+      @param timeoutMillis Timeout time (Unit: ms)
+      @return True if successful
+      @note Helper function summarising measurement start~waiting for
+      conversion~getting value
+      @warning Not measured periodic
+     */
+    bool readSingleMeasurement(uint16_t& raw,
+                               const uint32_t timeoutMillis = 10);
     ///@}
 
-    ///@name Get conversion
+    ///@name Threshold
     ///@{
-    bool getConversion(uint16_t& cv, const uint32_t millis = 100);
-    bool getAdcRaw(uint16_t& raw);
+    /*!
+      @brief Gets the threshould values
+      @param[out] high upper thresould value
+      @param[out] low lower thresould value
+      @return True if successful
+    */
+    bool getThreshould(int16_t& high, int16_t& low);
+    /*!
+      @brief Set the threshould values
+      @param high upper thresould value
+      @param low lower thresould value
+      @return True if successful
+      @warning The high value must always be greater than the low value
+    */
+    bool setThreshould(const int16_t high, const int16_t low);
     ///@}
 
     /*!
       @brief General reset
       @details Reset using I2C general call
-      @waning This is a reset by General command, the command is also sent to
+      @warning This is a reset by General command, the command is also sent to
       all devices with I2C connections
      */
     bool generalReset();
@@ -297,14 +390,25 @@ class UnitADS111x : public Component {
         return attr;
     }
 
-    bool get_config();
+    bool get_config(ads111x::Config& c);
+    bool write_config(const ads111x::Config& c);
     bool apply_config();
 
+    bool set_multiplexer(const ads111x::Mux mux);
+    bool set_gain(const ads111x::Gain gain);
+    bool set_comparator_mode(const bool b);
+    bool set_comparator_polarity(const bool b);
+    bool set_latching_comparator(const bool b);
+    bool set_comparator_queue(const ads111x::ComparatorQueue c);
+
+    bool read_ads_raw(uint16_t& raw);
+
    protected:
-    bool _periodic{};  // During periodic measurement?
     bool _updated{};
     unsigned long _latest{}, _interval{};
 
+    uint16_t _value{};  // Latest periodic measurements
+    float _coefficient{};
     ads111x::Config _adsCfg{};
 };
 
@@ -320,6 +424,34 @@ class UnitADS1113 : public UnitADS111x {
     }
     virtual ~UnitADS1113() {
     }
+
+    ///@name Configration
+    ///@{
+    /*! @brief Not support @warning Not support */
+    virtual bool setMultiplexer(const ads111x::Mux) {
+        return false;
+    }
+    //!  @brief Not support @warning Not support
+    virtual bool setGain(const ads111x::Gain) {
+        return false;
+    }
+    //!  @brief Not support @warning Not support
+    virtual bool setComparatorMode(const bool) {
+        return false;
+    }
+    //!  @brief Not support @warning Not support
+    virtual bool setComparatorPolarity(const bool) {
+        return false;
+    }
+    //!  @brief Not support @warning Not support
+    virtual bool setLatchingComparator(const bool) {
+        return false;
+    }
+    //!  @brief Not support @warning Not support
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue) {
+        return false;
+    }
+    ///@}
 
    protected:
     inline virtual const char* unit_device_name() const override {
@@ -346,6 +478,34 @@ class UnitADS1114 : public UnitADS111x {
     virtual ~UnitADS1114() {
     }
 
+    ///@name Configration
+    ///@{
+    /*!  @brief Not support @warning Not support */
+    virtual bool setMultiplexer(const ads111x::Mux) {
+        return false;
+    }
+    //! @brief Set the programmable gain amplifier
+    virtual bool setGain(const ads111x::Gain gain) {
+        return set_gain(gain);
+    }
+    //! @brief Set the comparator mode
+    virtual bool setComparatorMode(const bool b) {
+        return set_comparator_mode(b);
+    }
+    //! @brief Set the comparator polarity
+    virtual bool setComparatorPolarity(const bool b) {
+        return set_comparator_polarity(b);
+    }
+    //! @brief Set the latching comparator
+    virtual bool setLatchingComparator(const bool b) {
+        return set_latching_comparator(b);
+    }
+    //! @brief Set the comparator queue
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) {
+        return set_comparator_queue(c);
+    }
+    ///@}
+
    protected:
     inline virtual const char* unit_device_name() const override {
         return name;
@@ -371,6 +531,34 @@ class UnitADS1115 : public UnitADS111x {
     virtual ~UnitADS1115() {
     }
 
+    ///@name Configration
+    ///@{
+    /*! @brief Set the input multiplexer */
+    virtual bool setMultiplexer(const ads111x::Mux mux) {
+        return set_multiplexer(mux);
+    }
+    //! @brief Set the programmable gain amplifier
+    virtual bool setGain(const ads111x::Gain gain) {
+        return set_gain(gain);
+    }
+    //! @brief Set the comparator mode
+    virtual bool setComparatorMode(const bool b) {
+        return set_comparator_mode(b);
+    }
+    //! @brief Set the comparator polarity
+    virtual bool setComparatorPolarity(const bool b) {
+        return set_comparator_polarity(b);
+    }
+    //! @brief Set the latching comparator
+    virtual bool setLatchingComparator(const bool b) {
+        return set_latching_comparator(b);
+    }
+    //! @brief Set the comparator queue
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) {
+        return set_comparator_queue(c);
+    }
+    ///@}
+
    protected:
     inline virtual const char* unit_device_name() const override {
         return name;
@@ -389,8 +577,8 @@ namespace command {
 
 constexpr uint8_t CONVERSION_REG{0x00};
 constexpr uint8_t CONFIG_REG{0x01};
-constexpr uint8_t LOW_THRESHOLD{0x02};
-constexpr uint8_t HIGH_THRESHOLD{0x03};
+constexpr uint8_t LOW_THRESHOLD_REG{0x02};
+constexpr uint8_t HIGH_THRESHOLD_REG{0x03};
 
 }  // namespace command
 }  // namespace ads111x

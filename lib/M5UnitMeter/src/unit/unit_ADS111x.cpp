@@ -10,12 +10,24 @@
 #include <M5Utility.hpp>
 
 namespace {
-const uint32_t interval_table[] = {
-    1000 / 8,   1000 / 16,  1000 / 64,  1000 / 128,
-    1000 / 250, 1000 / 475, 1000 / 860,
+constexpr unsigned long interval_table[] = {
+    1000UL / 8,   1000UL / 16,  1000UL / 32,  1000UL / 64,
+    1000UL / 128, 1000UL / 250, 1000UL / 475, 1000UL / 860,
 };
 
-}
+constexpr float coefficient_table[] = {
+    6.144f / 32767,
+    4.096f / 32767,
+    2.048f / 32767,
+    1.024f / 32767,
+    0.512f / 32767,
+    0.256f / 32767,
+    // dupicated
+    0.256f / 32767,
+    0.256f / 32767,
+};
+
+}  // namespace
 
 using namespace m5::utility::mmh3;
 
@@ -37,60 +49,81 @@ bool UnitADS111x::begin() {
         M5_LIB_LOGE("Invalid address");
         return false;
     }
-    return apply_config() && stopPeriodicMeasurement();
+
+    if (!get_config(_adsCfg)) {
+        M5_LIB_LOGE("Failed to get config");
+        return false;
+    }
+
+    M5_LIB_LOGE("==== %x", _adsCfg.value);
+
+    M5_LIB_LOGE("<<< %d", (int)m5::stl::to_underlying(_adsCfg.dr()));
+
+    _interval    = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
+    _coefficient = coefficient_table[m5::stl::to_underlying(_adsCfg.pga())];
+
+    M5_LIB_LOGI("interval:%u", _interval);
+
+    return stopPeriodicMeasurement();
 }
 
 void UnitADS111x::update() {
+    if (inPeriodic()) {
+        unsigned long at{m5::utility::millis()};
+        if (!_latest || at >= _latest + _interval) {
+            _updated = read_ads_raw(_value);
+            if (_updated) {
+                _latest = at;
+            }
+        } else {
+            _updated = false;
+        }
+    }
 }
 
-bool UnitADS111x::setMultiplexer(const ads111x::Mux mux) {
-    if (get_config()) {
-        _adsCfg.mux(mux);
-        return writeRegister16(CONFIG_REG, _adsCfg.value);
-    }
-    return false;
-}
-
-bool UnitADS111x::setGain(const ads111x::Gain gain) {
-    if (get_config()) {
-        _adsCfg.pga(gain);
-        return writeRegister16(CONFIG_REG, _adsCfg.value);
-    }
-    return false;
+Gain UnitADS111x::gain() const {
+    constexpr static Gain table[] = {
+        Gain::PGA_6144,
+        Gain::PGA_4096,
+        Gain::PGA_2048,
+        Gain::PGA_1024,
+        Gain::PGA_512,
+        Gain::PGA_256,
+        // duplicated
+        Gain::PGA_256,
+        Gain::PGA_256,
+    };
+    return table[m5::stl::to_underlying(_adsCfg.pga())];
 }
 
 bool UnitADS111x::setRate(ads111x::Rate rate) {
-    if (get_config()) {
-        _adsCfg.dr(rate);
-        return writeRegister16(CONFIG_REG, _adsCfg.value);
-    }
-    return false;
-}
-
-bool UnitADS111x::setComparatorQueue(const ads111x::ComparatorQueue c) {
-    if (get_config()) {
-        _adsCfg.comp_que(c);
-        return writeRegister16(CONFIG_REG, _adsCfg.value);
+    Config c{};
+    if (get_config(c)) {
+        c.dr(rate);
+        if (write_config(c)) {
+            _interval = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
+            return true;
+        }
     }
     return false;
 }
 
 bool UnitADS111x::startPeriodicMeasurement() {
-    if (get_config()) {
-        _adsCfg.mode(false);
-        _periodic = writeRegister16(CONFIG_REG, _adsCfg.value);
-        return _periodic;
+    Config c{};
+    _updated = false;
+    if (get_config(c)) {
+        c.mode(false);
+        return write_config(c);
     }
     return false;
 }
 
 bool UnitADS111x::stopPeriodicMeasurement() {
-    if (get_config()) {
-        _adsCfg.mode(true);
-        if (writeRegister16(CONFIG_REG, _adsCfg.value)) {
-            _periodic = false;
-            return true;
-        }
+    Config c{};
+    _updated = false;
+    if (get_config(c)) {
+        c.mode(true);
+        return write_config(c);
     }
     return false;
 }
@@ -100,33 +133,37 @@ bool UnitADS111x::startSingleMeasurement() {
         M5_LIB_LOGW("Periodic measurements are running");
         return false;
     }
+    _updated = false;
 
-    if (get_config()) {
+    Config c{};
+    if (get_config(c)) {
         // This bit determines the operational status of the device. OS can only
         // be written when in power-down state and has no effect when a
         // conversion is ongoing.
-        _adsCfg.os(true);
-        return writeRegister16(CONFIG_REG, _adsCfg.value);
+        c.os(true);
+        return write_config(c);
     }
     return false;
 }
 
 bool UnitADS111x::inConversion() {
-    return get_config() && !_adsCfg.os();
+    Config c{};
+    return get_config(c) && !c.os();
 }
 
-bool UnitADS111x::getConversion(uint16_t& cv, const uint32_t millis) {
+bool UnitADS111x::readSingleMeasurement(uint16_t& raw,
+                                        const uint32_t timeoutMillis) {
     if (!inPeriodic() && startSingleMeasurement()) {
-        auto timeout_at = m5::utility::millis() + millis;
+        auto timeout_at = m5::utility::millis() + timeoutMillis;
         bool done{};
         do {
             done = !inConversion();
         } while (!done && m5::utility::millis() <= timeout_at);
-        if (!done) {
-            return false;
+        if (done) {
+            return getAdcRaw(raw);
         }
     }
-    return getAdcRaw(cv);
+    return false;
 }
 
 bool UnitADS111x::getAdcRaw(uint16_t& raw) {
@@ -142,22 +179,113 @@ bool UnitADS111x::generalReset() {
     Config c{};
     do {
         // power-down mode?
-        if (get_config() && _adsCfg.mode()) {
+        if (get_config(_adsCfg) && _adsCfg.mode()) {
             done = true;
             break;
         }
         m5::utility::delay(1);
     } while (!done && m5::utility::millis() <= timeout_at);
-    return done && apply_config();
+
+    if (done) {
+        _interval = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
+    }
+    return done;
 }
 
-bool UnitADS111x::get_config() {
-    return readRegister16(CONFIG_REG, _adsCfg.value, 0);
+bool UnitADS111x::getThreshould(int16_t& high, int16_t& low) {
+    uint16_t hh{}, ll{};
+    if (readRegister16(HIGH_THRESHOLD_REG, hh, 0) &&
+        readRegister16(LOW_THRESHOLD_REG, ll, 0)) {
+        high = hh;
+        low  = ll;
+        return true;
+    }
+    return false;
 }
 
-bool UnitADS111x::apply_config() {
-    _interval = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
-    return true;
+bool UnitADS111x::setThreshould(const int16_t high, const int16_t low) {
+    if (high <= low) {
+        M5_LIB_LOGW("high must be greater than low");
+        return false;
+    }
+    return writeRegister16(HIGH_THRESHOLD_REG, (uint16_t)high) &&
+           writeRegister16(LOW_THRESHOLD_REG, (uint16_t)low);
+}
+
+//
+bool UnitADS111x::get_config(ads111x::Config& c) {
+    return readRegister16(CONFIG_REG, c.value, 0);
+}
+
+bool UnitADS111x::write_config(const ads111x::Config& c) {
+    if (writeRegister16(CONFIG_REG, c.value)) {
+        _adsCfg = c;
+        return true;
+    }
+    return false;
+}
+
+bool UnitADS111x::set_multiplexer(const ads111x::Mux mux) {
+    Config c{};
+    if (get_config(c)) {
+        c.mux(mux);
+        return write_config(c);
+    }
+    return false;
+}
+
+bool UnitADS111x::set_gain(const ads111x::Gain gain) {
+    Config c{};
+    if (get_config(c)) {
+        c.pga(gain);
+        if (write_config(c)) {
+            _coefficient =
+                coefficient_table[m5::stl::to_underlying(_adsCfg.pga())];
+            return true;
+        }
+    }
+    return false;
+}
+
+bool UnitADS111x::set_comparator_mode(const bool b) {
+    Config c{};
+    if (get_config(c)) {
+        c.comp_mode(b);
+        return write_config(c);
+    }
+    return false;
+}
+
+bool UnitADS111x::set_comparator_polarity(const bool b) {
+    Config c{};
+    if (get_config(c)) {
+        c.comp_pol(b);
+        return write_config(c);
+    }
+    return false;
+}
+
+bool UnitADS111x::set_latching_comparator(const bool b) {
+    Config c{};
+    if (get_config(c)) {
+        c.comp_lat(b);
+        return write_config(c);
+    }
+    return false;
+}
+
+bool UnitADS111x::set_comparator_queue(const ads111x::ComparatorQueue q) {
+    Config c{};
+    if (get_config(c)) {
+        c.comp_que(q);
+        return write_config(c);
+    }
+    return false;
+}
+
+bool UnitADS111x::read_ads_raw(uint16_t& raw) {
+    //    return !inConversion() && getAdcRaw(raw);
+    return getAdcRaw(raw);
 }
 
 // class UnitADS1113
