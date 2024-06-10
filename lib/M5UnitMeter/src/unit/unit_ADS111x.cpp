@@ -16,24 +16,23 @@ constexpr unsigned long interval_table[] = {
 };
 
 constexpr float coefficient_table[] = {
-    6.144f / 32767,
-    4.096f / 32767,
-    2.048f / 32767,
-    1.024f / 32767,
-    0.512f / 32767,
-    0.256f / 32767,
+    6144.f / 32767,
+    4096.f / 32767,
+    2048.f / 32767,
+    1024.f / 32767,
+    512.f / 32767,
+    256.f / 32767,
     // dupicated
-    0.256f / 32767,
-    0.256f / 32767,
+    256.f / 32767,
+    256.f / 32767,
 };
 
 }  // namespace
 
-using namespace m5::utility::mmh3;
-
 namespace m5 {
 namespace unit {
 
+using namespace m5::utility::mmh3;
 using namespace ads111x;
 using namespace ads111x::command;
 
@@ -43,10 +42,15 @@ const types::uid_t UnitADS111x::uid{"UnitADS111x"_mmh3};
 const types::uid_t UnitADS111x::attr{0};
 
 bool UnitADS111x::begin() {
-    Config cfg;
+    auto cfg = config();
 
     if (address() & 0x80) {
         M5_LIB_LOGE("Invalid address");
+        return false;
+    }
+
+    if (!on_begin()) {
+        M5_LIB_LOGE("Failed to set settings");
         return false;
     }
 
@@ -54,17 +58,11 @@ bool UnitADS111x::begin() {
         M5_LIB_LOGE("Failed to get config");
         return false;
     }
+    apply_interval(_adsCfg.dr());
+    apply_coefficient(_adsCfg.pga());
 
-    M5_LIB_LOGE("==== %x", _adsCfg.value);
-
-    M5_LIB_LOGE("<<< %d", (int)m5::stl::to_underlying(_adsCfg.dr()));
-
-    _interval    = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
-    _coefficient = coefficient_table[m5::stl::to_underlying(_adsCfg.pga())];
-
-    M5_LIB_LOGI("interval:%u", _interval);
-
-    return stopPeriodicMeasurement();
+    return cfg.periodic ? startPeriodicMeasurement()
+                        : stopPeriodicMeasurement();
 }
 
 void UnitADS111x::update() {
@@ -101,7 +99,7 @@ bool UnitADS111x::setRate(ads111x::Rate rate) {
     if (get_config(c)) {
         c.dr(rate);
         if (write_config(c)) {
-            _interval = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
+            apply_interval(_adsCfg.dr());
             return true;
         }
     }
@@ -151,7 +149,7 @@ bool UnitADS111x::inConversion() {
     return get_config(c) && !c.os();
 }
 
-bool UnitADS111x::readSingleMeasurement(uint16_t& raw,
+bool UnitADS111x::readSingleMeasurement(int16_t& raw,
                                         const uint32_t timeoutMillis) {
     if (!inPeriodic() && startSingleMeasurement()) {
         auto timeout_at = m5::utility::millis() + timeoutMillis;
@@ -166,8 +164,13 @@ bool UnitADS111x::readSingleMeasurement(uint16_t& raw,
     return false;
 }
 
-bool UnitADS111x::getAdcRaw(uint16_t& raw) {
-    return readRegister16(CONVERSION_REG, raw, 0);
+bool UnitADS111x::getAdcRaw(int16_t& raw) {
+    uint16_t value{};
+    if (readRegister16(CONVERSION_REG, value, 0)) {
+        raw = (int16_t)value;
+        return true;
+    }
+    return false;
 }
 
 bool UnitADS111x::generalReset() {
@@ -187,7 +190,8 @@ bool UnitADS111x::generalReset() {
     } while (!done && m5::utility::millis() <= timeout_at);
 
     if (done) {
-        _interval = interval_table[m5::stl::to_underlying(_adsCfg.dr())];
+        apply_interval(_adsCfg.dr());
+        apply_coefficient(_adsCfg.pga());
     }
     return done;
 }
@@ -225,6 +229,18 @@ bool UnitADS111x::write_config(const ads111x::Config& c) {
     return false;
 }
 
+void UnitADS111x::apply_interval(const ads111x::Rate rate) {
+    auto idx = m5::stl::to_underlying(rate);
+    assert(idx < m5::stl::size(interval_table) && "Illegal value");
+    _interval = interval_table[idx];
+}
+
+void UnitADS111x::apply_coefficient(const ads111x::Gain gain) {
+    auto idx = m5::stl::to_underlying(gain);
+    assert(idx < m5::stl::size(coefficient_table) && "Illegal value");
+    _coefficient = coefficient_table[idx];
+}
+
 bool UnitADS111x::set_multiplexer(const ads111x::Mux mux) {
     Config c{};
     if (get_config(c)) {
@@ -239,8 +255,7 @@ bool UnitADS111x::set_gain(const ads111x::Gain gain) {
     if (get_config(c)) {
         c.pga(gain);
         if (write_config(c)) {
-            _coefficient =
-                coefficient_table[m5::stl::to_underlying(_adsCfg.pga())];
+            apply_coefficient(_adsCfg.pga());
             return true;
         }
     }
@@ -283,8 +298,8 @@ bool UnitADS111x::set_comparator_queue(const ads111x::ComparatorQueue q) {
     return false;
 }
 
-bool UnitADS111x::read_ads_raw(uint16_t& raw) {
-    //    return !inConversion() && getAdcRaw(raw);
+bool UnitADS111x::read_ads_raw(int16_t& raw) {
+    // return !inConversion() && getAdcRaw(raw);
     return getAdcRaw(raw);
 }
 
@@ -292,16 +307,29 @@ bool UnitADS111x::read_ads_raw(uint16_t& raw) {
 const char UnitADS1113::name[] = "UnitADS1113";
 const types::uid_t UnitADS1113::uid{"UnitADS1113"_mmh3};
 const types::uid_t UnitADS1113::attr{0};
+bool UnitADS1113::on_begin() {
+    M5_LIB_LOGD("mux, gain, and comp_que  not support");
+    return setRate(_cfg.rate);
+}
 
 // class UnitADS1114
 const char UnitADS1114::name[] = "UnitADS1114";
 const types::uid_t UnitADS1114::uid{"UnitADS1114"_mmh3};
 const types::uid_t UnitADS1114::attr{0};
+bool UnitADS1114::on_begin() {
+    M5_LIB_LOGD("mux is not support");
+    return setRate(_cfg.rate) && setGain(_cfg.gain) &&
+           setComparatorQueue(_cfg.comp_que);
+}
 
 // class UnitADS1115
 const char UnitADS1115::name[] = "UnitADS1115";
 const types::uid_t UnitADS1115::uid{"UnitADS1115"_mmh3};
 const types::uid_t UnitADS1115::attr{0};
+bool UnitADS1115::on_begin() {
+    return setRate(_cfg.rate) && setMultiplexer(_cfg.mux) &&
+           setGain(_cfg.gain) && setComparatorQueue(_cfg.comp_que);
+}
 
 }  // namespace unit
 }  // namespace m5

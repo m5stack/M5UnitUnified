@@ -179,6 +179,10 @@ struct Config {
 
 }  // namespace ads111x
 
+/*!
+  @class UnitADS111x
+  @brief Base class for ADS111x series
+ */
 class UnitADS111x : public Component {
    public:
     constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
@@ -186,15 +190,18 @@ class UnitADS111x : public Component {
     static const types::attr_t attr;
     static const char name[];
 
-#if 0
     /*!
       @struct config_t
       @brief Settings
      */
     struct config_t {
         bool periodic{true};
+        ads111x::Rate rate{ads111x::Rate::SPS_128};
+        // The following items are not supported by some classes
+        ads111x::Mux mux{ads111x::Mux::AIN_01};
+        ads111x::Gain gain{ads111x::Gain::PGA_2048};
+        ads111x::ComparatorQueue comp_que{ads111x::ComparatorQueue::Disable};
     };
-#endif
 
     explicit UnitADS111x(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr) {
@@ -205,7 +212,6 @@ class UnitADS111x : public Component {
     virtual bool begin() override;
     virtual void update() override;
 
-#if 0
     ///@name Settings
     ///@{
     /*! @brief Gets the configration */
@@ -217,7 +223,6 @@ class UnitADS111x : public Component {
         _cfg = cfg;
     }
     ///@}
-#endif
 
     ///@name Properties
     ///@{
@@ -238,12 +243,16 @@ class UnitADS111x : public Component {
         return _latest;
     }
     //! @brief Gets the latest periodic measurements
-    uint16_t latestData() const {
+    int16_t latestData() const {
         return _value;
     }
-    //! @breif Coefficient calculated from gain
+    //! @breif Coefficient value
     float coefficient() const {
         return _coefficient;
+    }
+    //! @breief Resolution of 1 LSB
+    virtual float resolution() const {
+        return coefficient();
     }
     ///@}
 
@@ -338,7 +347,7 @@ class UnitADS111x : public Component {
       @return True if successful
       @warning Not under conversion
      */
-    bool getAdcRaw(uint16_t& raw);
+    bool getAdcRaw(int16_t& raw);
     /*!
       @brief Read value using single measurement
       @param[out] raw Raw value
@@ -348,8 +357,7 @@ class UnitADS111x : public Component {
       conversion~getting value
       @warning Not measured periodic
      */
-    bool readSingleMeasurement(uint16_t& raw,
-                               const uint32_t timeoutMillis = 10);
+    bool readSingleMeasurement(int16_t& raw, const uint32_t timeoutMillis = 10);
     ///@}
 
     ///@name Threshold
@@ -389,10 +397,14 @@ class UnitADS111x : public Component {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+    inline virtual bool on_begin() {
+        return true;
+    }
 
     bool get_config(ads111x::Config& c);
     bool write_config(const ads111x::Config& c);
-    bool apply_config();
+    void apply_interval(const ads111x::Rate rate);
+    void apply_coefficient(const ads111x::Gain gain);
 
     bool set_multiplexer(const ads111x::Mux mux);
     bool set_gain(const ads111x::Gain gain);
@@ -401,17 +413,23 @@ class UnitADS111x : public Component {
     bool set_latching_comparator(const bool b);
     bool set_comparator_queue(const ads111x::ComparatorQueue c);
 
-    bool read_ads_raw(uint16_t& raw);
+    bool read_ads_raw(int16_t& raw);
 
    protected:
     bool _updated{};
     unsigned long _latest{}, _interval{};
 
-    uint16_t _value{};  // Latest periodic measurements
+    int16_t _value{};  // Latest periodic measurements
     float _coefficient{};
     ads111x::Config _adsCfg{};
+
+    config_t _cfg{};
 };
 
+/*!
+  @class  UnitADS1113
+  @brief ADS1113 unit
+ */
 class UnitADS1113 : public UnitADS111x {
    public:
     constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
@@ -428,27 +446,27 @@ class UnitADS1113 : public UnitADS111x {
     ///@name Configration
     ///@{
     /*! @brief Not support @warning Not support */
-    virtual bool setMultiplexer(const ads111x::Mux) {
+    virtual bool setMultiplexer(const ads111x::Mux) override {
         return false;
     }
     //!  @brief Not support @warning Not support
-    virtual bool setGain(const ads111x::Gain) {
+    virtual bool setGain(const ads111x::Gain) override {
         return false;
     }
     //!  @brief Not support @warning Not support
-    virtual bool setComparatorMode(const bool) {
+    virtual bool setComparatorMode(const bool) override {
         return false;
     }
     //!  @brief Not support @warning Not support
-    virtual bool setComparatorPolarity(const bool) {
+    virtual bool setComparatorPolarity(const bool) override {
         return false;
     }
     //!  @brief Not support @warning Not support
-    virtual bool setLatchingComparator(const bool) {
+    virtual bool setLatchingComparator(const bool) override {
         return false;
     }
     //!  @brief Not support @warning Not support
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue) {
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue) override {
         return false;
     }
     ///@}
@@ -463,8 +481,13 @@ class UnitADS1113 : public UnitADS111x {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+    virtual bool on_begin() override;
 };
 
+/*!
+  @class  UnitADS1114
+  @brief ADS1114 unit
+ */
 class UnitADS1114 : public UnitADS111x {
    public:
     constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
@@ -481,27 +504,27 @@ class UnitADS1114 : public UnitADS111x {
     ///@name Configration
     ///@{
     /*!  @brief Not support @warning Not support */
-    virtual bool setMultiplexer(const ads111x::Mux) {
+    virtual bool setMultiplexer(const ads111x::Mux) override {
         return false;
     }
     //! @brief Set the programmable gain amplifier
-    virtual bool setGain(const ads111x::Gain gain) {
+    virtual bool setGain(const ads111x::Gain gain) override {
         return set_gain(gain);
     }
     //! @brief Set the comparator mode
-    virtual bool setComparatorMode(const bool b) {
+    virtual bool setComparatorMode(const bool b) override {
         return set_comparator_mode(b);
     }
     //! @brief Set the comparator polarity
-    virtual bool setComparatorPolarity(const bool b) {
+    virtual bool setComparatorPolarity(const bool b) override {
         return set_comparator_polarity(b);
     }
     //! @brief Set the latching comparator
-    virtual bool setLatchingComparator(const bool b) {
+    virtual bool setLatchingComparator(const bool b) override {
         return set_latching_comparator(b);
     }
     //! @brief Set the comparator queue
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) {
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) override {
         return set_comparator_queue(c);
     }
     ///@}
@@ -516,8 +539,13 @@ class UnitADS1114 : public UnitADS111x {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+    virtual bool on_begin() override;
 };
 
+/*!
+  @class  UnitADS1115
+  @brief ADS1115 unit
+ */
 class UnitADS1115 : public UnitADS111x {
    public:
     constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
@@ -534,27 +562,27 @@ class UnitADS1115 : public UnitADS111x {
     ///@name Configration
     ///@{
     /*! @brief Set the input multiplexer */
-    virtual bool setMultiplexer(const ads111x::Mux mux) {
+    virtual bool setMultiplexer(const ads111x::Mux mux) override {
         return set_multiplexer(mux);
     }
     //! @brief Set the programmable gain amplifier
-    virtual bool setGain(const ads111x::Gain gain) {
+    virtual bool setGain(const ads111x::Gain gain) override {
         return set_gain(gain);
     }
     //! @brief Set the comparator mode
-    virtual bool setComparatorMode(const bool b) {
+    virtual bool setComparatorMode(const bool b) override {
         return set_comparator_mode(b);
     }
     //! @brief Set the comparator polarity
-    virtual bool setComparatorPolarity(const bool b) {
+    virtual bool setComparatorPolarity(const bool b) override {
         return set_comparator_polarity(b);
     }
     //! @brief Set the latching comparator
-    virtual bool setLatchingComparator(const bool b) {
+    virtual bool setLatchingComparator(const bool b) override {
         return set_latching_comparator(b);
     }
     //! @brief Set the comparator queue
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) {
+    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) override {
         return set_comparator_queue(c);
     }
     ///@}
@@ -569,6 +597,7 @@ class UnitADS1115 : public UnitADS111x {
     inline virtual types::attr_t unit_attribute() const override {
         return attr;
     }
+    virtual bool on_begin() override;
 };
 
 ///@cond

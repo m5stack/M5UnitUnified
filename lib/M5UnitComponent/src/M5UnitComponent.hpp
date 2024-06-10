@@ -138,10 +138,10 @@ class Component {
     ///@name Bus assignment
     ///@{
     /*! @brief Assgin m5::hal::bus */
-    bool assign(m5::hal::bus::Bus* bus);
+    virtual bool assign(m5::hal::bus::Bus* bus);
     /*! @brief Assgin TwoWire */
     //    [[deprecated("use assign(m5::hal::bus::Bus* bus);")]]
-    bool assign(TwoWire& wire);
+    virtual bool assign(TwoWire& wire);
     ///@}
 
     ///@name Functions that must be inherited
