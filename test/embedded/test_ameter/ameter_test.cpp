@@ -6,7 +6,7 @@
   SPDX-License-Identifier: MIT
 */
 #include "../avmeter_template.hpp"
-#include <unit/unit_Vmeter.hpp>
+#include <unit/unit_Ameter.hpp>
 
 using namespace m5::unit;
 
