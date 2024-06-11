@@ -12,37 +12,24 @@
 #include <Wire.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
-#include <unit/unit_ADS111x.hpp>
-#include <chrono>
-#include <iostream>
-#include <bitset>
-#include <thread>
+#include <unit/unit_ADS1115_with_EEPROM.hpp>
 
-#if 0
-class GlobalFixture : public ::testing::Environment {
-   public:
-    void SetUp() override {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-    }
+struct TestParams {
+    const bool hal;  // bool true: Using bus false: using wire
+    const uint8_t reg;
+    const uint8_t reg_eeprom;
 };
-const ::testing::Environment* global_fixture =
-    ::testing::AddGlobalTestEnvironment(new GlobalFixture);
-#endif
 
-constexpr uint8_t i2c_address{0x48};  // Ameter
-// constexpr uint8_t i2c_address{0x49};  // Vmeter
-
-// bool true: Using bus false: using wire
-class TestADS1115 : public ::testing::TestWithParam<bool> {
+class TestADS1115 : public ::testing::TestWithParam<TestParams> {
    protected:
-    TestADS1115() : ::testing::TestWithParam<bool>(), unit(i2c_address) {
+    TestADS1115() : ::testing::TestWithParam<TestParams>() {
+        auto param = GetParam();
+        unit.reset(new m5::unit::UnitADS1115WithEEPROM(param.reg, param.reg_eeprom));
+        assert(unit);
     }
 
     virtual void SetUp() override {
-        if (!GetParam() && !wire) {
+        if (!(GetParam().hal) && !wire) {
             Wire.end();
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
@@ -51,10 +38,9 @@ class TestADS1115 : public ::testing::TestWithParam<bool> {
             wire = true;
         }
 
-        ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
-                                         GetParam() ? "Bus" : "Wire");
+        ustr = m5::utility::formatString("%s:%s", unit->deviceName(),
+                                         GetParam().hal ? "Bus" : "Wire");
         // printf("Test as %s\n", ustr.c_str());
-
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
             GTEST_SKIP();
@@ -65,7 +51,7 @@ class TestADS1115 : public ::testing::TestWithParam<bool> {
     }
 
     virtual bool begin() {
-        if (GetParam()) {
+        if (GetParam().hal) {
             // Bus
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
@@ -75,24 +61,18 @@ class TestADS1115 : public ::testing::TestWithParam<bool> {
             i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
             auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
 
-            return Units.add(unit, i2c_bus ? i2c_bus.value() : nullptr) &&
+            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) &&
                    Units.begin();
         }
         // Wire
-        return Units.add(unit, Wire) && Units.begin();
+        return Units.add(*unit, Wire) && Units.begin();
     }
 
     m5::unit::UnitUnified Units;
-    m5::unit::UnitADS1115 unit;
+    std::unique_ptr<m5::unit::UnitADS1115WithEEPROM> unit{};
     std::string ustr{};
     bool wire{};
 };
-
-// true:Bus false:Wire
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestADS1115,
-                         ::testing::Values(true, false));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestADS1115, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestADS1115, ::testing::Values(false));
 
 using namespace m5::unit::ads111x;
 
@@ -100,28 +80,28 @@ TEST_P(TestADS1115, GeneralReset) {
     SCOPED_TRACE(ustr);
 
     // Rewriting config register
-    EXPECT_TRUE(unit.setMultiplexer(Mux::AIN_23));
-    EXPECT_TRUE(unit.setGain(Gain::PGA_256));
-    EXPECT_TRUE(unit.setRate(Rate::SPS_475));
-    EXPECT_TRUE(unit.setComparatorQueue(ComparatorQueue::Four));
-    EXPECT_TRUE(unit.startPeriodicMeasurement());
+    EXPECT_TRUE(unit->setMultiplexer(Mux::AIN_23));
+    EXPECT_TRUE(unit->setGain(Gain::PGA_256));
+    EXPECT_TRUE(unit->setRate(Rate::SPS_475));
+    EXPECT_TRUE(unit->setComparatorQueue(ComparatorQueue::Four));
+    EXPECT_TRUE(unit->startPeriodicMeasurement());
 
-    EXPECT_TRUE(unit.generalReset());
+    EXPECT_TRUE(unit->generalReset());
 
     constexpr uint16_t default_value{0x8583};
-    EXPECT_EQ(unit.multiplexer(), Mux::AIN_01);
-    EXPECT_EQ(unit.gain(), Gain::PGA_2048);
-    EXPECT_EQ(unit.rate(), Rate::SPS_128);
-    EXPECT_EQ(unit.comparatorQueue(), ComparatorQueue::Disable);
+    EXPECT_EQ(unit->multiplexer(), Mux::AIN_01);
+    EXPECT_EQ(unit->gain(), Gain::PGA_2048);
+    EXPECT_EQ(unit->rate(), Rate::SPS_128);
+    EXPECT_EQ(unit->comparatorQueue(), ComparatorQueue::Disable);
 
     uint16_t v{};
-    EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, v, 0));
+    EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, v, 0));
     EXPECT_EQ(v, default_value);
 
     constexpr int16_t default_high = 0x7FFF;
     constexpr int16_t default_low  = 0x8000;
     int16_t high{}, low{};
-    EXPECT_TRUE(unit.getThreshould(high, low));
+    EXPECT_TRUE(unit->getThreshould(high, low));
     EXPECT_EQ(high, default_high);
     EXPECT_EQ(low, default_low);
 }
@@ -137,14 +117,14 @@ TEST_P(TestADS1115, Configration) {
         };
 
         SCOPED_TRACE("Mux");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : mux_table) {
-            EXPECT_TRUE(unit.setMultiplexer(e));
+            EXPECT_TRUE(unit->setMultiplexer(e));
 
-            EXPECT_EQ(unit.multiplexer(), e);
+            EXPECT_EQ(unit->multiplexer(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -157,14 +137,14 @@ TEST_P(TestADS1115, Configration) {
         };
 
         SCOPED_TRACE("Gain");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : gain_table) {
-            EXPECT_TRUE(unit.setGain(e));
+            EXPECT_TRUE(unit->setGain(e));
 
-            EXPECT_EQ(unit.gain(), e);
+            EXPECT_EQ(unit->gain(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -172,17 +152,19 @@ TEST_P(TestADS1115, Configration) {
 
     {
         SCOPED_TRACE("Mode");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->stopPeriodicMeasurement());
 
-        EXPECT_TRUE(unit.startPeriodicMeasurement());
-        EXPECT_TRUE(unit.inPeriodic());
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
+
+        EXPECT_TRUE(unit->startPeriodicMeasurement());
+        EXPECT_TRUE(unit->inPeriodic());
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
         EXPECT_NE(now, prev);
         prev = now;
 
-        EXPECT_TRUE(unit.stopPeriodicMeasurement());
-        EXPECT_FALSE(unit.inPeriodic());
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+        EXPECT_TRUE(unit->stopPeriodicMeasurement());
+        EXPECT_FALSE(unit->inPeriodic());
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
         EXPECT_NE(now, prev);
     }
 
@@ -193,14 +175,14 @@ TEST_P(TestADS1115, Configration) {
         };
 
         SCOPED_TRACE("Rate");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : rate_table) {
-            EXPECT_TRUE(unit.setRate(e));
+            EXPECT_TRUE(unit->setRate(e));
 
-            EXPECT_EQ(unit.rate(), e);
+            EXPECT_EQ(unit->rate(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -209,14 +191,14 @@ TEST_P(TestADS1115, Configration) {
     constexpr bool bool_table[] = {true, false};
     {
         SCOPED_TRACE("COMP_MODE");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : bool_table) {
-            EXPECT_TRUE(unit.setComparatorMode(e));
+            EXPECT_TRUE(unit->setComparatorMode(e));
 
-            EXPECT_EQ(unit.comparatorMode(), e);
+            EXPECT_EQ(unit->comparatorMode(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -224,14 +206,14 @@ TEST_P(TestADS1115, Configration) {
 
     {
         SCOPED_TRACE("COMP_POL");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : bool_table) {
-            EXPECT_TRUE(unit.setComparatorPolarity(e));
+            EXPECT_TRUE(unit->setComparatorPolarity(e));
 
-            EXPECT_EQ(unit.comparatorPolarity(), e);
+            EXPECT_EQ(unit->comparatorPolarity(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -239,14 +221,14 @@ TEST_P(TestADS1115, Configration) {
 
     {
         SCOPED_TRACE("COMP_LAT");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : bool_table) {
-            EXPECT_TRUE(unit.setLatchingComparator(e));
+            EXPECT_TRUE(unit->setLatchingComparator(e));
 
-            EXPECT_EQ(unit.latchingComparator(), e);
+            EXPECT_EQ(unit->latchingComparator(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -261,14 +243,14 @@ TEST_P(TestADS1115, Configration) {
         };
 
         SCOPED_TRACE("COMP_QUE");
-        EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, prev, 0));
+        EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, prev, 0));
 
         for (auto&& e : que_table) {
-            EXPECT_TRUE(unit.setComparatorQueue(e));
+            EXPECT_TRUE(unit->setComparatorQueue(e));
 
-            EXPECT_EQ(unit.comparatorQueue(), e);
+            EXPECT_EQ(unit->comparatorQueue(), e);
 
-            EXPECT_TRUE(unit.readRegister16(command::CONFIG_REG, now, 0));
+            EXPECT_TRUE(unit->readRegister16(command::CONFIG_REG, now, 0));
             EXPECT_NE(now, prev);
             prev = now;
         }
@@ -290,6 +272,8 @@ TEST_P(TestADS1115, Periodic) {
     };
 
     {
+        float correction = unit->resolution() * unit->calibrationFactor();
+
         for (auto&& e : table) {
             const char* s{};
             Rate rate{};
@@ -298,40 +282,43 @@ TEST_P(TestADS1115, Periodic) {
 
             SCOPED_TRACE(s);
 
-            EXPECT_TRUE(unit.stopPeriodicMeasurement());
-            EXPECT_TRUE(unit.setRate(rate));
-            EXPECT_TRUE(unit.startPeriodicMeasurement());
+            EXPECT_TRUE(unit->stopPeriodicMeasurement());
+            EXPECT_TRUE(unit->setRate(rate));
+            EXPECT_TRUE(unit->startPeriodicMeasurement());
 
             auto now        = std::chrono::steady_clock::now();
             auto timeout_at = now + timeout;
-            bool done{};
+            uint8_t count{0};
+            // Between first and second mesured
             do {
-                unit.update();
-                done = unit.updated();
-                now  = std::chrono::steady_clock::now();
+                unit->update();
+                bool upd = unit->updated();
+                count += upd ? 1 : 0;
+                now = std::chrono::steady_clock::now();
+                if (upd && count == 1) {
+                    timeout_at = now + timeout;
+                }
                 std::this_thread::yield();
-            } while (!done && now <= timeout_at);
+            } while (count < 2 && now <= timeout_at);
 
-            EXPECT_TRUE(done);
-            if (done) {
-                uint16_t raw = unit.latestData();
-                M5_LOGI("raw:%u v:%f", raw, raw * unit.coefficient());
-            }
+            EXPECT_EQ(count, 2);
             EXPECT_LE(now, timeout_at) << (now - timeout_at).count();
         }
     }
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
 }
 
 TEST_P(TestADS1115, SingleShot) {
     SCOPED_TRACE(ustr);
 
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
 
-    int cnt{32};
+    //    float correction = unit->resolution() * unit->calibrationFactor();
+
+    int cnt{16};
     while (cnt--) {
-        uint16_t raw{};
-        EXPECT_TRUE(unit.readSingleMeasurement(raw));
-        //        M5_LOGI("raw:%u v:%f", raw, raw * unit.coefficient());
+        int16_t raw{};
+        EXPECT_TRUE(unit->readSingleMeasurement(raw));
+        //        M5_LOGI("raw:%d current:%f", raw, raw * correction);
     }
 }
