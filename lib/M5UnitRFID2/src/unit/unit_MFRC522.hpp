@@ -208,12 +208,9 @@ using MifareKey = std::array<uint8_t, 6>;
   @details Supported protocols: ISO14443A, MIFARE and NTAG
  */
 class UnitMFRC522 : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x28};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitMFRC522, 0x28);
 
+   public:
     /*!
       @enum error_r
       @brief Error status
@@ -494,19 +491,10 @@ class UnitMFRC522 : public Component {
     }
 
    protected:
-    inline virtual const char *unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     result_t read_register8(const uint8_t reg, uint8_t &ret);
     result_t read_register(const uint8_t reg, uint8_t *buf, const size_t len);
-    result_t read_register_rxAlign(const uint8_t reg, uint8_t *buf, const size_t len, const uint8_t rxAlign);
+    result_t read_register_rxAlign(const uint8_t reg, uint8_t *buf,
+                                   const size_t len, const uint8_t rxAlign);
     result_t write_register8(const uint8_t reg, const uint8_t value);
     result_t write_register(const uint8_t reg, const uint8_t *buf,
                             const size_t size);

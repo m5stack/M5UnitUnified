@@ -20,6 +20,8 @@ struct Temperature {
     }
 };
 
+// After sending a command to the sensor a minimalwaiting time of 1ms is needed
+// before another commandcan be received by the sensor.
 bool delay1() {
     m5::utility::delay(1);
     return true;
@@ -97,14 +99,12 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
 
     uint32_t idx = m5::stl::to_underlying(rep) + (stretch ? 0 : 3);
     if (idx >= m5::stl::size(cmd)) {
-        M5_LIB_LOGE("Internal error");
+        M5_LIB_LOGE("Invalid arg : %u", (int)rep);
         return false;
     }
 
     if (writeRegister(cmd[idx])) {
-        if (!stretch) {
-            m5::utility::delay(ms[m5::stl::to_underlying(rep)]);
-        }
+        m5::utility::delay(stretch ? 1 : ms[m5::stl::to_underlying(rep)]);
         return read_measurement();
     }
     return false;
@@ -151,7 +151,8 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
                                            m5::stl::to_underlying(rep)]);
     if (_periodic) {
         _interval = interval_table[m5::stl::to_underlying(mps)];
-        m5::utility::delay(15);
+        m5::utility::delay(16);
+        return true;
     }
     return _periodic;
 }
@@ -159,8 +160,9 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
 bool UnitSHT30::stopPeriodicMeasurement() {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
-        m5::utility::delay(15);
-        return true;
+        // Upon reception of the break command the sensor will abort the ongoing
+        // measurement and enter the single shot mode. This takes 1ms
+        return delay1();
     }
     return false;
 }
@@ -181,7 +183,7 @@ bool UnitSHT30::readMeasurement() {
 bool UnitSHT30::accelerateResponseTime() {
     if (writeRegister(ACCELERATED_RESPONSE_TIME)) {
         _interval = 1000 / 4;  // 4mps
-        m5::utility::delay(15);
+        m5::utility::delay(16);
         return true;
     }
     return false;
@@ -205,15 +207,17 @@ bool UnitSHT30::clearStatus() {
 
 bool UnitSHT30::softReset() {
     if (inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are running");
+        M5_LIB_LOGE("Periodic measurements are running");
         return false;
     }
 
-    if (!clearStatus() || !writeRegister(SOFT_RESET)) {
-        return false;
+    if (writeRegister(SOFT_RESET)) {
+        // Max 1.5 ms
+        // Time between ACK of soft reset command and sensor entering idle state
+        m5::utility::delay(2);
+        return true;
     }
-    m5::utility::delay(2);
-    return true;
+    return false;
 }
 
 bool UnitSHT30::generalReset() {
@@ -225,6 +229,8 @@ bool UnitSHT30::generalReset() {
     // Reset does not return ACK, which is an error, but should be ignored
     generalCall(&cmd, 1);
 
+    m5::utility::delay(1);
+    
     auto timeout_at = m5::utility::millis() + 10;
     bool done{};
     do {

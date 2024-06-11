@@ -74,15 +74,15 @@ class Component {
     ///@warning COPY PROHIBITED
     ///@{
     explicit Component(const uint8_t addr = 0x00);
-    Component(const Component&) = delete;
-    Component(Component&&) noexcept;
+    Component(const Component&)     = delete;
+    Component(Component&&) noexcept = default;
     ///@}
 
     ///@name Assignment
     ///@warning COPY PROHIBITED
     ///@{
-    Component& operator=(const Component&) = delete;
-    Component& operator=(Component&&);
+    Component& operator=(const Component&)     = delete;
+    Component& operator=(Component&&) noexcept = default;
     ///@}
 
     virtual ~Component() = default;
@@ -346,4 +346,31 @@ class Component {
 
 }  // namespace unit
 }  // namespace m5
+
+
+///@cond
+#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                    \
+   public:                                                         \
+    constexpr static uint8_t DEFAULT_ADDRESS{(reg)};               \
+    static const types::uid_t uid;                                 \
+    static const types::attr_t attr;                               \
+    static const char name[];                                      \
+                                                                   \
+    cls(const cls&)                = delete;                       \
+    cls& operator=(const cls&)     = delete;                       \
+    cls(cls&&) noexcept            = default;                      \
+    cls& operator=(cls&&) noexcept = default;                      \
+                                                                   \
+   protected:                                                      \
+    inline virtual const char* unit_device_name() const override { \
+        return name;                                               \
+    }                                                              \
+    inline virtual types::uid_t unit_identifier() const override { \
+        return uid;                                                \
+    }                                                              \
+    inline virtual types::attr_t unit_attribute() const override { \
+        return attr;                                               \
+    }                                                              \
+///@endcond
+
 #endif

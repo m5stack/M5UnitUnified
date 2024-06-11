@@ -33,6 +33,7 @@ Component::Component(const uint8_t addr)
     : _adapter{new Adapter(addr)}, _addr{addr} {
 }
 
+#if 0
 Component::Component(Component&& o) noexcept
     : _manager{o._manager},
       _adapter{std::move(o._adapter)},
@@ -75,6 +76,7 @@ Component& Component::operator=(Component&& o) {
     }
     return *this;
 }
+#endif
 
 size_t Component::childrenSize() const {
     size_t sz{};

@@ -20,12 +20,10 @@ namespace unit {
   time
 */
 class UnitAmeter : public UnitADS1115WithEEPROM {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitAmeter, 0x48);
+
    public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x48};
     constexpr static uint8_t DEFAULT_EEPROM_ADDRESS{0x51};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
     constexpr static float PRESSURE_COEFFICIENT{0.05f};
 
     explicit UnitAmeter(const uint8_t addr      = DEFAULT_ADDRESS,
@@ -38,17 +36,6 @@ class UnitAmeter : public UnitADS1115WithEEPROM {
     //! @brief Resolution of 1 LSB
     inline virtual float resolution() const {
         return coefficient() / PRESSURE_COEFFICIENT;
-    }
-
-   protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
     }
 };
 }  // namespace unit

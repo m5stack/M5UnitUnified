@@ -289,7 +289,7 @@ TEST_P(TestSHT3x, SoftReset) {
     // Soft reset is only possible in standby mode.
     EXPECT_FALSE(unit.softReset());
 
-    EXPECT_TRUE(unit.stopPeriodicMeasurement());  // standby
+    EXPECT_TRUE(unit.stopPeriodicMeasurement());
 
     m5::unit::sht3x::Status s{};
     // After a reset, the heaters are set to a deactivated state as a default

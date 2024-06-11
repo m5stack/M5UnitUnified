@@ -22,12 +22,9 @@ namespace unit {
   @details Functionally compatible with MFRC522
  */
 class UnitWS1850S : public UnitMFRC522 {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x28};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitWS1850S, 0x28);
 
+   public:
     explicit UnitWS1850S(const uint8_t addr = DEFAULT_ADDRESS)
         : UnitMFRC522(addr) {
     }
@@ -45,17 +42,6 @@ class UnitWS1850S : public UnitMFRC522 {
      */
     inline virtual bool selfTest() override {
         return UnitMFRC522::selfTest();
-    }
-
-   protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
     }
 };
 

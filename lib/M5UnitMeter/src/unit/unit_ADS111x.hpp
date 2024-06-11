@@ -184,12 +184,9 @@ struct Config {
   @brief Base class for ADS111x series
  */
 class UnitADS111x : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS111x, 0xFF);
 
+   public:
     /*!
       @struct config_t
       @brief Settings
@@ -388,15 +385,6 @@ class UnitADS111x : public Component {
     bool generalReset();
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
     inline virtual bool on_begin() {
         return true;
     }
@@ -429,12 +417,9 @@ class UnitADS111x : public Component {
   @brief ADS1113 unit
  */
 class UnitADS1113 : public UnitADS111x {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1113, 0xFF);
 
+   public:
     explicit UnitADS1113(const uint8_t addr = DEFAULT_ADDRESS)
         : UnitADS111x(addr) {
     }
@@ -470,15 +455,6 @@ class UnitADS1113 : public UnitADS111x {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
     virtual bool on_begin() override;
 };
 
@@ -487,12 +463,9 @@ class UnitADS1113 : public UnitADS111x {
   @brief ADS1114 unit
  */
 class UnitADS1114 : public UnitADS111x {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1114, 0xFF);
 
+   public:
     explicit UnitADS1114(const uint8_t addr = DEFAULT_ADDRESS)
         : UnitADS111x(addr) {
     }
@@ -528,15 +501,6 @@ class UnitADS1114 : public UnitADS111x {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
     virtual bool on_begin() override;
 };
 
@@ -545,12 +509,9 @@ class UnitADS1114 : public UnitADS111x {
   @brief ADS1115 unit
  */
 class UnitADS1115 : public UnitADS111x {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1115, 0xFF);
 
+   public:
     explicit UnitADS1115(const uint8_t addr = DEFAULT_ADDRESS)
         : UnitADS111x(addr) {
     }
@@ -586,15 +547,6 @@ class UnitADS1115 : public UnitADS111x {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
     virtual bool on_begin() override;
 };
 

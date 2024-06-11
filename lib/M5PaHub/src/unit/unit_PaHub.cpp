@@ -15,48 +15,6 @@ using namespace m5::utility::mmh3;
 namespace m5 {
 namespace unit {
 
-#if 0
-// For children
-class PaHubWireImpl : public Adapter::Impl {
-   public:
-    explicit PaHubWireImpl(TwoWire& wire, const uint8_t addr)
-        : Adapter::Impl(addr), _wire(&wire) {
-    }
-
-    virtual m5::hal::error::error_t read(uint8_t* data,
-                                         const size_t len) override {
-        if (data) {
-            if (_wire->requestFrom(_addr, len)) {
-                auto count = std::min(len, (size_t)_wire->available());
-                for (size_t i = 0; i < count; ++i) {
-                    data[i] = (uint8_t)_wire->read();
-                }
-                return (count == len) ? m5::hal::error::error_t::OK
-                                      : m5::hal::error::error_t::UNKNOWN_ERROR;
-            }
-        }
-        return m5::hal::error::error_t::UNKNOWN_ERROR;
-    }
-    virtual m5::hal::error::error_t write(const uint8_t* data,
-                                          const size_t len) override {
-    }
-
-   protected:
-    TwoWire* _wire{};
-};
-
-class PaHubAdapter : public Adapter {
-   public:
-    PaHubAdapter(TwoWire& wire, const uint8_t addr) {
-    }
-    PaHubAdapter(m5::hal::bus::Bus* bus, const uint8_t addr) {
-    }
-    PaHubAdapter(m5::hal::bus::Bus& bus, const uint8_t addr)
-        : PaHubAdapter(&bus, addr) {
-    }
-};
-#endif
-
 // class UnitPaHub
 const char UnitPaHub::name[] = "UnitPaHub";
 const types::uid_t UnitPaHub::uid{"UnitPaHub"_mmh3};

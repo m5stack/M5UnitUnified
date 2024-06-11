@@ -1065,9 +1065,13 @@ UnitMFRC522::result_t UnitMFRC522::read_register(const uint8_t reg,
 
 UnitMFRC522::result_t UnitMFRC522::read_register_rxAlign(
     const uint8_t reg, uint8_t* buf, const size_t len, const uint8_t rxAlign) {
+    return readRegister(reg, buf, len, 0)
+               ? result_t()
+               : m5::stl::make_unexpected(function_error_t::I2C);
+
+#if 0
     uint8_t tmp[len + 1]{};
     auto result = read_register(reg, tmp, len + 1);
-#if 0
     //    buf [in,out] ???
     if (result) {
         uint8_t mask = (0xFFU << rxAlign) & 0xFF;
@@ -1075,8 +1079,8 @@ UnitMFRC522::result_t UnitMFRC522::read_register_rxAlign(
                         
         buf[0] = ((buf[0] & mask) | (buf[0] & ~mask)) >> rxAlign;
     }
-#endif
     return result;
+#endif
 }
 
 UnitMFRC522::result_t UnitMFRC522::write_register8(const uint8_t reg,

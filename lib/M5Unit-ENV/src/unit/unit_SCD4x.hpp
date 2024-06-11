@@ -19,12 +19,9 @@ namespace unit {
   @brief CO2 sensor unit
 */
 class UnitSCD40 : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x62};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD40, 0x62);
 
+   public:
     /*!
       @struct config_t
       @brief Settings
@@ -296,19 +293,8 @@ class UnitSCD40 : public Component {
     ///@}
 
    protected:
-    inline virtual const char *unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     bool read_measurement(const bool all = true);
 
-    
    protected:
     constexpr static unsigned long SIGNAL_INTERVAL_MS{5000};
     constexpr static unsigned long SIGNAL_INTERVAL_LOW_MS{30 * 1000};
@@ -330,12 +316,9 @@ class UnitSCD40 : public Component {
   @brief CO2 sensor unit
 */
 class UnitSCD41 : public UnitSCD40 {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x62};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD41, 0xFF);
 
+   public:
     explicit UnitSCD41(const uint8_t addr = DEFAULT_ADDRESS) : UnitSCD40(addr) {
     }
 
@@ -361,17 +344,6 @@ class UnitSCD41 : public UnitSCD40 {
     */
     bool measureSingleShotRHTOnly(void);
     ///@}
-
-   protected:
-    inline virtual const char *unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
 };
 
 ///@cond

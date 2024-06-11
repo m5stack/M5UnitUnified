@@ -37,20 +37,20 @@ template <class U>
 void each_unit_test() {
     SCOPED_TRACE(U::name);
 
-    U* u = new U();
+    U* unit = new U();
 
     // Are the values the same via class and via instance?
-    EXPECT_EQ(+U::DEFAULT_ADDRESS, u->address());
-    EXPECT_STREQ(U::name, u->deviceName());
-    EXPECT_EQ(U::uid, u->identifier());
-    EXPECT_EQ(U::attr, u->attribute());
+    EXPECT_EQ(+U::DEFAULT_ADDRESS, unit->address());
+    EXPECT_STREQ(U::name, unit->deviceName());
+    EXPECT_EQ(U::uid, unit->identifier());
+    EXPECT_EQ(U::attr, unit->attribute());
 
     // Identical IDs exist?
     for (auto&& e : vec) {
-        EXPECT_NE(u->identifier(), e->identifier())
-            << u->deviceName() << " / " << e->deviceName();
+        EXPECT_NE(unit->identifier(), e->identifier())
+            << unit->deviceName() << " / " << e->deviceName();
     }
-#if 0
+
     // Move
     {
         U tmp;
@@ -60,9 +60,8 @@ void each_unit_test() {
         U mc2;
         mc2 = std::move(mc);
     }
-#endif
 
-    vec.push_back(u);
+    vec.push_back(unit);
 }
 
 }  // namespace

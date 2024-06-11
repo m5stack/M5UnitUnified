@@ -83,12 +83,9 @@ struct Status {
   @brief Temperature and humidity, sensor unit
 */
 class UnitSHT30 : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x44};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSHT30, 0x44);
 
+   public:
     /*!
       @struct config_t
       @brief Settings
@@ -272,16 +269,6 @@ class UnitSHT30 : public Component {
     ///@}
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     bool read_measurement();
 
    protected:

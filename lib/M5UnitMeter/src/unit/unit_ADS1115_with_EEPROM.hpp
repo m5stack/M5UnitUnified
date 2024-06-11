@@ -22,12 +22,10 @@ namespace unit {
   overwritten and the measurement results will be inaccurate.
  */
 class UnitADS1115WithEEPROM : public UnitADS1115 {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1115WithEEPROM, 0xFF);
+
    public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0xFF};
     constexpr static uint8_t DEFAULT_EEPROM_ADDRESS{0xFF};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
 
     explicit UnitADS1115WithEEPROM(
         const uint8_t addr      = DEFAULT_ADDRESS,
@@ -49,16 +47,6 @@ class UnitADS1115WithEEPROM : public UnitADS1115 {
     }
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     bool read_calibration(const ads111x::Gain gain, int16_t& hope,
                           int16_t& actual);
     void apply_calibration(const ads111x::Gain gain);

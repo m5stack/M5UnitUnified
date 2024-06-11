@@ -305,7 +305,7 @@ bool UnitQMP6988::reset() {
     uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
     auto ret = writeRegister8(RESET, v);
     (void)ret;
-    // TODO / WARNING
+    // TODO / WARNING (HAL)
     // Reset causes a NO ACK error, but ignore it.
     m5::utility::delay(10);  // Need delay
 

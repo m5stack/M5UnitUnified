@@ -20,11 +20,9 @@ namespace unit {
   @brief PaHub unit (PCA 9548AP)
  */
 class UnitPaHub : public Component {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitPaHub, 0x70);
+
    public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x70};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
     constexpr static uint8_t MAX_CHANNEL = 6;
 
     explicit UnitPaHub(const uint8_t addr = DEFAULT_ADDRESS);
@@ -38,15 +36,6 @@ class UnitPaHub : public Component {
     }
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
     virtual Adapter* ensure_adapter(const uint8_t ch) override;
     virtual m5::hal::error::error_t select_channel(
         const uint8_t ch = 8) override;
@@ -59,5 +48,4 @@ class UnitPaHub : public Component {
 
 }  // namespace unit
 }  // namespace m5
-
 #endif

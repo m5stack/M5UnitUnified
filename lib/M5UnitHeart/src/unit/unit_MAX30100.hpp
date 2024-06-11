@@ -213,12 +213,9 @@ constexpr uint8_t MAX_FIFO_DEPTH{16};
   @brief Pulse oximetry and heart-rate sensor
 */
 class UnitMAX30100 : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x57};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitMAX30100, 0x57);
 
+   public:
     /*!
       @struct config_t
       @brief Settings
@@ -363,16 +360,6 @@ class UnitMAX30100 : public Component {
     bool reset();
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     bool get_mode_configration(uint8_t& c);
     bool set_mode_configration(const uint8_t c);
     bool enable_power_save(const bool enabled);

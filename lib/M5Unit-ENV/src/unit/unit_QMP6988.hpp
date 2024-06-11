@@ -36,11 +36,12 @@ enum class Average : uint8_t {
   @brief Operation mode setting
  */
 enum class PowerMode : uint8_t {
-    Sleep =
-        0,  //!< @brief Minimal power consumption, but no measurements are taken
-    Force =
-        1,  //!< @brief Energise the circuit for measurement only when measuring
-    Normal = 3,  //!< @brief Normally energized (periodic measurement)
+    //! @brief Minimal power consumption, but no measurements are taken
+    Sleep = 0,
+    //! @brief Energise the circuit for measurement only when measuring
+    Force = 1,
+    //! @brief Normally energized (periodic measurement)
+    Normal = 3,
 };
 
 /*!
@@ -60,6 +61,7 @@ struct CtrlMeasurement {
         return static_cast<PowerMode>(value & 0x03);
     }
     ///@}
+
     ///@name Setter
     ///@{
     void temperatureAvg(const Average a) {
@@ -149,12 +151,9 @@ struct Calibration {
   estimation
 */
 class UnitQMP6988 : public Component {
-   public:
-    constexpr static uint8_t DEFAULT_ADDRESS{0x70};
-    static const types::uid_t uid;
-    static const types::attr_t attr;
-    static const char name[];
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitQMP6988, 0x70);
 
+   public:
     /*!
       @struct config_t
       @brief Settings
@@ -227,7 +226,6 @@ class UnitQMP6988 : public Component {
     inline qmp6988::Average pressureAverage() const {
         return _pressureAvg;
     }
-
     ///@}
 
     // API
@@ -355,16 +353,6 @@ class UnitQMP6988 : public Component {
     bool getStatus(qmp6988::Status& s);
 
    protected:
-    inline virtual const char* unit_device_name() const override {
-        return name;
-    }
-    inline virtual types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    inline virtual types::attr_t unit_attribute() const override {
-        return attr;
-    }
-
     bool get_measurement_condition(uint8_t& cond);
     bool set_measurement_condition(const uint8_t cond);
     bool get_io_setup(uint8_t& s);

@@ -104,7 +104,7 @@ bool UnitADS1115WithEEPROM::read_calibration(const Gain gain, int16_t& hope,
         return false;
     }
 
-    uint xorchk{};
+    uint8_t xorchk{};
     for (int_fast8_t i = 0; i < 5; ++i) {
         xorchk ^= buf[i];
     }
