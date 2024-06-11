@@ -18,7 +18,8 @@
 #include <unit/unit_MAX30100.hpp>
 #include <unit/unit_MFRC522.hpp>
 #include <unit/unit_WS1850S.hpp>
-#include <unit/unit_ADS111x.hpp>
+#include <unit/unit_Ameter.hpp>
+#include <unit/unit_Vmeter.hpp>
 
 namespace {
 
@@ -60,7 +61,7 @@ void each_unit_test() {
         mc2 = std::move(mc);
     }
 #endif
-    
+
     vec.push_back(u);
 }
 
@@ -78,6 +79,9 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitADS1113>();
     each_unit_test<m5::unit::UnitADS1114>();
     each_unit_test<m5::unit::UnitADS1115>();
+    each_unit_test<m5::unit::UnitADS1115WithEEPROM>();
+    each_unit_test<m5::unit::UnitAmeter>();
+    each_unit_test<m5::unit::UnitVmeter>();
 
     for (auto&& e : vec) {
         delete e;
