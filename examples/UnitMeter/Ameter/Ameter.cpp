@@ -1,5 +1,5 @@
 /*
-  Example: UnitVmeter
+  Example: UnitAmeter
 
   SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
 
@@ -10,18 +10,17 @@
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
-#include <unit/unit_Vmeter.hpp>
+#include <unit/unit_Ameter.hpp>
 #if !defined(USING_M5HAL)
 #include <Wire.h>
 #endif
-#include <cmath>
 
 using namespace m5::unit::ads111x;
 
 namespace {
 auto& lcd = M5.Display;
 m5::unit::UnitUnified Units;
-m5::unit::UnitVmeter unit;
+m5::unit::UnitAmeter unit;
 
 float correction{1.0f};
 Rate rate{Rate::SPS_32};
@@ -93,7 +92,7 @@ void loop() {
         raw = unit.latestData();
         // Line graphs can be viewed on a plotter
         // ArduinoIDE, PlatformIO with Teleolot
-        M5_LOGI("\n>Voltage:%f", std::fabs(raw) * correction);
+        M5_LOGI("\n>Current:%f", std::fabs(raw) * correction);
     }
 
     if (M5.BtnA.wasClicked()) {
