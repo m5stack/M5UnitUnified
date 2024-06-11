@@ -24,7 +24,8 @@ class TestADS1115 : public ::testing::TestWithParam<TestParams> {
    protected:
     TestADS1115() : ::testing::TestWithParam<TestParams>() {
         auto param = GetParam();
-        unit.reset(new m5::unit::UnitADS1115WithEEPROM(param.reg, param.reg_eeprom));
+        unit.reset(
+            new m5::unit::UnitADS1115WithEEPROM(param.reg, param.reg_eeprom));
         assert(unit);
     }
 
@@ -272,7 +273,7 @@ TEST_P(TestADS1115, Periodic) {
     };
 
     {
-        float correction = unit->resolution() * unit->calibrationFactor();
+        // float correction = unit->resolution() * unit->calibrationFactor();
 
         for (auto&& e : table) {
             const char* s{};
@@ -295,14 +296,14 @@ TEST_P(TestADS1115, Periodic) {
                 bool upd = unit->updated();
                 count += upd ? 1 : 0;
                 now = std::chrono::steady_clock::now();
-                if (upd && count == 1) {
+                if (upd && count == 1) {  // First?
                     timeout_at = now + timeout;
                 }
                 std::this_thread::yield();
             } while (count < 2 && now <= timeout_at);
 
             EXPECT_EQ(count, 2);
-            EXPECT_LE(now, timeout_at) << (now - timeout_at).count();
+            EXPECT_LE(now, timeout_at) << (int64_t)(now - timeout_at).count();
         }
     }
     EXPECT_TRUE(unit->stopPeriodicMeasurement());

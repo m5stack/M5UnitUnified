@@ -69,7 +69,10 @@ void UnitADS111x::update() {
     if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
         if (!_latest || at >= _latest + _interval) {
-            _updated = read_ads_raw(_value);
+            // The rate of continuous conversion is equal to the programmeddata
+            // rate. Data can be read at any time and always reflect the most
+            // recent completed conversion.
+            _updated = getAdcRaw(_value);
             if (_updated) {
                 _latest = at;
             }
@@ -296,11 +299,6 @@ bool UnitADS111x::set_comparator_queue(const ads111x::ComparatorQueue q) {
         return write_config(c);
     }
     return false;
-}
-
-bool UnitADS111x::read_ads_raw(int16_t& raw) {
-    // return !inConversion() && getAdcRaw(raw);
-    return getAdcRaw(raw);
 }
 
 // class UnitADS1113

@@ -27,7 +27,7 @@ enum class Mux : uint8_t {
     AIN_03,  //!< @brief Positive:AIN0 Negative:AIN3
     AIN_13,  //!< @brief Positive:AIN1 Negative:AIN3
     AIN_23,  //!< @brief Positive:AIN2 Negative:AIN3
-    GND_0,   //!< @brief Positive:AIN0 Negative:AIN3
+    GND_0,   //!< @brief Positive:AIN0 Negative:GND
     GND_1,   //!< @brief Positive:AIN1 Negative:GND
     GND_2,   //!< @brief Positive:AIN2 Negative:GND
     GND_3,   //!< @brief Positive:AIN3 Negative:GND
@@ -71,8 +71,8 @@ enum class Rate : uint8_t {
 */
 enum class ComparatorQueue : uint8_t {
     One,      //!< @brief Assert after one conversion
-    Two,      //!< @brief Assert after one conversion
-    Four,     //!< @brief Assert after one conversion
+    Two,      //!< @brief Assert after two conversion
+    Four,     //!< @brief Assert after four conversion
     Disable,  //!< @brief Disable comparator and set ALERT/RDY pin to
               //!< high-impedance as default
 };
@@ -412,8 +412,6 @@ class UnitADS111x : public Component {
     bool set_comparator_polarity(const bool b);
     bool set_latching_comparator(const bool b);
     bool set_comparator_queue(const ads111x::ComparatorQueue c);
-
-    bool read_ads_raw(int16_t& raw);
 
    protected:
     bool _updated{};
