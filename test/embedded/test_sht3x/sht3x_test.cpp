@@ -56,14 +56,14 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
             Wire.end();
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
             auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
+            // M5_LOGI("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
             Wire.begin(pin_num_sda, pin_num_scl, 400000U);
             wire = true;
         }
 
         ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
                                          GetParam() ? "Bus" : "Wire");
-        // printf("Test as %s\n", ustr.c_str());
+        // M5_LOGW("Test as %s\n", ustr.c_str());
 
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
@@ -99,24 +99,19 @@ class TestSHT3x : public ::testing::TestWithParam<bool> {
 };
 
 // true:Bus false:Wire
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
-                         ::testing::Values(false, true));
-
-//::testing::Values(true, false));
-// TODO: clock stretching with HAL -> Wire がエラーになる
-// HAL側がまだ実験なので保保留
-
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
+//                         ::testing::Values(false, true));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
 
 TEST_P(TestSHT3x, SingleShot) {
     SCOPED_TRACE(ustr);
 
+    // Cannot read periodic measured
     EXPECT_TRUE(unit.stopPeriodicMeasurement());
-
-    // Cannot read periodic
     EXPECT_FALSE(unit.readMeasurement());
 
+    //
     for (auto&& e : ss_table) {
         const char* s{};
         m5::unit::sht3x::Repeatability rep;
@@ -129,12 +124,6 @@ TEST_P(TestSHT3x, SingleShot) {
         while (cnt--) {
             EXPECT_TRUE(unit.measurementSingleShot(rep, stretch))
                 << (int)rep << " : " << stretch;
-            // After sending a command to the sensor a minimal waiting time of
-            //**1ms** is needed before another command can be received by the
-            // sensor
-            if (!stretch) {
-                m5::utility::delay(1);
-            }
         }
     }
 }

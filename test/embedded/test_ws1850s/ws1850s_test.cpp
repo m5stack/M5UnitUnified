@@ -99,10 +99,13 @@ class TestWS1850S : public ::testing::TestWithParam<bool> {
     bool wire{};
 };
 
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S,
-                         ::testing::Values(true, false));
-//  INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S,
+//                          ::testing::Values(false, true));
+//   INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S,
+//   ::testing::Values(true));
+//  Awaiting M5HAL updated
+
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestWS1850S, ::testing::Values(false));
 
 using namespace m5::unit::mfrc522;
 
@@ -168,12 +171,24 @@ TEST_P(TestWS1850S, Antenna) {
 
     uint8_t prev{}, now{};
     bool onoff{};
-    EXPECT_TRUE(unit.isAntennaOn(onoff));
-    EXPECT_FALSE(onoff);
 
+    // on after begin
+    EXPECT_TRUE(unit.isAntennaOn(onoff));
+    EXPECT_TRUE(onoff);
+
+    // to ON
     EXPECT_TRUE(unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG,
                                    prev, 0));
 
+    EXPECT_TRUE(unit.turnOffAntenna());
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG, now, 0));
+    EXPECT_TRUE(unit.isAntennaOn(onoff));
+    EXPECT_FALSE(onoff);
+    EXPECT_NE(now, prev);
+    prev = now;
+
+    // to OFF
     EXPECT_TRUE(unit.turnOnAntenna());
     EXPECT_TRUE(
         unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG, now, 0));
@@ -181,14 +196,7 @@ TEST_P(TestWS1850S, Antenna) {
     EXPECT_TRUE(onoff);
     EXPECT_NE(now, prev);
 
-    prev = now;
-    EXPECT_TRUE(unit.turnOffAntenna());
-    EXPECT_TRUE(
-        unit.readRegister8(m5::unit::mfrc522::command::TX_CONTROL_REG, now, 0));
-    EXPECT_TRUE(unit.isAntennaOn(onoff));
-    EXPECT_FALSE(onoff);
-    EXPECT_NE(now, prev);
-
+    // Change gain
     constexpr ReceiverGain table[] = {
         ReceiverGain::dB18, ReceiverGain::dB23, ReceiverGain::dB33,
         ReceiverGain::dB38, ReceiverGain::dB43, ReceiverGain::dB48,
@@ -205,23 +213,28 @@ TEST_P(TestWS1850S, Antenna) {
         ReceiverGain gain{};
         EXPECT_TRUE(unit.getAntennaGain(gain)) << (int)e;
         EXPECT_EQ(gain, e) << (int)e;
-        EXPECT_NE(now, prev);
+        EXPECT_NE(now, prev) << (int)e;
         prev = now;
     }
 }
 
 TEST_P(TestWS1850S, Power) {
-    uint8_t v{};
+    SCOPED_TRACE(ustr);
 
-    EXPECT_TRUE(unit.enablePowerDownMode());
+    uint8_t prev{}, now{};
 
     EXPECT_TRUE(
-        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, v, 0));
-    EXPECT_EQ((v & 0x10), 0x10);
+        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, prev, 0));
+    EXPECT_TRUE(unit.enablePowerDownMode());
+    EXPECT_TRUE(
+        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, now, 0));
+    EXPECT_EQ((now & 0x10), 0x10);
+    EXPECT_NE(now, prev);
+    prev = now;
 
     EXPECT_TRUE(unit.disablePowerDownMode());
-
     EXPECT_TRUE(
-        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, v, 0));
-    EXPECT_EQ((v & 0x10), 0x00);
+        unit.readRegister8(m5::unit::mfrc522::command::COMMAND_REG, now, 0));
+    EXPECT_EQ((now & 0x10), 0x00);
+    EXPECT_NE(now, prev);
 }

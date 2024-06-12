@@ -12,7 +12,7 @@ using namespace m5::unit;
 
 INSTANTIATE_TEST_SUITE_P(
     ParamValues, TestADS1115,
-    ::testing::Values(TestParams{true, +UnitVmeter::DEFAULT_ADDRESS,
+    ::testing::Values(TestParams{false, +UnitVmeter::DEFAULT_ADDRESS,
                                  +UnitVmeter::DEFAULT_EEPROM_ADDRESS},
-                      TestParams{false, +UnitVmeter::DEFAULT_ADDRESS,
+                      TestParams{true, +UnitVmeter::DEFAULT_ADDRESS,
                                  +UnitVmeter::DEFAULT_EEPROM_ADDRESS}));

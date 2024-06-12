@@ -123,13 +123,13 @@ class TestSCD41 : public TestSCD4x {
 };
 
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40,
-                         ::testing::Values(true, false));
+                         ::testing::Values(false, true));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(true));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(false));
 
 #if defined(UNIT_TEST_SCD41)
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41,
-                         ::testing::Values(true, false));
+                         ::testing::Values(false, true));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(true));
 // INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(false));
 #endif

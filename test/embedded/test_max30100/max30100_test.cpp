@@ -84,11 +84,11 @@ class TestMAX30100 : public ::testing::TestWithParam<bool> {
 };
 
 // true:Bus false:Wire
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
-//                         ::testing::Values(true, false));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
-// ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
+                         ::testing::Values(false, true));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100, ::testing::Values(true));
+//  INSTANTIATE_TEST_SUITE_P(ParamValues, TestMAX30100,
+//  ::testing::Values(false));
 
 namespace {
 using namespace m5::unit::max30100;
@@ -381,7 +381,7 @@ TEST_P(TestMAX30100, Temperature) {
         EXPECT_TRUE(std::isfinite(temperature));
         temps.push_back(temperature);
 
-        M5_LOGI("temp:%f", temperature);
+        // M5_LOGI("temp:%f", temperature);
         m5::utility::delay(50);
         ++cnt;
     }
@@ -402,6 +402,11 @@ TEST_P(TestMAX30100, Reset) {
     EXPECT_TRUE(unit.setLedCurrent(m5::unit::max30100::CurrentControl::mA7_6,
                                    m5::unit::max30100::CurrentControl::mA7_6));
 
+    EXPECT_TRUE(unit.writeRegister8(
+        m5::unit::max30100::command::FIFO_WRITE_POINTER, 1));
+    EXPECT_TRUE(
+        unit.writeRegister8(m5::unit::max30100::command::FIFO_READ_POINTER, 1));
+
     // reset
     EXPECT_TRUE(unit.reset());
 
@@ -416,6 +421,14 @@ TEST_P(TestMAX30100, Reset) {
         EXPECT_EQ(sc.value, 0);
         EXPECT_TRUE(unit.getLedConfiguration(lc));
         EXPECT_EQ(lc.value, 0);
+
+        uint8_t wptr{}, rptr{};
+        EXPECT_TRUE(unit.readRegister8(
+            m5::unit::max30100::command::FIFO_WRITE_POINTER, wptr, 0));
+        EXPECT_TRUE(unit.readRegister8(
+            m5::unit::max30100::command::FIFO_READ_POINTER, rptr, 0));
+        EXPECT_EQ(wptr, 0U);
+        EXPECT_EQ(rptr, 0U);
     }
 }
 
@@ -443,29 +456,32 @@ TEST_P(TestMAX30100, FIFO) {
     } while (!unit.updated() && m5::utility::millis() - start_at <= 1000);
     EXPECT_TRUE(unit.updated());
     EXPECT_GT(unit.retrived(), 0U);
-    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+    auto cnt = unit.retrived();
+    for (uint8_t i = 0; i < cnt; ++i) {
         EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
-        M5_LOGI("ir:%u red:%u", ir, red);
+        // M5_LOGI("ir:%u red:%u", ir, red);
     }
 
-    m5::utility::delay(100);  // about sampling 10 times (*1)
+    m5::utility::delay(100);  // Sampling about 10 times (*1)
 
     unit.update();
     EXPECT_TRUE(unit.updated());
     EXPECT_GE(unit.retrived(), 10U);
-    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+    cnt = unit.retrived();
+    for (uint8_t i = 0; i < cnt; ++i) {
         EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
-        M5_LOGI("ir:%u red:%u", ir, red);
+        // M5_LOGI("ir:%u red:%u", ir, red);
     }
 
-    m5::utility::delay(200);  // about sampling 20 times (*1)
+    m5::utility::delay(200);  // Sampling abount 20 times (*1)
 
     unit.update();
     EXPECT_TRUE(unit.updated());
     EXPECT_EQ(unit.retrived(), m5::unit::max30100::MAX_FIFO_DEPTH);
     EXPECT_GT(unit.overflow(), 0U);
-    for (uint8_t i = 0; i < unit.retrived(); ++i) {
+    cnt = unit.retrived();
+    for (uint8_t i = 0; i < cnt; ++i) {
         EXPECT_TRUE(unit.getRawData(ir, red, i)) << i;
-        M5_LOGI("ir:%u red:%u", ir, red);
+        // M5_LOGI("ir:%u red:%u", ir, red);
     }
 }
