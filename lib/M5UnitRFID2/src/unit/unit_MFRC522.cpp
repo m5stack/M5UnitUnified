@@ -219,12 +219,6 @@ bool UnitMFRC522::begin() {
         return false;
     }
 
-    setAntennaGain(ReceiverGain::dB18);
-    ReceiverGain gain{};
-    if (getAntennaGain(gain)) {
-        M5_LIB_LOGE("Gain:%u", (int)gain);
-    }
-
     // Mode
     // defines the preset value for the CRC coprocess to 6363h
     // return writeRegister8(MODE_REG, 0x29) && turnOnAntenna();
