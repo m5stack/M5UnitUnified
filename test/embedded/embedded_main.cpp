@@ -7,6 +7,7 @@
 */
 #include <gtest/gtest.h>
 #include <M5Unified.h>
+#include <esp_system.h>
 
 #pragma message "Embedded setup/loop"
 
@@ -20,7 +21,7 @@
 
 namespace {
 auto& lcd = M5.Display;
-}
+}  // namespace
 
 void test() {
     lcd.fillRect(0, 0, lcd.width() >> 1, lcd.height(),
@@ -28,6 +29,8 @@ void test() {
 }
 
 void setup() {
+    delay(1500);
+
     M5.begin();
 
     M5_LOGI("CPP %ld", __cplusplus);
@@ -45,6 +48,10 @@ void setup() {
 
 void loop() {
     test();
+#if 0
+    delay(1000);
+    esp_restart();
+#endif
     while (true) {
         delay(10000);
     }

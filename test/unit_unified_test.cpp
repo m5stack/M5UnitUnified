@@ -38,7 +38,8 @@ void each_unit_test() {
     SCOPED_TRACE(U::name);
 
     U* unit = new U();
-
+    EXPECT_TRUE(unit != nullptr);
+    
     // Are the values the same via class and via instance?
     EXPECT_EQ(+U::DEFAULT_ADDRESS, unit->address());
     EXPECT_STREQ(U::name, unit->deviceName());

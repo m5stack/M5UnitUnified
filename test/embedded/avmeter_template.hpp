@@ -12,6 +12,7 @@
 #include <Wire.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
+#include <googletest/test_template.hpp>
 #include <unit/unit_ADS1115_with_EEPROM.hpp>
 
 struct TestParams {
@@ -20,62 +21,21 @@ struct TestParams {
     const uint8_t reg_eeprom;
 };
 
-class TestADS1115 : public ::testing::TestWithParam<TestParams> {
-   protected:
-    TestADS1115() : ::testing::TestWithParam<TestParams>() {
-        auto param = GetParam();
-        unit.reset(
-            new m5::unit::UnitADS1115WithEEPROM(param.reg, param.reg_eeprom));
-        assert(unit);
-    }
-
-    virtual void SetUp() override {
-        if (!(GetParam().hal) && !wire) {
-            Wire.end();
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-            wire = true;
-        }
-
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(),
-                                         GetParam().hal ? "Bus" : "Wire");
-        // printf("Test as %s\n", ustr.c_str());
-        if (!begin()) {
-            FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
-        }
-    }
-
-    virtual void TearDown() override {
-    }
-
-    virtual bool begin() {
-        if (GetParam().hal) {
-            // Bus
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-
-            m5::hal::bus::I2CBusConfig i2c_cfg;
-            i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-            i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-            auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-
-            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) &&
-                   Units.begin();
-        }
-        // Wire
-        return Units.add(*unit, Wire) && Units.begin();
-    }
-
-    m5::unit::UnitUnified Units;
-    std::unique_ptr<m5::unit::UnitADS1115WithEEPROM> unit{};
-    std::string ustr{};
-    bool wire{};
-};
-
+using namespace m5::unit::googletest;
+using namespace m5::unit;
 using namespace m5::unit::ads111x;
+
+class TestADS1115
+    : public ComponentTestBase<UnitADS1115WithEEPROM, TestParams> {
+   protected:
+    virtual UnitADS1115WithEEPROM* get_instance() override {
+        TestParams tp = GetParam();
+        return new m5::unit::UnitADS1115WithEEPROM(tp.reg, tp.reg_eeprom);
+    }
+    virtual bool is_using_hal() const override {
+        return GetParam().hal;
+    };
+};
 
 TEST_P(TestADS1115, GeneralReset) {
     SCOPED_TRACE(ustr);

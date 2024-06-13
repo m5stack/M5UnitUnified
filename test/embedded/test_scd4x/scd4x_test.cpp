@@ -12,126 +12,59 @@
 #include <Wire.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
+#include <googletest/test_template.hpp>
 #include <unit/unit_SCD4x.hpp>
 #include <chrono>
 #include <iostream>
+
+using namespace m5::unit::googletest;
+using namespace m5::unit;
+using namespace m5::unit::scd4x;
 
 namespace {
 // flot t uu int16 (temperature)
 constexpr uint16_t float_to_uint16(const float f) {
     return f * 65536 / 175;
 }
-
 }  // namespace
-
-#if 0
-class GlobalFixture : public ::testing::Environment {
-   public:
-    void SetUp() override {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-        // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-        Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-    }
-};
-const ::testing::Environment* global_fixture =
-    ::testing::AddGlobalTestEnvironment(new GlobalFixture);
-#endif
-
-// bool true: Using bus false: using wire
-class TestSCD4x : public ::testing::TestWithParam<bool> {
-   protected:
-    virtual void SetUp() override {
-        if (!GetParam() && !wire) {
-            Wire.end();
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-            wire = true;
-        }
-
-        unit = get_instance();
-        if (!unit) {
-            GTEST_SKIP() << "Skip as there are no instances";
-        }
-
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(),
-                                         GetParam() ? "Bus" : "Wire");
-        // printf("Test as %s\n", ustr.c_str());
-
-        if (!begin()) {
-            FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
-        }
-    }
-
-    virtual void TearDown() override {
-    }
-
-    virtual m5::unit::UnitSCD40* get_instance() {
-        return nullptr;
-    }
-    virtual bool begin() {
-        if (GetParam()) {
-            // Bus
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-
-            m5::hal::bus::I2CBusConfig i2c_cfg;
-            i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-            i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-            auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-
-            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) &&
-                   Units.begin();
-        }
-        // Wire
-        return Units.add(*unit, Wire) && Units.begin();
-    }
-
-    m5::unit::UnitUnified Units;
-    m5::unit::UnitSCD40* unit{};  // SCD40 or SCD41
-    std::string ustr{};
-    bool wire{};
-};
 
 // #define UNIT_TEST_SCD41
 
-class TestSCD40 : public TestSCD4x {
-   protected:
-    virtual m5::unit::UnitSCD40* get_instance() override {
-        return &unitSCD4x;
-    }
+const ::testing::Environment* global_fixture =
+    ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
 
+class TestSCD40 : public ComponentTestBase<UnitSCD40, bool> {
+   protected:
+    virtual UnitSCD40* get_instance() override {
 #if defined(UNIT_TEST_SCD41)
-    // TEST as SCD41
-    m5::unit::UnitSCD41 unitSCD4x;
+        return new m5::unit::UnitSCD41();
 #else
-    // TEST as SCD40
-    m5::unit::UnitSCD40 unitSCD4x;
+        return new m5::unit::UnitSCD40();
 #endif
-};
-
-class TestSCD41 : public TestSCD4x {
-   protected:
-    virtual m5::unit::UnitSCD40* get_instance() override {
-        return &unitSCD41;
     }
 
-    m5::unit::UnitSCD41 unitSCD41;
+    virtual bool is_using_hal() const override {
+        return GetParam();
+    };
 };
 
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40,
-                         ::testing::Values(false, true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(false));
+class TestSCD41 : public ComponentTestBase<UnitSCD40, bool> {
+   protected:
+    virtual UnitSCD41* get_instance() override {
+        return new m5::unit::UnitSCD41();
+    }
+};
+
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40,
+//                          ::testing::Values(false, true));
+//  INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD40, ::testing::Values(false));
 
 #if defined(UNIT_TEST_SCD41)
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41,
-                         ::testing::Values(false, true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41,
+//                          ::testing::Values(false, true));
+//  INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSCD41, ::testing::Values(false));
 #endif
 
 TEST_P(TestSCD40, BasicCommand) {

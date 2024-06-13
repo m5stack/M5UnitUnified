@@ -12,6 +12,7 @@
 #include <Wire.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
+#include <googletest/test_template.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <chrono>
 #include <cmath>
@@ -24,76 +25,28 @@ constexpr uint16_t float_to_uint16(const float f) {
 
 }  // namespace
 
-#if 0
-class GlobalFixture : public ::testing::Environment {
-       public:
-        void SetUp() override {
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-        }
-    };
+using namespace m5::unit::googletest;
+using namespace m5::unit;
+using namespace m5::unit::qmp6988;
+
 const ::testing::Environment* global_fixture =
-    ::testing::AddGlobalTestEnvironment(new GlobalFixture);
-#endif
+    ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
 
-// bool true: Using bus false: using wire
-class TestQMP6988 : public ::testing::TestWithParam<bool> {
+
+class TestQMP6988 : public ComponentTestBase<UnitQMP6988, bool> {
    protected:
-    virtual void SetUp() override {
-        if (!GetParam() && !wire) {
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            // printf("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            Wire.end();
-            Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-            wire = true;
-        }
-
-        ustr = m5::utility::formatString("%s:%s", unit.deviceName(),
-                                         GetParam() ? "Bus" : "Wire");
-        // printf("Test as %s\n", ustr.c_str());
-
-        if (!begin()) {
-            FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
-        }
+    virtual UnitQMP6988* get_instance() override {
+        return new m5::unit::UnitQMP6988();
     }
-
-    virtual void TearDown() override {
-        // Wire.end();
-    }
-
-    virtual bool begin() {
-        if (GetParam()) {
-            // Bus
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-
-            m5::hal::bus::I2CBusConfig i2c_cfg;
-            i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-            i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-            auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-
-            return Units.add(unit, i2c_bus ? i2c_bus.value() : nullptr) &&
-                   Units.begin();
-        }
-        // Wire
-        return Units.add(unit, Wire) && Units.begin();
-    }
-
-    m5::unit::UnitUnified Units;
-    m5::unit::UnitQMP6988 unit;
-    std::string ustr{};
-    bool wire{};
+    virtual bool is_using_hal() const override {
+        return GetParam();
+    };
 };
 
-// true:Bus false:Wire
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988,
-                         ::testing::Values(true, false));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988,
+//                          ::testing::Values(false, true));
+//  INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(false));
 
 TEST_P(TestQMP6988, MeasurementCondition) {
     SCOPED_TRACE(ustr);
@@ -101,7 +54,7 @@ TEST_P(TestQMP6988, MeasurementCondition) {
     m5::unit::qmp6988::Average t;
     m5::unit::qmp6988::Average p;
     m5::unit::qmp6988::PowerMode m;
-    EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+    EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
     // M5_LOGI("%x/%x/%x", (uint8_t)t, (uint8_t)p, (uint8_t)m);
 
     constexpr std::tuple<const char*, m5::unit::qmp6988::Average,
@@ -131,70 +84,70 @@ TEST_P(TestQMP6988, MeasurementCondition) {
 
         SCOPED_TRACE(s);
 
-        EXPECT_TRUE(unit.setMeasurementCondition(ta, pa, mode));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->setMeasurementCondition(ta, pa, mode));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, ta);
         EXPECT_EQ(p, pa);
         EXPECT_EQ(m, mode);
 
-        EXPECT_TRUE(unit.setMeasurementCondition(ta, pa));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->setMeasurementCondition(ta, pa));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, ta);
         EXPECT_EQ(p, pa);
         EXPECT_EQ(m, mode);
 
-        EXPECT_TRUE(unit.setMeasurementCondition(ta));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->setMeasurementCondition(ta));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, ta);
         EXPECT_EQ(p, pa);
         EXPECT_EQ(m, mode);
     }
 
     {
-        EXPECT_TRUE(unit.setMeasurementCondition(
+        EXPECT_TRUE(unit->setMeasurementCondition(
             m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
             m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
 
-        EXPECT_TRUE(
-            unit.setTemperatureOversampling(m5::unit::qmp6988::Average::Avg64));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->setTemperatureOversampling(
+            m5::unit::qmp6988::Average::Avg64));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg64);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
     }
 
     {
-        EXPECT_TRUE(unit.setMeasurementCondition(
+        EXPECT_TRUE(unit->setMeasurementCondition(
             m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
             m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
 
         EXPECT_TRUE(
-            unit.setPressureOversampling(m5::unit::qmp6988::Average::Avg64));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+            unit->setPressureOversampling(m5::unit::qmp6988::Average::Avg64));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg64);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
     }
 
     {
-        EXPECT_TRUE(unit.setMeasurementCondition(
+        EXPECT_TRUE(unit->setMeasurementCondition(
             m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
             m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
 
-        EXPECT_TRUE(unit.setPowerMode(m5::unit::qmp6988::PowerMode::Normal));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->setPowerMode(m5::unit::qmp6988::PowerMode::Normal));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
         EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Normal);
@@ -212,10 +165,10 @@ TEST_P(TestQMP6988, IIRFilter) {
     };
 
     for (auto&& e : table) {
-        EXPECT_TRUE(unit.setFilterCoeff(e));
+        EXPECT_TRUE(unit->setFilterCoeff(e));
 
         m5::unit::qmp6988::Filter f;
-        EXPECT_TRUE(unit.getFilterCoeff(f));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
         EXPECT_EQ(f, e);
     }
 }
@@ -230,10 +183,10 @@ TEST_P(TestQMP6988, UseCase) {
 
     {
         SCOPED_TRACE("Weather");
-        EXPECT_TRUE(unit.setWeathermonitoring());
+        EXPECT_TRUE(unit->setWeathermonitoring());
 
-        EXPECT_TRUE(unit.getFilterCoeff(f));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg2);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
         EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
@@ -241,10 +194,10 @@ TEST_P(TestQMP6988, UseCase) {
 
     {
         SCOPED_TRACE("Drop");
-        EXPECT_TRUE(unit.setDropDetection());
+        EXPECT_TRUE(unit->setDropDetection());
 
-        EXPECT_TRUE(unit.getFilterCoeff(f));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg4);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
         EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
@@ -252,10 +205,10 @@ TEST_P(TestQMP6988, UseCase) {
 
     {
         SCOPED_TRACE("Elevator");
-        EXPECT_TRUE(unit.setElevatorDetection());
+        EXPECT_TRUE(unit->setElevatorDetection());
 
-        EXPECT_TRUE(unit.getFilterCoeff(f));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg8);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
         EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff4);
@@ -263,10 +216,10 @@ TEST_P(TestQMP6988, UseCase) {
 
     {
         SCOPED_TRACE("Stair");
-        EXPECT_TRUE(unit.setStairDetection());
+        EXPECT_TRUE(unit->setStairDetection());
 
-        EXPECT_TRUE(unit.getFilterCoeff(f));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg16);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg2);
         EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff8);
@@ -274,10 +227,10 @@ TEST_P(TestQMP6988, UseCase) {
 
     {
         SCOPED_TRACE("Indoor");
-        EXPECT_TRUE(unit.setIndoorNavigation());
+        EXPECT_TRUE(unit->setIndoorNavigation());
 
-        EXPECT_TRUE(unit.getFilterCoeff(f));
-        EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+        EXPECT_TRUE(unit->getFilterCoeff(f));
+        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
         EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg32);
         EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg4);
         EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff32);
@@ -298,10 +251,10 @@ TEST_P(TestQMP6988, Setup) {
     };
 
     for (auto&& e : table) {
-        EXPECT_TRUE(unit.setStandbyTime(e));
+        EXPECT_TRUE(unit->setStandbyTime(e));
 
         m5::unit::qmp6988::StandbyTime st;
-        EXPECT_TRUE(unit.getStandbyTime(st));
+        EXPECT_TRUE(unit->getStandbyTime(st));
         EXPECT_EQ(st, e);
     }
 }
@@ -310,14 +263,14 @@ TEST_P(TestQMP6988, Status) {
     SCOPED_TRACE(ustr);
 
     m5::unit::qmp6988::Status s;
-    EXPECT_TRUE(unit.getStatus(s));
+    EXPECT_TRUE(unit->getStatus(s));
     //    M5_LOGI("Measure:%d, OTP:%d", s.measure(), s.OTP());
 }
 
 TEST_P(TestQMP6988, SingleShot) {
     SCOPED_TRACE(ustr);
 
-    unit.setPowerMode(m5::unit::qmp6988::PowerMode::Force);
+    unit->setPowerMode(m5::unit::qmp6988::PowerMode::Force);
 
     m5::unit::qmp6988::Average t;
     m5::unit::qmp6988::Average p;
@@ -335,27 +288,27 @@ TEST_P(TestQMP6988, SingleShot) {
             auto s = m5::utility::formatString("Avg:%u/%u", ta, pa);
             SCOPED_TRACE(s);
 
-            EXPECT_TRUE(unit.setMeasurementCondition(ta, pa));
-            EXPECT_TRUE(unit.getMeasurementCondition(t, p, m));
+            EXPECT_TRUE(unit->setMeasurementCondition(ta, pa));
+            EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
             EXPECT_EQ(t, ta);
             EXPECT_EQ(p, pa);
 
             if (ta == m5::unit::qmp6988::Average::Skip &&
                 pa == m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(unit.readMeasurement());
+                EXPECT_FALSE(unit->readMeasurement());
             } else {
-                EXPECT_TRUE(unit.readMeasurement());
+                EXPECT_TRUE(unit->readMeasurement());
             }
 
             if (ta != m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(std::isnan(unit.temperature()));
+                EXPECT_FALSE(std::isnan(unit->temperature()));
             } else {
-                EXPECT_TRUE(std::isnan(unit.temperature()));
+                EXPECT_TRUE(std::isnan(unit->temperature()));
             }
             if (pa != m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(std::isnan(unit.pressure()));
+                EXPECT_FALSE(std::isnan(unit->pressure()));
             } else {
-                EXPECT_TRUE(std::isnan(unit.pressure()));
+                EXPECT_TRUE(std::isnan(unit->pressure()));
             }
         }
     }
@@ -381,9 +334,9 @@ TEST_P(TestQMP6988, Periodic) {
     };
 
     for (auto&& st : st_table) {
-        EXPECT_TRUE(unit.setStandbyTime(st));
+        EXPECT_TRUE(unit->setStandbyTime(st));
         m5::unit::qmp6988::StandbyTime s;
-        EXPECT_TRUE(unit.getStandbyTime(s));
+        EXPECT_TRUE(unit->getStandbyTime(s));
         EXPECT_EQ(s, st);
 
         //        M5_LOGE("=======");
@@ -397,7 +350,7 @@ TEST_P(TestQMP6988, Periodic) {
             bool done{};
             m5::unit::qmp6988::Status s{};
             do {
-                if (unit.getStatus(s) && !s.measure()) {
+                if (unit->getStatus(s) && !s.measure()) {
                     done = true;
                     start_at = std::chrono::steady_clock::now();
                     break;
@@ -414,15 +367,16 @@ TEST_P(TestQMP6988, Periodic) {
         auto elapsed = start_at;
         bool done{};
         do {
-            done = unit.readMeasurement();
-            //            M5_LIB_LOGE("%f/%f", unit.temperature(),
-            //            unit.pressure());
+            done = unit->readMeasurement();
+            //            M5_LIB_LOGE("%f/%f", unit->temperature(),
+            //            unit->pressure());
             elapsed = std::chrono::steady_clock::now();
         } while (!done && (elapsed - start_at) <= timeout);
 
         m5::utility::delay(1);
-        unit.readMeasurement();
-        //        M5_LIB_LOGE(">> %f/%f", unit.temperature(), unit.pressure());
+        unit->readMeasurement();
+        //        M5_LIB_LOGE(">> %f/%f", unit->temperature(),
+        //        unit->pressure());
 
         auto e = std::chrono::duration_cast<std::chrono::microseconds>(
             elapsed - start_at);
