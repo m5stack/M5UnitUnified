@@ -32,7 +32,6 @@ using namespace m5::unit::qmp6988;
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
 
-
 class TestQMP6988 : public ComponentTestBase<UnitQMP6988, bool> {
    protected:
     virtual UnitQMP6988* get_instance() override {

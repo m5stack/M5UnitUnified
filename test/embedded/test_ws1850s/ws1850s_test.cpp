@@ -166,18 +166,15 @@ TEST_P(TestWS1850S, Power) {
         unit->readRegister8(m5::unit::mfrc522::command::COMMAND_REG, prev, 0));
     M5_LOGW("prev:%x", prev);
 
-    
     // power down
     EXPECT_TRUE(unit->enablePowerDownMode());
 
-    #if 0
     EXPECT_TRUE(
         unit->readRegister8(m5::unit::mfrc522::command::COMMAND_REG, now, 0));
     EXPECT_EQ((now & 0x10), 0x10);
     EXPECT_NE(now, prev);
     prev = now;
-    #endif
-    
+
     // powerup
     EXPECT_TRUE(unit->disablePowerDownMode());
 
