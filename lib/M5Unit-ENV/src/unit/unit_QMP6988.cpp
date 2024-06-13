@@ -102,7 +102,7 @@ bool UnitQMP6988::begin() {
         M5_LIB_LOGE("This unit is NOT QMP6988 %x", id);
         return false;
     }
-    
+
     if (!reset()) {
         M5_LIB_LOGE("Failed to reset");
         return false;
@@ -303,13 +303,14 @@ bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
 
 bool UnitQMP6988::reset() {
     uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
+
     auto ret = writeRegister8(RESET, v);
+    M5_LIB_LOGD("Reset causes a NO ACK error, but ignore it");
     (void)ret;
     // TODO / WARNING (HAL)
     // Reset causes a NO ACK error, but ignore it.
-    m5::utility::delay(10);  // Need delay
-
-    return writeRegister(RESET, 0x00); // Nothing to happen
+    m5::utility::delay(10);             // Need delay
+    return writeRegister(RESET, 0x00);  // Nothing to happen
 }
 
 bool UnitQMP6988::getStatus(qmp6988::Status& s) {
@@ -329,7 +330,8 @@ bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
         _mode        = cm.mode();
         _periodic    = (_mode == qmp6988::PowerMode::Normal);
 
-        //M5_LIB_LOGI(">>> %d,%d,%d,%d", _tempAvg, _pressureAvg, _mode, _periodic);
+        // M5_LIB_LOGI(">>> %d,%d,%d,%d", _tempAvg, _pressureAvg, _mode,
+        // _periodic);
         return true;
     }
     return false;

@@ -339,25 +339,39 @@ UnitMFRC522::result_t UnitMFRC522::calculateCRC(const uint8_t* buf,
 }
 
 bool UnitMFRC522::enablePowerDownMode() {
-    return (bool)set_register_bit(COMMAND_REG, 0x10);
+    CommandReg cr{};
+    return (bool)read_register8(COMMAND_REG, cr.value).and_then([this, &cr]() {
+        cr.powerOff(true);
+        cr.command(Command::NoCmdChange);
+        return this->write_register8(COMMAND_REG, cr.value);
+    });
 }
 
 bool UnitMFRC522::disablePowerDownMode() {
-    return (bool)mask_register_bit(COMMAND_REG, 0x10).and_then([this]() {
-        // Wait until power-down bit has been cleared
-        auto timeout_at = m5::utility::millis() + 1000;
-        bool done{};
-        do {
-            uint8_t v{};
-            if (this->read_register8(COMMAND_REG, v) && ((v & 0x10) == 0)) {
-                done = true;
-                break;
-            }
-            std::this_thread::yield();
-        } while (!done && m5::utility::millis() <= timeout_at);
-        return done ? result_t()
-                    : m5::stl::make_unexpected(function_error_t::TIMEOUT);
-    });
+    CommandReg cr{};
+    return (bool)read_register8(COMMAND_REG, cr.value)
+        .and_then([this, &cr]() {
+            cr.powerOff(false);
+            cr.command(Command::NoCmdChange);
+            return write_register8(COMMAND_REG, cr.value);
+        })
+        .and_then([this]() {
+            // Wait until power-down bit has been cleared (1024 clock
+            // It takes 1024 clocks until the Soft power-downmode is exited
+            // indicated by the PowerDown bit
+            auto timeout_at = m5::utility::millis() + 1000;
+            bool done{};
+            do {
+                uint8_t v{};
+                if (this->read_register8(COMMAND_REG, v) && ((v & 0x10) == 0)) {
+                    done = true;
+                    break;
+                }
+                std::this_thread::yield();
+            } while (!done && m5::utility::millis() <= timeout_at);
+            return done ? result_t()
+                        : m5::stl::make_unexpected(function_error_t::TIMEOUT);
+        });
 }
 
 bool UnitMFRC522::reset() {
@@ -1095,7 +1109,6 @@ UnitMFRC522::result_t UnitMFRC522::write_register(const uint8_t reg,
 UnitMFRC522::result_t UnitMFRC522::set_register_bit(const uint8_t reg,
                                                     const uint8_t bit) {
     uint8_t v{};
-    //    return readRegister8(reg, v, 0) && writeRegister8(reg, v | bit);
     return read_register8(reg, v).and_then([this, &reg, &v, &bit]() {
         return this->write_register8(reg, v | bit);
     });
@@ -1104,7 +1117,6 @@ UnitMFRC522::result_t UnitMFRC522::set_register_bit(const uint8_t reg,
 UnitMFRC522::result_t UnitMFRC522::mask_register_bit(const uint8_t reg,
                                                      const uint8_t bit) {
     uint8_t v{};
-    //    return readRegister8(reg, v, 0) && writeRegister8(reg, v & ~bit);
     return read_register8(reg, v).and_then([this, &reg, &v, &bit]() {
         return this->write_register8(reg, v & ~bit);
     });
