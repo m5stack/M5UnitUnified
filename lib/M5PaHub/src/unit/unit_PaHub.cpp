@@ -26,18 +26,6 @@ UnitPaHub::UnitPaHub(const uint8_t addr) : Component(addr) {
     component_config(cfg);
 }
 
-UnitPaHub::UnitPaHub(UnitPaHub&& o)
-    : Component(std::move(o)), _adapters(std::move(o._adapters)) {
-}
-
-UnitPaHub& UnitPaHub::operator=(UnitPaHub&& o) {
-    if (this != &o) {
-        Component::operator=(std::move(o));
-        _adapters = std::move(o._adapters);
-    }
-    return *this;
-}
-
 Adapter* UnitPaHub::ensure_adapter(const uint8_t ch) {
     if (ch >= _adapters.size()) {
         M5_LIB_LOGE("Invalid channel %u", ch);

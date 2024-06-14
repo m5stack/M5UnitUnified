@@ -6,8 +6,8 @@
 
   SPDX-License-Identifier: MIT
 */
-#ifndef M5_PAHUB_UNIT_PAHUB_HPP
-#define M5_PAHUB_UNIT_PAHUB_HPP
+#ifndef M5_UNIT_PAHUB_UNIT_PAHUB_HPP
+#define M5_UNIT_PAHUB_UNIT_PAHUB_HPP
 
 #include <M5UnitComponent.hpp>
 #include <array>
@@ -27,9 +27,6 @@ class UnitPaHub : public Component {
 
     explicit UnitPaHub(const uint8_t addr = DEFAULT_ADDRESS);
     virtual ~UnitPaHub() = default;
-
-    UnitPaHub(UnitPaHub&& o);
-    UnitPaHub& operator=(UnitPaHub&& o);
 
     uint8_t getCurrentChannel() const {
         return _current;
