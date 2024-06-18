@@ -137,7 +137,7 @@ void loop() {
 
     if (unitSCD4x.updated()) {
         // Can be checked e.g. by serial plotters
-        M5_LOGI("\n>CO2:%u\n>Temperature:%2.2f\n>Humidity:%2.2f", unitSCD4x.co2(),
-                unitSCD4x.temperature(), unitSCD4x.humidity());
+        M5_LOGI("\n>CO2:%u\n>Temperature:%2.2f\n>Humidity:%2.2f",
+                unitSCD4x.co2(), unitSCD4x.temperature(), unitSCD4x.humidity());
     }
 }
