@@ -262,7 +262,7 @@ class UnitSHT30 : public Component {
       @brief Get the serial number string
       @param[out] serialNumber Output buffer
       @return True if successful
-      @warning Size must be at least 9 bytes
+      @warning serialNumber must be at least 9 bytes
       @warning During periodic detection runs, an error is returned
     */
     bool getSerialNumber(char* serialNumber);

@@ -239,17 +239,13 @@ class UnitADS111x : public Component {
     inline unsigned long updatedMillis() const {
         return _latest;
     }
-    //! @brief Gets the latest periodic measurements
-    int16_t latestData() const {
+    //! @brief Gets the latest adc
+    inline int16_t adc() const {
         return _value;
     }
     //! @breif Coefficient value
-    float coefficient() const {
+    inline float coefficient() const {
         return _coefficient;
-    }
-    //! @breief Resolution of 1 LSB
-    virtual float resolution() const {
-        return coefficient();
     }
     ///@}
 
@@ -405,7 +401,7 @@ class UnitADS111x : public Component {
     bool _updated{};
     unsigned long _latest{}, _interval{};
 
-    int16_t _value{};  // Latest periodic measurements
+    int16_t _value{};  // Latest raw data
     float _coefficient{};
     ads111x::Config _adsCfg{};
 
