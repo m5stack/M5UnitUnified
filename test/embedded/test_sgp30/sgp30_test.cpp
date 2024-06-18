@@ -108,30 +108,28 @@ TEST_P(TestSGP30, generalReset) {
 
     EXPECT_TRUE(unit->startPeriodicMeasurement(0x1234, 0x5678, 0x9ABC));
     EXPECT_TRUE(wait_start_measurement());
-    
+
     uint16_t co2eq{}, tvoc{};
     EXPECT_TRUE(unit->getIaqBaseline(co2eq, tvoc));
     EXPECT_EQ(co2eq, 0x1234);
     EXPECT_EQ(tvoc, 0x5678);
 
     EXPECT_TRUE(unit->generalReset());
-    
+
     EXPECT_TRUE(unit->getIaqBaseline(co2eq, tvoc));
     EXPECT_EQ(co2eq, 0x0000);
     EXPECT_EQ(tvoc, 0x0000);
 }
 
-TEST_P(TestSGP30, Measurement)
-{
+TEST_P(TestSGP30, Measurement) {
     SCOPED_TRACE(ustr);
 
     EXPECT_TRUE(unit->startPeriodicMeasurement(0x1234, 0x5678, 0x9ABC));
     EXPECT_TRUE(wait_start_measurement());
 
-
-    auto now        = m5::utility::millis();
+    auto now                        = m5::utility::millis();
     constexpr unsigned long timeout = 1000;  // 1sec
-    auto timeout_at = now + timeout;
+    auto timeout_at                 = now + timeout;
     uint8_t count{0};
     // Between first and second mesured
     do {
@@ -152,7 +150,7 @@ TEST_P(TestSGP30, Measurement)
     EXPECT_LE(update_at, timeout_at);
 
     auto co2eq = unit->co2eq();
-    auto tvoc = unit->tvoc();
+    auto tvoc  = unit->tvoc();
     M5_LOGI("%u %u", co2eq, tvoc);
 
     uint16_t h2{}, etoh{};
@@ -160,4 +158,3 @@ TEST_P(TestSGP30, Measurement)
 
     M5_LOGI("%u/%u", h2, etoh);
 }
-
