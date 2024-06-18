@@ -1,5 +1,6 @@
 /*
-  UnitCOmponent test template for googletest
+  @file test_template.hpp
+  @brief Template for testing UnitComponent-derived classes
 
   SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
 
@@ -26,11 +27,11 @@ class GlobalFixture : public ::testing::Environment {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
 
+        TwoWire* w[2] = {&Wire, &Wire1};
         if (i2cIsInit(WNUM)) {
             M5_LOGW("Already inititlized Wire");
-            Wire.end();
+            w[WNUM]->end();
         }
-        TwoWire* w[2] = {&Wire, &Wire1};
         w[WNUM]->begin(pin_num_sda, pin_num_scl, FREQ);
     }
 };
@@ -42,13 +43,6 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
 
    protected:
     virtual void SetUp() override {
-        if (!is_using_hal()) {
-            // auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            // auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            //  M5_LOGI("getPin: SDA:%u SCL:%u\n", pin_num_sda, pin_num_scl);
-            //  Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-        }
-
         unit.reset(get_instance());
         if (!unit) {
             FAIL() << "Failed to get_instance";
@@ -67,9 +61,6 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
     }
 
     virtual void TearDown() override {
-        if (!is_using_hal()) {
-            // Wire.end();
-        }
     }
 
     virtual bool begin() {

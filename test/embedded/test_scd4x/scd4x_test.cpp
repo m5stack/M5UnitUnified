@@ -198,7 +198,7 @@ TEST_P(TestSCD40, AdvancedFeatures) {
 
         // M5_LOGI("%02x%02x%02x%02x%02x%02x", rbuf[0], rbuf[1], rbuf[3],
         // rbuf[4],
-        //          rbuf[6], rbuf[7]);
+        //         rbuf[6], rbuf[7]);
 
         m5::types::big_uint16_t w0(rbuf[0], rbuf[1]);
         m5::types::big_uint16_t w1(rbuf[3], rbuf[4]);
@@ -219,7 +219,8 @@ TEST_P(TestSCD40, AdvancedFeatures) {
         EXPECT_EQ(sno, d_sno);
 
         std::stringstream stream;
-        stream << std::uppercase << std::setw(12) << std::hex << sno;
+        stream << std::uppercase << std::setw(12) << std::hex
+               << std::setfill('0') << sno;
         std::string s(stream.str());
         EXPECT_STREQ(s.c_str(), ssno);
     }
