@@ -102,12 +102,13 @@ class UnitSCD40 : public Component {
       ms after issuing the stop_periodic_measurement command.
       @return True if successful
     */
-    bool stopPeriodicMeasurement(const uint16_t delayMillis = 500);
+    bool stopPeriodicMeasurement();
 
     /*!
       @brief Check for fresh data and store
       @return True if fresh data is available
-     */
+      @warning Measurement duration max 1 ms
+    */
     bool readMeasurement();
     ///@}
 
@@ -121,23 +122,17 @@ class UnitSCD40 : public Component {
       @param[in] offset (0 <= offset < 175)
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
-    bool setTemperatureOffset(const float offset,
-                              const uint16_t delayMillis = 1);
-    /*!
-      @brief Get the temperature offset
-      @return Not zero if offset is valid
-      @warning During periodic detection runs, an error is returned
-    */
-    float getTemperatureOffset(void);
+    bool setTemperatureOffset(const float offset);
     /*!
       @brief Get the temperature offset
       @param[out] offset Offset value
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
     bool getTemperatureOffset(float &offset);
-
     /*!
       @brief Set the sensor altitude
       @details Define the sensor altitude in metres above sea level, so RH and
@@ -145,23 +140,17 @@ class UnitSCD40 : public Component {
       @param[in] altitude Unit: metres
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
-    bool setSensorAltitude(const uint16_t altitude,
-                           const uint16_t delayMillis = 1);
-    /*!
-      @brief Get the sensor altitude
-      @return Not zero if altitude is valid
-      @warning During periodic detection runs, an error is returned
-    */
-    uint16_t getSensorAltitude(void);
+    bool setSensorAltitude(const uint16_t altitude);
     /*!
       @brief Get the sensor altitude
       @param[out] altitude Altitude value
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
     bool getSensorAltitude(uint16_t &altitude);
-
     /*!
       @brief Set the ambient pressure
       @details Define the ambient pressure in Pascals, so RH and CO2 are
@@ -169,48 +158,37 @@ class UnitSCD40 : public Component {
       setSensorAltitude
       @param[in] presure Unit: pascals (>= 0.0f)
       @return True if successful
+      @warning Measurement duration max 1 ms
     */
-    bool setAmbientPressure(const float pressure,
-                            const uint16_t delayMillis = 1);
+    bool setAmbientPressure(const float pressure);
     ///@}
 
     ///@name Field Calibration
     ///@{
     /*!
       @brief Perform forced recalibration
-      @return The FRC correction value
-      @warning During periodic detection runs, an error is returned
-    */
-    int16_t performForcedRecalibration(const uint16_t concentration);
-    /*!
-      @brief Perform forced recalibration
       @param[in] concentration Unit:ppm
       @param[out] correction The FRC correction value
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 400 ms
     */
     bool performForcedRecalibration(const uint16_t concentration,
                                     int16_t &correction);
-
     /*!
       @brief Enable/disable automatic self calibration
       @param[in] enabled Enable automatic self calibration if true
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
-    bool setAutomaticSelfCalibrationEnabled(const bool enabled         = true,
-                                            const uint16_t delayMillis = 1);
-    /*!
-      @brief Check if automatic self calibration is enabled
-      @return True if automatic self calibration is enabled
-      @warning During periodic detection runs, an error is returned
-    */
-    bool getAutomaticSelfCalibrationEnabled(void);
+    bool setAutomaticSelfCalibrationEnabled(const bool enabled = true);
     /*!
       @brief Check if automatic self calibration is enabled
       @param[out] enabled  True if automatic self calibration is enabled
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1 ms
     */
     bool getAutomaticSelfCalibrationEnabled(bool &enabled);
     ///@}
@@ -227,7 +205,8 @@ class UnitSCD40 : public Component {
     /*!
       @brief Is fresh data available?
       @retval true Fresh data is available
-     */
+      @warning Measurement duration max 1 ms
+    */
     bool getDataReadyStatus();
     ///@}
 
@@ -237,8 +216,9 @@ class UnitSCD40 : public Component {
       @brief Copy sensor settings from RAM to EEPROM
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 800 ms
     */
-    bool persistSettings(uint16_t delayMillis = 800);
+    bool persistSettings();
     /*!
       @brief Get the serial number string
       @param[out] serialNumber Output buffer
@@ -275,6 +255,7 @@ class UnitSCD40 : public Component {
       @return True if successful
       @note Takes 10 seconds to complete
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 10000 ms
     */
     bool performSelfTest(bool &malfunction);
     /*!
@@ -282,14 +263,16 @@ class UnitSCD40 : public Component {
       @details Reset all settings to the factory values
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 1200 ms
     */
-    bool performFactoryReset(uint16_t delayMillis = 1200);
+    bool performFactoryReset();
     /*!
       @brief Re-initialize the sensor, load settings from EEPROM
       @return True if successful
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 20 ms
     */
-    bool reInit(uint16_t delayMillis = 20);
+    bool reInit();
     ///@}
 
    protected:
@@ -332,6 +315,7 @@ class UnitSCD41 : public UnitSCD40 {
       @note Data will be ready in 5 seconds
       @note The sensor output is read using the readMeasurement()
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 5000 ms
     */
     bool measureSingleShot(void);
     /*!
@@ -341,6 +325,7 @@ class UnitSCD41 : public UnitSCD40 {
       @note The sensor output is read using the readMeasurement()
       @warning CO2 output is returned as 0 ppm.
       @warning During periodic detection runs, an error is returned
+      @warning Measurement duration max 50 ms
     */
     bool measureSingleShotRHTOnly(void);
     ///@}
@@ -351,39 +336,35 @@ namespace scd4x {
 namespace command {
 // Basic Commands
 constexpr uint16_t START_PERIODIC_MEASUREMENT{0x21b1};
-constexpr uint16_t READ_MEASUREMENT{0xec05};           // execution time: 1ms
-constexpr uint16_t STOP_PERIODIC_MEASUREMENT{0x3f86};  // execution time: 500ms
+constexpr uint16_t READ_MEASUREMENT{0xec05};
+constexpr uint16_t STOP_PERIODIC_MEASUREMENT{0x3f86};
 
 // On-chip output signal compensation
-constexpr uint16_t SET_TEMPERATURE_OFFSET{0x241d};  // execution time: 1ms
-constexpr uint16_t GET_TEMPERATURE_OFFSET{0x2318};  // execution time: 1ms
-constexpr uint16_t SET_SENSOR_ALTITUDE{0x2427};     // execution time: 1ms
-constexpr uint16_t GET_SENSOR_ALTITUDE{0x2322};     // execution time: 1ms
-constexpr uint16_t SET_AMBIENT_PRESSURE{0xe000};    // execution time: 1ms
+constexpr uint16_t SET_TEMPERATURE_OFFSET{0x241d};
+constexpr uint16_t GET_TEMPERATURE_OFFSET{0x2318};
+constexpr uint16_t SET_SENSOR_ALTITUDE{0x2427};
+constexpr uint16_t GET_SENSOR_ALTITUDE{0x2322};
+constexpr uint16_t SET_AMBIENT_PRESSURE{0xe000};
 
 // Field calibration
-constexpr uint16_t PERFORM_FORCED_CALIBRATION{0x362f};  // execution time: 400ms
-constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
-    0x2416};  // execution time: 1ms
-constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED{
-    0x2313};  // execution time: 1ms
+constexpr uint16_t PERFORM_FORCED_CALIBRATION{0x362f};
+constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED{0x2416};
+constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED{0x2313};
 
 // Low power
 constexpr uint16_t START_LOW_POWER_PERIODIC_MEASUREMENT{0x21ac};
-constexpr uint16_t GET_DATA_READY_STATUS{0xe4b8};  // execution time: 1ms
+constexpr uint16_t GET_DATA_READY_STATUS{0xe4b8};
 
 // Advanced features
-constexpr uint16_t PERSIST_SETTINGS{0x3615};       // execution time: 800ms
-constexpr uint16_t GET_SERIAL_NUMBER{0x3682};      // execution time: 1ms
-constexpr uint16_t PERFORM_SELF_TEST{0x3639};      // execution time: 10000ms
-constexpr uint16_t PERFORM_FACTORY_RESET{0x3632};  // execution time: 1200ms
-constexpr uint16_t REINIT{0x3646};                 // execution time: 20ms
+constexpr uint16_t PERSIST_SETTINGS{0x3615};
+constexpr uint16_t GET_SERIAL_NUMBER{0x3682};
+constexpr uint16_t PERFORM_SELF_TEST{0x3639};
+constexpr uint16_t PERFORM_FACTORY_RESET{0x3632};
+constexpr uint16_t REINIT{0x3646};
 
 // Low power single shot - SCD41 only
 constexpr uint16_t MEASURE_SINGLE_SHOT{0x219d};
-// execution time: 5000ms
 constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY{0x2196};
-// execution time: 50ms
 
 }  // namespace command
 }  // namespace scd4x

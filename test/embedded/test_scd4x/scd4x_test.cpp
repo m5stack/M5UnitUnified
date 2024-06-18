@@ -238,28 +238,39 @@ TEST_P(TestSCD40, AdvancedFeatures) {
     EXPECT_TRUE(unit->setTemperatureOffset(OFFSET * 2));
     EXPECT_TRUE(unit->setSensorAltitude(ALTITUDE * 2));
     EXPECT_TRUE(unit->setAutomaticSelfCalibrationEnabled(true));
-    EXPECT_EQ(float_to_uint16(unit->getTemperatureOffset()),
-              float_to_uint16(OFFSET * 2));
-    EXPECT_EQ(unit->getSensorAltitude(), ALTITUDE * 2);
-    EXPECT_TRUE(unit->getAutomaticSelfCalibrationEnabled());
+
+    float off{};
+    uint16_t alt{};
+    bool enabled{};
+
+    EXPECT_TRUE(unit->getTemperatureOffset(off));
+    EXPECT_TRUE(unit->getSensorAltitude(alt));
+    EXPECT_TRUE(unit->getAutomaticSelfCalibrationEnabled(enabled));
+    EXPECT_EQ(float_to_uint16(off), float_to_uint16(OFFSET * 2));
+    EXPECT_EQ(alt, ALTITUDE * 2);
+    EXPECT_TRUE(enabled);
 
     EXPECT_TRUE(unit->reInit());  // Load EEPROM
 
     // Check saved settings
-    EXPECT_EQ(float_to_uint16(unit->getTemperatureOffset()),
-              float_to_uint16(OFFSET));
-    EXPECT_EQ(unit->getSensorAltitude(), ALTITUDE);
-    EXPECT_FALSE(unit->getAutomaticSelfCalibrationEnabled());
+    EXPECT_TRUE(unit->getTemperatureOffset(off));
+    EXPECT_TRUE(unit->getSensorAltitude(alt));
+    EXPECT_TRUE(unit->getAutomaticSelfCalibrationEnabled(enabled));
+    EXPECT_EQ(float_to_uint16(off), float_to_uint16(OFFSET));
+    EXPECT_EQ(alt, ALTITUDE);
+    EXPECT_FALSE(enabled);
 
     bool malfunction{};
     EXPECT_TRUE(unit->performSelfTest(malfunction));
 
     EXPECT_TRUE(unit->performFactoryReset());  // Reset EEPROM
 
-    EXPECT_NE(float_to_uint16(unit->getTemperatureOffset()),
-              float_to_uint16(OFFSET));
-    EXPECT_NE(unit->getSensorAltitude(), ALTITUDE);
-    EXPECT_TRUE(unit->getAutomaticSelfCalibrationEnabled());
+    EXPECT_TRUE(unit->getTemperatureOffset(off));
+    EXPECT_TRUE(unit->getSensorAltitude(alt));
+    EXPECT_TRUE(unit->getAutomaticSelfCalibrationEnabled(enabled));
+    EXPECT_NE(float_to_uint16(off), float_to_uint16(OFFSET));
+    EXPECT_NE(alt, ALTITUDE);
+    EXPECT_TRUE(enabled);
 }
 
 #if defined(UNIT_TEST_SCD41)
