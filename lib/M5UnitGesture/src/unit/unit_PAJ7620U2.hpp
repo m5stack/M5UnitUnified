@@ -47,6 +47,13 @@ enum class Gesture : uint16_t {
     Clockwise        = 1U << 6,  //!< Clockwise
     CounterClockwise = 1U << 7,  //!< Counter clock wise
     Wave             = 1U << 8,  //!< Wave
+    Approach         = 1U << 9,  //!< Approach (Proximity mode only)
+    HasObject        = 1U << 10,
+    WakeupTrigger    = 1U << 11,
+    Confirm          = 1U << 12,
+    Abort            = 1U << 13,
+    Reserve          = 1U << 14,
+    NoObject         = 1U << 15,
 };
 
 /*!

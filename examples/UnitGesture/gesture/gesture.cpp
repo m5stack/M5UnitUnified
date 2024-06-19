@@ -25,9 +25,28 @@ m5::unit::UnitPAJ7620U2 unit;
 m5::unit::UnitPaHub unitPaHub;
 #endif
 
+constexpr const char* gstr[] = {
+    "None",          "Up ",       "Down",
+    "Left",          "Right",     "Forward",
+    "Backward",      "Clockwise", "CounterClockwise",
+    "Wave",          "Approach",  "HasObject",
+    "WakeupTrigger", "Confirm",   "Abort",
+    "Reserve",       "NoObject",
+};
+
+const char* gesture_to_string(const m5::unit::paj7620u2::Gesture g) {
+    unsigned int ui{m5::stl::to_underlying(g)};
+    ui = (ui == 0) ? 0 : __builtin_ctz(ui) + 1;
+
+    return ui < m5::stl::size(gstr) ? gstr[ui] : "ERROR";
+}
+
 }  // namespace
 
 void setup() {
+    m5::utility::delay(1500);
+
+
     M5.begin();
 
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
@@ -110,7 +129,7 @@ void loop() {
     M5.update();
     Units.update();
     if (unit.updated()) {
-        M5_LOGI("gesture:%x", unit.gesture());
-        
+        M5_LOGI("%lu:gesture:%s", unit.updatedMillis(),
+                gesture_to_string(unit.gesture()));
     }
 }

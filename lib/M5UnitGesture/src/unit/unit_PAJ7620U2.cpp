@@ -63,8 +63,6 @@ bool UnitPAJ7620U2::begin() {
     uint16_t id{};
     uint8_t ver{};
 
-    m5::utility::delay(1);  // Wait 700us for PAJ7620U2 to stabilize
-
     if (!get_chip_id(id) || !get_version(ver)) {
         M5_LIB_LOGE("Failed to get id/version %x:%x", id, ver);
         return false;
@@ -81,46 +79,18 @@ bool UnitPAJ7620U2::begin() {
         }
     }
     return select_bank(0, true);
-
-
-//    return setMode(_cfg.mode);
 }
 
 void UnitPAJ7620U2::update() {
-#if 1
     uint16_t detection{};
-    if (read_detection(detection) && detection) {
-        M5_LIB_LOGE(">>>>>[%x]", detection);
+    _updated = false;
 
-        //    paj7620u2::Gesture _gesture{paj7620u2::Gesture::None};
+    if (read_detection(detection) && detection &&
+        __builtin_popcount((unsigned int)detection) == 1) {
+        _updated = true;
+        _latest  = m5::utility::millis();
+        _gesture = static_cast<Gesture>(detection);
     }
-#endif
-
-#if 0
-    if (_periodic) {
-        unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
-            _interval = 1000;  // 1sec
-            _updated  = readMeasurement(_CO2eq, _TVOC);
-            if (_updated) {
-                _latest = at;
-            }
-        } else {
-            _updated = false;
-        }
-
-        // Store baseline values every hour
-        if (_interval == 1000 &&
-            (!_latestBaseline || at >= _latestBaseline + BASELINE_INTERVAL)) {
-            _updatedBaseline = getIaqBaseline(_baselineCO2eq, _baselineTVOC);
-            if (_updatedBaseline) {
-                _latestBaseline = at;
-            }
-        } else {
-            _updatedBaseline = false;
-        }
-    }
-#endif
 }
 
 bool UnitPAJ7620U2::setMode(const paj7620u2::Mode m) {
@@ -170,18 +140,18 @@ bool UnitPAJ7620U2::select_bank(const uint8_t bank, const bool force) {
 bool UnitPAJ7620U2::read_banked_register(const uint16_t reg, uint8_t* buf,
                                          const size_t len) {
     return select_bank((reg >> 8) & 1) &&
-           readRegister((uint8_t)(reg & 0xFF), buf, len, 0);
+           readRegister((uint8_t)(reg & 0xFF), buf, len, 1);
 }
 
 bool UnitPAJ7620U2::read_banked_register8(const uint16_t reg, uint8_t& value) {
     return select_bank((reg >> 8) & 1) &&
-           readRegister8((uint8_t)(reg & 0xFF), value, 0);
+           readRegister8((uint8_t)(reg & 0xFF), value, 1);
 }
 
 bool UnitPAJ7620U2::read_banked_register16(const uint16_t reg,
                                            uint16_t& value) {
     return select_bank((reg >> 8) & 1) &&
-           readRegister16((uint8_t)(reg & 0xFF), value, 0);
+           readRegister16((uint8_t)(reg & 0xFF), value, 1);
 }
 
 bool UnitPAJ7620U2::write_banked_register(const uint16_t reg,
@@ -212,19 +182,8 @@ bool UnitPAJ7620U2::get_version(uint8_t& version) {
 }
 
 bool UnitPAJ7620U2::read_detection(uint16_t& detection) {
-    if (select_bank(0)) {
-        uint8_t high{}, low{};
-        if (readRegister8((uint8_t)0x44, high, 0) &&
-            readRegister8((uint8_t)0x43, low, 0)) {
-            detection = ((uint16_t)high) << 8 | low;
-            return true;
-        }
-    }
-    return false;
-#if 0
     return read_banked_register(GESTURE_DETECTION_INTERRUPT_FLAG_LOW,
                                 (uint8_t*)&detection, 2);
-#endif
 }
 
 }  // namespace unit
