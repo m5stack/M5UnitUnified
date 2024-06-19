@@ -65,7 +65,7 @@ struct Feature {
 
 /*!
   @class UnitSGP30
-  @brief Base class for ADS111x series
+  @brief SGP30 unit
  */
 class UnitSGP30 : public Component {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitSGP30, 0x58);
