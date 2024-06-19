@@ -21,6 +21,7 @@
 #include <unit/unit_Ameter.hpp>
 #include <unit/unit_Vmeter.hpp>
 #include <unit/unit_SGP30.hpp>
+#include <unit/unit_PAJ7620U2.hpp>
 
 namespace {
 
@@ -84,6 +85,7 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();
     each_unit_test<m5::unit::UnitSGP30>();
+    each_unit_test<m5::unit::UnitPAJ7620U2>();
 
     for (auto&& e : vec) {
         delete e;
