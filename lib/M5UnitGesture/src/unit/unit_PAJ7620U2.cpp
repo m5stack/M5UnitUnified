@@ -537,13 +537,14 @@ bool UnitPAJ7620U2::setMode(const Mode m) {
     }
 
     while (rv->reg != 0xFF) {
+#if 0
         uint8_t v{};
         if (!readRegister8(rv->reg, v, 0)) {
             return false;
         }
         M5_LIB_LOGE("{0X%02x,0X%02X}", rv->reg, v);
-
         // M5_LIB_LOGI("[%02X]:%02X", rv->reg, rv->val);
+#endif
         if (!writeRegister8(rv->reg, rv->val)) {
             M5_LIB_LOGE("Failed to change mode %x:%x", rv->reg, rv->val);
             return false;
