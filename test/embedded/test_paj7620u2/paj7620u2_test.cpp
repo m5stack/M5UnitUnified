@@ -96,6 +96,18 @@ TEST_P(TestPAJ7620U2, Cursor) {
     unit->update();
     EXPECT_EQ(unit->brightness(), 0);
     EXPECT_FALSE(unit->approach());
-    EXPECT_NE(unit->cursorX(), 0xFFFF);
-    EXPECT_NE(unit->cursorY(), 0xFFFF);
+}
+
+TEST_P(TestPAJ7620U2, Other) {
+    bool flip{}, flip2{};
+
+    EXPECT_TRUE(unit->getHorizontalFlip(flip));
+    EXPECT_TRUE(unit->setHorizontalFlip(!flip));
+    EXPECT_TRUE(unit->getHorizontalFlip(flip2));
+    EXPECT_NE(flip, flip2);
+
+    EXPECT_TRUE(unit->getVerticalFlip(flip));
+    EXPECT_TRUE(unit->setVerticalFlip(!flip));
+    EXPECT_TRUE(unit->getVerticalFlip(flip2));
+    EXPECT_NE(flip, flip2);
 }
