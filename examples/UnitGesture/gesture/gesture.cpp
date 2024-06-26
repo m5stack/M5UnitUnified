@@ -44,23 +44,53 @@ const char* gesture_to_string(const m5::unit::paj7620u2::Gesture g) {
 }
 
 using namespace m5::unit::paj7620u2;
-DetectionMode& operator++(DetectionMode& m) {
+Mode& operator++(Mode& m) {
     uint8_t v = m5::stl::to_underlying(m) + 1;
-    if (v > m5::stl::to_underlying(DetectionMode::Cursor)) {
+    if (v > m5::stl::to_underlying(Mode::Cursor)) {
         v = 0;
     }
-    m = static_cast<DetectionMode>(v);
+    m = static_cast<Mode>(v);
     return m;
 }
-DetectionMode& operator--(DetectionMode& m) {
-    uint8_t v = m5::stl::to_underlying(m) - 1;
-    if (v > m5::stl::to_underlying(DetectionMode::Cursor)) {
-        v = m5::stl::to_underlying(DetectionMode::Cursor);
+Mode detection{Mode::Gesture};
+
+enum class Corner : uint8_t {
+    None,
+    LeftTop,
+    RightTop,
+    LeftBottom,
+    RightBottom,
+    Center,
+};
+constexpr const char* cstr[] = {
+    "None", "LeftTop", "RightTop", "LeftBottom", "RightBottom", "Center",
+};
+
+Corner detectCorner() {
+    bool exists{};
+    uint16_t x{}, y{};
+
+    if (unit.existsObject(exists) && unit.readObjectCenter(x, y) && exists) {
+        // Determined by upper 5 bits
+        x >>= 8;
+        y >>= 8;
+        //        M5_LOGW("%d:(%u,%u)", exists, x, y);
+        if (x >= 9 && y <= 5) {
+            return Corner::LeftBottom;
+        }
+        if (x >= 9 && y >= 9) {
+            return Corner::RightBottom;
+        }
+        if (x <= 5 && y <= 5) {
+            return Corner::LeftTop;
+        }
+        if (x <= 5 && y >= 9) {
+            return Corner::RightTop;
+        }
+        return Corner::Center;
     }
-    m = static_cast<DetectionMode>(v);
-    return m;
+    return Corner::None;
 }
-DetectionMode detection{DetectionMode::Gesture};
 
 }  // namespace
 
@@ -150,8 +180,8 @@ void setup() {
 void loop() {
     M5.update();
     Units.update();
-    switch (unit.detectionMode()) {
-        case m5::unit::paj7620u2::DetectionMode::Gesture: {
+    switch (unit.mode()) {
+        case m5::unit::paj7620u2::Mode::Gesture: {
             static uint8_t noobj{};
 
             if (unit.updated()) {
@@ -162,25 +192,30 @@ void loop() {
                 unit.readObjectSize(size);
                 unit.readObjectCenter(x, y);
 
-                M5_LOGI(
-                    "%lu:gesture:%s noobject:%u nomotion:%u size:%u (%u,%u)",
-                    unit.updatedMillis(), gesture_to_string(unit.gesture()),
-                    noobj, nomot, size, x, y);
+                M5_LOGI("gesture:%s noobject:%u nomotion:%u size:%u (%u,%u)",
+                        gesture_to_string(unit.gesture()), noobj, nomot, size,
+                        x, y);
             }
             unit.readNoObjectCount(noobj);
+
+            static Corner pc{};
+            Corner c = detectCorner();
+            if (c != pc) {
+                M5_LOGI("Obj:%s", cstr[(uint8_t)c]);
+                pc = c;
+            }
         } break;
-        case m5::unit::paj7620u2::DetectionMode::Proximity: {
+        case m5::unit::paj7620u2::Mode::Proximity: {
             if (unit.updated()) {
-                M5_LOGI("%lu:%s brightness:%u approch:%u", unit.updatedMillis(),
+                M5_LOGI("%s brightness:%u approch:%u",
                         gesture_to_string(unit.gesture()), unit.brightness(),
                         unit.approach());
             }
         } break;
-        case m5::unit::paj7620u2::DetectionMode::Cursor: {
+        case m5::unit::paj7620u2::Mode::Cursor: {
             if (unit.updated()) {
-                M5_LOGI("%lu:%s cursor:%u,%u", unit.updatedMillis(),
-                        gesture_to_string(unit.gesture()), unit.cursorX(),
-                        unit.cursorY());
+                M5_LOGI("HasObject:%u cursor:%u,%u", unit.hasObject(),
+                        unit.cursorX(), unit.cursorY());
             }
         } break;
         default:
@@ -189,16 +224,17 @@ void loop() {
     if (M5.BtnA.wasClicked()) {
         auto prev = detection;
         ++detection;
-        if (unit.setDetectionMode(detection)) {
+        if (unit.setMode(detection)) {
             M5_LOGI(">>> setNMode %x", detection);
-            switch (unit.detectionMode()) {
-                case m5::unit::paj7620u2::DetectionMode::Gesture:
-                    unit.setMode(Mode::Gaming);
+            switch (unit.mode()) {
+                case m5::unit::paj7620u2::Mode::Gesture:
+                    unit.setFrequency(Frequency::Gaming);
                     break;
-                case m5::unit::paj7620u2::DetectionMode::Proximity:
-                    unit.setApprochThreshold(2, 1);
+                case m5::unit::paj7620u2::Mode::Proximity:
+                    unit.setApprochThreshold(20, 10);
                     break;
-                case m5::unit::paj7620u2::DetectionMode::Cursor:
+                case m5::unit::paj7620u2::Mode::Cursor:
+                    unit.setFrequency(Frequency::Gaming);
                     break;
                 default:
                     break;

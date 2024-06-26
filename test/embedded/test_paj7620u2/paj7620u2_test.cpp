@@ -45,12 +45,12 @@ TEST_P(TestPAJ7620U2, Suspend) {
 }
 
 TEST_P(TestPAJ7620U2, Gesture) {
-    EXPECT_TRUE(unit->setDetectionMode(DetectionMode::Gesture));
+    EXPECT_TRUE(unit->setMode(Mode::Gesture));
 
-    EXPECT_TRUE(unit->setMode(Mode::Gaming));
-    EXPECT_EQ(unit->getMode(), Mode::Gaming);
-    EXPECT_TRUE(unit->setMode(Mode::Normal));
-    EXPECT_EQ(unit->getMode(), Mode::Normal);
+    EXPECT_TRUE(unit->setFrequency(Frequency::Gaming));
+    EXPECT_EQ(unit->frequency(), Frequency::Gaming);
+    EXPECT_TRUE(unit->setFrequency(Frequency::Normal));
+    EXPECT_EQ(unit->frequency(), Frequency::Normal);
 
     Gesture ges{};
     uint16_t size{}, x{}, y{};
@@ -69,7 +69,7 @@ TEST_P(TestPAJ7620U2, Gesture) {
 }
 
 TEST_P(TestPAJ7620U2, Proximity) {
-    EXPECT_TRUE(unit->setDetectionMode(DetectionMode::Proximity));
+    EXPECT_TRUE(unit->setMode(Mode::Proximity));
 
     Gesture ges{};
     uint8_t brightness{}, approach{};
@@ -88,7 +88,7 @@ TEST_P(TestPAJ7620U2, Proximity) {
 }
 
 TEST_P(TestPAJ7620U2, Cursor) {
-    EXPECT_TRUE(unit->setDetectionMode(DetectionMode::Cursor));
+    EXPECT_TRUE(unit->setMode(Mode::Cursor));
 
     uint16_t x{}, y{};
     EXPECT_TRUE(unit->readCursor(x, y));

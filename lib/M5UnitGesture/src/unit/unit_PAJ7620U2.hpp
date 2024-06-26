@@ -57,20 +57,20 @@ enum class Gesture : uint16_t {
 };
 
 /*!
-  @enum DetectionMode
+  @enum Mode
   @brief What it detects
  */
-enum class DetectionMode : uint8_t {
+enum class Mode : uint8_t {
     Gesture,    //!< Detect gesture
     Proximity,  //!< Detect proximity
     Cursor,     //!< Detect XY cordinate
 };
 
 /*!
-  @brief Mode
+  @brief Frequency
   Operating frequency
 */
-enum class Mode : uint8_t {
+enum class Frequency : uint8_t {
     Normal,  //!< 120Hz
     Gaming,  //!< 240Hz
 };
@@ -90,8 +90,8 @@ class UnitPAJ7620U2 : public Component {
       @brief Settings
      */
     struct config_t {
-        paj7620u2::DetectionMode detection{paj7620u2::DetectionMode::Gesture};
-        paj7620u2::Mode mode{paj7620u2::Mode::Normal};
+        paj7620u2::Mode mode{paj7620u2::Mode::Gesture};
+        paj7620u2::Frequency frequency{paj7620u2::Frequency::Normal};
         bool hflip{false};
         bool vflip{true};
         uint8_t rotation{0};
@@ -140,37 +140,43 @@ class UnitPAJ7620U2 : public Component {
       @brief Latest brightness
       @retval 0:Out of bounds
       @retval 1...255  [1:Far - Near:255]
-      @note Return valid values if detection is DetectionMode::Proximity
+      @note Return valid values if detection is Mode::Proximity
      */
     inline uint8_t brightness() const {
-        return _detection == paj7620u2::DetectionMode::Proximity ? _brightness
-                                                                 : 0;
+        return _mode == paj7620u2::Mode::Proximity ? _brightness : 0;
     }
     /*!
       @brief Latest approach status
       @retval true approach
       @reval false Not approach
-      @note Return valid values if detection is DetectionMode::Proximity
+      @note Return valid values if detection is Mode::Proximity
      */
     inline bool approach() const {
-        return _detection == paj7620u2::DetectionMode::Proximity ? _approach
-                                                                 : false;
+        return _mode == paj7620u2::Mode::Proximity ? _approach : false;
+    }
+    /*!
+      @brief Latest has object
+      @retval true has object
+      @note Return valid values if detection is Mode::Cursor
+    */
+    bool hasObject() {
+        return _mode == paj7620u2::Mode::Cursor
+                   ? (_gesture == paj7620u2::Gesture::HasObject)
+                   : false;
     }
     /*!
       @brief Latest cursorX
-      @note Return valid values if detection is DetectionMode::Cursor
+      @note Return valid values if detection is Mode::Cursor
      */
     inline uint16_t cursorX() const {
-        return _detection == paj7620u2::DetectionMode::Cursor ? _cursorX
-                                                              : 0xFFFF;
+        return _mode == paj7620u2::Mode::Cursor ? _cursorX : 0xFFFF;
     }
     /*!
       @brief Latest cursorY
-      @note Return valid values if detection is DetectionMode::Cursor
+      @note Return valid values if detection is Mode::Cursor
      */
     inline uint16_t cursorY() const {
-        return _detection == paj7620u2::DetectionMode::Cursor ? _cursorY
-                                                              : 0xFFFF;
+        return _mode == paj7620u2::Mode::Cursor ? _cursorY : 0xFFFF;
     }
     ///@}
 
@@ -194,16 +200,16 @@ class UnitPAJ7620U2 : public Component {
      */
     void setRotate(const uint8_t rot);
 
-    /*! @brief Get the freq mode */
-    paj7620u2::Mode getMode() const {
-        return _mode;
+    /*! @brief Get the Frequency */
+    inline paj7620u2::Frequency frequency() const {
+        return _frequency;
     }
     /*!
-      @brief Set the freq mode
-      @param m Mode
+      @brief Set the frequency
+      @param f Frequency
       @return True if successful
     */
-    bool setMode(const paj7620u2::Mode m);
+    bool setFrequency(const paj7620u2::Frequency f);
 
     ///@name For detect gesture
     ///@{
@@ -233,7 +239,11 @@ class UnitPAJ7620U2 : public Component {
     */
     bool existsObject(bool& exists) {
         uint8_t e{};
-        return readNoObjectCount(e) ? (e == 0) : false;
+        if (readNoObjectCount(e)) {
+            exists = (e == 0);
+            return true;
+        }
+        return false;
     }
     /*!
       @brief State counter with no objects detected
@@ -281,21 +291,28 @@ class UnitPAJ7620U2 : public Component {
 
     ///@name For detect cursor
     ///@{
+    /*!
+      @brief Cursor position
+      @param[out] x X cordinate
+      @param[out] y Y cordinate
+      @return True if successful
+      @warning Only valid in Cursor mode
+    */
     bool readCursor(uint16_t& x, uint16_t& y);
     ///@}
 
     ///@name Detection mode
     ///@{
     /*! @brief Gets the detection mode */
-    inline paj7620u2::DetectionMode detectionMode() const {
-        return _detection;
+    inline paj7620u2::Mode mode() const {
+        return _mode;
     }
     /*!
       @brief Sets the detection mode
       @param mode detection mode
       @return True if successful
      */
-    bool setDetectionMode(const paj7620u2::DetectionMode m);
+    bool setMode(const paj7620u2::Mode m);
     ///@}
 
     //! @brief Gets the horizontal flipping
@@ -351,8 +368,8 @@ class UnitPAJ7620U2 : public Component {
 
    protected:
     uint8_t _current_bank{0xFF};
-    paj7620u2::DetectionMode _detection{};
     paj7620u2::Mode _mode{};
+    paj7620u2::Frequency _frequency{};
     uint8_t _rotation{};
     bool _updated{};
     unsigned long _latest{};
@@ -364,7 +381,7 @@ class UnitPAJ7620U2 : public Component {
     uint8_t _brightness{};
     bool _approach{};
     // cursor
-    uint8_t _cursorX{}, _cursorY{};
+    uint16_t _cursorX{}, _cursorY{};
 
     config_t _cfg{};
 };
@@ -382,10 +399,10 @@ constexpr uint16_t PART_ID_HIGH{0x0001};
 constexpr uint16_t VERSION_ID{0x0002};
 constexpr uint16_t SW_SUSPEND_ENL{0x0003};
 
-constexpr uint16_t CURSOR_CLAMP_CEMTER_X_LOW{0X003B};
-constexpr uint16_t CURSOR_CLAMP_CEMTER_X_HIGH{0X003C};
-constexpr uint16_t CURSOR_CLAMP_CEMTER_Y_LOW{0X003D};
-constexpr uint16_t CURSOR_CLAMP_CEMTER_Y_HIGH{0X003E};
+constexpr uint16_t CURSOR_CLAMP_CENTER_X_LOW{0X003B};
+constexpr uint16_t CURSOR_CLAMP_CENTER_X_HIGH{0X003C};
+constexpr uint16_t CURSOR_CLAMP_CENTER_Y_LOW{0X003D};
+constexpr uint16_t CURSOR_CLAMP_CENTER_Y_HIGH{0X003E};
 
 constexpr uint16_t INT_FLAG_1{0x0043};
 constexpr uint16_t INT_FLAG_2{0x0044};
