@@ -217,6 +217,7 @@ void loop() {
                 M5_LOGI("HasObject:%u cursor:%u,%u", unit.hasObject(),
                         unit.cursorX(), unit.cursorY());
             }
+            delay(100);
         } break;
         default:
             break;

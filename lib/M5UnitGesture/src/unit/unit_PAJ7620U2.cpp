@@ -39,8 +39,8 @@ struct Pair {
 constexpr Pair register_for_initialize[] = {
 #if 1
     {0xEF, 0x00},  // Bank 0
-    {0x41, 0x00},  // Disable interrupts for first 8 gestures
-    {0x42, 0x00},  // Disable wave (and other modes') interrupt(s)
+    {0x41, 0x00},  //
+    {0x42, 0x00},  //
     {0x37, 0x07},
     {0x38, 0x17},
     {0x39, 0x06},
@@ -258,6 +258,15 @@ constexpr Pair register_for_proximity[] = {
     {0xFF /*terminator*/, 0xFF}};
 // cursor mode
 constexpr Pair register_for_cursor[] = {
+    // restore
+    {0Xef, 0X00},
+    {0X48, 0X3C},
+    {0X49, 0X00},
+    {0X51, 0X10},
+    {0X83, 0X20},
+    {0X9f, 0XF9},
+    {0X69, 0X14},
+    {0X6a, 0X0A},
     {0xEF, 0x00},  // Set Bank 0
     {0x32, 0x29},  // R_CursorClampLeft
     {0x33, 0x01},  // R_PositionFilterStartSizeTh [7:0]
@@ -390,10 +399,6 @@ void UnitPAJ7620U2::update() {
     if (_updated) {
         _latest = m5::utility::millis();
     }
-    if (_mode == Mode::Cursor) {
-        //        m5::utility::delay(100);  // Avowid misidentification by
-        //        spacing
-    }
 }
 
 bool UnitPAJ7620U2::update_gesture() {
@@ -421,8 +426,14 @@ bool UnitPAJ7620U2::update_proximity() {
 
 bool UnitPAJ7620U2::update_cursor() {
     Gesture ges{};
-    uint16_t x{}, y{};
-    if (readGesture(ges) && readCursor(x, y)) {
+    uint16_t x{_cursorX}, y{_cursorY};
+
+    if (readGesture(ges)) {
+        if (ges == Gesture::HasObject) {
+            if (!readCursor(x, y)) {
+                return false;
+            }
+        }
         if (ges != _gesture || (x != _cursorX || y != _cursorY)) {
             _gesture = ges;
             _cursorX = x;
@@ -526,6 +537,12 @@ bool UnitPAJ7620U2::setMode(const Mode m) {
     }
 
     while (rv->reg != 0xFF) {
+        uint8_t v{};
+        if (!readRegister8(rv->reg, v, 0)) {
+            return false;
+        }
+        M5_LIB_LOGE("{0X%02x,0X%02X}", rv->reg, v);
+
         // M5_LIB_LOGI("[%02X]:%02X", rv->reg, rv->val);
         if (!writeRegister8(rv->reg, rv->val)) {
             M5_LIB_LOGE("Failed to change mode %x:%x", rv->reg, rv->val);
