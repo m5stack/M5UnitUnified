@@ -160,11 +160,12 @@ void loop() {
                 uint16_t x{}, y{};
                 unit.readNoMotionCount(nomot);
                 unit.readObjectSize(size);
-                unit.readObjectCenter(x,y);
+                unit.readObjectCenter(x, y);
 
-                M5_LOGI("%lu:gesture:%s noobject:%u nomotion:%u size:%u (%u,%u)",
-                        unit.updatedMillis(), gesture_to_string(unit.gesture()),
-                        noobj, nomot, size, x, y);
+                M5_LOGI(
+                    "%lu:gesture:%s noobject:%u nomotion:%u size:%u (%u,%u)",
+                    unit.updatedMillis(), gesture_to_string(unit.gesture()),
+                    noobj, nomot, size, x, y);
             }
             unit.readNoObjectCount(noobj);
         } break;
