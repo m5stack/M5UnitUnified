@@ -323,6 +323,8 @@ class Component {
     }
 
     bool add_child(Component* c);
+    // Functions for dynamically addressable devices
+    bool changeAddress(const uint8_t addr);
 
    protected:
     UnitUnified* _manager{};
@@ -347,7 +349,6 @@ class Component {
 }  // namespace unit
 }  // namespace m5
 
-
 ///@cond
 #define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                    \
    public:                                                         \
@@ -371,6 +372,6 @@ class Component {
     inline virtual types::attr_t unit_attribute() const override { \
         return attr;                                               \
     }                                                              \
-///@endcond
+    ///@endcond
 
 #endif

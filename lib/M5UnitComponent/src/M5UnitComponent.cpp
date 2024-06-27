@@ -290,6 +290,15 @@ bool Component::generalCall(const uint8_t* data, const size_t len) {
     return _adapter->generalCall(data, len) == m5::hal::error::error_t::OK;
 }
 
+bool Component::changeAddress(const uint8_t addr) {
+    if (m5::utility::isValidI2CAddress(addr)) {
+        _addr = addr;
+        _adapter.reset(_adapter->duplicate(addr));
+        return true;
+    }
+    return false;
+}
+
 std::string Component::debugInfo() const {
     return m5::utility::formatString(
         "[%s]:ID{0X%08x}:ADDR{0X%02x/0X%02x} parent:%u children:%zu",

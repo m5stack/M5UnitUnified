@@ -59,7 +59,7 @@ class WireImpl : public Adapter::Impl {
         }
         auto ret = _wire->endTransmission(stop);
         if (ret) {
-            M5_LIB_LOGE("%d endTransmission", ret);
+            M5_LIB_LOGE("%d endTransmission stop:%d", ret, stop);
         }
         return (ret == 0) ? m5::hal::error::error_t::OK
                           : m5::hal::error::error_t::I2C_BUS_ERROR;
@@ -78,7 +78,7 @@ class WireImpl : public Adapter::Impl {
         }
         auto ret = _wire->endTransmission(stop);
         if (ret) {
-            M5_LIB_LOGE("%d endTransmission", ret);
+            M5_LIB_LOGE("%d endTransmission stop:%d", ret, stop);
         }
         return (ret == 0) ? m5::hal::error::error_t::OK
                           : m5::hal::error::error_t::I2C_BUS_ERROR;
@@ -93,6 +93,10 @@ class WireImpl : public Adapter::Impl {
         return write_with_transaction(0x00, data, len, true);
     }
 
+    virtual m5::hal::error::error_t wakeup() {
+        return write_with_transaction(_addr, nullptr, 0, true);
+    }
+
    protected:
     m5::hal::error::error_t write_with_transaction(const uint8_t addr,
                                                    const uint8_t* data,
@@ -104,7 +108,7 @@ class WireImpl : public Adapter::Impl {
         }
         auto ret = _wire->endTransmission(stop);
         if (ret) {
-            M5_LIB_LOGE("%d endTransmission", ret);
+            M5_LIB_LOGE("%d endTransmission stop:%d", ret, stop);
         }
         return (ret == 0) ? m5::hal::error::error_t::OK
                           : m5::hal::error::error_t::I2C_BUS_ERROR;
@@ -250,6 +254,10 @@ struct BusImpl : public Adapter::Impl {
         return write_with_transaction(gcfg, data, len, true);
     }
 
+    virtual m5::hal::error::error_t wakeup() {
+        return write_with_transaction(_access_cfg, nullptr, 0, true);
+    }
+
    protected:
     m5::hal::error::error_t write_with_transaction(
         const m5::hal::bus::I2CMasterAccessConfig& cfg, const uint8_t* data,
@@ -261,7 +269,11 @@ struct BusImpl : public Adapter::Impl {
                 auto result =
                     trans->startWrite()
                         .and_then([&trans, &data, &len]() {
-                            return trans->write(data, len);
+                            return ((data && len)
+                                        ? trans->write(data, len)
+                                        : m5::stl::expected<
+                                              size_t, m5::hal::error::error_t>(
+                                              (size_t)0UL));
                         })
                         .and_then([&trans, &stop](size_t&&) {
                             return stop ? trans->stop()
