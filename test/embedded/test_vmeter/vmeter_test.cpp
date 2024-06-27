@@ -1,9 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/*
   UnitTest for UnitVmeter
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "../avmeter_template.hpp"
 #include <unit/unit_Vmeter.hpp>

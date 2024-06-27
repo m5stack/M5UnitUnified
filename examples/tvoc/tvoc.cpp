@@ -1,9 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/*
   Example using M5UnitUnified for SGP30
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 
 // #define USING_PAHUB (2)  // Connection channel number for use via PaHub.

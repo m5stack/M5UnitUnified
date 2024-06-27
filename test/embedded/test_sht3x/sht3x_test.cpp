@@ -1,9 +1,10 @@
 /*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/*
   UnitTest for UnitSHT3x
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 
 // Move to each libarry
@@ -141,7 +142,7 @@ TEST_P(TestSHT3x, Periodic) {
             std::tie(s, mps, rep) = e;
             SCOPED_TRACE(s);
 
-            ASSERT_TRUE(unit->startPeriodicMeasurement(mps, rep));
+            EXPECT_TRUE(unit->startPeriodicMeasurement(mps, rep));
 
             auto timeout  = timeout_table[m5::stl::to_underlying(mps)];
             auto start_at = std::chrono::steady_clock::now();
@@ -156,12 +157,12 @@ TEST_P(TestSHT3x, Periodic) {
             EXPECT_TRUE(done);
             EXPECT_LE(elapsed - start_at, timeout) << timeout.count();
 
-            ASSERT_TRUE(unit->stopPeriodicMeasurement());
+            EXPECT_TRUE(unit->stopPeriodicMeasurement());
         }
     }
 
     // ART(4 mps)
-    ASSERT_TRUE(unit->startPeriodicMeasurement(
+    EXPECT_TRUE(unit->startPeriodicMeasurement(
         m5::unit::sht3x::MPS::MpsHalf, m5::unit::sht3x::Repeatability::High));
     EXPECT_TRUE(unit->accelerateResponseTime());
 

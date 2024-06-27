@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5UnitUnified.cpp
   @brief class UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "M5UnitUnified.hpp"
 #include <M5Utility.hpp>

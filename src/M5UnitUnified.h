@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5UnitUnified.h
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
-*/
+ */
 #ifndef M5_UNIT_UNIFIED_H
 #define M5_UNIT_UNIFIED_H
 

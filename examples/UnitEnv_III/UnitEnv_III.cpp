@@ -1,12 +1,13 @@
 /*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/*
   Example using M5UnitUnified for UnitENVIII
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 
-// #define USING_M5HAL      // When using M5HAL
+//#define USING_M5HAL      // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>

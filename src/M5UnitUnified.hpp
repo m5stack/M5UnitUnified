@@ -1,13 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5UnitUnified.hpp
   @brief Main header of M5UnitUnified
 
   @mainpage M5UnitUnfied
   Library for abstracted M5 units.  C++11 or later
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_UNIFIED_HPP
 #define M5_UNIT_UNIFIED_HPP
@@ -18,7 +19,16 @@
 #include <string>
 
 class TwoWire;
+
+/*!
+  @namespace m5
+  @brief Top level namespace of M5stack
+ */
 namespace m5 {
+/*!
+  @namespace unit
+  @brief Unit-related namespace
+ */
 namespace unit {
 class Component;
 
