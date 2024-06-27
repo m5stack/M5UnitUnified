@@ -7,12 +7,11 @@
   Example using M5UnitUnified for UnitHeart(MAX30100)
 */
 
-//#define USING_M5HAL  // When using M5HAL
+// #define USING_M5HAL  // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <unit/unit_MAX30100.hpp>
-#include <unit/heart_beat.hpp>
 #if !defined(USING_M5HAL)
 #include <Wire.h>
 #endif
@@ -21,7 +20,6 @@ namespace {
 auto& lcd = M5.Display;
 m5::unit::UnitUnified Units;
 m5::unit::UnitMAX30100 unitMAX30100;
-m5::unit::max30100::HeartBeat heartBeat;
 
 }  // namespace
 
@@ -30,7 +28,6 @@ void setup() {
 
     m5::utility::delay(3000);
 
-    
     if (0) {
         auto cfg         = unitMAX30100.config();
         cfg.samplingRate = m5::unit::max30100::SamplingRate::Sampling1000;
@@ -85,13 +82,7 @@ void loop() {
         auto retrived = unitMAX30100.retrived();
         for (uint8_t i = 0; i < retrived; ++i) {
             if (unitMAX30100.getRawData(ir, red, retrived - i - 1)) {
-                // For TelePlot(PlatformIO)
-                //M5_LOGI("\n>IR:%u\n>RED:%u", ir, red);
-                // For ArduinoIDE serial plotter
-                // M5_LOGI("IR:%u, RED:%u\n", ir, red);
-
-                auto f = heartBeat.push(ir);
-                M5_LOGI("\n>IR:%u\n>RED:%u\n>HBIR:%5.3f\nHB:%d", ir, red, f, heartBeat.detected());
+                M5_LOGI("\n>IR:%u\n>RED:%u", ir, red);
             }
         }
     }
