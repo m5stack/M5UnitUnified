@@ -29,14 +29,18 @@ UnitComponent for SCD4x, SHT30, QMP6988...
 
 ## Implemented
 
-|Body \\ Unit|SCD40|SHT30|QMP6988|
-|---|---|---|---|
-|Core|test,example|test,example|test,example|
-|Core2|test,example|test,example|test,example|
-|Core3|test,example|test,example|test,example|
-|StampS3|test,example|test,example|test,example|
-|AtomS3|test,example|test,example|test,example|
-|NanoC6|test,example|test,example|test,example|
+- Similar API configurations as far as possible.
+- Additional function
+- Fixed and re-implemented problems in existing libraries
+
+|Body \\ Unit|SCD40|SHT30|QMP6988|MAX30100|Vmeter|Ameter|SGP30|PAJ7620U|Kmeter|
+|---|---|---|---|---|---|---|---|---|---|
+|Core|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
+|Core2|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
+|Core3|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
+|StampS3|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
+|AtomS3|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
+|NanoC6|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|test,example|
 
 ## How to try examples (PlatformIO only) 
 
