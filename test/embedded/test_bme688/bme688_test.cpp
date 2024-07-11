@@ -51,6 +51,7 @@ constexpr Filter filter_table[] = {
     Filter::Coeff_15, Filter::Coeff_31, Filter::Coeff_63, Filter::Coeff_127,
 };
 
+#if defined(UNIT_BME688_USING_BSEC2)
 // All outputs
 constexpr bsec_virtual_sensor_t vs_table[] = {
     BSEC_OUTPUT_IAQ,
@@ -76,8 +77,19 @@ constexpr bsec_virtual_sensor_t vs_table[] = {
     BSEC_OUTPUT_REGRESSION_ESTIMATE_3,
     BSEC_OUTPUT_REGRESSION_ESTIMATE_4,
 };
+#endif
 
 std::random_device rng;
+
+#if defined(UNIT_BME688_USING_BSEC2)
+// Using BSEC2 library configuration files
+constexpr uint8_t bsec_config[] = {
+#include <config/bme688/bme688_sel_33v_3s_4d/bsec_selectivity.txt>
+};
+constexpr uint8_t bsec_config2[] = {
+#include <config/bme688/bme688_sel_33v_300s_4d/bsec_selectivity.txt>
+};
+#endif
 
 }  // namespace
 
@@ -171,25 +183,10 @@ TEST_P(TestBME688, SelfTest) {
     EXPECT_TRUE(unit->selfTest());
 }
 
-namespace {
-// Using BSEC2 library configuration files
-constexpr uint8_t bsec_config[] = {
-#include <config/bme688/bme688_sel_33v_3s_4d/bsec_selectivity.txt>
-    // #include <config/bme688/bme688_sel_33v_3s_28d/bsec_selectivity.txt>
-    // #include <config/bme688/bme688_sel_33v_300s_4d/bsec_selectivity.txt>
-    // #include <config/bme688/bme688_sel_33v_300s_28d/bsec_selectivity.txt>
-};
-
-constexpr uint8_t bsec_config2[] = {
-#include <config/bme688/bme688_sel_33v_300s_4d/bsec_selectivity.txt>
-};
-
-}  // namespace
-
-
+#if defined(UNIT_BME688_USING_BSEC2)
 TEST_P(TestBME688, BSEC2) {
     SCOPED_TRACE(ustr);
-    
+
     uint8_t cfg[BSEC_MAX_PROPERTY_BLOB_SIZE]{};
     uint8_t state[BSEC_MAX_STATE_BLOB_SIZE]{};
     uint8_t state2[BSEC_MAX_STATE_BLOB_SIZE]{};
@@ -299,10 +296,8 @@ TEST_P(TestBME688, BSEC2) {
             EXPECT_FALSE(std::isfinite(unit->latestData(vs))) << vs;
         }
     }
-
-    //
 }
-
+#endif
 
 #if 0
 TEST_P(TestBME688, BSEC2_2) {

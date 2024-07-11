@@ -20,7 +20,7 @@
 	"arduino",
 	"espidf"
     ],
-    "name": "Espressif ESP32-C6-DevKitC-1",
+    "name": "M5Stack NanoC6",
     "upload": {
 	"flash_size": "4MB",
 	"maximum_ram_size": 327680,
@@ -28,6 +28,6 @@
 	"require_upload_port": true,
 	"speed": 460800
     },
-    "url": "http://www.m5stack.com",
+    "url": "https://docs.m5stack.com/en/core/M5NanoC6",
     "vendor": "M5Stack"
 }

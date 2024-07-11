@@ -6,17 +6,26 @@
 
   SPDX-License-Identifier: MIT
 
-  Depends on BME68X Sensor API by Bosch
-  https://github.com/boschsensortec/BME68x_SensorAPI
 */
 #ifndef M5_UNIT_ENV_UNIT_BME688_HPP
 #define M5_UNIT_ENV_UNIT_BME688_HPP
 
+#if defined(ESP_PLATFORM)
+#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(ARDUINO_M5Stack_NanoC6)
+#pragma message "Using BSEC2"
+#define UNIT_BME688_USING_BSEC2
+#endif
+#endif
+
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
 #include <bme68x/bme68x.h>
+#if defined(UNIT_BME688_USING_BSEC2)
 #include <inc/bsec_datatypes.h>
+#endif
+#include <array>
 #include <memory>
+#include <limits>
 
 namespace m5 {
 namespace unit {
@@ -154,19 +163,8 @@ struct GasWait {
     uint8_t value{};  //!< Use the value as it is in parallel mode
 };
 
+#if defined(UNIT_BME688_USING_BSEC2)
 namespace bsec2 {
-
-#if 0
-/*!
-  @struct Output
-  @brief Data processed from raw data
-  @note Definitions compatible with those in bsec2.h
-*/
-struct ProcessedData {
-    bsec_output_t output[BSEC_NUMBER_OUTPUTS];
-    uint8_t nOutputs;
-};
-#endif
 
 //! @brief  Conversion from BSEC2 subscription to bits
 inline uint32_t virtual_sensor_array_to_bits(const bsec_virtual_sensor_t* ss,
@@ -192,6 +190,8 @@ enum class SampleRate : uint8_t {
 };
 
 }  // namespace bsec2
+#endif
+
 }  // namespace bme688
 
 /*!
@@ -213,7 +213,7 @@ class UnitBME688 : public Component {
         //        Setting setting{};
         //! @brief initial operation mode
         // bme688::Mode mode{bme688::Mode::Forced};
-        float temperature_offset{};
+        // float temperature_offset{};
     };
 
     ///@name Configuration for begin
@@ -239,7 +239,7 @@ class UnitBME688 : public Component {
     ///@{
     /*! @brief In periodic measurement? */
     inline bool inPeriodic() const {
-        return _periodic;
+        return _periodic || (_bsec2_subscription != 0);
     }
     //! @brief Periodic measurement data updated?
     inline bool updated() const {
@@ -273,6 +273,7 @@ class UnitBME688 : public Component {
     inline int8_t ambientTemperature() const {
         return _dev.amb_temp;
     }
+#if defined(UNIT_BME688_USING_BSEC2)
     /*!
       @brief Latest data
       @param vs bsec_virtual_sensor_t
@@ -282,24 +283,47 @@ class UnitBME688 : public Component {
     float latestData(const bsec_virtual_sensor_t vs) const;
     //! @brief latest temperature if subscribed
     inline float temperature() const {
-        return latestData(BSEC_OUTPUT_RAW_TEMPERATURE);
+        return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_TEMPERATURE)
+                                   : _temperature;
     }
     //! @brief latest pressure if subscribed
     inline float pressurre() const {
-        return latestData(BSEC_OUTPUT_RAW_PRESSURE);
+        return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_PRESSURE)
+                                   : _pressure;
     }
     //! @brief latest humidity if subscribed
     inline float humidity() const {
-        return latestData(BSEC_OUTPUT_RAW_HUMIDITY);
+        return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_HUMIDITY)
+                                   : _humidity;
     }
     //! @brief latest gas resistance if subscribed
     inline float latestResistance() const {
-        return latestData(BSEC_OUTPUT_RAW_GAS);
+        return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_GAS)
+                                   : _resistanse;
     }
     //! @brief latest IAQ if subscribed
     inline float latestIAQ() const {
-        return latestData(BSEC_OUTPUT_IAQ);
+        return _bsec2_subscription ? latestData(BSEC_OUTPUT_IAQ)
+                                   : std::numeric_limits<float>::quiet_NaN();
     }
+#else
+    //! @brief latest temperature
+    inline float temperature() const {
+        return _temperature;
+    }
+    //! @brief latest pressure
+    inline float pressurre() const {
+        return _pressure;
+    }
+    //! @brief latest humidity
+    inline float humidity() const {
+        return _humidity;
+    }
+    //! @brief latest gas resistance
+    inline float latestResistance() const {
+        return _resistanse;
+    }
+#endif
     ///@}
 
     //! @brief Sets the ambient temperature
@@ -419,7 +443,9 @@ class UnitBME688 : public Component {
     uint32_t calculateMeasurementInterval(const bme688::Mode mode,
                                           const bme688::TPHSetting& s);
 
-#if 0
+#if 0    
+    ///@name Directly
+    ///@{
     ///@name Measuerment
     ///@{
     /*!
@@ -433,8 +459,10 @@ class UnitBME688 : public Component {
     ///@}
 #endif
 
+#if defined(UNIT_BME688_USING_BSEC2)
     ///@name BSEC2
     ///@brief for bsec2 library
+    ///@warning BSEC2 library NOT support ESP32C6
     ///@{
     /*!
       @brief Gets the BSEC2 library version
@@ -538,6 +566,7 @@ class UnitBME688 : public Component {
      */
     bool bsec2UnsubscribeAll();
     ///@}
+#endif
 
    protected:
     static int8_t read_function(uint8_t reg_addr, uint8_t* reg_data,
@@ -552,15 +581,15 @@ class UnitBME688 : public Component {
 
     void update_bsec2();
     void update_bme688();
-    
+
    protected:
     bool _periodic{};  // During periodic measurement?
     bool _updated{};
     unsigned long _latest{}, _interval{};
     bme688::Mode _mode{};
 
-    // Latest data
-    float _temperature{}, _pressure{}, _humidity{}, _gas{}, _iaq{};
+    // Latest data (For using directly)
+    float _temperature{}, _pressure{}, _humidity{}, _resistanse{};
 
     // Compatibele for Bme68x
     bme688::MeasurementData _data[3]{};
@@ -570,15 +599,17 @@ class UnitBME688 : public Component {
     bme688::HeaterSetting _heater{};
 
     // BSEC2
+    uint32_t _bsec2_subscription{};  // Enabled virtual sensor bit (0-30)
+#if defined(UNIT_BME688_USING_BSEC2)
     bsec_version_t _bsec2_version{};
     std::unique_ptr<uint8_t> _bsec2_work{};
-    uint32_t _bsec2_subscription{};  // Enabled virtual sensor bit (0-30)
     bme688::bsec2::SampleRate _bsec2_sr{};
     bsec_bme_settings_t _bsec2_settings{};
     bme688::Mode _bsec2_mode{};
     std::array<bsec_output_t, 32> _processed{};
     uint8_t _num_of_proccessed{};
     float _temperatureOffset{};
+#endif
 
     config_t _cfg{};
 };

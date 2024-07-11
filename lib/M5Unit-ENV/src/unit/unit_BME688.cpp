@@ -6,14 +6,13 @@
 
   SPDX-License-Identifier: MIT
 
-  Depends on BME68X Sensor API by Bosch
-  https://github.com/boschsensortec/BME68x_SensorAPI
 
 */
 #include "unit_BME688.hpp"
+#if defined(UNIT_BME688_USING_BSEC2)
 #include <inc/bsec_interface.h>  // BSEC2
+#endif
 #include <M5Utility.hpp>
-#include <limits>
 #include <array>
 #include <cmath>
 
@@ -43,11 +42,13 @@ constexpr Oversampling oversampling_table[8] = {
 
 };
 
+#if defined(UNIT_BME688_USING_BSEC2)
 constexpr float sample_rate_table[] = {
     BSEC_SAMPLE_RATE_DISABLED, BSEC_SAMPLE_RATE_LP,
     BSEC_SAMPLE_RATE_ULP,      BSEC_SAMPLE_RATE_ULP_MEASUREMENT_ON_DEMAND,
     BSEC_SAMPLE_RATE_SCAN,     BSEC_SAMPLE_RATE_CONT,
 };
+#endif
 
 void delay_us_function(uint32_t period, void* /*intf_ptr*/) {
     m5::utility::delayMicroseconds(period);
@@ -99,14 +100,21 @@ int8_t UnitBME688::write_function(uint8_t reg_addr, const uint8_t* reg_data,
 }
 
 UnitBME688::UnitBME688(const uint8_t addr)
-    : Component(addr), _bsec2_work{new uint8_t[BSEC_MAX_PROPERTY_BLOB_SIZE]} {
+    : Component(addr)
+#if defined(UNIT_BME688_USING_BSEC2)
+      ,
+      _bsec2_work{new uint8_t[BSEC_MAX_PROPERTY_BLOB_SIZE]}
+#endif
+{
     _dev.intf     = BME68X_I2C_INTF;
     _dev.read     = UnitBME688::read_function;
     _dev.write    = UnitBME688::write_function;
     _dev.delay_us = delay_us_function;
     _dev.intf_ptr = this;
     _dev.amb_temp = 25;
+#if defined(UNIT_BME688_USING_BSEC2)
     assert(_bsec2_work);
+#endif
 }
 
 bool UnitBME688::begin() {
@@ -115,11 +123,13 @@ bool UnitBME688::begin() {
         return false;
     }
 
+#if defined(UNIT_BME688_USING_BSEC2)
     auto ret = bsec_init();
     if (ret != BSEC_OK) {
         M5_LIB_LOGE("Failed to bsec_init %d", ret);
         return false;
     }
+#endif
 
 #if 0    
     if (bme68x_get_conf(&_tph, &_dev) != BME68X_OK ||
@@ -156,18 +166,27 @@ bool UnitBME688::begin() {
     M5_DUMPV(_heater.heatr_dur_prof, _heater.profile_len * 2);
 #endif
 
+#if defined(UNIT_BME688_USING_BSEC2)
     return bsec_get_version(&_bsec2_version) == BSEC_OK;
+#else
+    return true;
+#endif
 }
 
 void UnitBME688::update() {
     _updated = false;
+#if defined(UNIT_BME688_USING_BSEC2)
     if (_bsec2_subscription) {
         update_bsec2();
     } else {
         update_bme688();
     }
+#else
+    update_bme688();
+#endif
 }
 
+#if defined(UNIT_BME688_USING_BSEC2)
 // Using BSEC2 library and configration and state
 void UnitBME688::update_bsec2() {
     auto now       = m5::utility::millis();
@@ -179,7 +198,7 @@ void UnitBME688::update_bsec2() {
         return;
     }
 
-    //M5_LIB_LOGW("_bsec2_mode:%u", _bsec2_mode);
+    // M5_LIB_LOGW("_bsec2_mode:%u", _bsec2_mode);
 
     auto ret = bsec_sensor_control(now_ns, &_bsec2_settings);
     if (ret != BSEC_OK) {
@@ -187,7 +206,7 @@ void UnitBME688::update_bsec2() {
         return;
     }
 
-    //M5_LIB_LOGW("_bsec2_settings.op_mode:%u", _bsec2_settings.op_mode);
+    // M5_LIB_LOGW("_bsec2_settings.op_mode:%u", _bsec2_settings.op_mode);
 
     switch (_bsec2_settings.op_mode) {
         case BME68X_FORCED_MODE:
@@ -233,11 +252,11 @@ void UnitBME688::update_bsec2() {
         }
     }
 }
+#endif
 
 // Directly use  BME688 (but only raw data can be obtained)
 void UnitBME688::update_bme688() {
 }
-
 
 bool UnitBME688::readUniqueID(uint32_t& id) {
     // Order 2-3-1-0
@@ -566,6 +585,7 @@ bool UnitBME688::measureSingleShot(MeasurementData& data) {
 }
 #endif
 
+#if defined(UNIT_BME688_USING_BSEC2)
 float UnitBME688::latestData(const bsec_virtual_sensor_t vs) const {
     for (uint_fast8_t i = 0; i < _num_of_proccessed; ++i) {
         if (_processed[i].sensor_id == vs) {
@@ -796,6 +816,7 @@ bool UnitBME688::process_data(const int64_t ns,
     }
     return false;
 }
+#endif
 
 }  // namespace unit
 }  // namespace m5
