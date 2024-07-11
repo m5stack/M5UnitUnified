@@ -24,6 +24,7 @@
 #include <unit/unit_SGP30.hpp>
 #include <unit/unit_PAJ7620U2.hpp>
 #include <unit/unit_KmeterISO.hpp>
+#include <unit/unit_BME688.hpp>
 
 namespace {
 
@@ -89,6 +90,7 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitSGP30>();
     each_unit_test<m5::unit::UnitPAJ7620U2>();
     each_unit_test<m5::unit::UnitKmeterISO>();
+    each_unit_test<m5::unit::UnitBME688>();
 
     for (auto&& e : vec) {
         delete e;
