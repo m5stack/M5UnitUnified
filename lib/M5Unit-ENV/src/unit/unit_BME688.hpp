@@ -10,11 +10,11 @@
 #ifndef M5_UNIT_ENV_UNIT_BME688_HPP
 #define M5_UNIT_ENV_UNIT_BME688_HPP
 
-#if defined(ESP_PLATFORM)
-#if !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(ARDUINO_M5Stack_NanoC6)
+#if (defined(ESP_PLATFORM) && (!defined(CONFIG_IDF_TARGET_ESP32C6) && \
+                               !defined(ARDUINO_M5Stack_NanoC6))) ||  \
+    defined(DOXYGEN_PROCESS)
 #pragma message "Using BSEC2"
 #define UNIT_BME688_USING_BSEC2
-#endif
 #endif
 
 #include <M5UnitComponent.hpp>
@@ -38,38 +38,38 @@ namespace bme688 {
  */
 enum class Mode : uint8_t {
     Sleep,       //!<  No measurements are performed
-    Forced,      //!< Single TPHG cycle is performed (single shot)
-    Parallel,    //!< Multiple TPHG cycles are performed (periodic)
+    Forced,      //!< Single TPHG cycle is performed
+    Parallel,    //!< Multiple TPHG cycles are performed
     Sequential,  //!< Sequential mode is similar as forced mode, but it provides
                  //!< temperature, pressure, humidity one by one
 };
 
-///@name Aliases for bme68x
+///@name Aliases for bme68x structures
 ///@{
 /*!
-  @typedef MeasurementData
+  @typedef bme68xData
   @brief Raw data
  */
-using MeasurementData = struct bme68x_data;
+using bme68xData = struct bme68x_data;
 /*!
-  @typedef Device
+  @typedef bme68xDev
   @brief bme68x device
  */
-using Device = struct bme68x_dev;
+using bme68xDev = struct bme68x_dev;
 /*!
-  @typedef TPHSetting
-  @brief Setting for temperature, pressure, humidity
+  @typedef bme68xConf
+  @brief Setting for temperature, pressure, humidity...
 */
-using TPHSetting = struct bme68x_conf;
+using bme68xConf = struct bme68x_conf;
 /*!
-  @struct HeaterSetting
+  @struct bme68xHeatrConf
   @brief Setting for gas heater
-  @note  Extended so that the pointer is always valid
+  @note  Deriverd from bme68x_heatr_conf, so that the pointer is always valid
 */
-struct HeaterSetting : bme68x_heatr_conf {
+struct bme68xHeatrConf : bme68x_heatr_conf {
     uint16_t temp_prof[10]{};
     uint16_t dur_prof[10]{};
-    HeaterSetting() : bme68x_heatr_conf() {
+    bme68xHeatrConf() : bme68x_heatr_conf() {
         heatr_temp_prof = temp_prof;
         heatr_dur_prof  = dur_prof;
     }
@@ -99,7 +99,7 @@ enum class Oversampling : uint8_t {
   @brief IIR Filter setting
  */
 enum class Filter : uint8_t {
-    Coeff_0,
+    None,
     Coeff_1,
     Coeff_3,
     Coeff_7,
@@ -107,6 +107,22 @@ enum class Filter : uint8_t {
     Coeff_31,
     Coeff_63,
     Coeff_127,
+};
+
+/*!
+  @enum ODR
+  @brief bme68xConf::odr settings (standbytime Unit:ms)
+ */
+enum class ODR : uint8_t {
+    MS_0_59,  //< 0.59 ms
+    MS_62_5,  //< 62.5 ms
+    MS_125,   //< 125 ms
+    MS_250,   //!< 250 ms
+    MS_500,   //!< 500 ms
+    MS_1000,  //!< 1000 ms
+    MS_10,    //!< 10 ms
+    MS_20,    //!< 20 ms
+    None,     //!< No standbytime
 };
 
 /*!
@@ -253,6 +269,13 @@ class UnitBME688 : public Component {
     inline unsigned long updatedMillis() const {
         return _latest;
     }
+    /*!
+      @brief Gets the interval time
+      @return interval time (Unit: ms)
+    */
+    inline unsigned long interval() const {
+        return _interval;
+    }
     //! @brief Current mode
     inline bme688::Mode mode() const {
         return _mode;
@@ -262,12 +285,12 @@ class UnitBME688 : public Component {
         return _dev.calib;
     }
     //! @brief Gets the TPH setting
-    inline const bme688::TPHSetting& tphSetting() const {
-        return _tph;
+    inline const bme688::bme68xConf& tphSetting() const {
+        return _tphConf;
     }
     //! @brief Gets the heater setiing
-    inline const bme688::HeaterSetting& heaterSetting() const {
-        return _heater;
+    inline const bme688::bme68xHeatrConf& heaterSetting() const {
+        return _heaterConf;
     }
     //! @brief Gets the ambient temperature
     inline int8_t ambientTemperature() const {
@@ -275,62 +298,104 @@ class UnitBME688 : public Component {
     }
 #if defined(UNIT_BME688_USING_BSEC2)
     /*!
-      @brief Latest data
+      @brief Get the latest value of the specified output
       @param vs bsec_virtual_sensor_t
-      @retval != nan Latest data if subscribed
+      @retval != nan Latest data
       @retval nan Not subscribed
     */
     float latestData(const bsec_virtual_sensor_t vs) const;
-    //! @brief latest temperature if subscribed
+    //! @brief latest temperature (If there is more than one data set, the first
+    //! one)
     inline float temperature() const {
         return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_TEMPERATURE)
-                                   : _temperature;
+                                   : _data[0].temperature;
     }
-    //! @brief latest pressure if subscribed
-    inline float pressurre() const {
+    //! @brief latest pressure (If there is more than one data set, the first
+    //! one)
+    inline float pressure() const {
         return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_PRESSURE)
-                                   : _pressure;
+                                   : _data[0].pressure;
     }
-    //! @brief latest humidity if subscribed
+    //! @brief latest humidity (If there is more than one data set, the first
+    //! one)
     inline float humidity() const {
         return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_HUMIDITY)
-                                   : _humidity;
+                                   : _data[0].humidity;
     }
-    //! @brief latest gas resistance if subscribed
-    inline float latestResistance() const {
+    //! @brief latest gas resistance (If there is more than one data set, the
+    //! first one)
+    inline float resistance() const {
         return _bsec2_subscription ? latestData(BSEC_OUTPUT_RAW_GAS)
-                                   : _resistanse;
+                                   : _data[0].gas_resistance;
     }
     //! @brief latest IAQ if subscribed
-    inline float latestIAQ() const {
-        return _bsec2_subscription ? latestData(BSEC_OUTPUT_IAQ)
-                                   : std::numeric_limits<float>::quiet_NaN();
+    inline float IAQ() const {
+        return latestData(BSEC_OUTPUT_IAQ);
     }
 #else
-    //! @brief latest temperature
+    //! @brief latest temperature (If there is more than one data set, the first
+    //! one)
     inline float temperature() const {
-        return _temperature;
+        return _data[0].temperature;
     }
-    //! @brief latest pressure
-    inline float pressurre() const {
-        return _pressure;
+    //! @brief latest pressure (If there is more than one data set, the first
+    //! one)
+    inline float pressure() const {
+        return _data[0].pressure;
     }
-    //! @brief latest humidity
+    //! @brief latest humidity (If there is more than one data set, the first
+    //! one)
     inline float humidity() const {
-        return _humidity;
+        return _data[0].humidity;
     }
-    //! @brief latest gas resistance
-    inline float latestResistance() const {
-        return _resistanse;
+    //! @brief latest gas resistance (If there is more than one data set, the
+    //! first one)
+    inline float resistance() const {
+        return _data[0].gas_resistance;
     }
 #endif
+    /*!
+      @brief Number of valid latest raw data
+      @return between 0 and 3
+      @note 0 or 1 in Forced mode
+    */
+    inline uint8_t numberOfRawData() const {
+        return _num_of_data;
+    }
+    /*!
+      @brief Obtaining the specified latest raw data pointer
+      @param idx What number of the data
+      @retval != nullptr Data pointer
+      @retval == nullptr Failed
+      @warning If it is not a valid range, nullptr is returned
+     */
+    inline const bme688::bme68xData* data(const uint8_t idx) {
+        return (idx < _num_of_data) ? &_data[idx] : nullptr;
+    }
     ///@}
 
     //! @brief Sets the ambient temperature
     inline void setAambientTemperature(const int8_t temp) {
         _dev.amb_temp = temp;
     }
-
+    /*!
+      @brief Read calibration
+      @param[out] c output value
+      @return True if successful
+     */
+    bool readCalibration(bme688::Calibration& c);
+    /*!
+      @brief set calibration
+      @param c Calibration parameter
+      @return True if successful
+     */
+    bool setCalibration(const bme688::Calibration& c);
+    /*!
+      @brief Calculation of measurement intervals without heater
+      @return interval time (Unit: us)
+    */
+    uint32_t calculateMeasurementInterval(const bme688::Mode mode,
+                                          const bme688::bme68xConf& s);
     /*!
       @brief Read unique ID
       @param[out] id output value
@@ -347,24 +412,27 @@ class UnitBME688 : public Component {
       @return True if successful
     */
     bool selfTest();
-
+    /*!
+      @brief Set operation mode
+      @param m Mode
+      @return True if successful
+     */
     bool setMode(const bme688::Mode m);
+    /*!
+      @brief Read operation mode
+      @param[out] m Mode
+      @return True if successful
+     */
     bool readMode(bme688::Mode& m);
 
     ///@name TPH(Temperature,Pressure,Humidity)
     ///@{
     /*!
-      @brief Read TPHSetting
+      @brief Read TPH setting
       @param[out] s output value
       @return True if successful
     */
-    bool readTPHSetting(bme688::TPHSetting& s);
-    /*!
-      @brief Set TPHSetting
-      @param s Setting
-      @return True if successful
-    */
-    bool setTPHSetting(const bme688::TPHSetting& s);
+    bool readTPHSetting(bme688::bme68xConf& s);
     /*!
       @brief Read temperature oversampling
       @param[out] os output value
@@ -389,6 +457,12 @@ class UnitBME688 : public Component {
       @return True if successful
      */
     bool readOversamplingHumidity(bme688::Oversampling& os);
+    /*!
+      @brief Set TPH setting
+      @param s Setting
+      @return True if successful
+    */
+    bool setTPHSetting(const bme688::bme68xConf& s);
     /*!
       @brief Set oversamplings
       @param t oversampling for temperature
@@ -424,46 +498,58 @@ class UnitBME688 : public Component {
     bool setIIRFilter(const bme688::Filter f);
     ///@}
 
-    ///@name Heater(GAS)
-    ///@{
     /*!
-      @brief Set HeaterSetting
+      @brief Set heater setting
       @param mode Expected operation mode of the sensor
       @param hs Setting
       @return True if successful
      */
     bool setHeaterSetting(const bme688::Mode mode,
-                          const bme688::HeaterSetting& hs);
-    ///@}
+                          const bme688::bme68xHeatrConf& hs);
 
-    /*!
-      @brief Calculation of measurement intervals without heater
-      @return interval time (Unit: us)
-    */
-    uint32_t calculateMeasurementInterval(const bme688::Mode mode,
-                                          const bme688::TPHSetting& s);
-
-#if 0    
-    ///@name Directly
-    ///@{
-    ///@name Measuerment
+    ///@name Using bme688 directly
     ///@{
     /*!
       @brief Take a single measurement
       @param[out] data output value
       @return True if successful
-      @note Measure by Force mode and inner settings
+      @pre Calibration,TPH and heater must already be set up
+      @note Measure once by Force mode
       @note Blocked until it can be measured.
     */
-    bool measureSingleShot(bme688::MeasurementData& data);
+    bool measureSingleShot(bme688::bme68xData& data);
+    /*!
+      @brief Start periodic measurement
+      @param m Mode for measurement
+      @return True if successful
+      @pre Calibration,TPH and heater must already be set up
+      @warning In Forced  mode the intervals are constant, but not in other
+      modes
+    */
+    bool startPeriodicMeasurement(const bme688::Mode m);
+    /*!
+      @brief Stopt periodic measurement
+    */
+    bool stopPeriodicMeasurement();
     ///@}
-#endif
 
 #if defined(UNIT_BME688_USING_BSEC2)
-    ///@name BSEC2
+    ///@name BSEC2 (Not support ESP32C6)
     ///@brief for bsec2 library
-    ///@warning BSEC2 library NOT support ESP32C6
     ///@{
+    /*!
+      @brief Gets the temperature offset(Celsius)
+     */
+    float bsec2GetTemperatureOffset() const {
+        return _temperatureOffset;
+    }
+    /*!
+      @brief Set the temperature offset(Celsius)
+      @param offset offset value
+     */
+    void bsec2SetTemperatureOffset(const float offset) {
+        _temperatureOffset = offset;
+    }
     /*!
       @brief Gets the BSEC2 library version
       @return reference of the version structure
@@ -577,10 +663,11 @@ class UnitBME688 : public Component {
     bool set_forced_mode();
     bool set_parallel_mode();
     bool fetch_data();
-    bool process_data(const int64_t ns, const bme688::MeasurementData& data);
+    bool process_data(const int64_t ns, const bme688::bme68xData& data);
 
     void update_bsec2();
     void update_bme688();
+    bool read_measurement();
 
    protected:
     bool _periodic{};  // During periodic measurement?
@@ -588,15 +675,12 @@ class UnitBME688 : public Component {
     unsigned long _latest{}, _interval{};
     bme688::Mode _mode{};
 
-    // Latest data (For using directly)
-    float _temperature{}, _pressure{}, _humidity{}, _resistanse{};
-
-    // Compatibele for Bme68x
-    bme688::MeasurementData _data[3]{};
+    // bme68x
+    bme688::bme68xData _data[3]{};  // latest data
     uint8_t _num_of_data{};
-    bme688::Device _dev{};
-    bme688::TPHSetting _tph{};
-    bme688::HeaterSetting _heater{};
+    bme688::bme68xDev _dev{};
+    bme688::bme68xConf _tphConf{};
+    bme688::bme68xHeatrConf _heaterConf{};
 
     // BSEC2
     uint32_t _bsec2_subscription{};  // Enabled virtual sensor bit (0-30)

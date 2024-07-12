@@ -21,16 +21,16 @@ using namespace m5::unit::bme688;
 using namespace m5::unit::bme688::command;
 
 static_assert(std::is_same<std::underlying_type<Oversampling>::type,
-                           decltype(TPHSetting::os_temp)>::value,
+                           decltype(bme68xConf::os_temp)>::value,
               "Illegal type");
 static_assert(std::is_same<std::underlying_type<Oversampling>::type,
-                           decltype(TPHSetting::os_pres)>::value,
+                           decltype(bme68xConf::os_pres)>::value,
               "Illegal type");
 static_assert(std::is_same<std::underlying_type<Oversampling>::type,
-                           decltype(TPHSetting::os_hum)>::value,
+                           decltype(bme68xConf::os_hum)>::value,
               "Illegal type");
 static_assert(std::is_same<std::underlying_type<Filter>::type,
-                           decltype(TPHSetting::filter)>::value,
+                           decltype(bme68xConf::filter)>::value,
               "Illegal type");
 static_assert(std::is_same<std::underlying_type<Mode>::type, uint8_t>::value,
               "Illegal type");
@@ -49,6 +49,8 @@ constexpr float sample_rate_table[] = {
     BSEC_SAMPLE_RATE_SCAN,     BSEC_SAMPLE_RATE_CONT,
 };
 #endif
+
+constexpr uint8_t VALID_DATA{0xB0};
 
 void delay_us_function(uint32_t period, void* /*intf_ptr*/) {
     m5::utility::delayMicroseconds(period);
@@ -132,8 +134,8 @@ bool UnitBME688::begin() {
 #endif
 
 #if 0    
-    if (bme68x_get_conf(&_tph, &_dev) != BME68X_OK ||
-        bme68x_get_heatr_conf(&_heater, &_dev) != BME68X_OK) {
+    if (bme68x_get_conf(&_tphConf, &_dev) != BME68X_OK ||
+        bme68x_get_heatr_conf(&_heaterConf, &_dev) != BME68X_OK) {
         M5_LIB_LOGE("Failed to read settings");
         return false;
     }
@@ -154,16 +156,16 @@ bool UnitBME688::begin() {
         _dev.calib.par_gh2, _dev.calib.par_gh3, _dev.calib.res_heat_range,
         _dev.calib.res_heat_val);
 
-    M5_LIB_LOGV("TPH: T:%u P:%u H:%u F:%u O:%u", _tph.os_temp, _tph.os_pres,
-                _tph.os_hum, _tph.filter, _tph.odr);
+    M5_LIB_LOGV("TPH: T:%u P:%u H:%u F:%u O:%u", _tphConf.os_temp, _tphConf.os_pres,
+                _tphConf.os_hum, _tphConf.filter, _tphConf.odr);
     M5_LIB_LOGV(
         "Heater: enable:%u\n"
         "Forced: T:%u D:%u\n"
         "Parallel: len:%u shared:%u",
-        _heater.enable, _heater.heatr_temp, _heater.heatr_dur,
-        _heater.profile_len, _heater.shared_heatr_dur);
-    M5_DUMPV(_heater.heatr_temp_prof, _heater.profile_len * 2);
-    M5_DUMPV(_heater.heatr_dur_prof, _heater.profile_len * 2);
+        _heaterConf.enable, _heaterConf.heatr_temp, _heaterConf.heatr_dur,
+        _heaterConf.profile_len, _heaterConf.shared_heatr_dur);
+    M5_DUMPV(_heaterConf.heatr_temp_prof, _heaterConf.profile_len * 2);
+    M5_DUMPV(_heaterConf.heatr_dur_prof, _heaterConf.profile_len * 2);
 #endif
 
 #if defined(UNIT_BME688_USING_BSEC2)
@@ -256,6 +258,39 @@ void UnitBME688::update_bsec2() {
 
 // Directly use  BME688 (but only raw data can be obtained)
 void UnitBME688::update_bme688() {
+    if (!inPeriodic()) {
+        return;
+    }
+
+    unsigned long at{m5::utility::millis()};
+    if (!_latest || at >= _latest + _interval) {
+        _updated = read_measurement();
+        if (_updated) {
+            switch (_mode) {
+                    // Forced goes to sleep after measurement, so set it up
+                    // again
+                case Mode::Forced:
+                    if (!setMode(Mode::Forced)) {
+                        M5_LIB_LOGE("Failed to sete mode again");
+                        _updated  = false;
+                        _mode     = Mode::Sleep;
+                        _periodic = false;
+                        return;
+                    }
+                    break;
+                case Mode::Parallel:
+                    if (!_num_of_data || _data[0].status != VALID_DATA) {
+                        _updated = false;
+                        return;
+                    }
+                    break;
+                default:
+                    _updated = false;
+                    return;
+            }
+            _latest = at;
+        }
+    }
 }
 
 bool UnitBME688::readUniqueID(uint32_t& id) {
@@ -274,15 +309,14 @@ bool UnitBME688::readUniqueID(uint32_t& id) {
 bool UnitBME688::softReset() {
     return (bme68x_soft_reset(&_dev) == BME68X_OK) &&
            // reload settings
-           bme68x_get_conf(&_tph, &_dev) == BME68X_OK &&
-           bme68x_get_heatr_conf(&_heater, &_dev) == BME68X_OK;
+           bme68x_get_conf(&_tphConf, &_dev) == BME68X_OK &&
+           bme68x_get_heatr_conf(&_heaterConf, &_dev) == BME68X_OK;
 }
 
 bool UnitBME688::selfTest() {
     return bme68x_selftest_check(&_dev) == BME68X_OK;
 }
 
-#if 0
 bool UnitBME688::readCalibration(bme688::Calibration& c) {
     std::array<uint8_t, 23> array0{};  // 0x8A
     std::array<uint8_t, 14> array1{};  // 0xE1
@@ -295,47 +329,47 @@ bool UnitBME688::readCalibration(bme688::Calibration& c) {
     }
 
     // temperature
-    c.t1 = *(uint16_t*)(array1.data() +
-                        (CALIBRATION_TEMPERATURE_1_LOW - CALIBRATION_GROUP_1));
-    c.t2 = *(int16_t*)(array0.data() +
-                       (CALIBRATION_TEMPERATURE_2_LOW - CALIBRATION_GROUP_0));
-    c.t3 = array0[CALIBRATION_TEMPERATURE_3 - CALIBRATION_GROUP_0];
+    c.par_t1 = *(uint16_t*)(array1.data() + (CALIBRATION_TEMPERATURE_1_LOW -
+                                             CALIBRATION_GROUP_1));
+    c.par_t2 = *(int16_t*)(array0.data() + (CALIBRATION_TEMPERATURE_2_LOW -
+                                            CALIBRATION_GROUP_0));
+    c.par_t3 = array0[CALIBRATION_TEMPERATURE_3 - CALIBRATION_GROUP_0];
     // pressure
-    c.p1  = *(uint16_t*)(array0.data() +
-                        (CALIBRATION_PRESSURE_1_LOW - CALIBRATION_GROUP_0));
-    c.p2  = *(int16_t*)(array0.data() +
-                       (CALIBRATION_PRESSURE_2_LOW - CALIBRATION_GROUP_0));
-    c.p3  = (int8_t)array0[CALIBRATION_PRESSURE_3 - CALIBRATION_GROUP_0];
-    c.p4  = *(int16_t*)(array0.data() +
-                       (CALIBRATION_PRESSURE_4_LOW - CALIBRATION_GROUP_0));
-    c.p5  = *(int16_t*)(array0.data() +
-                       (CALIBRATION_PRESSURE_5_LOW - CALIBRATION_GROUP_0));
-    c.p6  = (int8_t)array0[CALIBRATION_PRESSURE_6 - CALIBRATION_GROUP_0];
-    c.p7  = (int8_t)array0[CALIBRATION_PRESSURE_7 - CALIBRATION_GROUP_0];
-    c.p8  = *(int16_t*)(array0.data() +
-                       (CALIBRATION_PRESSURE_8_LOW - CALIBRATION_GROUP_0));
-    c.p9  = *(int16_t*)(array0.data() +
-                       (CALIBRATION_PRESSURE_9_LOW - CALIBRATION_GROUP_0));
-    c.p10 = array0[CALIBRATION_PRESSURE_10 - CALIBRATION_GROUP_0];
+    c.par_p1  = *(uint16_t*)(array0.data() +
+                            (CALIBRATION_PRESSURE_1_LOW - CALIBRATION_GROUP_0));
+    c.par_p2  = *(int16_t*)(array0.data() +
+                           (CALIBRATION_PRESSURE_2_LOW - CALIBRATION_GROUP_0));
+    c.par_p3  = (int8_t)array0[CALIBRATION_PRESSURE_3 - CALIBRATION_GROUP_0];
+    c.par_p4  = *(int16_t*)(array0.data() +
+                           (CALIBRATION_PRESSURE_4_LOW - CALIBRATION_GROUP_0));
+    c.par_p5  = *(int16_t*)(array0.data() +
+                           (CALIBRATION_PRESSURE_5_LOW - CALIBRATION_GROUP_0));
+    c.par_p6  = (int8_t)array0[CALIBRATION_PRESSURE_6 - CALIBRATION_GROUP_0];
+    c.par_p7  = (int8_t)array0[CALIBRATION_PRESSURE_7 - CALIBRATION_GROUP_0];
+    c.par_p8  = *(int16_t*)(array0.data() +
+                           (CALIBRATION_PRESSURE_8_LOW - CALIBRATION_GROUP_0));
+    c.par_p9  = *(int16_t*)(array0.data() +
+                           (CALIBRATION_PRESSURE_9_LOW - CALIBRATION_GROUP_0));
+    c.par_p10 = array0[CALIBRATION_PRESSURE_10 - CALIBRATION_GROUP_0];
     // humidity
-    c.h1 =
+    c.par_h1 =
         (array1[CALIBRATION_HUMIDITY_12 - CALIBRATION_GROUP_1] & 0X0F) |
         (((uint16_t)array1[CALIBRATION_HUMIDITY_1_HIGH - CALIBRATION_GROUP_1])
          << 4);
-    c.h2 =
+    c.par_h2 =
         ((array1[CALIBRATION_HUMIDITY_12 - CALIBRATION_GROUP_1] >> 4) & 0X0F) |
         (((uint16_t)array1[CALIBRATION_HUMIDITY_2_HIGH - CALIBRATION_GROUP_1])
          << 4);
-    c.h3 = (int8_t)array1[CALIBRATION_HUMIDITY_3 - CALIBRATION_GROUP_1];
-    c.h4 = (int8_t)array1[CALIBRATION_HUMIDITY_4 - CALIBRATION_GROUP_1];
-    c.h5 = (int8_t)array1[CALIBRATION_HUMIDITY_5 - CALIBRATION_GROUP_1];
-    c.h6 = array1[CALIBRATION_HUMIDITY_6 - CALIBRATION_GROUP_1];
-    c.h7 = (int8_t)array1[CALIBRATION_HUMIDITY_7 - CALIBRATION_GROUP_1];
+    c.par_h3 = (int8_t)array1[CALIBRATION_HUMIDITY_3 - CALIBRATION_GROUP_1];
+    c.par_h4 = (int8_t)array1[CALIBRATION_HUMIDITY_4 - CALIBRATION_GROUP_1];
+    c.par_h5 = (int8_t)array1[CALIBRATION_HUMIDITY_5 - CALIBRATION_GROUP_1];
+    c.par_h6 = array1[CALIBRATION_HUMIDITY_6 - CALIBRATION_GROUP_1];
+    c.par_h7 = (int8_t)array1[CALIBRATION_HUMIDITY_7 - CALIBRATION_GROUP_1];
     // gas
-    c.g1 = (int8_t)array1[CALIBRATION_GAS_1 - CALIBRATION_GROUP_1];
-    c.g2 = *(int16_t*)(array1.data() +
-                       (CALIBRATION_GAS_2_LOW - CALIBRATION_GROUP_1));
-    c.g3 = (int8_t)array1[CALIBRATION_GAS_3 - CALIBRATION_GROUP_1];
+    c.par_gh1 = (int8_t)array1[CALIBRATION_GAS_1 - CALIBRATION_GROUP_1];
+    c.par_gh2 = *(int16_t*)(array1.data() +
+                            (CALIBRATION_GAS_2_LOW - CALIBRATION_GROUP_1));
+    c.par_gh3 = (int8_t)array1[CALIBRATION_GAS_3 - CALIBRATION_GROUP_1];
     c.res_heat_range =
         (array2[CALIBRATION_RES_HEAT_RANGE - CALIBRATION_GROUP_2] >> 4) & 0x03;
     c.res_heat_val =
@@ -357,45 +391,45 @@ bool UnitBME688::setCalibration(const bme688::Calibration& c) {
     }
 
     // temperature
-    *(uint16_t*)(array1.data() +
-                 (CALIBRATION_TEMPERATURE_1_LOW - CALIBRATION_GROUP_1)) = c.t1;
-    *(int16_t*)(array0.data() +
-                (CALIBRATION_TEMPERATURE_2_LOW - CALIBRATION_GROUP_0))  = c.t2;
-    array0[CALIBRATION_TEMPERATURE_3 - CALIBRATION_GROUP_0]             = c.t3;
+    *(uint16_t*)(array1.data() + (CALIBRATION_TEMPERATURE_1_LOW -
+                                  CALIBRATION_GROUP_1))     = c.par_t1;
+    *(int16_t*)(array0.data() + (CALIBRATION_TEMPERATURE_2_LOW -
+                                 CALIBRATION_GROUP_0))      = c.par_t2;
+    array0[CALIBRATION_TEMPERATURE_3 - CALIBRATION_GROUP_0] = c.par_t3;
     // pressure
     *(uint16_t*)(array0.data() +
-                 (CALIBRATION_PRESSURE_1_LOW - CALIBRATION_GROUP_0)) = c.p1;
+                 (CALIBRATION_PRESSURE_1_LOW - CALIBRATION_GROUP_0)) = c.par_p1;
     *(int16_t*)(array0.data() +
-                (CALIBRATION_PRESSURE_2_LOW - CALIBRATION_GROUP_0))  = c.p2;
-    array0[CALIBRATION_PRESSURE_3 - CALIBRATION_GROUP_0]             = c.p3;
+                (CALIBRATION_PRESSURE_2_LOW - CALIBRATION_GROUP_0))  = c.par_p2;
+    array0[CALIBRATION_PRESSURE_3 - CALIBRATION_GROUP_0]             = c.par_p3;
     *(int16_t*)(array0.data() +
-                (CALIBRATION_PRESSURE_4_LOW - CALIBRATION_GROUP_0))  = c.p4;
+                (CALIBRATION_PRESSURE_4_LOW - CALIBRATION_GROUP_0))  = c.par_p4;
     *(int16_t*)(array0.data() +
-                (CALIBRATION_PRESSURE_5_LOW - CALIBRATION_GROUP_0))  = c.p5;
-    array0[CALIBRATION_PRESSURE_6 - CALIBRATION_GROUP_0]             = c.p6;
-    array0[CALIBRATION_PRESSURE_7 - CALIBRATION_GROUP_0]             = c.p7;
+                (CALIBRATION_PRESSURE_5_LOW - CALIBRATION_GROUP_0))  = c.par_p5;
+    array0[CALIBRATION_PRESSURE_6 - CALIBRATION_GROUP_0]             = c.par_p6;
+    array0[CALIBRATION_PRESSURE_7 - CALIBRATION_GROUP_0]             = c.par_p7;
     *(int16_t*)(array0.data() +
-                (CALIBRATION_PRESSURE_8_LOW - CALIBRATION_GROUP_0))  = c.p8;
+                (CALIBRATION_PRESSURE_8_LOW - CALIBRATION_GROUP_0))  = c.par_p8;
     *(int16_t*)(array0.data() +
-                (CALIBRATION_PRESSURE_9_LOW - CALIBRATION_GROUP_0))  = c.p9;
-    array0[CALIBRATION_PRESSURE_10 - CALIBRATION_GROUP_0]            = c.p10;
+                (CALIBRATION_PRESSURE_9_LOW - CALIBRATION_GROUP_0))  = c.par_p9;
+    array0[CALIBRATION_PRESSURE_10 - CALIBRATION_GROUP_0] = c.par_p10;
     // humidity
-    uint8_t h12{(uint8_t)((c.h1 & 0x0F) | ((c.h2 & 0x0F) << 4))};
+    uint8_t h12{(uint8_t)((c.par_h1 & 0x0F) | ((c.par_h2 & 0x0F) << 4))};
     array1[CALIBRATION_HUMIDITY_12 - CALIBRATION_GROUP_1] = h12;
     array1[CALIBRATION_HUMIDITY_1_HIGH - CALIBRATION_GROUP_1] =
-        (c.h1 >> 4) & 0xFF;
+        (c.par_h1 >> 4) & 0xFF;
     array1[CALIBRATION_HUMIDITY_2_HIGH - CALIBRATION_GROUP_1] =
-        (c.h2 >> 4) & 0xFF;
-    array1[CALIBRATION_HUMIDITY_3 - CALIBRATION_GROUP_1] = c.h3;
-    array1[CALIBRATION_HUMIDITY_4 - CALIBRATION_GROUP_1] = c.h4;
-    array1[CALIBRATION_HUMIDITY_5 - CALIBRATION_GROUP_1] = c.h5;
-    array1[CALIBRATION_HUMIDITY_6 - CALIBRATION_GROUP_1] = c.h6;
-    array1[CALIBRATION_HUMIDITY_7 - CALIBRATION_GROUP_1] = c.h7;
+        (c.par_h2 >> 4) & 0xFF;
+    array1[CALIBRATION_HUMIDITY_3 - CALIBRATION_GROUP_1] = c.par_h3;
+    array1[CALIBRATION_HUMIDITY_4 - CALIBRATION_GROUP_1] = c.par_h4;
+    array1[CALIBRATION_HUMIDITY_5 - CALIBRATION_GROUP_1] = c.par_h5;
+    array1[CALIBRATION_HUMIDITY_6 - CALIBRATION_GROUP_1] = c.par_h6;
+    array1[CALIBRATION_HUMIDITY_7 - CALIBRATION_GROUP_1] = c.par_h7;
     // gas
-    array1[CALIBRATION_GAS_1 - CALIBRATION_GROUP_1] = c.g1;
+    array1[CALIBRATION_GAS_1 - CALIBRATION_GROUP_1] = c.par_gh1;
     *(int16_t*)(array1.data() + (CALIBRATION_GAS_2_LOW - CALIBRATION_GROUP_1)) =
-        c.g2;
-    array1[CALIBRATION_GAS_3 - CALIBRATION_GROUP_1] = c.g3;
+        c.par_gh2;
+    array1[CALIBRATION_GAS_3 - CALIBRATION_GROUP_1] = c.par_gh3;
     array2[CALIBRATION_RES_HEAT_RANGE - CALIBRATION_GROUP_2] &= ~(0x03 << 4);
     array2[CALIBRATION_RES_HEAT_RANGE - CALIBRATION_GROUP_2] |=
         (c.res_heat_range & 0x03) << 4;
@@ -405,17 +439,16 @@ bool UnitBME688::setCalibration(const bme688::Calibration& c) {
            writeRegister(CALIBRATION_GROUP_1, array0.data(), array1.size()) &&
            writeRegister(CALIBRATION_GROUP_2, array0.data(), array2.size());
 }
-#endif
 
-bool UnitBME688::readTPHSetting(bme688::TPHSetting& s) {
+bool UnitBME688::readTPHSetting(bme688::bme68xConf& s) {
     return bme68x_get_conf(&s, &_dev) == BME68X_OK;
 }
 
-bool UnitBME688::setTPHSetting(const bme688::TPHSetting& s) {
+bool UnitBME688::setTPHSetting(const bme688::bme68xConf& s) {
     // bme68x_set_conf argument does not const...
     if (bme68x_set_conf(const_cast<struct bme68x_conf*>(&s), &_dev) ==
         BME68X_OK) {
-        _tph = s;
+        _tphConf = s;
         return true;
     }
     return false;
@@ -473,9 +506,9 @@ bool UnitBME688::setOversampling(const bme688::Oversampling t,
         hm = (hm & ~0x07) | m5::stl::to_underlying(h);
         if (writeRegister8(CTRL_MEASUREMENT, tp) &&
             writeRegister8(CTRL_HUMIDITY, hm)) {
-            _tph.os_temp = m5::stl::to_underlying(t);
-            _tph.os_pres = m5::stl::to_underlying(p);
-            _tph.os_hum  = m5::stl::to_underlying(h);
+            _tphConf.os_temp = m5::stl::to_underlying(t);
+            _tphConf.os_pres = m5::stl::to_underlying(p);
+            _tphConf.os_hum  = m5::stl::to_underlying(h);
             return true;
         }
     }
@@ -487,7 +520,7 @@ bool UnitBME688::setOversamplingTemperature(const bme688::Oversampling os) {
     if (readRegister8(CTRL_MEASUREMENT, v, 0)) {
         v = (v & ~((0x07 << 5) | 0x03)) | (m5::stl::to_underlying(os) << 5);
         if (writeRegister8(CTRL_MEASUREMENT, v)) {
-            _tph.os_temp = m5::stl::to_underlying(os);
+            _tphConf.os_temp = m5::stl::to_underlying(os);
             return true;
         }
     }
@@ -499,7 +532,7 @@ bool UnitBME688::setOversamplingPressure(const bme688::Oversampling os) {
     if (readRegister8(CTRL_MEASUREMENT, v, 0)) {
         v = (v & ~((0x07 << 2) | 0x03)) | (m5::stl::to_underlying(os) << 2);
         if (writeRegister8(CTRL_MEASUREMENT, v)) {
-            _tph.os_pres = m5::stl::to_underlying(os);
+            _tphConf.os_pres = m5::stl::to_underlying(os);
             return true;
         }
     }
@@ -511,7 +544,7 @@ bool UnitBME688::setOversamplingHumidity(const bme688::Oversampling os) {
     if (readRegister8(CTRL_HUMIDITY, v, 0)) {
         v = (v & ~0x07) | m5::stl::to_underlying(os);
         if (writeRegister8(CTRL_HUMIDITY, v)) {
-            _tph.os_hum = m5::stl::to_underlying(os);
+            _tphConf.os_hum = m5::stl::to_underlying(os);
             return true;
         }
     }
@@ -523,7 +556,7 @@ bool UnitBME688::setIIRFilter(const bme688::Filter f) {
     if (readRegister8(CONFIG, v, 0)) {
         v = (v & ~(0x07 << 2)) | (m5::stl::to_underlying(f) << 2);
         if (writeRegister8(CONFIG, v)) {
-            _tph.filter = m5::stl::to_underlying(f);
+            _tphConf.filter = m5::stl::to_underlying(f);
             return true;
         }
     }
@@ -531,10 +564,10 @@ bool UnitBME688::setIIRFilter(const bme688::Filter f) {
 }
 
 bool UnitBME688::setHeaterSetting(const Mode mode,
-                                  const bme688::HeaterSetting& hs) {
+                                  const bme688::bme68xHeatrConf& hs) {
     if (bme68x_set_heatr_conf(m5::stl::to_underlying(mode), &hs, &_dev) ==
         BME68X_OK) {
-        _heater = hs;
+        _heaterConf = hs;
         return true;
     }
     return false;
@@ -550,40 +583,90 @@ bool UnitBME688::setMode(const Mode m) {
 
 bool UnitBME688::readMode(Mode& m) {
     // int8_t bme68x_get_op_mode(uint8_t *op_mode, struct bme68x_dev *dev);
-    return bme68x_get_op_mode((uint8_t*)&m, &_dev);
+    return bme68x_get_op_mode((uint8_t*)&m, &_dev) == BME68X_OK;
 }
 
 uint32_t UnitBME688::calculateMeasurementInterval(const bme688::Mode mode,
-                                                  const bme688::TPHSetting& s) {
+                                                  const bme688::bme68xConf& s) {
     return bme68x_get_meas_dur(m5::stl::to_underlying(mode),
                                const_cast<struct bme68x_conf*>(&s), &_dev);
 }
 
-#if 0
-bool UnitBME688::measureSingleShot(MeasurementData& data) {
+bool UnitBME688::measureSingleShot(bme68xData& data) {
     data = {};
 
-    if (setTPHSetting(_tph) && setHeaterSetting(Mode::Forced, _heater) &&
-        setMode(Mode::Forced)) {
-        auto interval_us = calculateMeasurementInterval(_mode, _tph) +
-                           (_heater.heatr_dur * 1000);
+    if (_bsec2_subscription) {
+        M5_LIB_LOGW("During bsec2 operations");
+        return false;
+    }
 
-        M5_LIB_LOGE("INTERVAL:%u", interval_us);
+    if (setMode(Mode::Forced)) {
+        auto interval_us = calculateMeasurementInterval(_mode, _tphConf) +
+                           (_heaterConf.heatr_dur * 1000);
+        auto interval_ms = interval_us / 1000 + ((interval_us % 1000) != 0);
+        M5_LIB_LOGE(">>>>>> %u/%u/%u %ld", _tphConf.os_temp, _tphConf.os_pres,
+                    _tphConf.os_hum, interval_ms);
 
-        m5::utility::delay(interval_us / 1000 + (interval_us % 1000) ? 1 : 0);
+        m5::utility::delay(interval_ms);
 
-        uint8_t num{};
-        auto ret =
-            bme68x_get_data(m5::stl::to_underlying(_mode), _data, &num, &_dev);
-
-        M5_LIB_LOGE("ret:%u num:%u", ret, num);
-
-        data = _data[0];
-        return true;
+        uint32_t retry{10};
+        auto ret = read_measurement();
+        while (!ret && retry--) {
+            // M5_LIB_LOGE("ret:%u num:%u", ret, num);
+            m5::utility::delay(1);
+            ret = read_measurement();
+        }
+        if (ret) {
+            data = _data[0];
+            return readMode(_mode);
+        }
     }
     return false;
 }
-#endif
+
+bool UnitBME688::startPeriodicMeasurement(const Mode m) {
+    _periodic = false;
+
+    if (_bsec2_subscription) {
+        M5_LIB_LOGW("During bsec2 operations");
+        return false;
+    }
+
+    if (setMode(m)) {
+        auto interval_us = calculateMeasurementInterval(_mode, _tphConf);
+        switch (m) {
+            case Mode::Forced:
+                interval_us += _heaterConf.heatr_dur * 1000;
+                break;
+            case Mode::Parallel:
+                interval_us += _heaterConf.shared_heatr_dur * 1000;
+                break;
+            case Mode::Sequential:
+                interval_us += _heaterConf.heatr_dur_prof[0] * 1000;
+                break;
+            default:
+                return false;
+        }
+        _interval = interval_us / 1000 + ((interval_us % 1000) != 0);
+        // Always wait for an interval to obtain the correct value for the first
+        // measurement
+        _latest   = m5::utility::millis();
+        _periodic = true;
+    }
+    return _periodic;
+}
+
+bool UnitBME688::stopPeriodicMeasurement() {
+    if (setMode(Mode::Sleep)) {
+        _periodic = false;
+    }
+    return !_periodic;
+}
+
+bool UnitBME688::read_measurement() {
+    return bme68x_get_data(m5::stl::to_underlying(_mode), _data, &_num_of_data,
+                           &_dev) == BME68X_OK;
+}
 
 #if defined(UNIT_BME688_USING_BSEC2)
 float UnitBME688::latestData(const bsec_virtual_sensor_t vs) const {
@@ -602,9 +685,12 @@ bool UnitBME688::bsec2GetConfig(uint8_t* cfg, uint32_t& actualSize) {
 }
 
 bool UnitBME688::bsec2SetConfig(const uint8_t* cfg) {
-    return cfg && bsec_set_configuration(cfg, BSEC_MAX_PROPERTY_BLOB_SIZE,
-                                         _bsec2_work.get(),
-                                         BSEC_MAX_WORKBUFFER_SIZE) == BSEC_OK;
+    if (cfg && bsec_set_configuration(cfg, BSEC_MAX_PROPERTY_BLOB_SIZE,
+                                      _bsec2_work.get(),
+                                      BSEC_MAX_WORKBUFFER_SIZE) == BSEC_OK) {
+        return readCalibration(_dev.calib) && readTPHSetting(_tphConf);
+    }
+    return false;
 }
 
 bool UnitBME688::bsec2GetState(uint8_t* state, uint32_t& actualSize) {
@@ -693,7 +779,7 @@ bool UnitBME688::bsec2UnsubscribeAll() {
 
 //
 bool UnitBME688::set_forced_mode() {
-    HeaterSetting hs{};
+    bme68xHeatrConf hs{};
     hs.enable     = true;
     hs.heatr_temp = _bsec2_settings.heater_temperature;
     hs.heatr_dur  = _bsec2_settings.heater_duration;
@@ -705,32 +791,26 @@ bool UnitBME688::set_forced_mode() {
 }
 
 bool UnitBME688::set_parallel_mode() {
-#if 0
     uint16_t shared{};
+    bme68xHeatrConf hs{};
+    constexpr uint16_t BSEC_TOTAL_HEAT_DUR{140};
 
-    /* Set the filter, odr, temperature, pressure and humidity settings */
-    return setOversampling((Oversampling)_bsec2_settings.temperature_oversampling,
-                           (Oversampling)_bsec2_settings.pressure_oversampling,
-                           (Oversampling)_bsec2_settings.humidity_oversampling);,
-            
+    shared = BSEC_TOTAL_HEAT_DUR -
+             (calculateMeasurementInterval(Mode::Parallel, _tphConf) / 1000);
 
+    hs.enable      = _bsec2_settings.heater_profile_len > 0;
+    hs.profile_len = _bsec2_settings.heater_profile_len;
+    memcpy(hs.heatr_temp_prof, _bsec2_settings.heater_temperature_profile,
+           sizeof(uint16_t) * hs.profile_len);
+    memcpy(hs.heatr_dur_prof, _bsec2_settings.heater_duration_profile,
+           sizeof(uint16_t) * hs.profile_len);
+    hs.shared_heatr_dur = shared;
 
-    sharedHeaterDur = BSEC_TOTAL_HEAT_DUR -
-                      (sensor.getMeasDur(BME68X_PARALLEL_MODE) / INT64_C(1000));
-
-    sensor.setHeaterProf(bmeConf.heater_temperature_profile,
-                         bmeConf.heater_duration_profile, sharedHeaterDur,
-                         bmeConf.heater_profile_len);
-
-    if (sensor.checkStatus() == BME68X_ERROR) return;
-
-    sensor.setOpMode(BME68X_PARALLEL_MODE);
-
-    if (sensor.checkStatus() == BME68X_ERROR) return;
-
-    opMode = BME68X_PARALLEL_MODE;
-#endif
-    return false;
+    return setOversampling(
+               (Oversampling)_bsec2_settings.temperature_oversampling,
+               (Oversampling)_bsec2_settings.pressure_oversampling,
+               (Oversampling)_bsec2_settings.humidity_oversampling) &&
+           setHeaterSetting(Mode::Parallel, hs) && setMode(Mode::Parallel);
 }
 
 bool UnitBME688::fetch_data() {
@@ -749,7 +829,7 @@ bool UnitBME688::fetch_data() {
 #define BSEC_CHECK_INPUT(x, shift) (x & (1 << (shift - 1)))
 
 bool UnitBME688::process_data(const int64_t ns,
-                              const bme688::MeasurementData& data) {
+                              const bme688::bme68xData& data) {
     bsec_input_t inputs[BSEC_MAX_PHYSICAL_SENSOR]{}; /* Temp, Pres, Hum & Gas */
     uint8_t nInputs{0};
     /* Checks all the required sensor inputs, required for the BSEC library for
