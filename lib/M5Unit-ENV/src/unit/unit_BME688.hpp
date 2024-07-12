@@ -523,12 +523,12 @@ class UnitBME688 : public Component {
       @param m Mode for measurement
       @return True if successful
       @pre Calibration,TPH and heater must already be set up
-      @warning In Forced  mode the intervals are constant, but not in other
-      modes
+      @warning Measurement intervals are not constant in Parallel mode
     */
     bool startPeriodicMeasurement(const bme688::Mode m);
     /*!
-      @brief Stopt periodic measurement
+      @brief Stop periodic measurement
+      @return True if successful
     */
     bool stopPeriodicMeasurement();
     ///@}

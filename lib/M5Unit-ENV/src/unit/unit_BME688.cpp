@@ -284,6 +284,12 @@ void UnitBME688::update_bme688() {
                         return;
                     }
                     break;
+                case Mode::Sequential:
+                    if (!_num_of_data) {
+                        _updated = false;
+                        return;
+                    }
+                    break;
                 default:
                     _updated = false;
                     return;
@@ -604,9 +610,6 @@ bool UnitBME688::measureSingleShot(bme68xData& data) {
         auto interval_us = calculateMeasurementInterval(_mode, _tphConf) +
                            (_heaterConf.heatr_dur * 1000);
         auto interval_ms = interval_us / 1000 + ((interval_us % 1000) != 0);
-        M5_LIB_LOGE(">>>>>> %u/%u/%u %ld", _tphConf.os_temp, _tphConf.os_pres,
-                    _tphConf.os_hum, interval_ms);
-
         m5::utility::delay(interval_ms);
 
         uint32_t retry{10};
@@ -657,6 +660,11 @@ bool UnitBME688::startPeriodicMeasurement(const Mode m) {
 }
 
 bool UnitBME688::stopPeriodicMeasurement() {
+    if (_bsec2_subscription) {
+        M5_LIB_LOGW("During bsec2 operations");
+        return false;
+    }
+
     if (setMode(Mode::Sleep)) {
         _periodic = false;
     }

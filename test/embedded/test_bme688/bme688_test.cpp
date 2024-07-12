@@ -185,7 +185,6 @@ TEST_P(TestBME688, Settings) {
 #if defined(UNIT_BME688_USING_BSEC2)
 TEST_P(TestBME688, BSEC2) {
     SCOPED_TRACE(ustr);
-    return;
 
     uint8_t cfg[BSEC_MAX_PROPERTY_BLOB_SIZE]{};
     uint8_t state[BSEC_MAX_STATE_BLOB_SIZE]{};
@@ -298,7 +297,6 @@ TEST_P(TestBME688, BSEC2) {
     }
 
     // TODO: call directly in bsec2
-
 }
 #endif
 
@@ -392,7 +390,8 @@ TEST_P(TestBME688, PeriodicParallel) {
     SCOPED_TRACE(ustr);
 
     uint16_t temp_prof[10] = {320, 100, 100, 100, 200, 200, 200, 320, 320, 320};
-    uint16_t dur_prof[10]  = {5, 2, 10, 30, 5, 5, 5, 5, 5, 5};
+    /* Multiplier to the shared heater duration */
+    uint16_t mul_prof[10] = {5, 2, 10, 30, 5, 5, 5, 5, 5, 5};
 
     bme68xConf tph{};
     tph.os_temp = m5::stl::to_underlying(Oversampling::x2);
@@ -405,7 +404,7 @@ TEST_P(TestBME688, PeriodicParallel) {
     bme68xHeatrConf hs{};
     hs.enable = true;
     memcpy(hs.temp_prof, temp_prof, sizeof(temp_prof));
-    memcpy(hs.dur_prof, dur_prof, sizeof(dur_prof));
+    memcpy(hs.dur_prof, mul_prof, sizeof(mul_prof));
     hs.shared_heatr_dur = (uint16_t)(140 - (unit->calculateMeasurementInterval(
                                                 Mode::Parallel, tph) /
                                             1000));
@@ -421,7 +420,70 @@ TEST_P(TestBME688, PeriodicParallel) {
     auto interval = unit->interval();
     uint32_t cnt{8};
     auto prev       = unit->updatedMillis();
-    auto timeout_at = m5::utility::millis() + (cnt + 1) * 1000;
+    auto timeout_at = m5::utility::millis() + (interval * 10 * (cnt + 1));
+    while (cnt && m5::utility::millis() <= timeout_at) {
+        unit->update();
+        if (unit->updated()) {
+            --cnt;
+            auto um       = unit->updatedMillis();
+            auto duration = um - prev;
+            prev          = um;
+            // EXPECT_LE(duration, interval);
+            // M5_LOGW("raw:%u", unit->numberOfRawData());
+            for (uint8_t i = 0; i < unit->numberOfRawData(); ++i) {
+                auto d = unit->data(i);
+                EXPECT_TRUE(d != nullptr);
+                if (d) {
+                    M5_LOGI("dur:%ld %f/%f/%f/%f", duration, d->temperature,
+                            d->pressure, d->humidity, d->gas_resistance);
+                    EXPECT_TRUE(std::isfinite(d->temperature));
+                    EXPECT_TRUE(std::isfinite(d->pressure));
+                    EXPECT_TRUE(std::isfinite(d->humidity));
+                    EXPECT_TRUE(std::isfinite(d->gas_resistance));
+                }
+            }
+        }
+        m5::utility::delay(1);
+    }
+    EXPECT_EQ(cnt, 0U);
+
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->inPeriodic());
+    EXPECT_EQ(unit->mode(), Mode::Sleep);
+}
+
+TEST_P(TestBME688, PeriodiSequential) {
+    SCOPED_TRACE(ustr);
+
+    uint16_t temp_prof[10] = {200, 240, 280, 320, 360, 360, 320, 280, 240, 200};
+    /* Heating duration in milliseconds */
+    uint16_t dur_prof[10] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+
+    bme68xConf tph{};
+    tph.os_temp = m5::stl::to_underlying(Oversampling::x2);
+    tph.os_pres = m5::stl::to_underlying(Oversampling::x1);
+    tph.os_hum  = m5::stl::to_underlying(Oversampling::x16);
+    tph.filter  = m5::stl::to_underlying(Filter::None);
+    tph.odr     = m5::stl::to_underlying(ODR::None);
+    EXPECT_TRUE(unit->setTPHSetting(tph));
+
+    bme68xHeatrConf hs{};
+    hs.enable = true;
+    memcpy(hs.temp_prof, temp_prof, sizeof(temp_prof));
+    memcpy(hs.dur_prof, dur_prof, sizeof(dur_prof));
+    hs.profile_len = 10;
+    EXPECT_TRUE(unit->setHeaterSetting(Mode::Sequential, hs));
+
+    //
+    EXPECT_FALSE(unit->inPeriodic());
+    EXPECT_TRUE(unit->startPeriodicMeasurement(Mode::Sequential));
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_EQ(unit->mode(), Mode::Sequential);
+
+    auto interval = unit->interval();
+    uint32_t cnt{8};
+    auto prev       = unit->updatedMillis();
+    auto timeout_at = m5::utility::millis() + (interval * (cnt + 1));
     while (cnt && m5::utility::millis() <= timeout_at) {
         unit->update();
         if (unit->updated()) {
@@ -455,5 +517,5 @@ TEST_P(TestBME688, PeriodicParallel) {
 
 TEST_P(TestBME688, SelfTest) {
     SCOPED_TRACE(ustr);
-    // EXPECT_TRUE(unit->selfTest());
+    EXPECT_TRUE(unit->selfTest());
 }
