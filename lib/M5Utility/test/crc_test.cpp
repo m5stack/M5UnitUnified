@@ -1,12 +1,14 @@
 /*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/*
   UnitTest for M5Utility
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include <gtest/gtest.h>
 #include <M5Utility.hpp>
+#include <M5Unified.hpp>
 
 namespace {
 struct CRCType {
@@ -19,6 +21,7 @@ struct CRCType {
     const uint32_t xorout;
 };
 
+// See also
 // https://crccalc.com/?crc=0123456789abcdef&method=crc8&datatype=hex&outtype=0
 CRCType crc8_table[] = {
     // name, result, poly, init, refIn, refOut, xorout
@@ -71,14 +74,56 @@ using namespace m5::utility;
 
 TEST(Utility, CRC8) {
     for (auto&& e : crc8_table) {
+        SCOPED_TRACE(e.name);
         CRC8 crc(e.init, e.poly, e.refIn, e.refOut, e.xorout);
-        EXPECT_EQ(crc.get(tdata.data(), tdata.size()), e.result) << e.name;
+        auto v = crc.update(tdata.data(), tdata.size());
+        EXPECT_EQ(crc.value(), e.result);
+        EXPECT_EQ(v, crc.value());
     }
 }
 
 TEST(Utility, CRC16) {
     for (auto&& e : crc16_table) {
+        SCOPED_TRACE(e.name);
         CRC16 crc(e.init, e.poly, e.refIn, e.refOut, e.xorout);
-        EXPECT_EQ(crc.get(tdata.data(), tdata.size()), e.result) << e.name;
+        auto v = crc.update(tdata.data(), tdata.size());
+        EXPECT_EQ(crc.value(), e.result);
+        EXPECT_EQ(v, crc.value());
+    }
+}
+
+// Test whether calculation from the whole and calculation from split chunks are
+// equivalent
+TEST(Utility, Chunk) {
+    // CRC8
+    constexpr uint8_t d8[32] = {0x04, 0x67, 0xfc, 0x4d, 0xf4, 0xe7, 0x9c, 0x3b,
+                                0x05, 0xb8, 0xad, 0x31, 0x97, 0xb1, 0x21, 0x72,
+                                0x59, 0x5d, 0x80, 0x26, 0x66, 0xc,  0x12, 0x9a,
+                                0x53, 0xa6, 0x70, 0x87, 0x91, 0x5d, 0xa4, 0x9a};
+    for (auto&& e : crc8_table) {
+        SCOPED_TRACE(e.name);
+        uint8_t crc_all = CRC8::calculate(d8, m5::stl::size(d8), e.init, e.poly,
+                                          e.refIn, e.refOut, e.xorout);
+
+        CRC8 crc(e.init, e.poly, e.refIn, e.refOut, e.xorout);
+        uint8_t crc_chunk{};
+        for (int i = 0; i < 4; ++i) {
+            crc_chunk = crc.update(d8 + (i * 8), 8);
+        }
+        EXPECT_EQ(crc_all, crc_chunk);
+    }
+
+    // CRC16
+    for (auto&& e : crc16_table) {
+        SCOPED_TRACE(e.name);
+        uint16_t crc_all = CRC16::calculate(
+            d8, m5::stl::size(d8), e.init, e.poly, e.refIn, e.refOut, e.xorout);
+
+        CRC16 crc(e.init, e.poly, e.refIn, e.refOut, e.xorout);
+        uint16_t crc_chunk{};
+        for (int i = 0; i < 4; ++i) {
+            crc_chunk = crc.update(d8 + (i * 8), 8);
+        }
+        EXPECT_EQ(crc_all, crc_chunk);
     }
 }

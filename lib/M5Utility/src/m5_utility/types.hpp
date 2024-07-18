@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file types.hpp
   @brief Type and enumerator definitions
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_TYPES_HPP
 #define M5_UTILITY_TYPES_HPP
@@ -27,8 +28,10 @@ template <bool DELittle>
 union U16 {
     /// @name Constrcutor
     ///@{
+    /*! @brief default constructor */
     constexpr U16() : u16{0} {
     }
+    //!@brief from uint16_t
 #if 0
     template <bool PELittle = m5::endian::little>
     constexpr explicit U16(const uint16_t v) : u8{
@@ -43,10 +46,17 @@ union U16 {
     }
 
 #endif
+    /*!
+      @brief from uint8_t pointer
+      @warning The area pointed to by the pointer must be at least 2 bytes
+     */
+    constexpr explicit U16(const uint8_t* p) : u8{*p, *(p + 1)} {
+    }
+    //! @brief Stored in order of high and low
     constexpr U16(const uint8_t high, const uint8_t low) : u8{high, low} {
     }
-    constexpr U16(const U16&) = default;
-    constexpr U16(U16&& o)    = default;
+    constexpr U16(const U16&) = default;  //!< @brief as default
+    constexpr U16(U16&& o)    = default;  //!< @brief as default
     ///@}
 
     ///@name Assignment

@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file misc.hpp
   @brief Miscellaneous features
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_MISC_HPP
 #define M5_UTILITY_MISC_HPP

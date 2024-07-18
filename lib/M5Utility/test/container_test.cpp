@@ -7,6 +7,7 @@
 */
 #include <gtest/gtest.h>
 #include <M5Utility.hpp>
+#include <M5Unified.hpp>
 
 namespace {
 
@@ -15,7 +16,7 @@ using namespace m5::container;
 void cb_basic_test() {
     SCOPED_TRACE("Basic");
 
-    CircularBuffer<int, 4> rbuf;
+    FixedCircularBuffer<int, 4> rbuf;
 
     EXPECT_TRUE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
@@ -36,6 +37,9 @@ void cb_basic_test() {
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 1U);
     EXPECT_EQ(rbuf[0], 1);
+    EXPECT_EQ(rbuf.front(), 1);
+    EXPECT_EQ(rbuf.back(), 1);
+    M5_LOGW("1> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
 
     // H
     // |   |   |   |   |
@@ -48,6 +52,9 @@ void cb_basic_test() {
     EXPECT_TRUE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 0U);
+    EXPECT_FALSE(rbuf.front());
+    EXPECT_FALSE(rbuf.back());
+    M5_LOGW("2> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
 
     //     H
     // | 2 |   |   |   |
@@ -57,6 +64,9 @@ void cb_basic_test() {
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 1U);
     EXPECT_EQ(rbuf[0], 2);
+    EXPECT_EQ(rbuf.front(), 2);
+    EXPECT_EQ(rbuf.back(), 2);
+    M5_LOGW("3> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
 
     // H
     // |   |   |   |   |
@@ -69,26 +79,35 @@ void cb_basic_test() {
     EXPECT_TRUE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 0U);
+    EXPECT_FALSE(rbuf.front());
+    EXPECT_FALSE(rbuf.back());
+    M5_LOGW("3> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
 
     //         H
     // | 4 | 5 | 6 | 3 |
     //         T
-    rbuf.push_front(3);
+    rbuf.push_front(3);  // to front
     EXPECT_FALSE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 1U);
-
-    rbuf.push_back(4);
+    EXPECT_EQ(rbuf.front(), 3);
+    EXPECT_EQ(rbuf.back(), 3);
+    
+    rbuf.push_back(4);  // to back
     EXPECT_FALSE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 2U);
-
-    rbuf.push_back(5);
+    EXPECT_EQ(rbuf.front(), 3);
+    EXPECT_EQ(rbuf.back(), 4);
+    
+    rbuf.push_back(5);  // to back
     EXPECT_FALSE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 3U);
-
-    rbuf.push_front(6);
+    EXPECT_EQ(rbuf.front(), 3);
+    EXPECT_EQ(rbuf.back(), 5);
+    
+    rbuf.push_front(6);  // to front
     EXPECT_FALSE(rbuf.empty());
     EXPECT_TRUE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 4U);
@@ -96,7 +115,10 @@ void cb_basic_test() {
     EXPECT_EQ(rbuf[1], 3);
     EXPECT_EQ(rbuf[2], 4);
     EXPECT_EQ(rbuf[3], 5);
-
+    EXPECT_EQ(rbuf.front(), 6);
+    EXPECT_EQ(rbuf.back(), 5);
+    M5_LOGW("4> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     //     H
     // | 4 | 7 | 6 | 3 |
     //     T
@@ -105,7 +127,13 @@ void cb_basic_test() {
     EXPECT_TRUE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 4U);
     EXPECT_EQ(rbuf[0], 7);
-
+    EXPECT_EQ(rbuf[1], 6);
+    EXPECT_EQ(rbuf[2], 3);
+    EXPECT_EQ(rbuf[3], 4);
+    EXPECT_EQ(rbuf.front(), 7);
+    EXPECT_EQ(rbuf.back(), 4);
+    M5_LOGW("5> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     //         H
     // | 4 | 8 | 6 | 3 |
     //         T
@@ -117,7 +145,10 @@ void cb_basic_test() {
     EXPECT_EQ(rbuf[1], 3);
     EXPECT_EQ(rbuf[2], 4);
     EXPECT_EQ(rbuf[3], 8);
-
+    EXPECT_EQ(rbuf.front(), 6);
+    EXPECT_EQ(rbuf.back(), 8);
+    M5_LOGW("5> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     //         H
     // |   |   |   |   |
     //         T
@@ -131,7 +162,10 @@ void cb_basic_test() {
     EXPECT_TRUE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 0U);
-
+    EXPECT_FALSE(rbuf.front());
+    EXPECT_FALSE(rbuf.back());
+    M5_LOGW("6> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     //             H
     // | 11| 12| 13| 10 |
     //             T
@@ -147,19 +181,26 @@ void cb_basic_test() {
     EXPECT_EQ(rbuf[1], 11);
     EXPECT_EQ(rbuf[2], 12);
     EXPECT_EQ(rbuf[3], 13);
-
+    EXPECT_EQ(rbuf.front(), 10);
+    EXPECT_EQ(rbuf.back(), 13);
+    M5_LOGW("7> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     //             H
     // |   |   | 13|   |
     //         T
-    EXPECT_EQ(rbuf.front(), 10);
     rbuf.pop_front();
     EXPECT_EQ(rbuf.front(), 11);
+    EXPECT_EQ(rbuf.back(), 13);
     rbuf.pop_front();
     EXPECT_EQ(rbuf.front(), 12);
+    EXPECT_EQ(rbuf.back(), 13);
     rbuf.pop_front();
     EXPECT_FALSE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 1U);
+    EXPECT_EQ(rbuf.front(), 13);
+    EXPECT_EQ(rbuf.back(), 13);
+    M5_LOGW("8> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
 
     //         H
     // |   |   |   |   |
@@ -168,15 +209,23 @@ void cb_basic_test() {
     EXPECT_TRUE(rbuf.empty());
     EXPECT_FALSE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 0U);
-
+    EXPECT_FALSE(rbuf.front());
+    EXPECT_FALSE(rbuf.back());
+    M5_LOGW("9> %zu/%zu/%u", rbuf._head, rbuf._tail, rbuf._full);
+    
     // H
     // |111|111|111|111|
     // T
     rbuf.fill(111);
     EXPECT_TRUE(rbuf.full());
     EXPECT_EQ(rbuf.size(), 4U);
+    EXPECT_EQ(rbuf[0], 111);
+    EXPECT_EQ(rbuf[1], 111);
+    EXPECT_EQ(rbuf[2], 111);
+    EXPECT_EQ(rbuf[3], 111);
     EXPECT_EQ(rbuf.front(), 111);
     EXPECT_EQ(rbuf.back(), 111);
+
 }
 
 void cb_constructor_test() {
@@ -188,7 +237,7 @@ void cb_constructor_test() {
     }
 
     {
-        CircularBuffer<int, 8> rbuf(2U, 52);
+        FixedCircularBuffer<int, 8> rbuf(2U, 52);
         EXPECT_FALSE(rbuf.empty());
         EXPECT_FALSE(rbuf.full());
         EXPECT_EQ(rbuf.capacity(), 8U);
@@ -197,7 +246,7 @@ void cb_constructor_test() {
         EXPECT_EQ(rbuf[1], 52);
     }
     {
-        CircularBuffer<int, 8> rbuf(100U, 52);
+        FixedCircularBuffer<int, 8> rbuf(100U, 52);
         EXPECT_FALSE(rbuf.empty());
         EXPECT_TRUE(rbuf.full());
         EXPECT_EQ(rbuf.capacity(), 8U);
@@ -207,7 +256,7 @@ void cb_constructor_test() {
     }
 
     {
-        CircularBuffer<int, 10> rbuf2({9, 8, 7, 6, 5});
+        FixedCircularBuffer<int, 10> rbuf2({9, 8, 7, 6, 5});
         EXPECT_FALSE(rbuf2.empty());
         EXPECT_FALSE(rbuf2.full());
         EXPECT_EQ(rbuf2.capacity(), 10U);
@@ -219,7 +268,7 @@ void cb_constructor_test() {
         EXPECT_EQ(rbuf2[4], 5);
     }
     {
-        CircularBuffer<int, 8> rbuf2(table.begin(), table.end());
+        FixedCircularBuffer<int, 8> rbuf2(table.begin(), table.end());
         EXPECT_FALSE(rbuf2.empty());
         EXPECT_TRUE(rbuf2.full());
         EXPECT_EQ(rbuf2.capacity(), 8U);
@@ -228,7 +277,7 @@ void cb_constructor_test() {
         EXPECT_EQ(rbuf2.back(), 99);
     }
 
-    CircularBuffer<float, 3> rbuf3 = {1.1f, 2.2f, 3.3f};
+    FixedCircularBuffer<float, 3> rbuf3 = {1.1f, 2.2f, 3.3f};
     EXPECT_FALSE(rbuf3.empty());
     EXPECT_TRUE(rbuf3.full());
     EXPECT_EQ(rbuf3.capacity(), 3U);
@@ -241,7 +290,7 @@ void cb_constructor_test() {
 void cb_read() {
     SCOPED_TRACE("Read");
 
-    CircularBuffer<int, 128> rb;
+    FixedCircularBuffer<int, 128> rb;
     int buf[128] = {};
     size_t rcnt  = 0;
 
@@ -318,8 +367,8 @@ void cb_read() {
 void cb_iterator_test() {
     SCOPED_TRACE("Iterators");
 
-    CircularBuffer<int, 4> rb = {0, 1, 2};
-    CircularBuffer<int, 4> rb2;
+    FixedCircularBuffer<int, 4> rb = {0, 1, 2};
+    FixedCircularBuffer<int, 4> rb2;
     int c = 0;
     for (auto it = rb.cbegin(); it != rb.cend(); ++it) {
         EXPECT_EQ(*it, c++);
@@ -350,7 +399,7 @@ void cb_iterator_test() {
     }
 #endif
 
-    using Iter = CircularBuffer<int, 4>::const_iterator;
+    using Iter = FixedCircularBuffer<int, 4>::const_iterator;
     {
         Iter it = rb.begin();
         EXPECT_EQ(*it++, 9);

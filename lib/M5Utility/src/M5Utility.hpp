@@ -1,13 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5Utility.hpp
   @brief Main header of M5Utility
 
   @mainpage M5Utility
   Llibrary containing utilities common to M5 products.  C++11 or later
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UTILITY_HPP
 #define M5_UTILITY_HPP
@@ -20,6 +21,7 @@
 #include "m5_utility/log/library_log.hpp"
 
 #include "m5_utility/container/circular_buffer.hpp"
+//#include "m5_utility/container/fixed_circular_buffer.hpp"
 
 #include "m5_utility/bit_segment.hpp"
 #include "m5_utility/compatibility_feature.hpp"
@@ -40,12 +42,20 @@ namespace m5 {
   @namespace utility
   @brief For utilities
 */
-namespace utility {}  // namespace utility
+namespace utility {}
 
 /*!
   @namespace stl
   @brief STL compatibility functions and classes
  */
 namespace stl {}
+
+/*!
+  @namespace container
+  @brief Container classes
+ */
+namespace container {}
+
 }  // namespace m5
+
 #endif
