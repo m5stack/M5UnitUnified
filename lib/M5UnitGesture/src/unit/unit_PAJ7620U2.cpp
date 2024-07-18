@@ -381,7 +381,7 @@ bool UnitPAJ7620U2::begin() {
            setMode(_cfg.mode);
 }
 
-void UnitPAJ7620U2::update() {
+void UnitPAJ7620U2::update(const bool /* force*/) {
     switch (_mode) {
         case Mode::Gesture:
             _updated = update_gesture();

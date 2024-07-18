@@ -42,8 +42,8 @@ bool UnitWS1850S::begin() {
     return UnitMFRC522::begin();
 }
 
-void UnitWS1850S::update() {
-    return UnitMFRC522::update();
+void UnitWS1850S::update(const bool force) {
+    return UnitMFRC522::update(force);
 }
 
 }  // namespace unit

@@ -1,12 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file adapter.cpp
   @brief Adapters to treat M5HAL and TwoWire in the same way
-
-  @warning Currently able to handle TwoWire, but will eventually be M5HAL only
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  @note  Currently handles TwoWire directly, but will handle via M5HAL in the
+  future
 */
 #include "adapter.hpp"
 #include <cassert>

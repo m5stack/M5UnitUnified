@@ -1,18 +1,59 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_SCD4x.hpp
   @brief SCD4X family Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_ENV_UNIT_SCD4x_HPP
 #define M5_UNIT_ENV_UNIT_SCD4x_HPP
 
 #include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
+#include <limits>  // NaN
 
 namespace m5 {
 namespace unit {
+
+/*!
+  @namespace scd4x
+  @brief For SCD4X family
+ */
+namespace scd4x {
+/*!
+  @enum Mode
+  @brief Mode of periodic measurement
+ */
+enum class Mode : uint8_t {
+    Normal,    //!< Normal (Receive data every 5 seconds)
+    LowPower,  //!< Low power (Receive data every 30 seconds)
+};
+
+///@cond 0
+// Max command duration(ms)
+constexpr uint16_t READ_MEASUREMENT_DURATION{1};
+constexpr uint16_t STOP_PERIODIC_MEASUREMENT_DURATION{500};
+constexpr uint16_t SET_TEMPERATURE_OFFSET_DURATION{1};
+constexpr uint16_t GET_TEMPERATURE_OFFSET_DURATION{1};
+constexpr uint16_t SET_SENSOR_ALTITUDE_DURATION{1};
+constexpr uint16_t GET_SENSOR_ALTITUDE_DURATION{1};
+constexpr uint16_t SET_AMBIENT_PRESSURE_DURATION{1};
+constexpr uint16_t PERFORM_FORCED_CALIBRATION_DURATION{400};
+constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED_DURATION{1};
+constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED_DURATION{1};
+constexpr uint16_t GET_DATA_READY_STATUS_DURATION{1};
+constexpr uint16_t PERSIST_SETTINGS_DURATION{800};
+constexpr uint16_t GET_SERIAL_NUMBER_DURATION{1};
+constexpr uint16_t PERFORM_SELF_TEST_DURATION{10000};
+constexpr uint16_t PERFORM_FACTORY_RESET_DURATION{1200};
+constexpr uint16_t REINIT_DURATION{20};
+constexpr uint16_t MEASURE_SINGLE_SHOT_DURATION{5000};
+constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY_DURATION{50};
+///@endcond
+
+}  // namespace scd4x
 
 /*!
   @class UnitSCD40
@@ -24,29 +65,41 @@ class UnitSCD40 : public Component {
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
-    struct config_t {
-        //! @brief Start periodic measurement on begin?
+    struct config_t : Component::config_t {
+        //! Start periodic measurement on begin?
         bool start_periodic{true};
-        //! @brief using low power mode if start peridodic on begin?
-        bool low_power{false};
-        //! @brief  Enable calibration on begin?
-        bool auto_calibration{true};
+        //! Mode of periodic measurement if start on begin?
+        scd4x::Mode mode{scd4x::Mode::Normal};
+        //! Enable calibration on begin?
+        bool calibration{true};
+    };
+
+    /*!
+      @struct Data
+      @brief Measurement data group
+     */
+    struct Data {
+        std::array<uint8_t, 9> raw{};  //!< RAW data
+        uint16_t co2() const;          //!< CO2 concentration (ppm)
+        float temperature() const;     //!< temperature (Celsius)
+        float humidity() const;        //!< humidity (RH)
     };
 
     explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+        _data.reset(new m5::container::CircularBuffer<Data>(1));
     }
     virtual ~UnitSCD40() {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() {
+    config_t config() const {
         return _cfg;
     }
     //! @brief Set the configration
@@ -73,43 +126,78 @@ class UnitSCD40 : public Component {
     inline unsigned long updatedMillis() const {
         return _latest;
     }
+    ///@}
+
+    ///@name Measurement data by periodic
+    ///@{
     //! @brief Latest measured CO2 concentration (ppm)
     inline uint16_t co2() const {
-        return _co2;
+        return !_data->empty() ? _data->back()->co2() : 0;
     }
     //! @brief Latest measured temperature (Celsius)
     inline float temperature() const {
-        return _temperature;
+        return !_data->empty() ? _data->back()->temperature()
+                               : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Latest measured humidity (RH)
     inline float humidity() const {
-        return _humidity;
+        return !_data->empty() ? _data->back()->humidity()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Get the number of stored data
+    inline size_t available() const {
+        return _data->size();
+    }
+    //! @brief Empty data?
+    inline bool empty() const {
+        return _data->empty();
+    }
+    //! @brief Stored data full?
+    inline bool full() const {
+        return _data->full();
+    }
+    //! @brief Retrieve oldest stored data
+    inline Data oldest() const {
+        return !_data->empty() ? *(_data->front()) : Data{};
+    }
+    //! @brief Retrieve latest stored data
+    inline Data latest() const {
+        return !_data->empty() ? *(_data->back()) : Data{};
+    }
+    //! @brief Discard  the oldest data accumulated
+    inline void discard() const {
+        _data->pop_front();
+    }
+    //! @brief Discard all data
+    inline void flush() {
+        _data->clear();
     }
     ///@}
 
-    // API
-    ///@name Basic Commands
+    ///@name Periodic
     ///@{
     /*!
-      @brief Start measurement
-      @note Receive data every 5 seconds
+      @brief Start periodic measurement
+      @param mode Mode of periodic measurement
       @return True if successful
     */
-    bool startPeriodicMeasurement();
+    bool startPeriodicMeasurement(const scd4x::Mode mode = scd4x::Mode::Normal);
+    /*!
+      @brief Start low power periodic measurements
+      @return True if successful
+    */
+    inline bool startLowPowerPeriodicMeasurement() {
+        return startPeriodicMeasurement(scd4x::Mode::LowPower);
+    }
     /*!
       @brief Stop measurement
+      @param duration Max command duration(ms)
       @warning The sensor will only respond to other commands after waiting 500
-      ms after issuing the stop_periodic_measurement command.
+      ms after issuing the stop_periodic_measurement command
       @return True if successful
     */
-    bool stopPeriodicMeasurement();
-
-    /*!
-      @brief Check for fresh data and store
-      @return True if fresh data is available
-      @warning Measurement duration max 1 ms
-    */
-    bool readMeasurement();
+    bool stopPeriodicMeasurement(
+        const uint32_t duration = scd4x::STOP_PERIODIC_MEASUREMENT_DURATION);
     ///@}
 
     ///@name On-Chip Output Signal Compensation
@@ -119,55 +207,61 @@ class UnitSCD40 : public Component {
       @details Define how warm the sensor is compared to ambient, so RH and T
       are temperature compensated. Has no effect on the CO2 reading Default
       offsetis 4C
-      @param[in] offset (0 <= offset < 175)
+      @param offset (0 <= offset < 175)
+      @param duration Max command duration(ms)
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 1 ms
     */
-    bool setTemperatureOffset(const float offset);
+    bool setTemperatureOffset(
+        const float offset,
+        const uint32_t duration = scd4x::SET_TEMPERATURE_OFFSET_DURATION);
     /*!
-      @brief Get the temperature offset
+      @brief Read the temperature offset
       @param[out] offset Offset value
+      @param duration Max command duration(ms)
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 1 ms
     */
-    bool getTemperatureOffset(float &offset);
+    bool readTemperatureOffset(float &offset);
     /*!
       @brief Set the sensor altitude
       @details Define the sensor altitude in metres above sea level, so RH and
       CO2 arecompensated for atmospheric pressure Default altitude is 0m
-      @param[in] altitude Unit: metres
+      @param altitude Unit:metres
+      @param duration Max command duration(ms)
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 1 ms
     */
-    bool setSensorAltitude(const uint16_t altitude);
+    bool setSensorAltitude(
+        const uint16_t altitude,
+        const uint32_t duration = scd4x::SET_SENSOR_ALTITUDE_DURATION);
     /*!
-      @brief Get the sensor altitude
+      @brief Read the sensor altitude
       @param[out] altitude Altitude value
+      @param duration Max command duration(ms)
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 1 ms
     */
-    bool getSensorAltitude(uint16_t &altitude);
+    bool readSensorAltitude(uint16_t &altitude);
     /*!
       @brief Set the ambient pressure
       @details Define the ambient pressure in Pascals, so RH and CO2 are
       compensated for atmospheric pressure setAmbientPressure overrides
       setSensorAltitude
-      @param[in] presure Unit: pascals (>= 0.0f)
+      @param presure Unit: pascals (>= 0.0f)
+      @param duration Max command duration(ms)
       @return True if successful
-      @warning Measurement duration max 1 ms
     */
-    bool setAmbientPressure(const float pressure);
+    bool setAmbientPressure(
+        const float pressure,
+        const uint32_t duration = scd4x::SET_AMBIENT_PRESSURE_DURATION);
     ///@}
 
     ///@name Field Calibration
     ///@{
     /*!
       @brief Perform forced recalibration
-      @param[in] concentration Unit:ppm
+      @param concentration Unit:ppm
       @param[out] correction The FRC correction value
       @return True if successful
       @warning During periodic detection runs, an error is returned
@@ -177,12 +271,14 @@ class UnitSCD40 : public Component {
                                     int16_t &correction);
     /*!
       @brief Enable/disable automatic self calibration
-      @param[in] enabled Enable automatic self calibration if true
+      @param enabled Enable automatic self calibration if true
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 1 ms
     */
-    bool setAutomaticSelfCalibrationEnabled(const bool enabled = true);
+    bool setAutomaticSelfCalibrationEnabled(
+        const bool enabled = true,
+        const uint32_t duration =
+            scd4x::SET_AUTOMATIC_SELF_CALIBRATION_ENABLED_DURATION);
     /*!
       @brief Check if automatic self calibration is enabled
       @param[out] enabled  True if automatic self calibration is enabled
@@ -190,24 +286,7 @@ class UnitSCD40 : public Component {
       @warning During periodic detection runs, an error is returned
       @warning Measurement duration max 1 ms
     */
-    bool getAutomaticSelfCalibrationEnabled(bool &enabled);
-    ///@}
-
-    ///@name Low Power operation
-    ///@{
-    /*!
-      @brief Start low power measurements
-      @return True if successful
-      @note Receive data every 30 seconds
-      @warning During periodic detection runs, an error is returned
-    */
-    bool startLowPowerPeriodicMeasurement(void);
-    /*!
-      @brief Is fresh data available?
-      @retval true Fresh data is available
-      @warning Measurement duration max 1 ms
-    */
-    bool getDataReadyStatus();
+    bool readAutomaticSelfCalibrationEnabled(bool &enabled);
     ///@}
 
     ///@name Advanced Features
@@ -216,9 +295,9 @@ class UnitSCD40 : public Component {
       @brief Copy sensor settings from RAM to EEPROM
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 800 ms
     */
-    bool persistSettings();
+    bool persistSettings(
+        const uint32_t duration = scd4x::PERSIST_SETTINGS_DURATION);
     /*!
       @brief Get the serial number string
       @param[out] serialNumber Output buffer
@@ -226,14 +305,7 @@ class UnitSCD40 : public Component {
       @warning Size must be at least 13 bytes
       @warning During periodic detection runs, an error is returned
     */
-    bool getSerialNumber(char *serialNumber);
-    /*!
-      @brief Get the serial number value
-      @return Not zero if serial number is valid
-      @note The serial number is 48 bit
-      @warning During periodic detection runs, an error is returned
-    */
-    uint64_t getSerialNumber();
+    bool readSerialNumber(char *serialNumber);
     /*!
       @brief Get the serial number value
       @param[out] serialNumber serial number value
@@ -241,14 +313,7 @@ class UnitSCD40 : public Component {
       @note The serial number is 48 bit
       @warning During periodic detection runs, an error is returned
     */
-    bool getSerialNumber(uint64_t &serialNumber);
-    /*!
-      @brief Perform self test
-      @return True if no malfunction detected
-      @note Takes 10 seconds to complete
-      @warning During periodic detection runs, an error is returned
-    */
-    bool performSelfTest(void);
+    bool readSerialNumber(uint64_t &serialNumber);
     /*!
       @brief Perform self test
       @param[out] True if malfunction detected
@@ -265,31 +330,27 @@ class UnitSCD40 : public Component {
       @warning During periodic detection runs, an error is returned
       @warning Measurement duration max 1200 ms
     */
-    bool performFactoryReset();
+    bool performFactoryReset(
+        const uint32_t duration = scd4x::PERFORM_FACTORY_RESET_DURATION);
     /*!
       @brief Re-initialize the sensor, load settings from EEPROM
       @return True if successful
       @warning During periodic detection runs, an error is returned
       @warning Measurement duration max 20 ms
     */
-    bool reInit();
+    bool reInit(const uint32_t duration = scd4x::REINIT_DURATION);
     ///@}
 
    protected:
-    bool read_measurement(const bool all = true);
+    bool read_data_ready_status();
+    bool read_measurement(Data &d, const bool all = true);
 
    protected:
-    constexpr static unsigned long SIGNAL_INTERVAL_MS{5000};
-    constexpr static unsigned long SIGNAL_INTERVAL_LOW_MS{30 * 1000};
-
     bool _periodic{};  // During periodic measurement?
     bool _updated{};
-    unsigned long _latest{}, _interval{SIGNAL_INTERVAL_MS};
+    unsigned long _latest{}, _interval{};
 
-    // latest data
-    uint16_t _co2{};       // ppm
-    float _temperature{};  // C
-    float _humidity{};     // RH
+    std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
 
     config_t _cfg{};
 };
@@ -299,35 +360,29 @@ class UnitSCD40 : public Component {
   @brief CO2 sensor unit
 */
 class UnitSCD41 : public UnitSCD40 {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD41, 0xFF);
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD41, 0x00);
 
    public:
     explicit UnitSCD41(const uint8_t addr = DEFAULT_ADDRESS) : UnitSCD40(addr) {
     }
 
-    // API
-    // Has the same API as UnitSCD40 and has a dedicated API
     ///@name Low power single shot (SCD41)
     ///@{
     /*!
       @brief Request a single measurement
       @return True if successful
-      @note Data will be ready in 5 seconds
-      @note The sensor output is read using the readMeasurement()
+      @note Values are updated at 5000 ms interval
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 5000 ms
     */
-    bool measureSingleShot(void);
+    bool measureSingleshot(UnitSCD40::Data &d);
     /*!
-      @brief Request temperature and humidity
+      @brief Request a single measurement temperature and humidity
       @return True if successful
-      @note Data will be ready in 50ms
-      @note The sensor output is read using the readMeasurement()
-      @warning CO2 output is returned as 0 ppm.
+      @note Values are updated at 50 ms interval
+      @warning Information on CO2 is invalid.
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 50 ms
     */
-    bool measureSingleShotRHTOnly(void);
+    bool measureSingleshotRHT(UnitSCD40::Data &d);
     ///@}
 };
 

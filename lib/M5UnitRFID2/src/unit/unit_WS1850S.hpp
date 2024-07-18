@@ -32,7 +32,7 @@ class UnitWS1850S : public UnitMFRC522 {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
     /*!
       @brief self test

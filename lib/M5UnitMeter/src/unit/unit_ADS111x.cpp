@@ -65,10 +65,11 @@ bool UnitADS111x::begin() {
                         : stopPeriodicMeasurement();
 }
 
-void UnitADS111x::update() {
+void UnitADS111x::update(const bool force) {
+    _updated = false;
     if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             // The rate of continuous conversion is equal to the programmeddata
             // rate. Data can be read at any time and always reflect the most
             // recent completed conversion.
@@ -76,8 +77,6 @@ void UnitADS111x::update() {
             if (_updated) {
                 _latest = at;
             }
-        } else {
-            _updated = false;
         }
     }
 }

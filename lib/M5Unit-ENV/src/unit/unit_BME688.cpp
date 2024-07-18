@@ -175,28 +175,28 @@ bool UnitBME688::begin() {
 #endif
 }
 
-void UnitBME688::update() {
+void UnitBME688::update(const bool force) {
     _updated = false;
 #if defined(UNIT_BME688_USING_BSEC2)
     if (_bsec2_subscription) {
-        update_bsec2();
+        update_bsec2(force);
     } else {
-        update_bme688();
+        update_bme688(force);
     }
 #else
-    update_bme688();
+    update_bme688(force);
 #endif
 }
 
 #if defined(UNIT_BME688_USING_BSEC2)
 // Using BSEC2 library and configration and state
-void UnitBME688::update_bsec2() {
+void UnitBME688::update_bsec2(const bool force) {
     auto now       = m5::utility::millis();
     int64_t now_ns = now * 1000000ULL;  // ms to ns
 
     _bsec2_mode = static_cast<Mode>(_bsec2_settings.op_mode);
 
-    if (now_ns < _bsec2_settings.next_call) {
+    if (!force && now_ns < _bsec2_settings.next_call) {
         return;
     }
 
@@ -257,13 +257,13 @@ void UnitBME688::update_bsec2() {
 #endif
 
 // Directly use  BME688 (but only raw data can be obtained)
-void UnitBME688::update_bme688() {
+void UnitBME688::update_bme688(const bool force) {
     if (!inPeriodic()) {
         return;
     }
 
     unsigned long at{m5::utility::millis()};
-    if (!_latest || at >= _latest + _interval) {
+    if (force || !_latest || at >= _latest + _interval) {
         _updated = read_measurement();
         if (_updated) {
             switch (_mode) {

@@ -42,16 +42,15 @@ bool UnitKmeterISO::begin() {
     return _cfg.periodic ? startPeriodicMeasurement(_cfg.interval) : true;
 }
 
-void UnitKmeterISO::update() {
+void UnitKmeterISO::update(const bool force) {
+    _updated = false;
     if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             _updated = read_measurement();
             if (_updated) {
                 _latest = at;
             }
-        } else {
-            _updated = false;
         }
     }
 }

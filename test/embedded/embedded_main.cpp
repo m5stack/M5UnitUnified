@@ -37,6 +37,7 @@ void setup() {
     M5_LOGI("CPP %ld", __cplusplus);
     M5_LOGI("ESP-IDF Version %d.%d.%d", (ESP_IDF_VERSION >> 16) & 0xFF,
             (ESP_IDF_VERSION >> 8) & 0xFF, ESP_IDF_VERSION & 0xFF);
+    M5_LOGI("BOARD:%X", M5.getBoard());
     M5_LOGI("Heap: %u", esp_get_free_heap_size());
 
     lcd.clear(TFT_DARKGRAY);

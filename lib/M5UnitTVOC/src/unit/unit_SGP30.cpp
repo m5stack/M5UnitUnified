@@ -29,7 +29,6 @@ constexpr uint16_t SET_TVOC_INCEPTIVE_BASELINE_DURATION{10};
 constexpr uint16_t GET_SERIAL_ID_DURATION{1};
 constexpr unsigned long BASELINE_INTERVAL{1000 * 60 * 60};  // 1 hour (ms)
 
-
 bool delayMeasurementDuration(const uint16_t ms) {
     m5::utility::delay(ms);
     return true;
@@ -72,10 +71,10 @@ bool UnitSGP30::begin() {
                : true;
 }
 
-void UnitSGP30::update() {
+void UnitSGP30::update(const bool force) {
     if (_periodic) {
         unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             _interval = 1000;  // 1sec
             _updated  = readMeasurement(_CO2eq, _TVOC);
             if (_updated) {
@@ -165,11 +164,11 @@ bool UnitSGP30::getIaqBaseline(uint16_t& co2eq, uint16_t& tvoc) {
 }
 
 bool UnitSGP30::setAbsoluteHumidity(const uint16_t raw) {
-    m5::utility::CRC8_Maxim crc8;
+    m5::utility::CRC8_Checksum crc8;
     std::array<uint8_t, 3> buf{};
     m5::types::big_uint16_t rr(raw);
     std::memcpy(buf.data(), rr.data(), 2);
-    buf[2] = crc8.get(rr.data(), 2);
+    buf[2] = crc8.update(rr.data(), 2);
     return writeRegister(SET_ABSOLUTE_HUMIDITY, buf.data(), buf.size()) &&
            delayMeasurementDuration(SET_ABSOLUTE_HUMIDITY_DURATION);
 }
@@ -224,11 +223,11 @@ bool UnitSGP30::setTvocInceptiveBaseline(const uint16_t tvoc) {
         M5_LIB_LOGE("Not enough the product version %x", _version);
         return false;
     }
-    m5::utility::CRC8_Maxim crc8;
+    m5::utility::CRC8_Checksum crc8;
     std::array<uint8_t, 3> buf{};
     m5::types::big_uint16_t tt(tvoc);
     std::memcpy(buf.data(), tt.data(), 2);
-    buf[2] = crc8.get(tt.data(), 2);
+    buf[2] = crc8.update(tt.data(), 2);
     return writeRegister(SET_TVOC_INCEPTIVE_BASELINE, buf.data(), buf.size()) &&
            delayMeasurementDuration(SET_TVOC_INCEPTIVE_BASELINE_DURATION);
 }
@@ -237,7 +236,7 @@ bool UnitSGP30::generalReset() {
     uint8_t cmd{0x06};
     if (generalCall(&cmd, 1)) {
         _periodic = false;
-        _latest   = _latestBaseline = 0;
+        _latest = _latestBaseline = 0;
         m5::utility::delay(10);
         return true;
     }
@@ -314,16 +313,16 @@ bool UnitSGP30::start_periodic_measurement() {
 }
 
 bool UnitSGP30::set_iaq_baseline(const uint16_t co2eq, const uint16_t tvoc) {
-    m5::utility::CRC8_Maxim crc8;
+    m5::utility::CRC8_Checksum crc8;
     m5::types::big_uint16_t cc(co2eq);
     m5::types::big_uint16_t tt(tvoc);
 
     std::array<uint8_t, (2 + 1) * 2> buf{};
     // Note that the order is different for get and set
     std::memcpy(buf.data() + 0, tt.data(), 2);
-    buf[2] = crc8.get(tt.data(), 2);
+    buf[2] = crc8.update(tt.data(), 2);
     std::memcpy(buf.data() + 3, cc.data(), 2);
-    buf[5] = crc8.get(cc.data(), 2);
+    buf[5] = crc8.update(cc.data(), 2);
 
     return writeRegister(SET_IAQ_BASELINE, buf.data(), buf.size()) &&
            delayMeasurementDuration(SET_IAQ_BASELINE_DURATION);

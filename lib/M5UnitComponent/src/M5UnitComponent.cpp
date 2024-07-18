@@ -1,26 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5UnitComponent.cpp
   @brief Base class for Unit Component
-
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "M5UnitComponent.hpp"
 #include <M5Utility.hpp>
 #include <algorithm>
 #include <array>
-// For alloca() see also (*1)
-#if __has_include(<alloca.h>)
-#include <alloca.h>
-#else
-#include <stdlib.h>
-#include <malloc.h>
-#ifndef alloca
-#define alloca _alloca
-#endif
-#endif
 
 namespace m5 {
 namespace unit {
@@ -32,51 +22,6 @@ const types::attr_t Component::attr{0};
 Component::Component(const uint8_t addr)
     : _adapter{new Adapter(addr)}, _addr{addr} {
 }
-
-#if 0
-Component::Component(Component&& o) noexcept
-    : _manager{o._manager},
-      _adapter{std::move(o._adapter)},
-      _order{o._order},
-      _uccfg{o._uccfg},
-      _channel{o._channel},
-      _addr{o._addr},
-      _parent{o._parent},
-      _next{o._next},
-      _prev{o._prev},
-      _child{o._child} {
-    o._manager = nullptr;
-    o._order   = 0;
-    o._uccfg   = {};
-    o._channel = -1;
-    o._addr    = 0x00;
-    o._parent = o._next = o._prev = o._child = nullptr;
-}
-
-Component& Component::operator=(Component&& o) {
-    if (this != &o) {
-        _manager = o._manager;
-        _adapter = std::move(o._adapter);
-        _order   = o._order;
-        _uccfg   = o._uccfg;
-        _channel = o._channel;
-        _addr    = o._addr;
-        _parent  = o._parent;
-        _next    = o._next;
-        _prev    = o._prev;
-        _child   = o._child;
-
-        o._manager = nullptr;
-        o._adapter = nullptr;
-        o._order   = 0;
-        o._uccfg   = {};
-        o._channel = -1;
-        o._addr    = 0x00;
-        o._parent = o._next = o._prev = o._child = nullptr;
-    }
-    return *this;
-}
-#endif
 
 size_t Component::childrenSize() const {
     size_t sz{};

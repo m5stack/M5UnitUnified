@@ -249,7 +249,7 @@ class UnitBME688 : public Component {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
     ///@name Properties
     ///@{
@@ -665,8 +665,8 @@ class UnitBME688 : public Component {
     bool fetch_data();
     bool process_data(const int64_t ns, const bme688::bme68xData& data);
 
-    void update_bsec2();
-    void update_bme688();
+    void update_bsec2(const bool force);
+    void update_bme688(const bool force);
     bool read_measurement();
 
    protected:

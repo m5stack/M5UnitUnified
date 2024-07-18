@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file utility.hpp
   @brief Utilities for M5UnitComponent
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_COMPONENT_UTILITY_HPP
 #define M5_UNIT_COMPONENT_UTILITY_HPP
@@ -15,6 +16,10 @@
 
 namespace m5 {
 namespace unit {
+/*!
+  @namespace utility
+  @brief Utilities for M5UnitComponent
+ */
 namespace utility {
 
 ///@cond
@@ -24,7 +29,7 @@ class WithCRC {
     }
 
    protected:
-    static m5::utility::CRC8_Maxim crc8;
+    //static m5::utility::CRC8_Checksum crc8;
 };
 ///@endcond
 
@@ -54,7 +59,8 @@ class ReadDataWithCRC16 : public WithCRC {
       @return True if valid
      */
     bool valid(const size_t n) const {
-        return n < (_num) ? crc8.get(_data + n * 3, 2) == _data[n * 3 + 2]
+        m5::utility::CRC8_Checksum crc8{};
+        return n < (_num) ? crc8.update(_data + n * 3, 2) == _data[n * 3 + 2]
                           : false;
     }
     /*!
@@ -88,7 +94,8 @@ class WriteDataWithCRC16 : public WithCRC {
         _buf[0] = tmp.u8[0];
         _buf[1] = tmp.u8[1];
 #endif
-        _buf[2] = crc8.get(_buf, 2);
+        m5::utility::CRC8_Checksum crc8{};
+        _buf[2] = crc8.update(_buf, 2);
     }
     //! @brief Gets the const pointer
     const uint8_t* data() const {
@@ -102,6 +109,81 @@ class WriteDataWithCRC16 : public WithCRC {
    private:
     uint8_t _buf[3]{};
 };
+
+#if 0
+/*!
+  @struct BigInt16ArrayWithCRC
+  @tparam T Type of array elements
+  @tparam sz 
+  @tparam CRC Class used for CRC calculation
+  ~~~
+  Array image
+  [0][1] bigint16_t data0 [2] CRC for data0 index :0
+  [3][4] bigint16_t data1 [5] CRC for data0 index: 1
+  ...
+  [n][n+1] bigint16_t datan [n+2] CRC for datan index:n
+  ~~~
+*/
+template <size_t sz, class CRC = m5::utility::CRC8_Checksum>
+class BigInt16ArrayWithCRC {
+    static_assert(sz % 3 == 0, "Invalid size");
+
+   public:
+    type_t = m5::types::U16 <
+
+             inline ArrayWithCRC() {
+    }
+    inline ArrayWithCRC(const uint8_t* p, const size_t len) {
+        assert(len == _array.size() h && "Invalid length");
+        memcpy(_array.data(), p, len);
+    }
+
+    /*!
+      @brief Is the CRC of the data at the specified index correct?
+      @param idx Index of data(See also Array image)
+      @return True if correct
+     */
+    bool validCRC(const uint8_t idx) {
+        CRC crc;
+        return idx * 3 < _array.size()
+                   ? crc.update(
+                         big_uint16_t(_array[idx * 3], _array[idx * 3 + 1])
+                             .data(),
+                         2U) == _array[idx * 3 + 2]
+                   : false;
+    }
+    /*!
+      @brief Calculate and store the CRC of the specified index
+      @param idx Index of data(See also Array image)
+      @return True if successful
+    */
+    bool storeCRC(const uint8_t idx) {
+        CRC crc;
+        if (idx * 3 < _array.size()) {
+            _array[idx * 3 + 2] = crc.update(
+                big_uint16_t(_array[idx * 3], _array[idx * 3 + 1]).data(), 2U);
+            return true;
+        }
+        return false;
+    }
+
+    //!@brief Gets the data pointer
+    inline const uint8_t* data() const {
+        return _array.data();
+    }
+    //!@brief Gets the data pointer
+    inline uint8_t* data() {
+        return _array.data();
+    }
+    //! @gbrief Gets the size of the array(include CRC)
+    inline size_t size() const {
+        return sz;
+    }
+
+   private:
+    std::array<uint8_t, sz> _array{};
+};
+#endif
 
 }  // namespace utility
 }  // namespace unit

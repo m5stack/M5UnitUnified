@@ -107,7 +107,7 @@ class UnitSHT30 : public Component {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
     ///@name Settings
     ///@{

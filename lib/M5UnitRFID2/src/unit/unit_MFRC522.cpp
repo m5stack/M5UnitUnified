@@ -225,7 +225,7 @@ bool UnitMFRC522::begin() {
     return writeRegister8(MODE_REG, 0x3D) && turnOnAntenna();
 }
 
-void UnitMFRC522::update() {
+void UnitMFRC522::update(const bool /* force */) {
     /* nop */
 }
 

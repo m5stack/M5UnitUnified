@@ -207,7 +207,7 @@ class UnitADS111x : public Component {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
     ///@name Settings
     ///@{

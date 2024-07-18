@@ -246,7 +246,7 @@ class UnitMAX30100 : public Component {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
     ///@name Settings
     ///@{
@@ -385,7 +385,7 @@ class UnitMAX30100 : public Component {
         uint16_t ir;
         uint16_t red;
     };
-    m5::container::CircularBuffer<Measured, max30100::MAX_FIFO_DEPTH> _buffer;
+    m5::container::FixedCircularBuffer<Measured, max30100::MAX_FIFO_DEPTH> _buffer;
 
     config_t _cfg{};
 };

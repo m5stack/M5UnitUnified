@@ -59,16 +59,15 @@ bool UnitSHT30::begin() {
                                : true;
 }
 
-void UnitSHT30::update() {
+void UnitSHT30::update(const bool force) {
+    _updated = false;
     if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             _updated = readMeasurement();
             if (_updated) {
                 _latest = at;
             }
-        } else {
-            _updated = false;
         }
     }
 }
@@ -230,7 +229,7 @@ bool UnitSHT30::generalReset() {
     generalCall(&cmd, 1);
 
     m5::utility::delay(1);
-    
+
     auto timeout_at = m5::utility::millis() + 10;
     bool done{};
     do {

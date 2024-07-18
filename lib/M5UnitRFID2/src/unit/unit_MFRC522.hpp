@@ -249,7 +249,7 @@ class UnitMFRC522 : public Component {
     }
 
     virtual bool begin() override;
-    virtual void update() override;
+    virtual void update(const bool force = false) override;
 
 #if 0
     ///@name Settings

@@ -62,16 +62,15 @@ bool UnitMAX30100::begin() {
     return _periodic;
 }
 
-void UnitMAX30100::update() {
+void UnitMAX30100::update(const bool force) {
+    _updated = false;
     if (_periodic) {
         auto at = m5::utility::millis();
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             _updated = readFIFOData();
             if (_updated) {
                 _latest = at;
             }
-        } else {
-            _updated = false;
         }
     }
 }

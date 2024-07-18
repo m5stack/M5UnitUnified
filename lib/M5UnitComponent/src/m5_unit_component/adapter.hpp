@@ -1,12 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file adapter.hpp
   @brief Adapters to treat M5HAL and TwoWire in the same way
-
-  @warning Currently able to handle TwoWire, but will eventually be M5HAL only
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  @note  Currently handles TwoWire directly, but will handle via M5HAL in the
+  future
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_HPP
@@ -17,7 +18,6 @@
 #include <m5_hal/error.hpp>
 
 class TwoWire;
-
 namespace m5 {
 namespace hal {
 namespace bus {
@@ -28,7 +28,6 @@ class Bus;
 
 namespace m5 {
 namespace unit {
-
 /*!
   @class Adapter
   @brief Adapters to treat M5HAL and TwoWire in the same way
@@ -53,6 +52,7 @@ class Adapter {
         return _impl->address();
     }
 
+    //! @brief Dupicate adapter
     Adapter* duplicate(const uint8_t addr);
 
     //! @brief write to address zero (general call)
@@ -70,13 +70,13 @@ class Adapter {
         const uint8_t* data, const size_t len, const bool stop = true) {
         return _impl->writeWithTransaction(data, len, stop);
     }
-
+    //! @brief Writeing data with transactions (reg8)*/
     inline m5::hal::error::error_t writeWithTransaction(
         const uint8_t reg, const uint8_t* data, const size_t len,
         const bool stop = true) {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
-
+    //! @brief Writeing data with transactions (reg16) */
     inline m5::hal::error::error_t writeWithTransaction(
         const uint16_t reg, const uint8_t* data, const size_t len,
         const bool stop = true) {
@@ -128,7 +128,7 @@ class Adapter {
         }
 
        protected:
-        const uint8_t _addr{};
+        const uint8_t _addr{}; //I2C address
     };
     ///@endcond
 

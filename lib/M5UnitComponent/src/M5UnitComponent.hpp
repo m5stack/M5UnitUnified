@@ -1,15 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file M5UnitComponent.hpp
   @brief Main header of M5UnitComponent
 
   @mainpage M5UnitComponent
   Library for componentising the functions of each device so that they can be
-  handled by M5UnitUnified.
-  C++11 or later
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  handled by M5UnitUnified. C++11 or later.
 */
 #ifndef M5_UNIT_COMPONENT_HPP
 #define M5_UNIT_COMPONENT_HPP
@@ -27,6 +27,10 @@
 class TwoWire;
 
 namespace m5 {
+/*!
+   @namespace unit
+   @brief namespace of M5UnitComponent
+ */
 namespace unit {
 class UnitUnified;
 class Adapter;
@@ -60,6 +64,16 @@ class Component {
         bool self_update{};
         //! @brief Maximum number of units that can be connected (default as 0)
         uint8_t max_children{};
+    };
+
+    /*!
+      @struct config_t
+      @brief Base settings for begin
+      @note Derived classes are defined by deriving their own config_t from this
+     */
+    struct config_t {
+        //! Maximum number of periodic measurement data to be stored
+        uint32_t stored_size{1};
     };
 
     ///@name Fixed parameters for class
@@ -150,8 +164,12 @@ class Component {
     virtual bool begin() {
         return true;
     }
-    //! @brief Update unit
-    virtual void update() {
+    /*!
+      @brief Update unit
+      @param force Forced communication for updates if true
+    */
+    virtual void update(const bool force = false) {
+        (void)force;
     }
     ///@}
 
@@ -349,6 +367,7 @@ class Component {
 }  // namespace unit
 }  // namespace m5
 
+// Helper for creating derived classes
 ///@cond
 #define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                    \
    public:                                                         \
@@ -373,5 +392,4 @@ class Component {
         return attr;                                               \
     }                                                              \
     ///@endcond
-
 #endif

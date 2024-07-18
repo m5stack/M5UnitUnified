@@ -124,16 +124,15 @@ bool UnitQMP6988::begin() {
                                : setPowerMode(qmp6988::PowerMode::Force);
 }
 
-void UnitQMP6988::update() {
+void UnitQMP6988::update(const bool force) {
+    _updated = false;
     if (inPeriodic()) {
         unsigned long at{m5::utility::millis()};
-        if (!_latest || at >= _latest + _interval) {
+        if (force || !_latest || at >= _latest + _interval) {
             _updated = readMeasurement();
             if (_updated) {
                 _latest = at;
             }
-        } else {
-            _updated = false;
         }
     }
 }
