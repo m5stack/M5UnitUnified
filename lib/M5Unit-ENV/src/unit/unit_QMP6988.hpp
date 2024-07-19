@@ -344,9 +344,6 @@ class UnitQMP6988 : public Component {
     bool read_calibration(qmp6988::Calibration& c);
 
    protected:
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
-    unsigned long _latest{}, _interval{};
     float _temperature{}, _pressure{};
 
     qmp6988::Average _tempAvg{qmp6988::Average::Skip};
