@@ -17,9 +17,10 @@
 
 //
 // Using single shot measurement If defined
-// #define USING_SINGLE_SHOT
+//#define USING_SINGLE_SHOT
+
 // Using combined unit if defined
-// #define USING_ENV3
+//#define USING_ENV3
 
 namespace {
 auto& lcd = M5.Display;
@@ -136,9 +137,10 @@ void loop() {
 
 #if defined(USING_SINGLE_SHOT)
     if (M5.BtnA.wasClicked()) {
-        if (sht30.measurementSingleShot()) {
-            M5_LOGI("\n>SHT30Temp:%2.2f\n>Humidity:%2.2f", sht30.temperature(),
-                    sht30.humidity());
+        m5::unit::UnitSHT30::Data ds{};
+        if (sht30.measureSingleshot(ds)) {
+            M5_LOGI("\n>SHT30Temp:%2.2f\n>Humidity:%2.2f", ds.temperature(),
+                    ds.humidity());
         }
         if (qmp6988.readMeasurement()) {
             M5_LOGI("\n>QMP6988Temp:%2.2f\n>Pressure:%.2f",
