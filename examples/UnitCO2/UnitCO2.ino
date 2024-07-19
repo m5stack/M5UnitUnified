@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  Example using M5UnitUnified for SCD40/41
-  setup.loop in SCD4x.cpp
+  Example using M5UnitUnified for SCD40
+  setup.loop in UnitCO2.cpp
 */
 #include <M5UnitUnified.h>

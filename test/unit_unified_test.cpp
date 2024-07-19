@@ -12,8 +12,9 @@
 #include <algorithm>
 #include <utility>
 
-#include <unit/unit_SCD4x.hpp>
-#include <unit/unit_SHT3x.hpp>
+#include <unit/unit_SCD40.hpp>
+#include <unit/unit_SCD41.hpp>
+#include <unit/unit_SHT30.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <unit/unit_ENV3.hpp>
 #include <unit/unit_MAX30100.hpp>

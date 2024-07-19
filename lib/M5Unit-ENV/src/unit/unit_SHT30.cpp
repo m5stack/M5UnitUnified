@@ -1,20 +1,21 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
-  @file unit_SHT3x.cpp
-  @brief SHT3x family Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
-*/
-#include "unit_SHT3x.hpp"
+  @file unit_SHT30.cpp
+  @brief SHT30 Unit for M5UnitUnified
+ */
+#include "unit_SHT30.hpp"
 #include <M5Utility.hpp>
 #include <limits>  // NaN
 #include <array>
 
 using namespace m5::utility::mmh3;
 using namespace m5::unit::types;
-using namespace m5::unit::sht3x;
-using namespace m5::unit::sht3x::command;
+using namespace m5::unit::sht30;
+using namespace m5::unit::sht30::command;
 
 namespace {
 struct Temperature {
@@ -39,7 +40,24 @@ const char UnitSHT30::name[] = "UnitSHT30";
 const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
 const types::uid_t UnitSHT30::attr{0};
 
+float UnitSHT30::Data::temperature() const {
+    return Temperature::toFloat(m5::types::big_uint16_t(raw[0], raw[1]).get());
+}
+
+float UnitSHT30::Data::humidity() const {
+    return 100.f * m5::types::big_uint16_t(raw[3], raw[4]).get() / 65536.f;
+}
+
 bool UnitSHT30::begin() {
+    assert(_cfg.stored_size && "stored_size must be greater than zero");
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
+    }
+
     if (!stopPeriodicMeasurement()) {
         M5_LIB_LOGE("Failed to stop");
         return false;
@@ -64,16 +82,20 @@ void UnitSHT30::update(const bool force) {
     if (inPeriodic()) {
         elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
-            _updated = readMeasurement();
-            if (_updated) {
-                _latest = at;
+            if (writeRegister(READ_MEASUREMENT)) {
+                Data d{};
+                _updated = read_measurement(d);
+                if (_updated) {
+                    _latest = at;
+                    _data->push_back(d);
+                }
             }
         }
     }
 }
 
-bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
-                                      const bool stretch) {
+bool UnitSHT30::measureSingleshot(Data& d, const sht30::Repeatability rep,
+                                  const bool stretch) {
     constexpr uint16_t cmd[] = {
         // Enable clock stretching
         SINGLE_SHOT_ENABLE_STRETCH_HIGH,
@@ -104,13 +126,13 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
 
     if (writeRegister(cmd[idx])) {
         m5::utility::delay(stretch ? 1 : ms[m5::stl::to_underlying(rep)]);
-        return read_measurement();
+        return read_measurement(d);
     }
     return false;
 }
 
-bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
-                                         const sht3x::Repeatability rep) {
+bool UnitSHT30::startPeriodicMeasurement(const sht30::MPS mps,
+                                         const sht30::Repeatability rep) {
     constexpr static uint16_t periodic_cmd[] = {
         // 0.5 mps
         START_PERIODIC_MPS_HALF_HIGH,
@@ -159,24 +181,12 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
 bool UnitSHT30::stopPeriodicMeasurement() {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
-        // Upon reception of the break command the sensor will abort the ongoing
-        // measurement and enter the single shot mode. This takes 1ms
+        // Upon reception of the break command the sensor will abort the
+        // ongoing measurement and enter the single shot mode. This takes
+        // 1ms
         return delay1();
     }
     return false;
-}
-
-bool UnitSHT30::readMeasurement() {
-    if (!inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are NOT running");
-        return false;
-    }
-
-    if (!writeRegister(READ_MEASUREMENT)) {
-        return false;
-    }
-    m5::utility::delay(1);
-    return read_measurement();
 }
 
 bool UnitSHT30::accelerateResponseTime() {
@@ -188,14 +198,12 @@ bool UnitSHT30::accelerateResponseTime() {
     return false;
 }
 
-bool UnitSHT30::getStatus(sht3x::Status& s) {
+bool UnitSHT30::getStatus(sht30::Status& s) {
     std::array<uint8_t, 3> rbuf{};
-    if (readRegister(READ_STATUS, rbuf.data(), rbuf.size(), 0)) {
-        utility::ReadDataWithCRC16 data(rbuf.data(), 1);
-        if (data.valid(0)) {
-            s.value = data.value(0);
-            return true;
-        }
+    if (readRegister(READ_STATUS, rbuf.data(), rbuf.size(), 0) &&
+        m5::utility::CRC8_Checksum().update(rbuf.data(), 2) == rbuf[2]) {
+        s.value = m5::types::big_uint16_t(rbuf[0], rbuf[1]).get();
+        return true;
     }
     return false;
 }
@@ -212,7 +220,8 @@ bool UnitSHT30::softReset() {
 
     if (writeRegister(SOFT_RESET)) {
         // Max 1.5 ms
-        // Time between ACK of soft reset command and sensor entering idle state
+        // Time between ACK of soft reset command and sensor entering idle
+        // state
         m5::utility::delay(2);
         return true;
     }
@@ -234,8 +243,8 @@ bool UnitSHT30::generalReset() {
     bool done{};
     do {
         Status s{};
-        // The ALERT pin will also become active (high) after powerup and after
-        // resets
+        // The ALERT pin will also become active (high) after powerup and
+        // after resets
         if (getStatus(s) && (s.reset() || s.alertPending())) {
             done = true;
             break;
@@ -260,21 +269,15 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
         return false;
     }
 
-    if (!writeRegister(GET_SERIAL_NUMBER_ENABLE_STRETCH)) {
-        return false;
-    }
-
-    m5::utility::delay(1);
-
     std::array<uint8_t, 6> rbuf;
-    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
-        m5::hal::error::error_t::OK) {
-        utility::ReadDataWithCRC16 data(rbuf.data(), 2);
-        bool valid[2] = {data.valid(0), data.valid(1)};
-        if (valid[0] && valid[1]) {
-            for (uint_fast8_t i = 0; i < 2; ++i) {
-                serialNumber |= ((uint32_t)data.value(i)) << (16U * (1 - i));
-            }
+    if (readRegister(GET_SERIAL_NUMBER_ENABLE_STRETCH, rbuf.data(), rbuf.size(),
+                     0)) {
+        m5::types::big_uint16_t u16[2]{{rbuf[0], rbuf[1]}, {rbuf[3], rbuf[4]}};
+        m5::utility::CRC8_Checksum crc[2]{};
+        if (crc[0].update(u16[0].data(), u16[0].size()) == rbuf[2] &&
+            crc[1].update(u16[1].data(), u16[1].size()) == rbuf[5]) {
+            serialNumber =
+                ((uint32_t)u16[0].get()) << 16 | ((uint32_t)u16[1].get());
             return true;
         }
     }
@@ -300,22 +303,16 @@ bool UnitSHT30::getSerialNumber(char* serialNumber) {
     return false;
 }
 
-bool UnitSHT30::read_measurement() {
-    std::array<uint8_t, 6> rbuf{};
-
-    _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
-
-    if (readWithTransaction(rbuf.data(), rbuf.size()) ==
+bool UnitSHT30::read_measurement(Data& d) {
+    if (readWithTransaction(d.raw.data(), d.raw.size()) ==
         m5::hal::error::error_t::OK) {
-        utility::ReadDataWithCRC16 data(rbuf.data(), 2);
-        bool valid[2] = {data.valid(0), data.valid(1)};
-        if (valid[0]) {
-            this->_temperature = Temperature::toFloat(data.value(0));
+        for (uint_fast8_t i = 0; i < 2; ++i) {
+            m5::utility::CRC8_Checksum crc{};
+            if (crc.update(d.raw.data() + i * 3, 2U) != d.raw[i * 3 + 2]) {
+                return false;
+            }
         }
-        if (valid[1]) {
-            this->_humidity = 100 * data.value(1) / 65536.f;
-        }
-        return valid[0] && valid[1];
+        return true;
     }
     return false;
 }

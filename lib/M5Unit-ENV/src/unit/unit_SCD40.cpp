@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 /*!
-  @file unit_SCD4x.cpp
-  @brief SCD4X family Unit for M5UnitUnified
+  @file unit_SCD40.hpp
+  @brief SCD40 Unit for M5UnitUnified
 */
-#include "unit_SCD4x.hpp"
+#include "unit_SCD40.hpp"
 #include <M5Utility.hpp>
 #include <array>
 
@@ -63,9 +63,12 @@ float UnitSCD40::Data::humidity() const {
 
 bool UnitSCD40::begin() {
     assert(_cfg.stored_size && "stored_size must be greater than zero");
-    _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
-    if (!_data) {
-        return false;
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
     }
 
     if (!stopPeriodicMeasurement()) {
@@ -382,37 +385,6 @@ bool UnitSCD40::read_measurement(Data& d, const bool all) {
         M5_LIB_LOGV("Not ready");
         return false;
     }
-
-#if 0
-    _co2         = 0;
-    _temperature = _humidity = std::numeric_limits<float>::quiet_NaN();
-     std::array<uint8_t, 9> rbuf{};
-    if (!readRegister(READ_MEASUREMENT, rbuf.data(), rbuf.size(),
-                      READ_MEASUREMENT_DURATION)) {
-        return false;
-    }
-    m5::types::big_uint16_t u16[3]{
-        {rbuf[0], rbuf[1]},
-        {rbuf[3], rbuf[4]},
-        {rbuf[6], rbuf[7]},
-    };
-    m5::utility::CRC8_Checksum crc[3]{};
-    bool valid[3] = {crc[0].update(u16[0].data(), u16[0].size()) == rbuf[2],
-                     crc[1].update(u16[1].data(), u16[1].size()) == rbuf[5],
-                     crc[2].update(u16[2].data(), u16[2].size()) == rbuf[8]};
-
-    if (all && valid[0]) {
-        _co2 = u16[0].get();
-    }
-    if (valid[1]) {
-        _temperature = -45 + Temperature::toFloat(u16[1].get());
-    }
-    if (valid[2]) {
-        _humidity = 100.f * u16[2].get() / 65536.f;
-    }
-    return (!all || valid[0]) && valid[1] && valid[2];
-#else
-
     if (!readRegister(READ_MEASUREMENT, d.raw.data(), d.raw.size(),
                       READ_MEASUREMENT_DURATION)) {
         return false;
@@ -424,32 +396,6 @@ bool UnitSCD40::read_measurement(Data& d, const bool all) {
         }
     }
     return true;
-#endif
 }
-
-// class UnitSCD41
-const char UnitSCD41::name[] = "UnitSCD41";
-const types::uid_t UnitSCD41::uid{"UnitSCD41"_mmh3};
-const types::uid_t UnitSCD41::attr{0};
-
-bool UnitSCD41::measureSingleshot(UnitSCD40::Data& d) {
-    if (inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are running");
-        return false;
-    }
-    return writeRegister(MEASURE_SINGLE_SHOT) && read_measurement(d);
-}
-
-bool UnitSCD41::measureSingleshotRHT(UnitSCD40::Data& d) {
-    if (inPeriodic()) {
-        M5_LIB_LOGD("Periodic measurements are running");
-        return false;
-    }
-    return writeRegister(MEASURE_SINGLE_SHOT) && read_measurement(d);
-}
-
 }  // namespace unit
 }  // namespace m5
-
-// TODO
-// Comapti test old and new

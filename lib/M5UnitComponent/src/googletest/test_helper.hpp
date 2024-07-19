@@ -43,14 +43,14 @@ inline void test_periodic_measurement(U* unit, const uint32_t interval,
             auto um = unit->updatedMillis();
             if (prev) {
                 auto duration = um - prev;
-                EXPECT_LE(duration, interval);
+                EXPECT_LE(duration, interval + 1); /* (*1) */
             }
             prev = um;
             if (callback) {
                 callback(unit);
             }
         }
-        m5::utility::delay(1);
+        m5::utility::delay(1); // *1
     }
     EXPECT_EQ(cnt, 0U);
 }

@@ -4,60 +4,22 @@
  * SPDX-License-Identifier: MIT
  */
 /*!
-  @file unit_SCD4x.hpp
-  @brief SCD4X family Unit for M5UnitUnified
+  @file unit_SCD40.hpp
+  @brief SCD40 Unit for M5UnitUnified
 */
-#ifndef M5_UNIT_ENV_UNIT_SCD4x_HPP
-#define M5_UNIT_ENV_UNIT_SCD4x_HPP
+#ifndef M5_UNIT_ENV_UNIT_SCD40_HPP
+#define M5_UNIT_ENV_UNIT_SCD40_HPP
 
 #include <M5UnitComponent.hpp>
+#include "internal/scd4x.hpp"
 #include <m5_utility/container/circular_buffer.hpp>
 #include <limits>  // NaN
 
 namespace m5 {
 namespace unit {
-
-/*!
-  @namespace scd4x
-  @brief For SCD4X family
- */
-namespace scd4x {
-/*!
-  @enum Mode
-  @brief Mode of periodic measurement
- */
-enum class Mode : uint8_t {
-    Normal,    //!< Normal (Receive data every 5 seconds)
-    LowPower,  //!< Low power (Receive data every 30 seconds)
-};
-
-///@cond 0
-// Max command duration(ms)
-constexpr uint16_t READ_MEASUREMENT_DURATION{1};
-constexpr uint16_t STOP_PERIODIC_MEASUREMENT_DURATION{500};
-constexpr uint16_t SET_TEMPERATURE_OFFSET_DURATION{1};
-constexpr uint16_t GET_TEMPERATURE_OFFSET_DURATION{1};
-constexpr uint16_t SET_SENSOR_ALTITUDE_DURATION{1};
-constexpr uint16_t GET_SENSOR_ALTITUDE_DURATION{1};
-constexpr uint16_t SET_AMBIENT_PRESSURE_DURATION{1};
-constexpr uint16_t PERFORM_FORCED_CALIBRATION_DURATION{400};
-constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED_DURATION{1};
-constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED_DURATION{1};
-constexpr uint16_t GET_DATA_READY_STATUS_DURATION{1};
-constexpr uint16_t PERSIST_SETTINGS_DURATION{800};
-constexpr uint16_t GET_SERIAL_NUMBER_DURATION{1};
-constexpr uint16_t PERFORM_SELF_TEST_DURATION{10000};
-constexpr uint16_t PERFORM_FACTORY_RESET_DURATION{1200};
-constexpr uint16_t REINIT_DURATION{20};
-constexpr uint16_t MEASURE_SINGLE_SHOT_DURATION{5000};
-constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY_DURATION{50};
-///@endcond
-
-}  // namespace scd4x
-
 /*!
   @class UnitSCD40
-  @brief CO2 sensor unit
+  @brief SCD40 unit component
 */
 class UnitSCD40 : public Component {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD40, 0x62);
@@ -99,11 +61,11 @@ class UnitSCD40 : public Component {
     ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() const {
+    inline config_t config() const {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t &cfg) {
+    inline void config(const config_t &cfg) {
         _cfg = cfg;
     }
     ///@}
@@ -154,7 +116,7 @@ class UnitSCD40 : public Component {
     }
     ///@}
 
-    ///@name Periodic
+    ///@name Periodic measurement
     ///@{
     /*!
       @brief Start periodic measurement
@@ -245,7 +207,7 @@ class UnitSCD40 : public Component {
       @param[out] correction The FRC correction value
       @return True if successful
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 400 ms
+      @warning  Blocked until the process is completed (about 400ms)
     */
     bool performForcedRecalibration(const uint16_t concentration,
                                     int16_t &correction);
@@ -300,7 +262,6 @@ class UnitSCD40 : public Component {
       @return True if successful
       @note Takes 10 seconds to complete
       @warning During periodic detection runs, an error is returned
-      @warning Measurement duration max 10000 ms
     */
     bool performSelfTest(bool &malfunction);
     /*!
@@ -329,76 +290,6 @@ class UnitSCD40 : public Component {
     std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
     config_t _cfg{};
 };
-
-/*!
-  @class UnitSCD41
-  @brief CO2 sensor unit
-*/
-class UnitSCD41 : public UnitSCD40 {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD41, 0x00);
-
-   public:
-    explicit UnitSCD41(const uint8_t addr = DEFAULT_ADDRESS) : UnitSCD40(addr) {
-    }
-
-    ///@name Low power single shot (SCD41)
-    ///@{
-    /*!
-      @brief Request a single measurement
-      @return True if successful
-      @note Values are updated at 5000 ms interval
-      @warning During periodic detection runs, an error is returned
-    */
-    bool measureSingleshot(UnitSCD40::Data &d);
-    /*!
-      @brief Request a single measurement temperature and humidity
-      @return True if successful
-      @note Values are updated at 50 ms interval
-      @warning Information on CO2 is invalid.
-      @warning During periodic detection runs, an error is returned
-    */
-    bool measureSingleshotRHT(UnitSCD40::Data &d);
-    ///@}
-};
-
-///@cond
-namespace scd4x {
-namespace command {
-// Basic Commands
-constexpr uint16_t START_PERIODIC_MEASUREMENT{0x21b1};
-constexpr uint16_t READ_MEASUREMENT{0xec05};
-constexpr uint16_t STOP_PERIODIC_MEASUREMENT{0x3f86};
-
-// On-chip output signal compensation
-constexpr uint16_t SET_TEMPERATURE_OFFSET{0x241d};
-constexpr uint16_t GET_TEMPERATURE_OFFSET{0x2318};
-constexpr uint16_t SET_SENSOR_ALTITUDE{0x2427};
-constexpr uint16_t GET_SENSOR_ALTITUDE{0x2322};
-constexpr uint16_t SET_AMBIENT_PRESSURE{0xe000};
-
-// Field calibration
-constexpr uint16_t PERFORM_FORCED_CALIBRATION{0x362f};
-constexpr uint16_t SET_AUTOMATIC_SELF_CALIBRATION_ENABLED{0x2416};
-constexpr uint16_t GET_AUTOMATIC_SELF_CALIBRATION_ENABLED{0x2313};
-
-// Low power
-constexpr uint16_t START_LOW_POWER_PERIODIC_MEASUREMENT{0x21ac};
-constexpr uint16_t GET_DATA_READY_STATUS{0xe4b8};
-
-// Advanced features
-constexpr uint16_t PERSIST_SETTINGS{0x3615};
-constexpr uint16_t GET_SERIAL_NUMBER{0x3682};
-constexpr uint16_t PERFORM_SELF_TEST{0x3639};
-constexpr uint16_t PERFORM_FACTORY_RESET{0x3632};
-constexpr uint16_t REINIT{0x3646};
-
-// Low power single shot - SCD41 only
-constexpr uint16_t MEASURE_SINGLE_SHOT{0x219d};
-constexpr uint16_t MEASURE_SINGLE_SHOT_RHT_ONLY{0x2196};
-
-}  // namespace command
-}  // namespace scd4x
-///@endcond
 
 }  // namespace unit
 }  // namespace m5

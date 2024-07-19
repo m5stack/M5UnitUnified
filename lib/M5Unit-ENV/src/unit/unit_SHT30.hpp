@@ -1,20 +1,23 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
-  @file unit_SHT3x.hpp
-  @brief SHT3x fmalily Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
-*/
-#ifndef M5_UNIT_ENV_UNIT_SHT3x_HPP
-#define M5_UNIT_ENV_UNIT_SHT3x_HPP
+  @file unit_SHT30.hpp
+  @brief SHT30 Unit for M5UnitUnified
+ */
+#ifndef M5_UNIT_ENV_UNIT_SHT30_HPP
+#define M5_UNIT_ENV_UNIT_SHT30_HPP
 
 #include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
+#include <limits>  // NaN
 
 namespace m5 {
 namespace unit {
 
-namespace sht3x {
+namespace sht30 {
 /*!
   @enum Repeatability
   @brief Repeatability accuracy level
@@ -76,7 +79,7 @@ struct Status {
 
     uint16_t value{};
 };
-}  // namespace sht3x
+}  // namespace sht30
 
 /*!
   @class UnitSHT30
@@ -90,18 +93,28 @@ class UnitSHT30 : public Component {
       @struct config_t
       @brief Settings
      */
-    struct config_t {
+    struct config_t : Component::config_t {
         //! @brief Start periodic measurement on begin?
         bool start_periodic{true};
         //! @brief Measuring frequency if start periodic on begin
-        sht3x::MPS mps{sht3x::MPS::Mps1};
+        sht30::MPS mps{sht30::MPS::Mps1};
         //! @brief Repeatability accuracy level if start periodic on begin
-        sht3x::Repeatability rep{sht3x::Repeatability::High};
+        sht30::Repeatability rep{sht30::Repeatability::High};
         //! @brief start heater on begin?
         bool start_heater{false};
     };
+    /*!
+      @struct Data
+      @brief Measurement data group
+     */
+    struct Data {
+        std::array<uint8_t, 6> raw{};  //!< RAW data
+        float temperature() const;     //!< temperature (Celsius)
+        float humidity() const;        //!< humidity (RH)
+    };
 
-    explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+    explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS)
+        : Component(addr), _data{new m5::container::CircularBuffer<Data>(1)} {
     }
     virtual ~UnitSHT30() {
     }
@@ -109,31 +122,60 @@ class UnitSHT30 : public Component {
     virtual bool begin() override;
     virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() {
+    inline config_t config() {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t& cfg) {
+    inline void config(const config_t& cfg) {
         _cfg = cfg;
     }
     ///@}
 
-    ///@name Properties
+    ///@name Measurement data by periodic
     ///@{
-    //! @brief Latest neasured temperature (Celsius)
+    //! @brief Latest measured temperature (Celsius)
     inline float temperature() const {
-        return _temperature;
+        return !_data->empty() ? _data->back()->temperature()
+                               : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Latest measured humidity (RH)
     inline float humidity() const {
-        return _humidity;
+        return !_data->empty() ? _data->back()->humidity()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Get the number of stored data
+    inline size_t available() const {
+        return _data->size();
+    }
+    //! @brief Empty data?
+    inline bool empty() const {
+        return _data->empty();
+    }
+    //! @brief Stored data full?
+    inline bool full() const {
+        return _data->full();
+    }
+    //! @brief Retrieve oldest stored data
+    inline Data oldest() const {
+        return !_data->empty() ? *(_data->front()) : Data{};
+    }
+    //! @brief Retrieve latest stored data
+    inline Data latest() const {
+        return !_data->empty() ? *(_data->back()) : Data{};
+    }
+    //! @brief Discard  the oldest data accumulated
+    inline void discard() const {
+        _data->pop_front();
+    }
+    //! @brief Discard all data
+    inline void flush() {
+        _data->clear();
     }
     ///@}
 
-    // API
     ///@name Single shot measurement
     ///@{
     /*!
@@ -145,12 +187,12 @@ class UnitSHT30 : public Component {
       @warning  After sending a command to the sensor a minimal waiting time of
       **1ms** is needed before another command can be received by the sensor
     */
-    bool measurementSingleShot(
-        const sht3x::Repeatability rep = sht3x::Repeatability::High,
-        const bool stretch             = true);
+    bool measureSingleshot(
+        Data& d, const sht30::Repeatability rep = sht30::Repeatability::High,
+        const bool stretch = true);
     ///@}
 
-    ///@name Periodic
+    ///@name Periodic measurement
     ///@{
     /*!
       @brief Start periodic measurement
@@ -159,19 +201,13 @@ class UnitSHT30 : public Component {
       @return True if successful
     */
     bool startPeriodicMeasurement(
-        const sht3x::MPS mps           = sht3x::MPS::Mps1,
-        const sht3x::Repeatability rep = sht3x::Repeatability::High);
+        const sht30::MPS mps           = sht30::MPS::Mps1,
+        const sht30::Repeatability rep = sht30::Repeatability::High);
     /*!
       @brief Stop periodic measurement
       @return True if successful
     */
     bool stopPeriodicMeasurement();
-    /*!
-      @brief Check for fresh data and store
-      @return True if fresh data is available
-      @warning Only available during periodic measurements.
-    */
-    bool readMeasurement();
     /*!
       @brief set ART mode
       @details After issuing the ART command the sensor will start acquiring
@@ -223,7 +259,7 @@ class UnitSHT30 : public Component {
       @param[out] s Status
       @return True if successful
     */
-    bool getStatus(sht3x::Status& s);
+    bool getStatus(sht30::Status& s);
     /*!
       @brief Clear status
       @note @sa Status
@@ -253,18 +289,15 @@ class UnitSHT30 : public Component {
     ///@}
 
    protected:
-    bool read_measurement();
+    bool read_measurement(Data& d);
 
    protected:
-    // latest data
-    float _temperature{};  // C
-    float _humidity{};     // RH
-
+    std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
     config_t _cfg{};
 };
 
 ///@cond
-namespace sht3x {
+namespace sht30 {
 namespace command {
 // Measurement Commands for Single Shot Data Acquisition Mode
 constexpr uint16_t SINGLE_SHOT_ENABLE_STRETCH_HIGH{0x2C06};
@@ -309,7 +342,7 @@ constexpr uint16_t CLEAR_STATUS{0x3041};
 constexpr uint16_t GET_SERIAL_NUMBER_ENABLE_STRETCH{0x3780};
 constexpr uint16_t GET_SERIAL_NUMBER_DISABLE_STRETCH{0x3682};
 }  // namespace command
-}  // namespace sht3x
+}  // namespace sht30
 ///@endcond
 
 }  // namespace unit

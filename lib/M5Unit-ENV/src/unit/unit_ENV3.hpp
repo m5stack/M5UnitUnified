@@ -11,7 +11,7 @@
 
 #include <M5UnitComponent.hpp>
 #include <array>
-#include "unit_SHT3x.hpp"
+#include "unit_SHT30.hpp"
 #include "unit_QMP6988.hpp"
 
 namespace m5 {

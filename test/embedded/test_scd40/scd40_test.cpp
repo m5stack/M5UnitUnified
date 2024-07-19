@@ -15,15 +15,16 @@
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
 #include <googletest/test_helper.hpp>
-#include <unit/unit_SCD4x.hpp>
+#include <unit/unit_SCD40.hpp>
+#include <unit/unit_SCD41.hpp>
 #include <chrono>
 #include <iostream>
+
+// #define UNIT_TEST_SCD41
 
 using namespace m5::unit::googletest;
 using namespace m5::unit;
 using namespace m5::unit::scd4x;
-
-// #define UNIT_TEST_SCD41
 
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());

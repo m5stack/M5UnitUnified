@@ -11,7 +11,7 @@
 #define M5_UTILITY_CONTAINER_CIRCULAR_BUFFER_HPP
 
 #include <cstddef>
-#include <array>
+#include <vector>
 #include <cassert>
 #include "../stl/optional.hpp"
 

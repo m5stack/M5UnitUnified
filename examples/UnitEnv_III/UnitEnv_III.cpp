@@ -7,11 +7,11 @@
   Example using M5UnitUnified for UnitENVIII
 */
 
-//#define USING_M5HAL      // When using M5HAL
+// #define USING_M5HAL      // When using M5HAL
 
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
-#include <unit/unit_SHT3x.hpp>
+#include <unit/unit_SHT30.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <unit/unit_ENV3.hpp>
 
@@ -137,22 +137,22 @@ void loop() {
 #if defined(USING_SINGLE_SHOT)
     if (M5.BtnA.wasClicked()) {
         if (sht30.measurementSingleShot()) {
-            M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f",
-                    sht30.temperature(), sht30.humidity());
+            M5_LOGI("\n>SHT30Temp:%2.2f\n>Humidity:%2.2f", sht30.temperature(),
+                    sht30.humidity());
         }
         if (qmp6988.readMeasurement()) {
-            M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
+            M5_LOGI("\n>QMP6988Temp:%2.2f\n>Pressure:%.2f",
                     qmp6988.temperature(), qmp6988.pressure());
         }
     }
 #else
     if (sht30.updated()) {
-        M5_LOGI("SHT30:Temperature:%2.2f Humidity:%2.2f", sht30.temperature(),
+        M5_LOGI("\n>SHT30Temp:%2.2f\n>Humidity:%2.2f", sht30.temperature(),
                 sht30.humidity());
     }
     if (qmp6988.updated()) {
-        M5_LOGI("QMP6988:Temperature:%2.2f Pressure:%.2f",
-                qmp6988.temperature(), qmp6988.pressure());
+        M5_LOGI("\n>QMP6988Temp:%2.2f\n>Pressure:%.2f", qmp6988.temperature(),
+                qmp6988.pressure());
     }
 #endif
 }
