@@ -73,22 +73,6 @@ class UnitKmeterISO : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return _periodic;
-    }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
     //! @brief Latest celsius temperature
     float celsiusTemperature() const {
         return _temperatureC;
@@ -206,10 +190,7 @@ class UnitKmeterISO : public Component {
     bool read_measurement();
 
    protected:
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
     float _temperatureC{}, _temperatureF{};
-    unsigned long _latest{}, _interval{};
 
     config_t _cfg{};
 };

@@ -12,6 +12,9 @@
 #include <array>
 
 using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::sht3x;
+using namespace m5::unit::sht3x::command;
 
 namespace {
 struct Temperature {
@@ -31,10 +34,7 @@ bool delay1() {
 
 namespace m5 {
 namespace unit {
-
-using namespace sht3x;
-using namespace sht3x::command;
-
+//
 const char UnitSHT30::name[] = "UnitSHT30";
 const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
 const types::uid_t UnitSHT30::attr{0};
@@ -62,7 +62,7 @@ bool UnitSHT30::begin() {
 void UnitSHT30::update(const bool force) {
     _updated = false;
     if (inPeriodic()) {
-        unsigned long at{m5::utility::millis()};
+        elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
             _updated = readMeasurement();
             if (_updated) {
@@ -85,7 +85,7 @@ bool UnitSHT30::measurementSingleShot(const sht3x::Repeatability rep,
         SINGLE_SHOT_DISABLE_STRETCH_LOW,
     };
     // Latency when clock stretching is disabled
-    constexpr unsigned long ms[] = {
+    constexpr elapsed_time_t ms[] = {
         15,
         6,
         4,
@@ -133,7 +133,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht3x::MPS mps,
         START_PERIODIC_MPS_10_MEDIUM,
         START_PERIODIC_MPS_10_LOW,
     };
-    constexpr static unsigned long interval_table[] = {
+    constexpr static elapsed_time_t interval_table[] = {
         2000,  // 0.5
         1000,  // 1
         500,   // 2

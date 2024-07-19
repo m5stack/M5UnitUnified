@@ -11,8 +11,12 @@
 #include <array>
 #include <thread>
 
-namespace {
+using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::kmeter;
+using namespace m5::unit::kmeter::command;
 
+namespace {
 template <typename T>
 T array_to_type(const std::array<uint8_t, 4>& a) {
     static_assert(std::is_integral<T>::value && sizeof(T) == 4, "Invalid type");
@@ -23,11 +27,6 @@ T array_to_type(const std::array<uint8_t, 4>& a) {
 
 namespace m5 {
 namespace unit {
-
-using namespace m5::utility::mmh3;
-using namespace kmeter;
-using namespace kmeter::command;
-
 // class UnitKmeterISO
 const char UnitKmeterISO::name[] = "UnitKmeterISO";
 const types::uid_t UnitKmeterISO::uid{"UnitKmeterISO"_mmh3};
@@ -45,7 +44,7 @@ bool UnitKmeterISO::begin() {
 void UnitKmeterISO::update(const bool force) {
     _updated = false;
     if (inPeriodic()) {
-        unsigned long at{m5::utility::millis()};
+        elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
             _updated = read_measurement();
             if (_updated) {

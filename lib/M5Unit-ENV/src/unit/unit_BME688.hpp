@@ -253,29 +253,6 @@ class UnitBME688 : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return _periodic || (_bsec2_subscription != 0);
-    }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
-    /*!
-      @brief Gets the interval time
-      @return interval time (Unit: ms)
-    */
-    inline unsigned long interval() const {
-        return _interval;
-    }
     //! @brief Current mode
     inline bme688::Mode mode() const {
         return _mode;
@@ -670,9 +647,6 @@ class UnitBME688 : public Component {
     bool read_measurement();
 
    protected:
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
-    unsigned long _latest{}, _interval{};
     bme688::Mode _mode{};
 
     // bme68x

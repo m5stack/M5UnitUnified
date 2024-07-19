@@ -12,8 +12,6 @@
 using namespace m5::types;
 
 TEST(Utility, Types_U16) {
-    constexpr uint8_t u8array[2] = {0x12, 0x34};
-
     // Constructor
     constexpr big_uint16_t bg0;
     constexpr little_uint16_t lt0;
@@ -47,13 +45,6 @@ TEST(Utility, Types_U16) {
     EXPECT_EQ(bg4.u8[1], 0x34);
     EXPECT_EQ(lt4.u8[0], 0x34);
     EXPECT_EQ(lt4.u8[1], 0x12);
-
-    constexpr big_uint16_t bg8(u8array);
-    constexpr little_uint16_t lt8(u8array);
-    EXPECT_EQ(bg8.u8[0], 0x12);
-    EXPECT_EQ(bg8.u8[1], 0x34);
-    EXPECT_EQ(lt8.u8[0], 0x12);
-    EXPECT_EQ(lt8.u8[1], 0x34);
     
     // Assignment
     big_uint16_t bg5;

@@ -11,14 +11,13 @@
 #include <limits>  // NaN
 
 using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::qmp6988;
+using namespace m5::unit::qmp6988::command;
 
 namespace {
-using namespace m5::unit::qmp6988;
-
 constexpr uint8_t chip_id{0x5C};
-
 constexpr size_t calibration_length{25};
-
 constexpr uint32_t sub_raw{8388608};  // 2^23
 
 constexpr PowerMode mode_table[] = {
@@ -28,7 +27,7 @@ constexpr PowerMode mode_table[] = {
     PowerMode::Normal,
 };
 
-constexpr unsigned long interval_table[] = {
+constexpr elapsed_time_t interval_table[] = {
     1, 5, 50, 250, 500, 1000, 2000, 4000,
 };
 
@@ -89,9 +88,7 @@ int32_t convert_pressure16(const int32_t dp, const int16_t tx,
 
 namespace m5 {
 namespace unit {
-
-using namespace qmp6988::command;
-
+//
 const char UnitQMP6988::name[] = "UnitQMP6988";
 const types::uid_t UnitQMP6988::uid{"UnitQMP6988"_mmh3};
 const types::uid_t UnitQMP6988::attr{0};
@@ -127,7 +124,7 @@ bool UnitQMP6988::begin() {
 void UnitQMP6988::update(const bool force) {
     _updated = false;
     if (inPeriodic()) {
-        unsigned long at{m5::utility::millis()};
+        elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
             _updated = readMeasurement();
             if (_updated) {

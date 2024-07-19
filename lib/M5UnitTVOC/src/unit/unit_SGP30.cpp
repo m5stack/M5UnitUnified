@@ -11,6 +11,11 @@
 #include <array>
 #include <cmath>
 
+using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::sgp30;
+using namespace m5::unit::sgp30::command;
+
 namespace {
 // Supported lower limit version
 constexpr uint8_t lower_limit_version{0x20};
@@ -27,22 +32,16 @@ constexpr uint16_t MEASURE_RAW_DURATION{25};
 constexpr uint16_t GET_TVOC_INCEPTIVE_BASELINE_DURATION{10};
 constexpr uint16_t SET_TVOC_INCEPTIVE_BASELINE_DURATION{10};
 constexpr uint16_t GET_SERIAL_ID_DURATION{1};
-constexpr unsigned long BASELINE_INTERVAL{1000 * 60 * 60};  // 1 hour (ms)
+constexpr elapsed_time_t BASELINE_INTERVAL{1000 * 60 * 60};  // 1 hour (ms)
 
 bool delayMeasurementDuration(const uint16_t ms) {
     m5::utility::delay(ms);
     return true;
 }
-
 }  // namespace
 
 namespace m5 {
 namespace unit {
-
-using namespace m5::utility::mmh3;
-using namespace sgp30;
-using namespace sgp30::command;
-
 // class UnitSGP30
 const char UnitSGP30::name[] = "UnitSGP30";
 const types::uid_t UnitSGP30::uid{"UnitSGP30"_mmh3};
@@ -73,7 +72,7 @@ bool UnitSGP30::begin() {
 
 void UnitSGP30::update(const bool force) {
     if (_periodic) {
-        unsigned long at{m5::utility::millis()};
+        elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
             _interval = 1000;  // 1sec
             _updated  = readMeasurement(_CO2eq, _TVOC);

@@ -9,8 +9,13 @@
 #include "unit_ADS111x.hpp"
 #include <M5Utility.hpp>
 
+using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::ads111x;
+using namespace m5::unit::ads111x::command;
+
 namespace {
-constexpr unsigned long interval_table[] = {
+constexpr elapsed_time_t interval_table[] = {
     1000UL / 8,   1000UL / 16,  1000UL / 32,  1000UL / 64,
     1000UL / 128, 1000UL / 250, 1000UL / 475, 1000UL / 860,
 };
@@ -31,11 +36,6 @@ constexpr float coefficient_table[] = {
 
 namespace m5 {
 namespace unit {
-
-using namespace m5::utility::mmh3;
-using namespace ads111x;
-using namespace ads111x::command;
-
 // class UnitADS111x
 const char UnitADS111x::name[] = "UnitADS111x";
 const types::uid_t UnitADS111x::uid{"UnitADS111x"_mmh3};
@@ -68,7 +68,7 @@ bool UnitADS111x::begin() {
 void UnitADS111x::update(const bool force) {
     _updated = false;
     if (inPeriodic()) {
-        unsigned long at{m5::utility::millis()};
+        elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
             // The rate of continuous conversion is equal to the programmeddata
             // rate. Data can be read at any time and always reflect the most

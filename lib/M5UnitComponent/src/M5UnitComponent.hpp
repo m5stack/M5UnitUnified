@@ -27,10 +27,6 @@
 class TwoWire;
 
 namespace m5 {
-/*!
-   @namespace unit
-   @brief namespace of M5UnitComponent
- */
 namespace unit {
 class UnitUnified;
 class Adapter;
@@ -45,19 +41,19 @@ namespace m5 {
 
 /*!
   @namespace unit
-  @brief For unit component system
+  @brief For unit components
 */
 namespace unit {
 
 /*!
   @class Component
-  @brief Abstract base class of unit component
+  @brief Base class of unit component
  */
 class Component {
    public:
     /*!
       @struct component_config_t
-      @brief UnitComponent basic settings
+      @brief Component basic settings
      */
     struct component_config_t {
         //! @brief Does the user call Unit's update? (default as false)
@@ -76,24 +72,24 @@ class Component {
         uint32_t stored_size{1};
     };
 
-    ///@name Fixed parameters for class
     ///@warning Define the same name and type in the derived class.
+    ///@name Fixed parameters for class
     ///@{
     static const types::uid_t uid;    //!< @brief Unique identifier for device
     static const types::attr_t attr;  //!< @brief Attributes
     static const char name[];         //!< @brief device name
     ///@}
 
-    ///@name Constructor
     ///@warning COPY PROHIBITED
+    ///@name Constructor
     ///@{
     explicit Component(const uint8_t addr = 0x00);
     Component(const Component&)     = delete;
     Component(Component&&) noexcept = default;
     ///@}
 
-    ///@name Assignment
     ///@warning COPY PROHIBITED
+    ///@name Assignment
     ///@{
     Component& operator=(const Component&)     = delete;
     Component& operator=(Component&&) noexcept = default;
@@ -110,6 +106,21 @@ class Component {
     //! @brief Set the configuration
     void component_config(const component_config_t& cfg) {
         _uccfg = cfg;
+    }
+    ///@}
+
+    ///@name Functions that must be inherited
+    ///@{
+    /*! @brief Begin unit */
+    virtual bool begin() {
+        return true;
+    }
+    /*!
+      @brief Update unit
+      @param force Forced communication for updates if true
+    */
+    virtual void update(const bool force = false) {
+        (void)force;
     }
     ///@}
 
@@ -149,6 +160,33 @@ class Component {
     }
     ///@}
 
+    ///@name For periodic measurement
+    ///@{
+    /*! @brief In periodic measurement? */
+    inline bool inPeriodic() const {
+        return _periodic;
+    }
+    //! @brief Periodic measurement data updated?
+    inline bool updated() const {
+        return _updated;
+    }
+    /*!
+      @brief Time elapsed since start-up when the measurement data was updated
+      in update()
+      @return Updated time (Unit: ms)
+    */
+    inline types::elapsed_time_t updatedMillis() const {
+        return _latest;
+    }
+    /*!
+      @brief Gets the periodic interval
+      @return interval time (Unit: ms)
+     */
+    inline types::elapsed_time_t interval() const {
+        return _interval;
+    }
+    ///@}
+
     ///@name Bus assignment
     ///@{
     /*! @brief Assgin m5::hal::bus */
@@ -158,109 +196,19 @@ class Component {
     virtual bool assign(TwoWire& wire);
     ///@}
 
-    ///@name Functions that must be inherited
+    ///@note For daisy-chaining units such as hubs
+    ///@name Parent-children relationship
     ///@{
-    /*! @brief Begin unit */
-    virtual bool begin() {
-        return true;
-    }
-    /*!
-      @brief Update unit
-      @param force Forced communication for updates if true
-    */
-    virtual void update(const bool force = false) {
-        (void)force;
-    }
-    ///@}
-
-    ///@name R/W
-    ///@{
-    /*! @brief Reading data with transactions */
-    m5::hal::error::error_t readWithTransaction(uint8_t* data,
-                                                const size_t len);
-    //! @brief Read data from register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
-                      const uint32_t delayMillis, const bool stop = true);
-    //! @brief Read uint8_t from register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool readRegister8(const Reg reg, uint8_t& result,
-                       const uint32_t delayMillis, const bool stop = true);
-    //! @brief Read uint16_t from register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool readRegister16(const Reg reg, uint16_t& result,
-                        const uint32_t delayMillis, const bool stop = true);
-
-    //! @brief Writeing data with transactions */
-    m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
-                                                 const size_t len,
-                                                 const bool stop = true);
-
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    m5::hal::error::error_t writeWithTransaction(const Reg reg,
-                                                 const uint8_t* data,
-                                                 const size_t len,
-                                                 const bool stop = true);
-
-    //! @brief Write data to register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr,
-                       const size_t len = 0U, const bool stop = true);
-    //! @brief Write uint8_t to register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool writeRegister8(const Reg reg, const uint8_t value,
-                        const bool stop = true);
-    //! @brief Write uint16_t to register
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool writeRegister16(const Reg reg, const uint16_t value,
-                         const bool stop = true);
-
-    //! @brief General call
-    bool generalCall(const uint8_t* data, const size_t len);
-    ///@}
-
-    ///@name Children
-    ///@brief For daisy-chaining units such as hubs
-    ///@{
-    /*! @brief It means whether the device is connected to a device other than
-     * the main unit. */
+    /*! @brief Has parent unit? */
     bool hasParent() const {
         return _parent;
     }
-    //! @brief Are there any other devices connected to the same unit besides
-    //! yourself?
+    //! @brief Are there any other devices connected to the same parent unit
+    //! besides yourself?
     bool hasSiblings() const {
         return _prev || _next;
     }
-    //! @brief Are there other devices connected to you?
+    //! @brief Are there other devices connected to me?
     bool hasChildren() const {
         return _child;
     }
@@ -276,9 +224,6 @@ class Component {
     bool selectChannel(const uint8_t ch = 8);
     ///@}
 
-    ///@name Iterator for children
-    ///@{
-    ///@cond
     template <class T>
     class Iterator : public std::iterator<std::forward_iterator_tag, T*> {
        public:
@@ -308,7 +253,9 @@ class Component {
     };
     using child_iterator       = Iterator<Component>;
     using const_child_iterator = Iterator<const Component>;
-    ///@endcond
+
+    ///@name Iterator for children
+    ///@{
     child_iterator childBegin() noexcept {
         return child_iterator(_child);
     }
@@ -323,8 +270,71 @@ class Component {
     }
     ///@}
 
+    /*! @brief General call for I2C*/
+    bool generalCall(const uint8_t* data, const size_t len);
+
     //! @brief Output information for debug
     virtual std::string debugInfo() const;
+
+    ///@name Read/Write
+    ///@{
+    m5::hal::error::error_t readWithTransaction(uint8_t* data,
+                                                const size_t len);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
+                      const uint32_t delayMillis, const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool readRegister8(const Reg reg, uint8_t& result,
+                       const uint32_t delayMillis, const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool readRegister16(const Reg reg, uint16_t& result,
+                        const uint32_t delayMillis, const bool stop = true);
+    m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
+                                                 const size_t len,
+                                                 const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    m5::hal::error::error_t writeWithTransaction(const Reg reg,
+                                                 const uint8_t* data,
+                                                 const size_t len,
+                                                 const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr,
+                       const size_t len = 0U, const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool writeRegister8(const Reg reg, const uint8_t value,
+                        const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value &&
+                                          std::is_unsigned<Reg>::value &&
+                                          sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    bool writeRegister16(const Reg reg, const uint16_t value,
+                         const bool stop = true);
+    ///@}
 
    protected:
     // Proper implementation in derived classes is required
@@ -347,6 +357,10 @@ class Component {
    protected:
     UnitUnified* _manager{};
     std::unique_ptr<m5::unit::Adapter> _adapter{};
+
+    types::elapsed_time_t _latest{}, _interval{};
+    bool _periodic{};  // During periodic measurement?
+    bool _updated{};
 
    private:
     uint32_t _order{};

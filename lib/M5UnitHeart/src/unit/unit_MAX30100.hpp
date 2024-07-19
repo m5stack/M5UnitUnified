@@ -262,18 +262,6 @@ class UnitMAX30100 : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief Periodic measurement data updated? */
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
     //! @brief Number of data last retrieved
     inline uint8_t retrived() const {
         return _retrived;
@@ -375,9 +363,7 @@ class UnitMAX30100 : public Component {
    protected:
     max30100::Mode _mode{};
     max30100::SamplingRate _samplingRate{};
-    unsigned long _latest{}, _interval{};
     size_t _latestCoount{};
-    bool _periodic{}, _updated{};
     uint8_t _retrived{};  // Number of elements last retrieved.
     uint8_t _overflow{};
 

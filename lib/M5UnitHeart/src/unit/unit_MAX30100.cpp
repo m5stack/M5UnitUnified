@@ -12,11 +12,14 @@
 #include <cassert>
 
 using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::max30100;
+using namespace m5::unit::max30100::command;
 
 namespace {
 constexpr uint8_t partId{0x11};
 // Sampling rate to interval
-constexpr unsigned long interval_table[] = {
+constexpr elapsed_time_t interval_table[] = {
     1000 / 50,  1000 / 100, 1000 / 167, 1000 / 200,
     1000 / 400, 1000 / 600, 1000 / 800, 1000 / 1000,
 };
@@ -25,8 +28,6 @@ constexpr unsigned long interval_table[] = {
 
 namespace m5 {
 namespace unit {
-
-using namespace max30100::command;
 
 // class UnitMAX30100
 const char UnitMAX30100::name[] = "UnitMAX30100";

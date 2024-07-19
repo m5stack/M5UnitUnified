@@ -114,10 +114,6 @@ class UnitSGP30 : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return _periodic;
-    }
     /*!
       @brief Gets the product version
       @warning Calling after the call of begin()
@@ -125,21 +121,9 @@ class UnitSGP30 : public Component {
     inline uint8_t productVersion() const {
         return _version;
     }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
     //! @brief Baseline data updated?
     inline bool updatedBaseline() const {
         return _updatedBaseline;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
     }
     /*!
       @brief Time elapsed since start-up when the baseline data was updated
@@ -314,9 +298,8 @@ class UnitSGP30 : public Component {
 
    protected:
     uint8_t _version{};  // Chip version
-    bool _periodic{};    // During periodic measurement?
-    bool _updated{}, _updatedBaseline{};
-    unsigned long _latest{}, _latestBaseline{}, _interval{};
+    bool _updatedBaseline{};
+    types::elapsed_time_t _latestBaseline{};
 
     uint16_t _CO2eq{}, _TVOC{};
     uint16_t _baselineCO2eq{}, _baselineTVOC{};

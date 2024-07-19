@@ -46,12 +46,6 @@ union U16 {
     }
 
 #endif
-    /*!
-      @brief from uint8_t pointer
-      @warning The area pointed to by the pointer must be at least 2 bytes
-     */
-    constexpr explicit U16(const uint8_t* p) : u8{*p, *(p + 1)} {
-    }
     //! @brief Stored in order of high and low
     constexpr U16(const uint8_t high, const uint8_t low) : u8{high, low} {
     }

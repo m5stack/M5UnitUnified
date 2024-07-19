@@ -17,6 +17,7 @@
 #include <cmath>
 
 using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
 using namespace m5::unit::bme688;
 using namespace m5::unit::bme688::command;
 
@@ -78,7 +79,7 @@ inline bool operator!=(const uint8_t o, const Mode m) {
 
 namespace m5 {
 namespace unit {
-
+//
 const char UnitBME688::name[] = "UnitBME688";
 const types::uid_t UnitBME688::uid{"UnitBME688"_mmh3};
 const types::uid_t UnitBME688::attr{0};
@@ -262,7 +263,7 @@ void UnitBME688::update_bme688(const bool force) {
         return;
     }
 
-    unsigned long at{m5::utility::millis()};
+    elapsed_time_t at{m5::utility::millis()};
     if (force || !_latest || at >= _latest + _interval) {
         _updated = read_measurement();
         if (_updated) {

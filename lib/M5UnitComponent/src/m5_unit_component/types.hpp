@@ -21,7 +21,8 @@ namespace unit {
 namespace types {
 
 using uid_t  = uint32_t;  //!< @brief Component unique identifier
-using attr_t = uint32_t;  //!< @brief Component attrinute
+using attr_t = uint32_t;  //!< @brief Component attribute bits
+using elapsed_time_t = unsigned long; //!< @brief Elapsed time unit (ms)
 
 }  // namespace types
 }  // namespace unit

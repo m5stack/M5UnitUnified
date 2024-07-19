@@ -12,7 +12,7 @@
 #include <array>
 
 using namespace m5::utility::mmh3;
-using namespace m5::unit;
+using namespace m5::unit::types;
 using namespace m5::unit::scd4x;
 using namespace m5::unit::scd4x::command;
 
@@ -49,16 +49,16 @@ const types::uid_t UnitSCD40::uid{"UnitSCD40"_mmh3};
 const types::uid_t UnitSCD40::attr{0};
 
 uint16_t UnitSCD40::Data::co2() const {
-    return m5::types::big_uint16_t(raw.data()).get();
+    return m5::types::big_uint16_t(raw[0], raw[1]).get();
 }
 
 float UnitSCD40::Data::temperature() const {
     return -45 +
-           Temperature::toFloat(m5::types::big_uint16_t(raw.data() + 3).get());
+           Temperature::toFloat(m5::types::big_uint16_t(raw[3], raw[4]).get());
 }
 
 float UnitSCD40::Data::humidity() const {
-    return 100.f * m5::types::big_uint16_t(raw.data() + 6).get() / 65536.f;
+    return 100.f * m5::types::big_uint16_t(raw[6], raw[7]).get() / 65536.f;
 }
 
 bool UnitSCD40::begin() {

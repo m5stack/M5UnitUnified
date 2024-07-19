@@ -108,26 +108,6 @@ class UnitSCD40 : public Component {
     }
     ///@}
 
-    ///@name Properties
-    ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return _periodic;
-    }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
-    ///@}
-
     ///@name Measurement data by periodic
     ///@{
     //! @brief Latest measured CO2 concentration (ppm)
@@ -346,12 +326,7 @@ class UnitSCD40 : public Component {
     bool read_measurement(Data &d, const bool all = true);
 
    protected:
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
-    unsigned long _latest{}, _interval{};
-
     std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
-
     config_t _cfg{};
 };
 

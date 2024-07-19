@@ -11,6 +11,7 @@
 #include <array>
 
 using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
 using namespace m5::unit::paj7620u2;
 using namespace m5::unit::paj7620u2::command;
 
@@ -26,8 +27,6 @@ int freq_to_idle(const float frequency) {
 // IDLE_TIME tp Hz
 float idle_to_freq(const int idleTime) {
     return 1000.0f / (idleTime * 0.0323f + 3.55f);
-
-
 }
 #endif
 
@@ -337,7 +336,6 @@ constexpr uint8_t freq_table[] = {
 
 namespace m5 {
 namespace unit {
-
 // class UnitPAJ7620U2
 const char UnitPAJ7620U2::name[] = "UnitPAJ7620U2";
 const types::uid_t UnitPAJ7620U2::uid{"UnitPAJ7620U2"_mmh3};

@@ -123,22 +123,6 @@ class UnitSHT30 : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return _periodic;
-    }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
     //! @brief Latest neasured temperature (Celsius)
     inline float temperature() const {
         return _temperature;
@@ -272,10 +256,6 @@ class UnitSHT30 : public Component {
     bool read_measurement();
 
    protected:
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
-    unsigned long _latest{}, _interval{};
-
     // latest data
     float _temperature{};  // C
     float _humidity{};     // RH

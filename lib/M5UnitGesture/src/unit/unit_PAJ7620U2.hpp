@@ -120,18 +120,6 @@ class UnitPAJ7620U2 : public Component {
 
     ///@name Properties
     ///@{
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
     //! @brief Latest gesture
     inline paj7620u2::Gesture gesture() const {
         return _gesture;
@@ -371,8 +359,6 @@ class UnitPAJ7620U2 : public Component {
     paj7620u2::Mode _mode{};
     paj7620u2::Frequency _frequency{};
     uint8_t _rotation{};
-    bool _updated{};
-    unsigned long _latest{};
 
     // latest data
     // gesture

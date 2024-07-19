@@ -223,22 +223,6 @@ class UnitADS111x : public Component {
 
     ///@name Properties
     ///@{
-    /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
-        return !_adsCfg.mode();
-    }
-    //! @brief Periodic measurement data updated?
-    inline bool updated() const {
-        return _updated;
-    }
-    /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedMillis() const {
-        return _latest;
-    }
     //! @brief Gets the latest adc
     inline int16_t adc() const {
         return _value;
@@ -398,9 +382,6 @@ class UnitADS111x : public Component {
     bool set_comparator_queue(const ads111x::ComparatorQueue c);
 
    protected:
-    bool _updated{};
-    unsigned long _latest{}, _interval{};
-
     int16_t _value{};  // Latest raw data
     float _coefficient{};
     ads111x::Config _adsCfg{};
