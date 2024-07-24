@@ -43,23 +43,30 @@ constexpr uint32_t interval_table[] = {
 namespace m5 {
 namespace unit {
 
-// class UnitSCD40
-const char UnitSCD40::name[] = "UnitSCD40";
-const types::uid_t UnitSCD40::uid{"UnitSCD40"_mmh3};
-const types::uid_t UnitSCD40::attr{0};
-
-uint16_t UnitSCD40::Data::co2() const {
+namespace scd4x {
+uint16_t Data::co2() const {
     return m5::types::big_uint16_t(raw[0], raw[1]).get();
 }
 
-float UnitSCD40::Data::temperature() const {
+float Data::celsius() const {
     return -45 +
            Temperature::toFloat(m5::types::big_uint16_t(raw[3], raw[4]).get());
 }
 
-float UnitSCD40::Data::humidity() const {
+float Data::fahrenheit() const {
+    return celsius() * 9.0f / 5.0f + 32.f;
+}
+
+float Data::humidity() const {
     return 100.f * m5::types::big_uint16_t(raw[6], raw[7]).get() / 65536.f;
 }
+
+}  // namespace scd4x
+
+// class UnitSCD40
+const char UnitSCD40::name[] = "UnitSCD40";
+const types::uid_t UnitSCD40::uid{"UnitSCD40"_mmh3};
+const types::uid_t UnitSCD40::attr{0};
 
 bool UnitSCD40::begin() {
     assert(_cfg.stored_size && "stored_size must be greater than zero");
@@ -108,6 +115,7 @@ bool UnitSCD40::startPeriodicMeasurement(const Mode mode) {
     _periodic = writeRegister(mode_reg_table[m]);
     if (_periodic) {
         _interval = interval_table[m];
+        _latest   = 0;
     }
     return _periodic;
 }
@@ -135,7 +143,7 @@ bool UnitSCD40::setTemperatureOffset(const float offset,
     m5::types::big_uint16_t u16(Temperature::toUint16(offset));
     m5::utility::CRC8_Checksum crc{};
     std::array<uint8_t, 3> buf{u16.u8[0], u16.u8[1],
-                               crc.update(u16.data(), u16.size())};
+                               crc.range(u16.data(), u16.size())};
     if (writeRegister(SET_TEMPERATURE_OFFSET, buf.data(), buf.size())) {
         m5::utility::delay(duration);
         return true;
@@ -167,7 +175,7 @@ bool UnitSCD40::setSensorAltitude(const uint16_t altitude,
     m5::types::big_uint16_t u16(altitude);
     m5::utility::CRC8_Checksum crc{};
     std::array<uint8_t, 3> buf{u16.u8[0], u16.u8[1],
-                               crc.update(u16.data(), u16.size())};
+                               crc.range(u16.data(), u16.size())};
     if (writeRegister(SET_SENSOR_ALTITUDE, buf.data(), buf.size())) {
         m5::utility::delay(duration);
         return true;
@@ -194,7 +202,7 @@ bool UnitSCD40::setAmbientPressure(const float pressure,
     m5::types::big_uint16_t u16((uint16_t)(pressure / 100));
     m5::utility::CRC8_Checksum crc{};
     std::array<uint8_t, 3> buf{u16.u8[0], u16.u8[1],
-                               crc.update(u16.data(), u16.size())};
+                               crc.range(u16.data(), u16.size())};
     if (writeRegister(SET_AMBIENT_PRESSURE, buf.data(), buf.size())) {
         m5::utility::delay(duration);
         return true;
@@ -218,7 +226,7 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
     m5::types::big_uint16_t u16(concentration);
     m5::utility::CRC8_Checksum crc{};
     std::array<uint8_t, 3> buf{u16.u8[0], u16.u8[1],
-                               crc.update(u16.data(), u16.size())};
+                               crc.range(u16.data(), u16.size())};
     if (!writeRegister(PERFORM_FORCED_CALIBRATION, buf.data(), buf.size())) {
         return false;
     }
@@ -233,7 +241,7 @@ bool UnitSCD40::performForcedRecalibration(const uint16_t concentration,
         m5::hal::error::error_t::OK) {
         m5::types::big_uint16_t u16{rbuf[0], rbuf[1]};
         m5::utility::CRC8_Checksum crc{};
-        if (rbuf[2] == crc.update(u16.data(), u16.size()) &&
+        if (rbuf[2] == crc.range(u16.data(), u16.size()) &&
             u16.get() != 0xFFFF) {
             correction = (int16_t)(u16.get() - 0x8000);
             return true;
@@ -251,7 +259,7 @@ bool UnitSCD40::setAutomaticSelfCalibrationEnabled(const bool enabled,
     m5::types::big_uint16_t u16(enabled ? 0x0001 : 0x0000);
     m5::utility::CRC8_Checksum crc{};
     std::array<uint8_t, 3> buf{u16.u8[0], u16.u8[1],
-                               crc.update(u16.data(), u16.size())};
+                               crc.range(u16.data(), u16.size())};
     if (writeRegister(SET_AUTOMATIC_SELF_CALIBRATION_ENABLED, buf.data(),
                       buf.size())) {
         m5::utility::delay(duration);
@@ -322,14 +330,14 @@ bool UnitSCD40::readSerialNumber(uint64_t& serialNumber) {
         return false;
     }
 
+    m5::utility::CRC8_Checksum crc{};
     if (readRegister(GET_SERIAL_NUMBER, rbuf.data(), rbuf.size(),
                      GET_SERIAL_NUMBER_DURATION)) {
         m5::types::big_uint16_t u16[3]{
             {rbuf[0], rbuf[1]}, {rbuf[3], rbuf[4]}, {rbuf[6], rbuf[7]}};
-        m5::utility::CRC8_Checksum crc[3]{};
-        if (crc[0].update(u16[0].data(), u16[0].size()) == rbuf[2] &&
-            crc[1].update(u16[1].data(), u16[1].size()) == rbuf[5] &&
-            crc[2].update(u16[2].data(), u16[2].size()) == rbuf[8]) {
+        if (crc.range(u16[0].data(), u16[0].size()) == rbuf[2] &&
+            crc.range(u16[1].data(), u16[1].size()) == rbuf[5] &&
+            crc.range(u16[2].data(), u16[2].size()) == rbuf[8]) {
             serialNumber = ((uint64_t)u16[0].get()) << 32 |
                            ((uint64_t)u16[1].get()) << 16 |
                            ((uint64_t)u16[2].get());
@@ -389,9 +397,9 @@ bool UnitSCD40::read_measurement(Data& d, const bool all) {
                       READ_MEASUREMENT_DURATION)) {
         return false;
     }
+    m5::utility::CRC8_Checksum crc{};
     for (uint_fast8_t i = all ? 0 : 1; i < 3; ++i) {
-        m5::utility::CRC8_Checksum crc{};
-        if (crc.update(d.raw.data() + i * 3, 2U) != d.raw[i * 3 + 2]) {
+        if (crc.range(d.raw.data() + i * 3, 2U) != d.raw[i * 3 + 2]) {
             return false;
         }
     }

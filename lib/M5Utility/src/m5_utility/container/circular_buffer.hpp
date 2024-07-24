@@ -109,7 +109,7 @@ class CircularBufferIterator {
 
 /*!
   @class CircularBuffer
-  @brief Type CircularBuffer  giving size in constructor
+  @brief Type CircularBuffer giving size in constructor
   @tparam T Type of the element
  */
 template <typename T>
@@ -385,7 +385,7 @@ class CircularBuffer {
 
 /*!
   @class FixedCircularBuffer
-  @brief Type CircularBuffer  giving size in template parameter
+  @brief Type CircularBuffer giving size in template parameter
   @tparam T Type of the element
   @tpatam N Capacity of the buffer
 */

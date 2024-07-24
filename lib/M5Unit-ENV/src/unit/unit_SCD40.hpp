@@ -17,11 +17,13 @@
 
 namespace m5 {
 namespace unit {
+
 /*!
   @class UnitSCD40
   @brief SCD40 unit component
 */
-class UnitSCD40 : public Component {
+class UnitSCD40 : public Component,
+                  public PeriodicMeasurementAdapter<UnitSCD40, scd4x::Data> {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitSCD40, 0x62);
 
    public:
@@ -38,19 +40,9 @@ class UnitSCD40 : public Component {
         bool calibration{true};
     };
 
-    /*!
-      @struct Data
-      @brief Measurement data group
-     */
-    struct Data {
-        std::array<uint8_t, 9> raw{};  //!< RAW data
-        uint16_t co2() const;          //!< CO2 concentration (ppm)
-        float temperature() const;     //!< temperature (Celsius)
-        float humidity() const;        //!< humidity (RH)
-    };
-
-    explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
-        _data.reset(new m5::container::CircularBuffer<Data>(1));
+    explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS)
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<scd4x::Data>(1)} {
     }
     virtual ~UnitSCD40() {
     }
@@ -72,47 +64,29 @@ class UnitSCD40 : public Component {
 
     ///@name Measurement data by periodic
     ///@{
-    //! @brief Latest measured CO2 concentration (ppm)
+    //! @brief Oldest measured CO2 concentration (ppm)
     inline uint16_t co2() const {
-        return !_data->empty() ? _data->back()->co2() : 0;
+        return !_data->empty() ? oldest().co2() : 0;
     }
-    //! @brief Latest measured temperature (Celsius)
+    //! @brief Oldest measured temperature (Celsius)
     inline float temperature() const {
-        return !_data->empty() ? _data->back()->temperature()
+        return !_data->empty() ? oldest().temperature()
                                : std::numeric_limits<float>::quiet_NaN();
     }
-    //! @brief Latest measured humidity (RH)
+    //! @brief Oldest measured temperature (Celsius)
+    inline float celsius() const {
+        return !_data->empty() ? oldest().celsius()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Oldest measured temperature (Fahrenheit)
+    inline float fahrenheit() const {
+        return !_data->empty() ? oldest().fahrenheit()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Oldest measured humidity (RH)
     inline float humidity() const {
-        return !_data->empty() ? _data->back()->humidity()
+        return !_data->empty() ? oldest().humidity()
                                : std::numeric_limits<float>::quiet_NaN();
-    }
-    //! @brief Get the number of stored data
-    inline size_t available() const {
-        return _data->size();
-    }
-    //! @brief Empty data?
-    inline bool empty() const {
-        return _data->empty();
-    }
-    //! @brief Stored data full?
-    inline bool full() const {
-        return _data->full();
-    }
-    //! @brief Retrieve oldest stored data
-    inline Data oldest() const {
-        return !_data->empty() ? *(_data->front()) : Data{};
-    }
-    //! @brief Retrieve latest stored data
-    inline Data latest() const {
-        return !_data->empty() ? *(_data->back()) : Data{};
-    }
-    //! @brief Discard  the oldest data accumulated
-    inline void discard() const {
-        _data->pop_front();
-    }
-    //! @brief Discard all data
-    inline void flush() {
-        _data->clear();
     }
     ///@}
 
@@ -241,7 +215,7 @@ class UnitSCD40 : public Component {
     bool persistSettings(
         const uint32_t duration = scd4x::PERSIST_SETTINGS_DURATION);
     /*!
-      @brief Get the serial number string
+      @brief Read the serial number string
       @param[out] serialNumber Output buffer
       @return True if successful
       @warning Size must be at least 13 bytes
@@ -249,7 +223,7 @@ class UnitSCD40 : public Component {
     */
     bool readSerialNumber(char *serialNumber);
     /*!
-      @brief Get the serial number value
+      @brief Read the serial number value
       @param[out] serialNumber serial number value
       @return True if successful
       @note The serial number is 48 bit
@@ -284,10 +258,13 @@ class UnitSCD40 : public Component {
 
    protected:
     bool read_data_ready_status();
-    bool read_measurement(Data &d, const bool all = true);
+    bool read_measurement(scd4x::Data &d, const bool all = true);
+
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitSCD40,
+                                                               scd4x::Data);
 
    protected:
-    std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
+    std::unique_ptr<m5::container::CircularBuffer<scd4x::Data>> _data{};
     config_t _cfg{};
 };
 

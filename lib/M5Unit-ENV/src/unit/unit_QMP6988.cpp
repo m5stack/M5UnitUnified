@@ -1,14 +1,17 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_QMP6988.cpp
   @brief QMP6988 Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "unit_QMP6988.hpp"
 #include <M5Utility.hpp>
 #include <limits>  // NaN
+#include <cmath>
+#include <thread>
 
 using namespace m5::utility::mmh3;
 using namespace m5::unit::types;
@@ -27,9 +30,47 @@ constexpr PowerMode mode_table[] = {
     PowerMode::Normal,
 };
 
-constexpr elapsed_time_t interval_table[] = {
-    1, 5, 50, 250, 500, 1000, 2000, 4000,
+constexpr elapsed_time_t standby_time_table[] = {
+    5, 5, 50, 250, 500, 1000, 2000, 4000,
 };
+
+constexpr float ostb{4.4933f};
+constexpr float oversampling_temp_time_table[] = {
+    0.0f,     ostb * 1,  ostb * 2,  ostb * 4,
+    ostb * 8, ostb * 16, ostb * 32, ostb * 64,
+};
+
+constexpr float ospb{0.5032f};
+constexpr float oversampling_pressure_time_table[] = {
+    0.0f,     ospb * 1,  ospb * 2,  ospb * 4,
+    ospb * 8, ospb * 16, ospb * 32, ospb * 64,
+};
+
+constexpr float filter_time_table[] = {
+    0.0f, 0.3f, 0.6f, 1.2f, 2.4f, 4.8f, 9.6f, 9.6f, 9.6f,
+};
+
+elapsed_time_t calculatInterval(const StandbyTime st, const Oversampling ost,
+                                const Oversampling osp, const Filter f) {
+    // M5_LIB_LOGV("ST:%u OST:%u OSP:%u F:%u", st, ost, osp, f);
+    // M5_LIB_LOGV(
+    //     "Value ST:%u OST:%u OSP:%u F:%u",
+    // standby_time_table[m5::stl::to_underlying(st)],
+    // (elapsed_time_t)std::ceil(
+    //     oversampling_temp_time_table[m5::stl::to_underlying(ost)]),
+    // (elapsed_time_t)std::ceil(
+    //     oversampling_pressure_time_table[m5::stl::to_underlying(osp)]),
+    // (elapsed_time_t)std::ceil(
+    //     filter_time_table[m5::stl::to_underlying(f)]));
+
+    return standby_time_table[m5::stl::to_underlying(st)] +
+           (elapsed_time_t)std::ceil(
+               oversampling_temp_time_table[m5::stl::to_underlying(ost)]) +
+           (elapsed_time_t)std::ceil(
+               oversampling_pressure_time_table[m5::stl::to_underlying(osp)]) +
+           (elapsed_time_t)std::ceil(
+               filter_time_table[m5::stl::to_underlying(f)]);
+}
 
 int16_t convert_temperature256(const int32_t dt,
                                const m5::unit::qmp6988::Calibration& c) {
@@ -88,12 +129,54 @@ int32_t convert_pressure16(const int32_t dp, const int16_t tx,
 
 namespace m5 {
 namespace unit {
+
+namespace qmp6988 {
+float Data::celsius() const {
+    if (calib) {
+        uint32_t rt = (((uint32_t)raw[3]) << 16) | (((uint32_t)raw[4]) << 8) |
+                      ((uint32_t)raw[5]);
+        int32_t dt   = (int32_t)(rt - sub_raw);
+        int16_t t256 = convert_temperature256(dt, *calib);
+        return (float)t256 / 256.f;
+    }
+    return std::numeric_limits<float>::quiet_NaN();
+}
+
+float Data::fahrenheit() const {
+    return celsius() * 9.0f / 5.0f + 32.f;
+}
+
+float Data::pressure() const {
+    if (calib) {
+        uint32_t rt = (((uint32_t)raw[3]) << 16) | (((uint32_t)raw[4]) << 8) |
+                      ((uint32_t)raw[5]);
+        int32_t dt   = (int32_t)(rt - sub_raw);
+        int16_t t256 = convert_temperature256(dt, *calib);
+
+        uint32_t rp = (((uint32_t)raw[0]) << 16) | (((uint32_t)raw[1]) << 8) |
+                      ((uint32_t)raw[2]);
+        int32_t dp  = (int32_t)(rp - sub_raw);
+        int32_t p16 = convert_pressure16(dp, t256, *calib);
+        return (float)p16 / 16.0f;
+    }
+    return std::numeric_limits<float>::quiet_NaN();
+}
+};  // namespace qmp6988
 //
 const char UnitQMP6988::name[] = "UnitQMP6988";
 const types::uid_t UnitQMP6988::uid{"UnitQMP6988"_mmh3};
 const types::uid_t UnitQMP6988::attr{0};
 
 bool UnitQMP6988::begin() {
+    assert(_cfg.stored_size && "stored_size must be greater than zero");
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
+    }
+
     uint8_t id{};
     if (!readRegister8(CHIP_ID, id, 0) || id != chip_id) {
         M5_LIB_LOGE("This unit is NOT QMP6988 %x", id);
@@ -110,15 +193,15 @@ bool UnitQMP6988::begin() {
         return false;
     }
 
-    if (!setMeasurementCondition(_cfg.temperature_avg, _cfg.pressure_avg) ||
-        !setFilterCoeff(_cfg.filter)) {
+    if (!setOversamplings(_cfg.oversampling_temperature,
+                          _cfg.oversampling_pressure) ||
+        !setFilterCoeff(_cfg.filter) || !setStandbyTime(_cfg.standby_time)) {
         M5_LIB_LOGE("Failed to settings");
         return false;
     }
 
-    return _cfg.start_periodic ? (setStandbyTime(_cfg.standby_time) &&
-                                  startPeriodicMeasurement())
-                               : setPowerMode(qmp6988::PowerMode::Force);
+    return _cfg.start_periodic ? startPeriodicMeasurement()
+                               : setPowerMode(qmp6988::PowerMode::Sleep);
 }
 
 void UnitQMP6988::update(const bool force) {
@@ -126,9 +209,11 @@ void UnitQMP6988::update(const bool force) {
     if (inPeriodic()) {
         elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || at >= _latest + _interval) {
-            _updated = readMeasurement();
+            Data d{};
+            _updated = (wait_measurement(_interval) && read_measurement(d));
             if (_updated) {
                 _latest = at;
+                _data->push_back(d);
             }
         }
     }
@@ -141,118 +226,107 @@ bool UnitQMP6988::startPeriodicMeasurement() {
     return setPowerMode(qmp6988::PowerMode::Normal);
 }
 
+bool UnitQMP6988::startPeriodicMeasurement(const qmp6988::StandbyTime st,
+                                           const qmp6988::Oversampling ost,
+                                           const qmp6988::Oversampling osp,
+                                           const qmp6988::Filter& f) {
+    if (inPeriodic()) {
+        return false;
+    }
+    return setFilterCoeff(f) && setOversamplings(ost, osp) &&
+           setStandbyTime(st) && setPowerMode(qmp6988::PowerMode::Normal);
+}
+
 bool UnitQMP6988::stopPeriodicMeasurement() {
-    if (!inPeriodic()) {
-        return false;
-    }
-    return setPowerMode(qmp6988::PowerMode::Force);
+    return setPowerMode(qmp6988::PowerMode::Sleep);
 }
 
-bool UnitQMP6988::readMeasurement() {
-    _temperature = _pressure = std::numeric_limits<float>::quiet_NaN();
-
-    if (_mode == qmp6988::PowerMode::Sleep) {
-        M5_LIB_LOGW("Sleeping");
-        return false;
-    }
-    if (_tempAvg == qmp6988::Average::Skip &&
-        _pressureAvg == qmp6988::Average::Skip) {
-        M5_LIB_LOGW("Cannot be measured");
-        return false;
-    }
-    if (!wait_measurement()) {
-        M5_LIB_LOGE("Not measured");
+bool UnitQMP6988::measureSingleshot(qmp6988::Data& d) {
+    if (inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are running");
         return false;
     }
 
-    uint8_t rbuf[6]{};
-
-    if (readRegister(READ_PRESSURE, rbuf, sizeof(rbuf), 0)) {
-        uint32_t rp = (((uint32_t)rbuf[0]) << 16) | (((uint32_t)rbuf[1]) << 8) |
-                      ((uint32_t)rbuf[2]);
-        uint32_t rt = (((uint32_t)rbuf[3]) << 16) | (((uint32_t)rbuf[4]) << 8) |
-                      ((uint32_t)rbuf[5]);
-
-        int32_t dt = (int32_t)(rt - sub_raw);
-        int32_t dp = (int32_t)(rp - sub_raw);
-
-        int16_t t256 = convert_temperature256(dt, _calibration);
-        int32_t p16  = convert_pressure16(dp, t256, _calibration);
-
-        if (_tempAvg != qmp6988::Average::Skip) {
-            _temperature = (float)t256 / 256.f;
-        }
-        if (_pressureAvg != qmp6988::Average::Skip) {
-            _pressure = (float)p16 / 16.0f;
-        }
-        return true;
-    }
-
-    return false;
+    return setPowerMode(qmp6988::PowerMode::Force) && wait_measurement() &&
+           read_measurement(d);
 }
 
-bool UnitQMP6988::getMeasurementCondition(qmp6988::Average& ta,
-                                          qmp6988::Average& pa,
-                                          qmp6988::PowerMode& mode) {
+bool UnitQMP6988::measureSingleshot(qmp6988::Data& d,
+                                    const qmp6988::Oversampling ost,
+                                    const qmp6988::Oversampling osp,
+                                    const qmp6988::Filter& f) {
+    if (inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are running");
+        return false;
+    }
+
+    CtrlMeasurement cm{};
+    cm.oversamplingTemperature(ost);
+    cm.oversamplingPressure(osp);
+    cm.mode(PowerMode::Force);
+    return setFilterCoeff(f) && set_measurement_condition(cm.value) &&
+           wait_measurement() && read_measurement(d);
+}
+
+bool UnitQMP6988::readOversamplings(qmp6988::Oversampling& ost,
+                                    qmp6988::Oversampling& osp) {
     qmp6988::CtrlMeasurement cm{};
-    if (get_measurement_condition(cm.value)) {
-        ta   = cm.temperatureAvg();
-        pa   = cm.pressureAvg();
-        mode = mode_table[m5::stl::to_underlying(cm.mode())];
+    if (read_measurement_condition(cm.value)) {
+        ost = cm.oversamplingTemperature();
+        osp = cm.oversamplingPressure();
         return true;
     }
     return false;
 }
 
-bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
-                                          const qmp6988::Average pa,
-                                          const qmp6988::PowerMode m) {
+bool UnitQMP6988::setOversamplings(const qmp6988::Oversampling ost,
+                                   const qmp6988::Oversampling osp) {
     qmp6988::CtrlMeasurement cm{};
-    cm.temperatureAvg(ta);
-    cm.pressureAvg(pa);
-    cm.mode(m);
-    return set_measurement_condition(cm.value);
-}
-
-bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta,
-                                          const qmp6988::Average pa) {
-    qmp6988::CtrlMeasurement cm{};
-    if (get_measurement_condition(cm.value)) {
-        cm.temperatureAvg(ta);
-        cm.pressureAvg(pa);
+    if (read_measurement_condition(cm.value)) {
+        cm.oversamplingTemperature(ost);
+        cm.oversamplingPressure(osp);
         return set_measurement_condition(cm.value);
     }
     return false;
 }
 
-bool UnitQMP6988::setMeasurementCondition(const qmp6988::Average ta) {
+bool UnitQMP6988::setOversamplingTemperature(const qmp6988::Oversampling os) {
     qmp6988::CtrlMeasurement cm{};
-    if (get_measurement_condition(cm.value)) {
-        cm.temperatureAvg(ta);
+    if (read_measurement_condition(cm.value)) {
+        cm.oversamplingTemperature(os);
         return set_measurement_condition(cm.value);
     }
     return false;
 }
 
-bool UnitQMP6988::setPressureOversampling(const qmp6988::Average pa) {
+bool UnitQMP6988::setOversamplingPressure(const qmp6988::Oversampling os) {
     qmp6988::CtrlMeasurement cm{};
-    if (get_measurement_condition(cm.value)) {
-        cm.pressureAvg(pa);
+    if (read_measurement_condition(cm.value)) {
+        cm.oversamplingPressure(os);
         return set_measurement_condition(cm.value);
+    }
+    return false;
+}
+
+bool UnitQMP6988::readPowerMode(qmp6988::PowerMode& m) {
+    qmp6988::CtrlMeasurement cm{};
+    if (read_measurement_condition(cm.value)) {
+        m = mode_table[m5::stl::to_underlying(cm.mode())];
+        return true;
     }
     return false;
 }
 
 bool UnitQMP6988::setPowerMode(const qmp6988::PowerMode m) {
     qmp6988::CtrlMeasurement cm{};
-    if (get_measurement_condition(cm.value)) {
+    if (read_measurement_condition(cm.value)) {
         cm.mode(m);
         return set_measurement_condition(cm.value);
     }
     return false;
 }
 
-bool UnitQMP6988::getFilterCoeff(qmp6988::Filter& f) {
+bool UnitQMP6988::readFilterCoeff(qmp6988::Filter& f) {
     constexpr qmp6988::Filter table[] = {
         qmp6988::Filter::Off,
         qmp6988::Filter::Coeff2,
@@ -274,23 +348,31 @@ bool UnitQMP6988::getFilterCoeff(qmp6988::Filter& f) {
 }
 
 bool UnitQMP6988::setFilterCoeff(const qmp6988::Filter& f) {
-    return writeRegister8(IIR_FILTER, m5::stl::to_underlying(f));
+    if (writeRegister8(IIR_FILTER, m5::stl::to_underlying(f))) {
+        _filter = f;
+        return true;
+    }
+    return false;
 }
 
-bool UnitQMP6988::getStandbyTime(qmp6988::StandbyTime& st) {
+bool UnitQMP6988::readStandbyTime(qmp6988::StandbyTime& st) {
     qmp6988::IOSetup is{};
-    if (get_io_setup(is.value)) {
+    if (read_io_setup(is.value)) {
         st = is.standby();
         return true;
     }
     return false;
 }
+
 bool UnitQMP6988::setStandbyTime(const qmp6988::StandbyTime st) {
     qmp6988::IOSetup is{};
-    if (get_io_setup(is.value)) {
+    if (read_io_setup(is.value)) {
+        if (st == is.standby()) {
+            return true;
+        }
         is.standby(st);
         if (set_io_setup(is.value)) {
-            _interval = interval_table[m5::stl::to_underlying(st)];
+            _standby = st;
             return true;
         }
     }
@@ -301,39 +383,44 @@ bool UnitQMP6988::reset() {
     uint8_t v{0xE6};  // When inputting "E6h", a soft-reset will be occurred
 
     auto ret = writeRegister8(RESET, v);
-    M5_LIB_LOGD("Reset causes a NO ACK error, but ignore it");
+    M5_LIB_LOGW("Reset causes a NO ACK or timeout error, but ignore it");
     (void)ret;
     // TODO / WARNING (HAL)
-    // Reset causes a NO ACK error, but ignore it.
     m5::utility::delay(10);             // Need delay
     return writeRegister(RESET, 0x00);  // Nothing to happen
 }
 
-bool UnitQMP6988::getStatus(qmp6988::Status& s) {
+bool UnitQMP6988::readStatus(qmp6988::Status& s) {
     return readRegister8(GET_STATUS, s.value, 1);
 }
 
-bool UnitQMP6988::get_measurement_condition(uint8_t& cond) {
+bool UnitQMP6988::read_measurement_condition(uint8_t& cond) {
     return readRegister8(CONTROL_MEASUREMENT, cond, 0);
 }
 
 bool UnitQMP6988::set_measurement_condition(const uint8_t cond) {
     if (writeRegister8(CONTROL_MEASUREMENT, cond)) {
-        qmp6988::CtrlMeasurement cm;
-        cm.value     = cond;
-        _tempAvg     = cm.temperatureAvg();
-        _pressureAvg = cm.pressureAvg();
-        _mode        = cm.mode();
-        _periodic    = (_mode == qmp6988::PowerMode::Normal);
+        auto prev = _mode;
 
-        // M5_LIB_LOGI(">>> %d,%d,%d,%d", _tempAvg, _pressureAvg, _mode,
-        // _periodic);
+        qmp6988::CtrlMeasurement cm;
+        cm.value    = cond;
+        _osTemp     = cm.oversamplingTemperature();
+        _osPressure = cm.oversamplingPressure();
+        _mode       = cm.mode();
+        // Power mode state changes affect internal operation
+        _periodic = (_mode == qmp6988::PowerMode::Normal);
+        if (_periodic && _mode != prev) {
+            _latest = 0;
+            _interval =
+                calculatInterval(_standby, _osTemp, _osPressure, _filter);
+            // M5_LIB_LOGE("Interval:%lu", _interval);
+        }
         return true;
     }
     return false;
 }
 
-bool UnitQMP6988::get_io_setup(uint8_t& s) {
+bool UnitQMP6988::read_io_setup(uint8_t& s) {
     return readRegister8(IO_SETUP, s, 0);
 }
 
@@ -341,22 +428,40 @@ bool UnitQMP6988::set_io_setup(const uint8_t s) {
     return writeRegister8(IO_SETUP, s);
 }
 
-// Wait until measured if Force mode
-bool UnitQMP6988::wait_measurement() {
-    if (_mode == qmp6988::PowerMode::Normal) {
-        return true;
-    }
-    if (_mode == qmp6988::PowerMode::Force) {
-        auto start_at = m5::utility::millis();
-        auto timeout  = start_at + 1000;  // 1 sec
-
+// Wait until measured
+bool UnitQMP6988::wait_measurement(const uint32_t timeout) {
+    if (_mode != qmp6988::PowerMode::Sleep) {
+        auto start_at   = m5::utility::millis();
+        auto timeout_at = start_at + timeout;
         qmp6988::Status s;
         do {
-            if (getStatus(s) && !s.measure()) {
+            if (is_ready_data()) {
                 return true;
             }
             m5::utility::delay(1);
-        } while (m5::utility::millis() <= timeout);
+        } while (m5::utility::millis() <= timeout_at);
+    }
+    return false;
+}
+
+bool UnitQMP6988::is_ready_data() {
+    Status s{};
+    return readStatus(s) && !s.measure();
+}
+
+bool UnitQMP6988::read_measurement(Data& d) {
+    if (_mode == qmp6988::PowerMode::Sleep) {
+        M5_LIB_LOGW("Sleeping");
+        return false;
+    }
+    if (_osTemp == qmp6988::Oversampling::Skip &&
+        _osPressure == qmp6988::Oversampling::Skip) {
+        M5_LIB_LOGW("Cannot be measured");
+        return false;
+    }
+    if (readRegister(READ_PRESSURE, d.raw.data(), d.raw.size(), 0)) {
+        d.calib = &_calibration;
+        return true;
     }
     return false;
 }

@@ -33,11 +33,11 @@ enum class Repeatability : uint8_t {
   @brief Measuring frequency
  */
 enum class MPS : uint8_t {
-    MpsHalf,  //!< @brief 0.5 measurement per second
-    Mps1,     //!< @brief 1 measurement per second
-    Mps2,     //!< @brief 2 measurement per second
-    Mps4,     //!< @brief 2 measurement per second
-    Mps10,    //!< @brief 10 measurement per second
+    Half,  //!< @brief 0.5 measurement per second
+    One,   //!< @brief 1 measurement per second
+    Two,   //!< @brief 2 measurement per second
+    Four,  //!< @brief 2 measurement per second
+    Ten,   //!< @brief 10 measurement per second
 };
 
 /*!
@@ -76,45 +76,53 @@ struct Status {
     inline bool checksum() const {
         return value & (1U << 0);
     }
-
     uint16_t value{};
 };
+
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    std::array<uint8_t, 6> raw{};  //!< RAW data
+    //! temperature (Celsius)
+    inline float temperature() const {
+        return celsius();
+    }
+    float celsius() const;     //!< temperature (Celsius)
+    float fahrenheit() const;  //!< temperature (Fahrenheit)
+    float humidity() const;    //!< humidity (RH)
+};
+
 }  // namespace sht30
 
 /*!
   @class UnitSHT30
   @brief Temperature and humidity, sensor unit
 */
-class UnitSHT30 : public Component {
+class UnitSHT30 : public Component,
+                  public PeriodicMeasurementAdapter<UnitSHT30, sht30::Data> {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitSHT30, 0x44);
 
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
     struct config_t : Component::config_t {
         //! @brief Start periodic measurement on begin?
         bool start_periodic{true};
         //! @brief Measuring frequency if start periodic on begin
-        sht30::MPS mps{sht30::MPS::Mps1};
+        sht30::MPS mps{sht30::MPS::One};
         //! @brief Repeatability accuracy level if start periodic on begin
         sht30::Repeatability rep{sht30::Repeatability::High};
         //! @brief start heater on begin?
         bool start_heater{false};
     };
-    /*!
-      @struct Data
-      @brief Measurement data group
-     */
-    struct Data {
-        std::array<uint8_t, 6> raw{};  //!< RAW data
-        float temperature() const;     //!< temperature (Celsius)
-        float humidity() const;        //!< humidity (RH)
-    };
 
     explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS)
-        : Component(addr), _data{new m5::container::CircularBuffer<Data>(1)} {
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<sht30::Data>(1)} {
     }
     virtual ~UnitSHT30() {
     }
@@ -136,43 +144,25 @@ class UnitSHT30 : public Component {
 
     ///@name Measurement data by periodic
     ///@{
-    //! @brief Latest measured temperature (Celsius)
+    //! @brief Oldest measured temperature (Celsius)
     inline float temperature() const {
-        return !_data->empty() ? _data->back()->temperature()
+        return !_data->empty() ? oldest().temperature()
                                : std::numeric_limits<float>::quiet_NaN();
     }
-    //! @brief Latest measured humidity (RH)
+    //! @brief Oldest measured temperature (Celsius)
+    inline float celsius() const {
+        return !_data->empty() ? oldest().celsius()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Oldest measured temperature (Fahrenheit)
+    inline float fahrenheit() const {
+        return !_data->empty() ? oldest().fahrenheit()
+                               : std::numeric_limits<float>::quiet_NaN();
+    }
+    //! @brief Oldest measured humidity (RH)
     inline float humidity() const {
-        return !_data->empty() ? _data->back()->humidity()
+        return !_data->empty() ? oldest().humidity()
                                : std::numeric_limits<float>::quiet_NaN();
-    }
-    //! @brief Get the number of stored data
-    inline size_t available() const {
-        return _data->size();
-    }
-    //! @brief Empty data?
-    inline bool empty() const {
-        return _data->empty();
-    }
-    //! @brief Stored data full?
-    inline bool full() const {
-        return _data->full();
-    }
-    //! @brief Retrieve oldest stored data
-    inline Data oldest() const {
-        return !_data->empty() ? *(_data->front()) : Data{};
-    }
-    //! @brief Retrieve latest stored data
-    inline Data latest() const {
-        return !_data->empty() ? *(_data->back()) : Data{};
-    }
-    //! @brief Discard  the oldest data accumulated
-    inline void discard() const {
-        _data->pop_front();
-    }
-    //! @brief Discard all data
-    inline void flush() {
-        _data->clear();
     }
     ///@}
 
@@ -180,6 +170,7 @@ class UnitSHT30 : public Component {
     ///@{
     /*!
       @brief Measurement single shot
+      @param[out] data Measuerd data
       @param rep Repeatability accuracy level
       @param stretch Enable clock stretching if true
       @return True if successful
@@ -188,20 +179,21 @@ class UnitSHT30 : public Component {
       **1ms** is needed before another command can be received by the sensor
     */
     bool measureSingleshot(
-        Data& d, const sht30::Repeatability rep = sht30::Repeatability::High,
-        const bool stretch = true);
+        sht30::Data& d,
+        const sht30::Repeatability rep = sht30::Repeatability::High,
+        const bool stretch             = true);
     ///@}
 
     ///@name Periodic measurement
     ///@{
     /*!
       @brief Start periodic measurement
-      @param[in] mps Measurement per second
-      @param[in] rep Repeatability accuracy level
+      @param mps Measurement per second
+      @param rep Repeatability accuracy level
       @return True if successful
     */
     bool startPeriodicMeasurement(
-        const sht30::MPS mps           = sht30::MPS::Mps1,
+        const sht30::MPS mps           = sht30::MPS::One,
         const sht30::Repeatability rep = sht30::Repeatability::High);
     /*!
       @brief Stop periodic measurement
@@ -255,11 +247,11 @@ class UnitSHT30 : public Component {
     ///@name Status
     ///@{
     /*!
-      @brief Get status
+      @brief Read status
       @param[out] s Status
       @return True if successful
     */
-    bool getStatus(sht30::Status& s);
+    bool readStatus(sht30::Status& s);
     /*!
       @brief Clear status
       @note @sa Status
@@ -271,28 +263,31 @@ class UnitSHT30 : public Component {
     ///@name Serial
     ///@{
     /*!
-      @brief Get the serial number value
+      @brief Read the serial number value
       @param[out] serialNumber serial number value
       @return True if successful
       @note The serial number is 32 bit
       @warning During periodic detection runs, an error is returned
     */
-    bool getSerialNumber(uint32_t& serialNumber);
+    bool readSerialNumber(uint32_t& serialNumber);
     /*!
-      @brief Get the serial number string
+      @brief Read the serial number string
       @param[out] serialNumber Output buffer
       @return True if successful
       @warning serialNumber must be at least 9 bytes
       @warning During periodic detection runs, an error is returned
     */
-    bool getSerialNumber(char* serialNumber);
+    bool readSerialNumber(char* serialNumber);
     ///@}
 
    protected:
-    bool read_measurement(Data& d);
+    bool read_measurement(sht30::Data& d);
+
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitSHT30,
+                                                               sht30::Data);
 
    protected:
-    std::unique_ptr<m5::container::CircularBuffer<Data>> _data{};
+    std::unique_ptr<m5::container::CircularBuffer<sht30::Data>> _data{};
     config_t _cfg{};
 };
 

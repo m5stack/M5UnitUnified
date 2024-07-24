@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  UnitTest for UnitSHT3x
+  UnitTest for UnitSHT30
 */
 
 // Move to each libarry
@@ -25,23 +25,31 @@ using namespace m5::unit;
 using namespace m5::unit::sht30;
 using namespace m5::unit::sht30::command;
 
+#define STORED_SIZE (2)
+
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
 
-class TestSHT3x : public ComponentTestBase<UnitSHT30, bool> {
+class TestSHT30 : public ComponentTestBase<UnitSHT30, bool> {
    protected:
     virtual UnitSHT30* get_instance() override {
-        return new m5::unit::UnitSHT30();
+        auto ptr = new m5::unit::UnitSHT30();
+        auto cfg = ptr->config();
+        // cfg.start_periodic = false;
+        cfg.stored_size = STORED_SIZE;
+        ;
+        ptr->config(cfg);
+        return ptr;
     }
     virtual bool is_using_hal() const override {
         return GetParam();
     };
 };
 
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x,
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT30,
 //                         ::testing::Values(false, true));
-// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT3x, ::testing::Values(false));
+// INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT30, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(ParamValues, TestSHT30, ::testing::Values(false));
 
 namespace {
 // flot t uu int16 (temperature)
@@ -59,13 +67,14 @@ std::tuple<const char*, Repeatability, bool> ss_table[] = {
 };
 
 void check_measurement_values(UnitSHT30* u) {
-    EXPECT_TRUE(std::isfinite(u->temperature()));
+    EXPECT_TRUE(std::isfinite(u->celsius()));
+    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
     EXPECT_TRUE(std::isfinite(u->humidity()));
 }
 
 }  // namespace
 
-TEST_P(TestSHT3x, SingleShot) {
+TEST_P(TestSHT30, SingleShot) {
     SCOPED_TRACE(ustr);
     EXPECT_TRUE(unit->stopPeriodicMeasurement());
 
@@ -78,7 +87,7 @@ TEST_P(TestSHT3x, SingleShot) {
 
         int cnt{10};  // repeat 10 times
         while (cnt--) {
-            UnitSHT30::Data d{};
+            sht30::Data d{};
             EXPECT_TRUE(unit->measureSingleshot(d, rep, stretch))
                 << (int)rep << " : " << stretch;
             EXPECT_TRUE(std::isfinite(d.temperature()));
@@ -87,7 +96,7 @@ TEST_P(TestSHT3x, SingleShot) {
     }
 }
 
-TEST_P(TestSHT3x, Periodic) {
+TEST_P(TestSHT30, Periodic) {
     SCOPED_TRACE(ustr);
 
     EXPECT_TRUE(unit->stopPeriodicMeasurement());
@@ -95,28 +104,25 @@ TEST_P(TestSHT3x, Periodic) {
 
     constexpr std::tuple<const char*, MPS, Repeatability> table[] = {
         //
-        {"HalfHigh", MPS::MpsHalf, Repeatability::High},
-        {"HalfMedium", MPS::MpsHalf, Repeatability::Medium},
-        {"HalfLow", MPS::MpsHalf, Repeatability::Low},
+        {"HalfHigh", MPS::Half, Repeatability::High},
+        {"HalfMedium", MPS::Half, Repeatability::Medium},
+        {"HalfLow", MPS::Half, Repeatability::Low},
         //
-        {"1High", MPS::Mps1, Repeatability::High},
-        {"1Medium", MPS::Mps1, Repeatability::Medium},
-        {"1Low", MPS::Mps1, Repeatability::Low},
+        {"1High", MPS::One, Repeatability::High},
+        {"1Medium", MPS::One, Repeatability::Medium},
+        {"1Low", MPS::One, Repeatability::Low},
         //
-        {"2High", MPS::Mps2, Repeatability::High},
-        {"2Medium", MPS::Mps2, Repeatability::Medium},
-        {"2Low", MPS::Mps2, Repeatability::Low},
+        {"2High", MPS::Two, Repeatability::High},
+        {"2Medium", MPS::Two, Repeatability::Medium},
+        {"2Low", MPS::Two, Repeatability::Low},
         //
-        {"4fHigh", MPS::Mps4, Repeatability::High},
-        {"4Medium", MPS::Mps4, Repeatability::Medium},
-        {"4Low", MPS::Mps4, Repeatability::Low},
+        {"4fHigh", MPS::Four, Repeatability::High},
+        {"4Medium", MPS::Four, Repeatability::Medium},
+        {"4Low", MPS::Four, Repeatability::Low},
         //
-        {"10fHigh", MPS::Mps10, Repeatability::High},
-        {"10Medium", MPS::Mps10, Repeatability::Medium},
-        {"10Low", MPS::Mps10, Repeatability::Low},
-    };
-    constexpr types::elapsed_time_t timeout_table[] = {
-        2000, 1000, 500, 250, 100,
+        {"10fHigh", MPS::Ten, Repeatability::High},
+        {"10Medium", MPS::Ten, Repeatability::Medium},
+        {"10Low", MPS::Ten, Repeatability::Low},
     };
 
     for (auto&& e : table) {
@@ -135,22 +141,48 @@ TEST_P(TestSHT3x, Periodic) {
             Repeatability rep;
             bool stretch{};
             std::tie(s, rep, stretch) = e;
-            UnitSHT30::Data d{};
+            sht30::Data d{};
 
             SCOPED_TRACE(s);
             EXPECT_FALSE(unit->measureSingleshot(d, rep, stretch));
         }
-
-        test_periodic_measurement(unit.get(),
-                                  timeout_table[m5::stl::to_underlying(mps)], 2,
-                                  check_measurement_values);
+        test_periodic_measurement(unit.get(), 4, check_measurement_values);
         EXPECT_TRUE(unit->stopPeriodicMeasurement());
+        EXPECT_FALSE(unit->inPeriodic());
+
+        EXPECT_EQ(unit->available(), STORED_SIZE);
+        EXPECT_FALSE(unit->empty());
+        EXPECT_TRUE(unit->full());
+
+        uint32_t cnt{};
+        while (unit->available()) {
+            ++cnt;
+            // M5_LOGI("%s T:%f H:%f", s, unit->temperature(),
+            // unit->humidity());
+
+            EXPECT_TRUE(std::isfinite(unit->temperature()));
+            EXPECT_TRUE(std::isfinite(unit->humidity()));
+            EXPECT_FLOAT_EQ(unit->temperature(), unit->oldest().temperature());
+            EXPECT_FLOAT_EQ(unit->humidity(), unit->oldest().humidity());
+            EXPECT_FALSE(unit->empty());
+            unit->discard();
+        }
+        EXPECT_EQ(cnt, STORED_SIZE);
+        EXPECT_TRUE(std::isnan(unit->temperature()));
+        EXPECT_TRUE(std::isnan(unit->humidity()));
+        EXPECT_EQ(unit->available(), 0);
+        EXPECT_TRUE(unit->empty());
+        EXPECT_FALSE(unit->full());
     }
 
-    // ART(4 mps)
-    EXPECT_TRUE(
-        unit->startPeriodicMeasurement(MPS::MpsHalf, Repeatability::High));
-    EXPECT_TRUE(unit->accelerateResponseTime());
+    // ART Command (4 mps)
+    EXPECT_FALSE(unit->inPeriodic());
+    EXPECT_FALSE(unit->accelerateResponseTime());
+    EXPECT_TRUE(unit->startPeriodicMeasurement(MPS::Half,
+                                               Repeatability::High));  // 0.5mps
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_EQ(unit->updatedMillis(), 0);
+    EXPECT_TRUE(unit->accelerateResponseTime());  // boost to 4mps
 
     // Cannot call all singleshot in periodic
     for (auto&& e : ss_table) {
@@ -158,13 +190,55 @@ TEST_P(TestSHT3x, Periodic) {
         Repeatability rep;
         bool stretch{};
         std::tie(s, rep, stretch) = e;
-        UnitSHT30::Data d{};
+        sht30::Data d{};
 
         SCOPED_TRACE(s);
         EXPECT_FALSE(unit->measureSingleshot(d, rep, stretch));
     }
 
-    test_periodic_measurement(unit.get(), 250, 2, check_measurement_values);
+    test_periodic_measurement(unit.get(), 4, check_measurement_values);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->inPeriodic());
+
+    EXPECT_EQ(unit->available(), STORED_SIZE);
+    EXPECT_FALSE(unit->empty());
+    EXPECT_TRUE(unit->full());
+    // M5_LOGI("ART T:%f H:%f", unit->temperature(), unit->humidity());
+
+    EXPECT_TRUE(std::isfinite(unit->temperature()));
+    EXPECT_TRUE(std::isfinite(unit->humidity()));
+    EXPECT_FLOAT_EQ(unit->temperature(), unit->oldest().temperature());
+    EXPECT_FLOAT_EQ(unit->humidity(), unit->oldest().humidity());
+
+    unit->flush();
+    EXPECT_TRUE(std::isnan(unit->temperature()));
+    EXPECT_TRUE(std::isnan(unit->humidity()));
+    EXPECT_EQ(unit->available(), 0);
+    EXPECT_TRUE(unit->empty());
+    EXPECT_FALSE(unit->full());
+
+    // startPeriodicMeasurement after ART (ART is disabled)
+    EXPECT_TRUE(unit->startPeriodicMeasurement(MPS::Two,
+                                               Repeatability::High));  // 2 mps
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_EQ(unit->updatedMillis(), 0);
+
+    std::array<uint8_t, 6> rbuf{};
+    types::elapsed_time_t timeout_at{}, now{}, at[2]{};
+    uint32_t idx{};
+    timeout_at = m5::utility::millis() + 1100;
+    do {
+        at[idx] = now = m5::utility::millis();
+        if (unit->writeRegister(READ_MEASUREMENT) &&
+            unit->readWithTransaction(rbuf.data(), rbuf.size()) ==
+                m5::hal::error::error_t::OK) {
+            ++idx;
+        }
+        m5::utility::delay(1);
+    } while (idx < 2 && now <= timeout_at);
+    EXPECT_EQ(idx, 2);
+    auto diff = at[1] - at[0];
+    EXPECT_GT(diff, 250);  // 2mps(500) > 4mps(250)
 }
 
 namespace {
@@ -178,31 +252,31 @@ void printStatus(const Status& s) {
 }
 }  // namespace
 
-TEST_P(TestSHT3x, HeaterAndStatus) {
+TEST_P(TestSHT30, HeaterAndStatus) {
     SCOPED_TRACE(ustr);
 
     Status s{};
 
     EXPECT_TRUE(unit->startHeater());
 
-    EXPECT_TRUE(unit->getStatus(s));
+    EXPECT_TRUE(unit->readStatus(s));
     printStatus(s);
     EXPECT_TRUE(s.heater());
 
     // clearStatus will not clear heater status
     EXPECT_TRUE(unit->clearStatus());
-    EXPECT_TRUE(unit->getStatus(s));
+    EXPECT_TRUE(unit->readStatus(s));
     printStatus(s);
     EXPECT_TRUE(s.heater());
 
     EXPECT_TRUE(unit->stopHeater());
-    EXPECT_TRUE(unit->getStatus(s));
+    EXPECT_TRUE(unit->readStatus(s));
     printStatus(s);
 
     EXPECT_FALSE(s.heater());
 }
 
-TEST_P(TestSHT3x, SoftReset) {
+TEST_P(TestSHT30, SoftReset) {
     SCOPED_TRACE(ustr);
 
     // Soft reset is only possible in standby mode.
@@ -217,7 +291,7 @@ TEST_P(TestSHT3x, SoftReset) {
 
     EXPECT_TRUE(unit->softReset());
 
-    EXPECT_TRUE(unit->getStatus(s));
+    EXPECT_TRUE(unit->readStatus(s));
     EXPECT_FALSE(s.alertPending());
     EXPECT_FALSE(s.heater());  // *1
     EXPECT_FALSE(s.trackingAlertRH());
@@ -227,7 +301,7 @@ TEST_P(TestSHT3x, SoftReset) {
     EXPECT_FALSE(s.checksum());
 }
 
-TEST_P(TestSHT3x, GeneralReset) {
+TEST_P(TestSHT30, GeneralReset) {
     SCOPED_TRACE(ustr);
 
     EXPECT_TRUE(unit->startHeater());
@@ -235,7 +309,7 @@ TEST_P(TestSHT3x, GeneralReset) {
     EXPECT_TRUE(unit->generalReset());
 
     Status s{};
-    EXPECT_TRUE(unit->getStatus(s));
+    EXPECT_TRUE(unit->readStatus(s));
     // The ALERT pin will also become active (high) after powerup and after
     // resets
     EXPECT_TRUE(s.alertPending());
@@ -247,7 +321,7 @@ TEST_P(TestSHT3x, GeneralReset) {
     EXPECT_FALSE(s.checksum());
 }
 
-TEST_P(TestSHT3x, SerialNumber) {
+TEST_P(TestSHT30, SerialNumber) {
     SCOPED_TRACE(ustr);
 
     EXPECT_TRUE(unit->stopPeriodicMeasurement());
@@ -264,8 +338,8 @@ TEST_P(TestSHT3x, SerialNumber) {
         //
         uint32_t sno{};
         char ssno[9]{};
-        EXPECT_TRUE(unit->getSerialNumber(sno));
-        EXPECT_TRUE(unit->getSerialNumber(ssno));
+        EXPECT_TRUE(unit->readSerialNumber(sno));
+        EXPECT_TRUE(unit->readSerialNumber(ssno));
 
         EXPECT_EQ(sno, d_sno);
 

@@ -35,18 +35,24 @@ bool delay1() {
 
 namespace m5 {
 namespace unit {
-//
-const char UnitSHT30::name[] = "UnitSHT30";
-const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
-const types::uid_t UnitSHT30::attr{0};
+namespace sht30 {
 
-float UnitSHT30::Data::temperature() const {
+float Data::celsius() const {
     return Temperature::toFloat(m5::types::big_uint16_t(raw[0], raw[1]).get());
 }
 
-float UnitSHT30::Data::humidity() const {
+float Data::fahrenheit() const {
+    return celsius() * 9.0f / 5.0f + 32.f;
+}
+
+float Data::humidity() const {
     return 100.f * m5::types::big_uint16_t(raw[3], raw[4]).get() / 65536.f;
 }
+}  // namespace sht30
+
+const char UnitSHT30::name[] = "UnitSHT30";
+const types::uid_t UnitSHT30::uid{"UnitSHT30"_mmh3};
+const types::uid_t UnitSHT30::attr{0};
 
 bool UnitSHT30::begin() {
     assert(_cfg.stored_size && "stored_size must be greater than zero");
@@ -181,6 +187,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht30::MPS mps,
 bool UnitSHT30::stopPeriodicMeasurement() {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
+        _latest   = 0;
         // Upon reception of the break command the sensor will abort the
         // ongoing measurement and enter the single shot mode. This takes
         // 1ms
@@ -190,6 +197,10 @@ bool UnitSHT30::stopPeriodicMeasurement() {
 }
 
 bool UnitSHT30::accelerateResponseTime() {
+    if (!inPeriodic()) {
+        M5_LIB_LOGD("Periodic measurements are NOT running");
+        return false;
+    }
     if (writeRegister(ACCELERATED_RESPONSE_TIME)) {
         _interval = 1000 / 4;  // 4mps
         m5::utility::delay(16);
@@ -198,10 +209,10 @@ bool UnitSHT30::accelerateResponseTime() {
     return false;
 }
 
-bool UnitSHT30::getStatus(sht30::Status& s) {
+bool UnitSHT30::readStatus(sht30::Status& s) {
     std::array<uint8_t, 3> rbuf{};
     if (readRegister(READ_STATUS, rbuf.data(), rbuf.size(), 0) &&
-        m5::utility::CRC8_Checksum().update(rbuf.data(), 2) == rbuf[2]) {
+        m5::utility::CRC8_Checksum().range(rbuf.data(), 2) == rbuf[2]) {
         s.value = m5::types::big_uint16_t(rbuf[0], rbuf[1]).get();
         return true;
     }
@@ -245,7 +256,7 @@ bool UnitSHT30::generalReset() {
         Status s{};
         // The ALERT pin will also become active (high) after powerup and
         // after resets
-        if (getStatus(s) && (s.reset() || s.alertPending())) {
+        if (readStatus(s) && (s.reset() || s.alertPending())) {
             done = true;
             break;
         }
@@ -262,7 +273,7 @@ bool UnitSHT30::stopHeater() {
     return writeRegister(STOP_HEATER) && delay1();
 }
 
-bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
+bool UnitSHT30::readSerialNumber(uint32_t& serialNumber) {
     serialNumber = 0;
     if (inPeriodic()) {
         M5_LIB_LOGE("Periodic measurements are running");
@@ -273,9 +284,9 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
     if (readRegister(GET_SERIAL_NUMBER_ENABLE_STRETCH, rbuf.data(), rbuf.size(),
                      0)) {
         m5::types::big_uint16_t u16[2]{{rbuf[0], rbuf[1]}, {rbuf[3], rbuf[4]}};
-        m5::utility::CRC8_Checksum crc[2]{};
-        if (crc[0].update(u16[0].data(), u16[0].size()) == rbuf[2] &&
-            crc[1].update(u16[1].data(), u16[1].size()) == rbuf[5]) {
+        m5::utility::CRC8_Checksum crc{};
+        if (crc.range(u16[0].data(), u16[0].size()) == rbuf[2] &&
+            crc.range(u16[1].data(), u16[1].size()) == rbuf[5]) {
             serialNumber =
                 ((uint32_t)u16[0].get()) << 16 | ((uint32_t)u16[1].get());
             return true;
@@ -284,14 +295,14 @@ bool UnitSHT30::getSerialNumber(uint32_t& serialNumber) {
     return false;
 }
 
-bool UnitSHT30::getSerialNumber(char* serialNumber) {
+bool UnitSHT30::readSerialNumber(char* serialNumber) {
     if (!serialNumber) {
         return false;
     }
 
     *serialNumber = '\0';
     uint32_t sno{};
-    if (getSerialNumber(sno)) {
+    if (readSerialNumber(sno)) {
         uint_fast8_t i{8};
         while (i--) {
             *serialNumber++ =
@@ -306,9 +317,9 @@ bool UnitSHT30::getSerialNumber(char* serialNumber) {
 bool UnitSHT30::read_measurement(Data& d) {
     if (readWithTransaction(d.raw.data(), d.raw.size()) ==
         m5::hal::error::error_t::OK) {
+        m5::utility::CRC8_Checksum crc{};
         for (uint_fast8_t i = 0; i < 2; ++i) {
-            m5::utility::CRC8_Checksum crc{};
-            if (crc.update(d.raw.data() + i * 3, 2U) != d.raw[i * 3 + 2]) {
+            if (crc.range(d.raw.data() + i * 3, 2U) != d.raw[i * 3 + 2]) {
                 return false;
             }
         }

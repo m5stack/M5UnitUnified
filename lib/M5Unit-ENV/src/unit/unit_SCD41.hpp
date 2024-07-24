@@ -33,7 +33,7 @@ class UnitSCD41 : public UnitSCD40 {
       @note Values are updated at 5000 ms interval
       @warning During periodic detection runs, an error is returned
     */
-    bool measureSingleshot(UnitSCD40::Data &d);
+    bool measureSingleshot(scd4x::Data &d);
     /*!
       @brief Request a single measurement temperature and humidity
       @return True if successful
@@ -41,7 +41,7 @@ class UnitSCD41 : public UnitSCD40 {
       @warning Information on CO2 is invalid.
       @warning During periodic detection runs, an error is returned
     */
-    bool measureSingleshotRHT(UnitSCD40::Data &d);
+    bool measureSingleshotRHT(scd4x::Data &d);
     ///@}
 };
 

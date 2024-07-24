@@ -160,7 +160,7 @@ class Component {
     }
     ///@}
 
-    ///@name For periodic measurement
+    ///@name Periodic measurement
     ///@{
     /*! @brief In periodic measurement? */
     inline bool inPeriodic() const {
@@ -179,7 +179,7 @@ class Component {
         return _latest;
     }
     /*!
-      @brief Gets the periodic interval
+      @brief Gets the periodic measurement interval
       @return interval time (Unit: ms)
      */
     inline types::elapsed_time_t interval() const {
@@ -341,6 +341,7 @@ class Component {
     virtual const char* unit_device_name() const = 0;
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
+
     // Ensure the adapter for children if Hub
     virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
         return nullptr;
@@ -378,10 +379,70 @@ class Component {
     friend class UnitUnified;
 };
 
+/*!
+  @struct PeriodicMeasurementAdapter
+  @brief Interface class for periodic measurement
+  @datails Common interface for accumulated periodic measurement data
+  @tparam Derived Derived class
+  @tparam MD Type of the measurement data group
+ */
+template <class Derived, typename MD>
+class PeriodicMeasurementAdapter {
+   public:
+    ///@name Data
+    ///@{
+    //! @brief Gets the number of stored data
+    inline size_t available() const {
+        return available_periodic_measurement_data();
+    }
+    //! @brief Is empty stored data?
+    inline bool empty() const {
+        return empty_periodic_measurement_data();
+    }
+    //! @brief Is stored data full?
+    inline bool full() const {
+        return full_periodic_measurement_data();
+    }
+    //! @brief Retrieve oldest stored data
+    MD oldest() const {
+        return static_cast<const Derived*>(this)->oldest_periodic_data();
+    }
+    //! @brief Retrieve latest stored data
+    MD latest() const {
+        return static_cast<const Derived*>(this)->latest_periodic_data();
+    }
+    //! @brief Discard  the oldest data accumulated
+    inline void discard() {
+        discard_periodic_measurement_data();
+    }
+    //! @brief Discard all data
+    inline void flush() {
+        flush_periodic_measurement_data();
+    }
+    ///@}
+   protected:
+    inline virtual size_t available_periodic_measurement_data() const = 0;
+    inline virtual bool empty_periodic_measurement_data() const       = 0;
+    inline virtual bool full_periodic_measurement_data() const        = 0;
+    inline virtual void discard_periodic_measurement_data()           = 0;
+    inline virtual void flush_periodic_measurement_data()             = 0;
+    // MUST IMPLEMENT MD Derived::oldest_periodic_data() const ; (Not virtual
+    // method) MUST IMPLEMENT MD Derived::latestt_periodic_data() const ; (Not
+    // virtual method)
+
+#if 0
+    // TODO : those managed by PMA class
+    types::elapsed_time_t _latest{}, _interval{};
+    // --> _latest = 0; on startPeriodic if successful
+    bool _periodic{};  // During periodic measurement?
+    bool _updated{};
+#endif
+};
+
 }  // namespace unit
 }  // namespace m5
 
-// Helper for creating derived classes
+// Helper for creating derived classes from Component
 ///@cond
 #define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                    \
    public:                                                         \
@@ -404,6 +465,34 @@ class Component {
     }                                                              \
     inline virtual types::attr_t unit_attribute() const override { \
         return attr;                                               \
-    }                                                              \
-    ///@endcond
+    }
+// Helper for creating derived class from PeriodicMeasurementAdapter
+#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md) \
+   protected:                                                               \
+    friend class PeriodicMeasurementAdapter<cls, md>;                       \
+                                                                            \
+    inline md oldest_periodic_data() const {                                \
+        return !_data->empty() ? _data->front().value() : md{};             \
+    }                                                                       \
+    inline md latest_periodic_data() const {                                \
+        return !_data->empty() ? _data->back().value() : md{};              \
+    }                                                                       \
+    inline virtual size_t available_periodic_measurement_data()             \
+        const override {                                                    \
+        return _data->size();                                               \
+    }                                                                       \
+    inline virtual bool empty_periodic_measurement_data() const override {  \
+        return _data->empty();                                              \
+    }                                                                       \
+    inline virtual bool full_periodic_measurement_data() const override {   \
+        return _data->full();                                               \
+    }                                                                       \
+    inline virtual void discard_periodic_measurement_data() override {      \
+        _data->pop_front();                                                 \
+    }                                                                       \
+    inline virtual void flush_periodic_measurement_data() override {        \
+        _data->clear();                                                     \
+    }
+
+///@endcond
 #endif

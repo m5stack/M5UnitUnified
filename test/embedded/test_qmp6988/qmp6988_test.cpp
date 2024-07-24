@@ -14,21 +14,16 @@
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
+#include <googletest/test_helper.hpp>
 #include <unit/unit_QMP6988.hpp>
 #include <chrono>
 #include <cmath>
-
-namespace {
-// flot t uu int16 (temperature)
-constexpr uint16_t float_to_uint16(const float f) {
-    return f * 65536 / 175;
-}
-
-}  // namespace
+#include <random>
 
 using namespace m5::unit::googletest;
 using namespace m5::unit;
 using namespace m5::unit::qmp6988;
+using namespace m5::unit::qmp6988::command;
 
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
@@ -36,7 +31,13 @@ const ::testing::Environment* global_fixture =
 class TestQMP6988 : public ComponentTestBase<UnitQMP6988, bool> {
    protected:
     virtual UnitQMP6988* get_instance() override {
-        return new m5::unit::UnitQMP6988();
+        //        return new m5::unit::UnitQMP6988();
+        auto ptr = new m5::unit::UnitQMP6988();
+        auto cfg = ptr->config();
+        // cfg.start_periodic = false;
+        cfg.stored_size = 2;
+        ptr->config(cfg);
+        return ptr;
     }
     virtual bool is_using_hal() const override {
         return GetParam();
@@ -48,213 +49,153 @@ class TestQMP6988 : public ComponentTestBase<UnitQMP6988, bool> {
 //  INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(true));
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestQMP6988, ::testing::Values(false));
 
+namespace {
+// flot t uu int16 (temperature)
+constexpr uint16_t float_to_uint16(const float f) {
+    return f * 65536 / 175;
+}
+
+constexpr Filter filter_table[] = {
+    Filter::Off,    Filter::Coeff2,  Filter::Coeff4,
+    Filter::Coeff8, Filter::Coeff16, Filter::Coeff32,
+
+};
+
+constexpr StandbyTime standby_table[] = {
+    StandbyTime::Time1ms,   StandbyTime::Time5ms,   StandbyTime::Time50ms,
+    StandbyTime::Time250ms, StandbyTime::Time500ms, StandbyTime::Time1sec,
+    StandbyTime::Time2sec,  StandbyTime::Time4sec,
+};
+
+constexpr Oversampling os_table[] = {
+    Oversampling::Skip, Oversampling::X1,  Oversampling::X2,  Oversampling::X4,
+    Oversampling::X8,   Oversampling::X16, Oversampling::X32, Oversampling::X64,
+};
+
+void check_measurement_values(UnitQMP6988* u) {
+    EXPECT_TRUE(std::isfinite(u->celsius()));
+    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
+    EXPECT_TRUE(std::isfinite(u->pressure()));
+}
+
+}  // namespace
+
 TEST_P(TestQMP6988, MeasurementCondition) {
     SCOPED_TRACE(ustr);
 
-    m5::unit::qmp6988::Average t;
-    m5::unit::qmp6988::Average p;
-    m5::unit::qmp6988::PowerMode m;
-    EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-    // M5_LOGI("%x/%x/%x", (uint8_t)t, (uint8_t)p, (uint8_t)m);
+    for (auto&& ta : os_table) {
+        for (auto&& pa : os_table) {
+            Oversampling t;
+            Oversampling p;
 
-    constexpr std::tuple<const char*, m5::unit::qmp6988::Average,
-                         m5::unit::qmp6988::Average,
-                         m5::unit::qmp6988::PowerMode>
-        table[] = {
-            {"SkipSkipSleep", m5::unit::qmp6988::Average::Skip,
-             m5::unit::qmp6988::Average::Skip,
-             m5::unit::qmp6988::PowerMode::Sleep},
-            {"14Force", m5::unit::qmp6988::Average::Avg1,
-             m5::unit::qmp6988::Average::Avg4,
-             m5::unit::qmp6988::PowerMode::Force},
-            {"648Normal", m5::unit::qmp6988::Average::Avg64,
-             m5::unit::qmp6988::Average::Avg8,
-             m5::unit::qmp6988::PowerMode::Normal},
-            {"6464Normal", m5::unit::qmp6988::Average::Avg64,
-             m5::unit::qmp6988::Average::Avg64,
-             m5::unit::qmp6988::PowerMode::Normal},
-        };
+            auto s = m5::utility::formatString("OS:%u/%u", ta, pa);
+            SCOPED_TRACE(s);
 
-    for (auto&& e : table) {
-        const char* s{};
-        m5::unit::qmp6988::Average ta;
-        m5::unit::qmp6988::Average pa;
-        m5::unit::qmp6988::PowerMode mode;
-        std::tie(s, ta, pa, mode) = e;
+            EXPECT_TRUE(unit->setOversamplings(ta, pa));
+            EXPECT_TRUE(unit->readOversamplings(t, p));
+            EXPECT_EQ(t, ta);
+            EXPECT_EQ(p, pa);
 
-        SCOPED_TRACE(s);
+            EXPECT_TRUE(unit->setOversamplingTemperature(pa));
+            EXPECT_TRUE(unit->readOversamplings(t, p));
+            EXPECT_EQ(t, pa);
+            EXPECT_EQ(p, pa);
 
-        EXPECT_TRUE(unit->setMeasurementCondition(ta, pa, mode));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, ta);
-        EXPECT_EQ(p, pa);
-        EXPECT_EQ(m, mode);
-
-        EXPECT_TRUE(unit->setMeasurementCondition(ta, pa));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, ta);
-        EXPECT_EQ(p, pa);
-        EXPECT_EQ(m, mode);
-
-        EXPECT_TRUE(unit->setMeasurementCondition(ta));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, ta);
-        EXPECT_EQ(p, pa);
-        EXPECT_EQ(m, mode);
-    }
-
-    {
-        EXPECT_TRUE(unit->setMeasurementCondition(
-            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
-            m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
-
-        EXPECT_TRUE(unit->setTemperatureOversampling(
-            m5::unit::qmp6988::Average::Avg64));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg64);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
-    }
-
-    {
-        EXPECT_TRUE(unit->setMeasurementCondition(
-            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
-            m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
-
-        EXPECT_TRUE(
-            unit->setPressureOversampling(m5::unit::qmp6988::Average::Avg64));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg64);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
-    }
-
-    {
-        EXPECT_TRUE(unit->setMeasurementCondition(
-            m5::unit::qmp6988::Average::Skip, m5::unit::qmp6988::Average::Skip,
-            m5::unit::qmp6988::PowerMode::Sleep));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Sleep);
-
-        EXPECT_TRUE(unit->setPowerMode(m5::unit::qmp6988::PowerMode::Normal));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Skip);
-        EXPECT_EQ(m, m5::unit::qmp6988::PowerMode::Normal);
+            EXPECT_TRUE(unit->setOversamplingPressure(ta));
+            EXPECT_TRUE(unit->readOversamplings(t, p));
+            EXPECT_EQ(t, pa);
+            EXPECT_EQ(p, ta);
+        }
     }
 }
 
 TEST_P(TestQMP6988, IIRFilter) {
     SCOPED_TRACE(ustr);
 
-    constexpr m5::unit::qmp6988::Filter table[] = {
-        m5::unit::qmp6988::Filter::Off,     m5::unit::qmp6988::Filter::Coeff2,
-        m5::unit::qmp6988::Filter::Coeff4,  m5::unit::qmp6988::Filter::Coeff8,
-        m5::unit::qmp6988::Filter::Coeff16, m5::unit::qmp6988::Filter::Coeff32,
-
-    };
-
-    for (auto&& e : table) {
+    for (auto&& e : filter_table) {
         EXPECT_TRUE(unit->setFilterCoeff(e));
 
-        m5::unit::qmp6988::Filter f;
-        EXPECT_TRUE(unit->getFilterCoeff(f));
+        Filter f;
+        EXPECT_TRUE(unit->readFilterCoeff(f));
         EXPECT_EQ(f, e);
     }
+}
+
+TEST_P(TestQMP6988, PowerMode) {
+    SCOPED_TRACE(ustr);
 }
 
 TEST_P(TestQMP6988, UseCase) {
     SCOPED_TRACE(ustr);
 
-    m5::unit::qmp6988::Filter f;
-    m5::unit::qmp6988::Average t;
-    m5::unit::qmp6988::Average p;
-    m5::unit::qmp6988::PowerMode m;
+    Filter f;
+    Oversampling t;
+    Oversampling p;
 
     {
         SCOPED_TRACE("Weather");
         EXPECT_TRUE(unit->setWeathermonitoring());
 
-        EXPECT_TRUE(unit->getFilterCoeff(f));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg2);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
-        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
+        EXPECT_TRUE(unit->readFilterCoeff(f));
+        EXPECT_TRUE(unit->readOversamplings(t, p));
+        EXPECT_EQ(t, Oversampling::X2);
+        EXPECT_EQ(p, Oversampling::X1);
+        EXPECT_EQ(f, Filter::Off);
     }
 
     {
         SCOPED_TRACE("Drop");
         EXPECT_TRUE(unit->setDropDetection());
 
-        EXPECT_TRUE(unit->getFilterCoeff(f));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg4);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
-        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Off);
+        EXPECT_TRUE(unit->readFilterCoeff(f));
+        EXPECT_TRUE(unit->readOversamplings(t, p));
+        EXPECT_EQ(t, Oversampling::X4);
+        EXPECT_EQ(p, Oversampling::X1);
+        EXPECT_EQ(f, Filter::Off);
     }
 
     {
         SCOPED_TRACE("Elevator");
         EXPECT_TRUE(unit->setElevatorDetection());
 
-        EXPECT_TRUE(unit->getFilterCoeff(f));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg8);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg1);
-        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff4);
+        EXPECT_TRUE(unit->readFilterCoeff(f));
+        EXPECT_TRUE(unit->readOversamplings(t, p));
+        EXPECT_EQ(t, Oversampling::X8);
+        EXPECT_EQ(p, Oversampling::X1);
+        EXPECT_EQ(f, Filter::Coeff4);
     }
 
     {
         SCOPED_TRACE("Stair");
         EXPECT_TRUE(unit->setStairDetection());
 
-        EXPECT_TRUE(unit->getFilterCoeff(f));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg16);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg2);
-        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff8);
+        EXPECT_TRUE(unit->readFilterCoeff(f));
+        EXPECT_TRUE(unit->readOversamplings(t, p));
+        EXPECT_EQ(t, Oversampling::X16);
+        EXPECT_EQ(p, Oversampling::X2);
+        EXPECT_EQ(f, Filter::Coeff8);
     }
 
     {
         SCOPED_TRACE("Indoor");
         EXPECT_TRUE(unit->setIndoorNavigation());
 
-        EXPECT_TRUE(unit->getFilterCoeff(f));
-        EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-        EXPECT_EQ(t, m5::unit::qmp6988::Average::Avg32);
-        EXPECT_EQ(p, m5::unit::qmp6988::Average::Avg4);
-        EXPECT_EQ(f, m5::unit::qmp6988::Filter::Coeff32);
+        EXPECT_TRUE(unit->readFilterCoeff(f));
+        EXPECT_TRUE(unit->readOversamplings(t, p));
+        EXPECT_EQ(t, Oversampling::X32);
+        EXPECT_EQ(p, Oversampling::X4);
+        EXPECT_EQ(f, Filter::Coeff32);
     }
 }
 
 TEST_P(TestQMP6988, Setup) {
     SCOPED_TRACE(ustr);
-    constexpr m5::unit::qmp6988::StandbyTime table[] = {
-        m5::unit::qmp6988::StandbyTime::Time1ms,
-        m5::unit::qmp6988::StandbyTime::Time5ms,
-        m5::unit::qmp6988::StandbyTime::Time50ms,
-        m5::unit::qmp6988::StandbyTime::Time250ms,
-        m5::unit::qmp6988::StandbyTime::Time500ms,
-        m5::unit::qmp6988::StandbyTime::Time1sec,
-        m5::unit::qmp6988::StandbyTime::Time2sec,
-        m5::unit::qmp6988::StandbyTime::Time4sec,
-    };
 
-    for (auto&& e : table) {
+    for (auto&& e : standby_table) {
         EXPECT_TRUE(unit->setStandbyTime(e));
 
-        m5::unit::qmp6988::StandbyTime st;
-        EXPECT_TRUE(unit->getStandbyTime(st));
+        StandbyTime st;
+        EXPECT_TRUE(unit->readStandbyTime(st));
         EXPECT_EQ(st, e);
     }
 }
@@ -262,129 +203,190 @@ TEST_P(TestQMP6988, Setup) {
 TEST_P(TestQMP6988, Status) {
     SCOPED_TRACE(ustr);
 
-    m5::unit::qmp6988::Status s;
-    EXPECT_TRUE(unit->getStatus(s));
+    Status s;
+    EXPECT_TRUE(unit->readStatus(s));
     //    M5_LOGI("Measure:%d, OTP:%d", s.measure(), s.OTP());
 }
 
 TEST_P(TestQMP6988, SingleShot) {
     SCOPED_TRACE(ustr);
 
-    unit->setPowerMode(m5::unit::qmp6988::PowerMode::Force);
+    qmp6988::Data d{};
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_FALSE(unit->measureSingleshot(d));  // inPeriodic
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->inPeriodic());
 
-    m5::unit::qmp6988::Average t;
-    m5::unit::qmp6988::Average p;
-    m5::unit::qmp6988::PowerMode m;
+    // Standby time for periodic measurement does not affect single shots
+    EXPECT_TRUE(unit->setStandbyTime(StandbyTime::Time4sec));
 
-    constexpr m5::unit::qmp6988::Average a_table[] = {
-        m5::unit::qmp6988::Average::Skip,  m5::unit::qmp6988::Average::Avg1,
-        m5::unit::qmp6988::Average::Avg2,  m5::unit::qmp6988::Average::Avg4,
-        m5::unit::qmp6988::Average::Avg8,  m5::unit::qmp6988::Average::Avg16,
-        m5::unit::qmp6988::Average::Avg32, m5::unit::qmp6988::Average::Avg64,
-    };
+    for (auto&& ta : os_table) {
+        for (auto&& pa : os_table) {
+            for (auto&& coef : filter_table) {
+                auto s = m5::utility::formatString("Singleshot OS:%u/%u F:%u",
+                                                   ta, pa, coef);
+                SCOPED_TRACE(s);
 
-    for (auto&& ta : a_table) {
-        for (auto&& pa : a_table) {
-            auto s = m5::utility::formatString("Avg:%u/%u", ta, pa);
-            SCOPED_TRACE(s);
+                // Specify settings and measure
+                qmp6988::Data d{};
+                bool not_measure =
+                    ta == Oversampling::Skip && pa == Oversampling::Skip;
+                if (not_measure) {
+                    EXPECT_FALSE(unit->measureSingleshot(d, ta, pa, coef));
 
-            EXPECT_TRUE(unit->setMeasurementCondition(ta, pa));
-            EXPECT_TRUE(unit->getMeasurementCondition(t, p, m));
-            EXPECT_EQ(t, ta);
-            EXPECT_EQ(p, pa);
+                } else {
+                    EXPECT_TRUE(unit->measureSingleshot(d, ta, pa, coef));
+                    EXPECT_TRUE(std::isfinite(d.celsius()));
+                    EXPECT_TRUE(std::isfinite(d.fahrenheit()));
+                    EXPECT_TRUE(std::isfinite(d.pressure()));
 
-            if (ta == m5::unit::qmp6988::Average::Skip &&
-                pa == m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(unit->readMeasurement());
-            } else {
-                EXPECT_TRUE(unit->readMeasurement());
-            }
+                    // M5_LOGI("T:%f/%f P:%f", d.celsius(), d.fahrenheit(),
+                    //         d.pressure());
+                }
 
-            if (ta != m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(std::isnan(unit->temperature()));
-            } else {
-                EXPECT_TRUE(std::isnan(unit->temperature()));
-            }
-            if (pa != m5::unit::qmp6988::Average::Skip) {
-                EXPECT_FALSE(std::isnan(unit->pressure()));
-            } else {
-                EXPECT_TRUE(std::isnan(unit->pressure()));
+                Oversampling t;
+                Oversampling p;
+                Filter f;
+                EXPECT_TRUE(unit->readOversamplings(t, p));
+                EXPECT_TRUE(unit->readFilterCoeff(f));
+                EXPECT_EQ(t, ta);
+                EXPECT_EQ(p, pa);
+                EXPECT_EQ(f, coef);
             }
         }
     }
 }
 
+// #define TEST_ALL_COMBINATIONS
+
 TEST_P(TestQMP6988, Periodic) {
-    constexpr m5::unit::qmp6988::StandbyTime st_table[] = {
-        m5::unit::qmp6988::StandbyTime::Time1ms,
-        m5::unit::qmp6988::StandbyTime::Time5ms,
-        m5::unit::qmp6988::StandbyTime::Time50ms,
-        m5::unit::qmp6988::StandbyTime::Time250ms,
-        m5::unit::qmp6988::StandbyTime::Time500ms,
-        m5::unit::qmp6988::StandbyTime::Time1sec,
-        m5::unit::qmp6988::StandbyTime::Time2sec,
-        m5::unit::qmp6988::StandbyTime::Time4sec,
-    };
+    SCOPED_TRACE(ustr);
 
-    constexpr std::chrono::milliseconds timeout_table[] = {
-        std::chrono::milliseconds(1 + 1), std::chrono::milliseconds(5),
-        std::chrono::milliseconds(50),    std::chrono::milliseconds(250),
-        std::chrono::milliseconds(500),   std::chrono::milliseconds(1000),
-        std::chrono::milliseconds(2000),  std::chrono::milliseconds(4000),
-    };
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->inPeriodic());
 
-    for (auto&& st : st_table) {
-        EXPECT_TRUE(unit->setStandbyTime(st));
-        m5::unit::qmp6988::StandbyTime s;
-        EXPECT_TRUE(unit->getStandbyTime(s));
-        EXPECT_EQ(s, st);
+#if defined(TEST_ALL_COMBINATIONS)
+    for (auto&& ta : os_table) {
+        for (auto&& pa : os_table) {
+            for (auto&& coef : filter_table) {
+                for (auto&& st : standby_table) {
+                    auto s = m5::utility::formatString(
+                        "Periodic OS:%u/%u F:%u ST:%u", ta, pa, coef, st);
+                    SCOPED_TRACE(s);
 
-        //        M5_LOGE("=======");
+                    EXPECT_TRUE(unit->startPeriodicMeasurement(st));
+                    EXPECT_TRUE(unit->inPeriodic());
+                    EXPECT_EQ(unit->updatedMillis(), 0);
 
-        auto timeout  = timeout_table[m5::stl::to_underlying(st)];
-        auto start_at = std::chrono::steady_clock::now();
+                    test_periodic_measurement(unit.get(), 4,
+                                              check_measurement_values);
 
-#if 0        
-        // Wait until the latest measurement
-        {
-            bool done{};
-            m5::unit::qmp6988::Status s{};
-            do {
-                if (unit->getStatus(s) && !s.measure()) {
-                    done = true;
-                    start_at = std::chrono::steady_clock::now();
-                    break;
+                    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+                    EXPECT_FALSE(unit->inPeriodic());
+
+                    EXPECT_EQ(unit->available(), 2);
+                    EXPECT_TRUE(unit->full());
+                    EXPECT_FALSE(unit->empty());
+                    StandbyTime ss;
+                    EXPECT_TRUE(unit->readStandbyTime(ss));
+                    EXPECT_EQ(ss, st);
+
+                    uint32_t cnt{};
+                    while (unit->available()) {
+                        ++cnt;
+                        EXPECT_FALSE(unit->empty());
+
+                        // M5_LOGI("T:%f/%f P:%f", unit->celsius(),
+                        // unit->fahrenheit(),
+                        //         unit->pressure());
+
+                        EXPECT_TRUE(std::isfinite(unit->temperature()));
+                        EXPECT_TRUE(std::isfinite(unit->pressure()));
+                        EXPECT_FLOAT_EQ(unit->temperature(),
+                                        unit->oldest().temperature());
+                        EXPECT_FLOAT_EQ(unit->pressure(),
+                                        unit->oldest().pressure());
+                        unit->discard();
+                    }
+
+                    EXPECT_EQ(cnt, 2);
+                    EXPECT_TRUE(std::isnan(unit->temperature()));
+                    EXPECT_TRUE(std::isnan(unit->pressure()));
+                    EXPECT_EQ(unit->available(), 0);
+                    EXPECT_TRUE(unit->empty());
+                    EXPECT_FALSE(unit->full());
                 }
-            } while ((std::chrono::steady_clock::now() - start_at) <=
-                     std::chrono::milliseconds(5000));
-            if (!done) {
-                FAIL() << "Internal error";
             }
         }
-#endif
-
-        // Test
-        auto elapsed = start_at;
-        bool done{};
-        do {
-            done = unit->readMeasurement();
-            //            M5_LIB_LOGE("%f/%f", unit->temperature(),
-            //            unit->pressure());
-            elapsed = std::chrono::steady_clock::now();
-        } while (!done && (elapsed - start_at) <= timeout);
-
-        m5::utility::delay(1);
-        unit->readMeasurement();
-        //        M5_LIB_LOGE(">> %f/%f", unit->temperature(),
-        //        unit->pressure());
-
-        auto e = std::chrono::duration_cast<std::chrono::microseconds>(
-            elapsed - start_at);
-
-        //        M5_LOGE("e:%lld", e.count());
-
-        EXPECT_TRUE(done);
-        EXPECT_LE(e, timeout) << "Elapsed:" << e.count()
-                              << "us Timeout:" << timeout.count() << "us";
     }
+#else
+
+    auto rng = std::default_random_engine{};
+    std::uniform_int_distribution<> dist_os(1, 7);
+    std::uniform_int_distribution<> dist_f(0, 5);
+
+    uint32_t idx{};
+    for (auto&& st : standby_table) {
+        Oversampling ost = static_cast<Oversampling>(dist_os(rng));
+        Oversampling osp = static_cast<Oversampling>(dist_os(rng));
+        Filter f         = static_cast<Filter>(dist_f(rng));
+
+        auto s = m5::utility::formatString("Periodic ST:%u OST:%u OSP:%u F:%u",
+                                           st, ost, osp, f);
+        SCOPED_TRACE(s);
+        // M5_LOGI("%s", s.c_str());
+
+        EXPECT_TRUE(unit->startPeriodicMeasurement(st, ost, osp, f));
+        EXPECT_TRUE(unit->inPeriodic());
+        EXPECT_EQ(unit->updatedMillis(), 0);
+
+        test_periodic_measurement(unit.get(), 4, check_measurement_values);
+
+        EXPECT_TRUE(unit->stopPeriodicMeasurement());
+        EXPECT_FALSE(unit->inPeriodic());
+
+        EXPECT_EQ(unit->available(), 2);
+        EXPECT_TRUE(unit->full());
+        EXPECT_FALSE(unit->empty());
+        StandbyTime ss;
+        EXPECT_TRUE(unit->readStandbyTime(ss));
+        EXPECT_EQ(ss, st);
+
+        if (idx & 1) {
+            uint32_t cnt{};
+            while (unit->available()) {
+                ++cnt;
+                EXPECT_FALSE(unit->empty());
+
+                // M5_LOGI("T:%f/%f P:%f", unit->celsius(), unit->fahrenheit(),
+                //         unit->pressure());
+
+                EXPECT_TRUE(std::isfinite(unit->temperature()));
+                EXPECT_TRUE(std::isfinite(unit->pressure()));
+                EXPECT_FLOAT_EQ(unit->temperature(),
+                                unit->oldest().temperature());
+                EXPECT_FLOAT_EQ(unit->pressure(), unit->oldest().pressure());
+                unit->discard();
+            }
+
+            EXPECT_EQ(cnt, 2);
+            EXPECT_TRUE(std::isnan(unit->temperature()));
+            EXPECT_TRUE(std::isnan(unit->pressure()));
+            EXPECT_EQ(unit->available(), 0);
+            EXPECT_TRUE(unit->empty());
+            EXPECT_FALSE(unit->full());
+        } else {
+            EXPECT_TRUE(std::isfinite(unit->temperature()));
+            EXPECT_TRUE(std::isfinite(unit->pressure()));
+            unit->flush();
+            EXPECT_TRUE(std::isnan(unit->temperature()));
+            EXPECT_TRUE(std::isnan(unit->pressure()));
+            EXPECT_EQ(unit->available(), 0);
+            EXPECT_TRUE(unit->empty());
+            EXPECT_FALSE(unit->full());
+        }
+        ++idx;
+    }
+
+#endif
 }

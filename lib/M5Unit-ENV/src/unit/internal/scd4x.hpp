@@ -11,6 +11,7 @@
 #define M5_UNIT_ENV_UNIT_INTERNAL_SCD4x_HPP
 
 #include <cstdint>
+#include <array>
 
 namespace m5 {
 namespace unit {
@@ -26,6 +27,22 @@ namespace scd4x {
 enum class Mode : uint8_t {
     Normal,    //!< Normal (Receive data every 5 seconds)
     LowPower,  //!< Low power (Receive data every 30 seconds)
+};
+
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    std::array<uint8_t, 9> raw{};  //!< RAW data
+    uint16_t co2() const;          //!< CO2 concentration (ppm)
+    //! temperature (Celsius)
+    inline float temperature() const {
+        return celsius();
+    }
+    float celsius() const;     //!< temperature (Celsius)
+    float fahrenheit() const;  //!< temperature (Fahrenheit)
+    float humidity() const;        //!< humidity (RH)
 };
 
 ///@cond

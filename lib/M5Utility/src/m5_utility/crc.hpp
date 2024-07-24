@@ -34,10 +34,22 @@ class CRC8 {
     CRC8(const uint8_t init, const uint8_t polynomial, const bool refIn,
          const bool refOut, const uint8_t xorout)
         : _crc{init},
+          _init(init),
           _polynomial{polynomial},
           _xorout{xorout},
           _refIn{refIn},
           _refOut{refOut} {
+    }
+    /*!
+      @brief Calculate the CRC of the specified range
+      @param data Pointer of the array
+      @param len Length of the array
+      @return CRC value
+     */
+    inline uint8_t range(const uint8_t* data, size_t len) {
+        auto crc = calculate(data, len, _init, _polynomial, _refIn, _refOut,
+                             _xorout, false);
+        return finalize(crc, _refOut, _xorout);
     }
     /*!
       @brief Stores the CRC of the specified array using the current internal
@@ -45,6 +57,8 @@ class CRC8 {
       @param data Pointer of the array
       @param len Length of the array
       @return CRC value
+      @note Used when you want to calculate the value of the entire divided
+      continuous data, such as streaming data
     */
     inline uint8_t update(const uint8_t* data, size_t len) {
         _crc = calculate(data, len, _crc, _polynomial, _refIn, _refOut, _xorout,
@@ -97,7 +111,7 @@ class CRC8 {
     }
 
    private:
-    uint8_t _crc{}, _polynomial{}, _xorout{};
+    uint8_t _crc{}, _init{}, _polynomial{}, _xorout{};
     bool _refIn{}, _refOut{};
 };
 
@@ -118,10 +132,22 @@ class CRC16 {
     CRC16(const uint16_t init, const uint16_t polynomial, const bool refIn,
           const bool refOut, const uint16_t xorout)
         : _crc{init},
+          _init{init},
           _polynomial{polynomial},
           _xorout{xorout},
           _refIn{refIn},
           _refOut{refOut} {
+    }
+    /*!
+      @brief Calculate the CRC of the specified range
+      @param data Pointer of the array
+      @param len Length of the array
+      @return CRC value
+     */
+    inline uint16_t range(const uint8_t* data, size_t len) {
+        auto crc = calculate(data, len, _init, _polynomial, _refIn, _refOut,
+                             _xorout, false);
+        return finalize(crc, _refOut, _xorout);
     }
     /*!
       @brief Stores the CRC of the specified array using the current internal
@@ -129,6 +155,8 @@ class CRC16 {
       @param data Pointer of the array
       @param len Length of the array
       @return CRC value
+      @note Used when you want to calculate the value of the entire divided
+      continuous data, such as streaming data
     */
     inline uint16_t update(const uint8_t* data, size_t len) {
         _crc = calculate(data, len, _crc, _polynomial, _refIn, _refOut, _xorout,
@@ -181,7 +209,7 @@ class CRC16 {
     }
 
    private:
-    uint16_t _crc{}, _polynomial{}, _xorout{};
+    uint16_t _crc{}, _init{}, _polynomial{}, _xorout{};
     bool _refIn{}, _refOut{};
 };
 

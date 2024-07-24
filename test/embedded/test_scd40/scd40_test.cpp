@@ -83,16 +83,16 @@ constexpr uint16_t float_to_uint16(const float f) {
 struct ModeParams {
     const char* s;
     Mode mode;
-    uint32_t interval;
 };
 constexpr ModeParams mode_table[] = {
-    {"Normal", Mode::Normal, 5000},
-    {"LowPower", Mode::LowPower, 30 * 1000},
+    {"Normal", Mode::Normal},
+    {"LowPower", Mode::LowPower},
 };
 
 void check_measurement_values(UnitSCD40* u) {
     EXPECT_NE(u->co2(), 0);
-    EXPECT_TRUE(std::isfinite(u->temperature()));
+    EXPECT_TRUE(std::isfinite(u->celsius()));
+    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
     EXPECT_TRUE(std::isfinite(u->humidity()));
 }
 
@@ -153,35 +153,67 @@ TEST_P(TestSCD40, BasicCommand) {
 TEST_P(TestSCD40, Periodic) {
     SCOPED_TRACE(ustr);
 
+    uint32_t idx{};
     for (auto&& m : mode_table) {
+        auto s = m5::utility::formatString("Mode:%u", m);
+        SCOPED_TRACE(s.c_str());
+
         EXPECT_TRUE(unit->startPeriodicMeasurement(m.mode));
         EXPECT_TRUE(unit->inPeriodic());
-        test_periodic_measurement(unit.get(), m.interval, 2,
-                                  check_measurement_values);
+        EXPECT_EQ(unit->updatedMillis(), 0);
+        test_periodic_measurement(unit.get(), 2, check_measurement_values);
         EXPECT_TRUE(unit->stopPeriodicMeasurement());
 
-        EXPECT_EQ(unit->co2(), unit->latest().co2());
-        EXPECT_EQ(unit->temperature(), unit->latest().temperature());
-        EXPECT_EQ(unit->humidity(), unit->latest().humidity());
         EXPECT_EQ(unit->available(), 2);
         EXPECT_FALSE(unit->empty());
         EXPECT_TRUE(unit->full());
 
-        unit->discard();
-        EXPECT_EQ(unit->co2(), unit->latest().co2());
-        EXPECT_EQ(unit->temperature(), unit->latest().temperature());
-        EXPECT_EQ(unit->humidity(), unit->latest().humidity());
-        EXPECT_EQ(unit->available(), 1);
-        EXPECT_FALSE(unit->empty());
-        EXPECT_FALSE(unit->full());
+        if (idx & 1) {
+            uint32_t cnt{};
+            while (unit->available()) {
+                ++cnt;
 
-        unit->flush();
-        EXPECT_EQ(unit->co2(), 0U);
-        EXPECT_TRUE(std::isnan(unit->temperature()));
-        EXPECT_TRUE(std::isnan(unit->humidity()));
-        EXPECT_EQ(unit->available(), 0);
-        EXPECT_TRUE(unit->empty());
-        EXPECT_FALSE(unit->full());
+                EXPECT_NE(unit->co2(), 0U);
+                EXPECT_TRUE(std::isfinite(unit->celsius()));
+                EXPECT_TRUE(std::isfinite(unit->fahrenheit()));
+                EXPECT_TRUE(std::isfinite(unit->humidity()));
+                EXPECT_EQ(unit->co2(), unit->oldest().co2());
+                EXPECT_FLOAT_EQ(unit->celsius(), unit->oldest().celsius());
+                EXPECT_FLOAT_EQ(unit->fahrenheit(),
+                                unit->oldest().fahrenheit());
+                EXPECT_FLOAT_EQ(unit->humidity(), unit->oldest().humidity());
+
+                unit->discard();
+            }
+            EXPECT_EQ(cnt, 2);
+
+            EXPECT_EQ(unit->co2(), 0U);
+            EXPECT_TRUE(std::isnan(unit->celsius()));
+            EXPECT_TRUE(std::isnan(unit->fahrenheit()));
+            EXPECT_TRUE(std::isnan(unit->humidity()));
+            EXPECT_EQ(unit->available(), 0);
+            EXPECT_TRUE(unit->empty());
+            EXPECT_FALSE(unit->full());
+        } else {
+            EXPECT_NE(unit->co2(), 0U);
+            EXPECT_TRUE(std::isfinite(unit->celsius()));
+            EXPECT_TRUE(std::isfinite(unit->fahrenheit()));
+            EXPECT_TRUE(std::isfinite(unit->humidity()));
+            EXPECT_EQ(unit->co2(), unit->oldest().co2());
+            EXPECT_FLOAT_EQ(unit->celsius(), unit->oldest().celsius());
+            EXPECT_FLOAT_EQ(unit->fahrenheit(), unit->oldest().fahrenheit());
+            EXPECT_FLOAT_EQ(unit->humidity(), unit->oldest().humidity());
+
+            unit->flush();
+            EXPECT_EQ(unit->co2(), 0U);
+            EXPECT_TRUE(std::isnan(unit->celsius()));
+            EXPECT_TRUE(std::isnan(unit->fahrenheit()));
+            EXPECT_TRUE(std::isnan(unit->humidity()));
+            EXPECT_EQ(unit->available(), 0);
+            EXPECT_TRUE(unit->empty());
+            EXPECT_FALSE(unit->full());
+        }
+        ++idx;
     }
 }
 

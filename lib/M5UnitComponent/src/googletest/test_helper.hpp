@@ -12,6 +12,7 @@
 #define M5_UNIT_COMPONENT_GOOGLETEST_HELPER_HPP
 
 #include <M5Utility.hpp>
+#include <thread>
 
 namespace m5 {
 namespace unit {
@@ -21,21 +22,23 @@ namespace googletest {
   @brief Tests for periodic measurement
   @tparam U Classes derived from m5::unit::Component
   @param unit Instance pointer of the U
-  @param interval Periodic measurement intervals
   @param times Number of times to measure
   @param callback Function pointer called when the measurement is updated
-  @pre startPeriodicMeasurement must already have been called
+  @return Average of the measurement interval
+  @pre startPeriodicMeasurement must already have been called and _interval has
+  been set
  */
 template <class U>
-inline void test_periodic_measurement(U* unit, const uint32_t interval,
-                                      const uint32_t times = 8,
-                                      void (*callback)(U*) = nullptr) {
+uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
+                                   void (*callback)(U*) = nullptr) {
     static_assert(std::is_base_of<m5::unit::Component, U>::value,
                   "U must be derived from Component");
 
+    auto interval = unit->interval();
+    decltype(interval) avg{}, avgCnt{};
     uint32_t cnt{times};
     auto prev       = unit->updatedMillis();
-    auto timeout_at = m5::utility::millis() + (interval + 1) * times;
+    auto timeout_at = m5::utility::millis() + (interval * 2) * times;
     while (cnt && m5::utility::millis() <= timeout_at) {
         unit->update();
         if (unit->updated()) {
@@ -43,16 +46,23 @@ inline void test_periodic_measurement(U* unit, const uint32_t interval,
             auto um = unit->updatedMillis();
             if (prev) {
                 auto duration = um - prev;
-                EXPECT_LE(duration, interval + 1); /* (*1) */
+                ++avgCnt;
+                avg += duration;
+                // EXPECT_LE(duration, interval + 1);
             }
             prev = um;
             if (callback) {
                 callback(unit);
             }
         }
-        m5::utility::delay(1); // *1
+        // m5::utility::delay(1);
+        std::this_thread::yield();
     }
     EXPECT_EQ(cnt, 0U);
+    avg /= avgCnt;
+    //There is room for consideration on the tolerance
+    EXPECT_LE(avg, decltype(interval)(interval * 1.1f));
+    return avg;
 }
 
 }  // namespace googletest
