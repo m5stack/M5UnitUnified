@@ -14,6 +14,7 @@
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
+#include <googletest/test_helper.hpp>
 #include <unit/unit_SGP30.hpp>
 
 using namespace m5::unit::googletest;
@@ -28,9 +29,9 @@ class TestSGP30 : public ComponentTestBase<UnitSGP30, bool> {
     virtual UnitSGP30* get_instance() override {
         auto* ptr = new m5::unit::UnitSGP30();
         if (ptr) {
-            // *1
             auto cfg           = ptr->config();
             cfg.start_periodic = false;
+            cfg.stored_size    = 4;
             ptr->config(cfg);
         }
         return ptr;
@@ -41,6 +42,7 @@ class TestSGP30 : public ComponentTestBase<UnitSGP30, bool> {
 
     bool wait_start_measurement() {
         auto timeout_at = m5::utility::millis() + (15 * 1000);
+        // M5_LOGW("timeout_at: %lu", timeout_at);
         bool done{};
         do {
             unit->update();
@@ -58,6 +60,33 @@ class TestSGP30 : public ComponentTestBase<UnitSGP30, bool> {
 //                          ::testing::Values(false, true));
 //  INSTANTIATE_TEST_SUITE_P(ParamValues, TestSGP30, ::testing::Values(true));
 INSTANTIATE_TEST_SUITE_P(ParamValues, TestSGP30, ::testing::Values(false));
+
+namespace {
+void check_measurement_values(UnitSGP30* u) {
+    //    EXPECT_NE(u->co2eq(), 0U);
+    //    EXPECT_NE(u->tvoc(), 0U);
+
+    // readRaw
+    uint16_t h{}, e{};
+    EXPECT_TRUE(u->readRaw(h, e));
+    EXPECT_NE(h, 0U);
+    EXPECT_NE(e, 0U);
+}
+}  // namespace
+
+TEST_P(TestSGP30, FeatureSet) {
+    SCOPED_TRACE(ustr);
+
+    EXPECT_NE(unit->productVersion(), 0U);
+    M5_LOGI("productVersion:%x", unit->productVersion());
+
+    Feature f{};
+    EXPECT_TRUE(unit->readFeatureSet(f));
+    EXPECT_EQ(f.productType(), 0U);
+    EXPECT_NE(f.productVersion(), 0U);
+
+    EXPECT_EQ(unit->productVersion(), f.productVersion());
+}
 
 TEST_P(TestSGP30, selfTest) {
     SCOPED_TRACE(ustr);
@@ -89,8 +118,8 @@ TEST_P(TestSGP30, serialNumber) {
     //
     uint64_t sno{};
     char ssno[13]{};
-    EXPECT_TRUE(unit->getSerialNumber(sno));
-    EXPECT_TRUE(unit->getSerialNumber(ssno));
+    EXPECT_TRUE(unit->readSerialNumber(sno));
+    EXPECT_TRUE(unit->readSerialNumber(ssno));
 
     // M5_LOGI("s:[%s] uint64:[%x]", ssno, sno);
 
@@ -111,51 +140,56 @@ TEST_P(TestSGP30, generalReset) {
     EXPECT_TRUE(wait_start_measurement());
 
     uint16_t co2eq{}, tvoc{};
-    EXPECT_TRUE(unit->getIaqBaseline(co2eq, tvoc));
+    EXPECT_TRUE(unit->readIaqBaseline(co2eq, tvoc));
     EXPECT_EQ(co2eq, 0x1234);
     EXPECT_EQ(tvoc, 0x5678);
 
     EXPECT_TRUE(unit->generalReset());
 
-    EXPECT_TRUE(unit->getIaqBaseline(co2eq, tvoc));
+    EXPECT_TRUE(unit->readIaqBaseline(co2eq, tvoc));
     EXPECT_EQ(co2eq, 0x0000);
     EXPECT_EQ(tvoc, 0x0000);
 }
 
-TEST_P(TestSGP30, Measurement) {
+TEST_P(TestSGP30, Periodic) {
     SCOPED_TRACE(ustr);
 
-    EXPECT_TRUE(unit->startPeriodicMeasurement(0x1234, 0x5678, 0x9ABC));
+    EXPECT_FALSE(unit->inPeriodic());
+
+    EXPECT_TRUE(unit->startPeriodicMeasurement(0, 0, 0));
+    EXPECT_TRUE(unit->inPeriodic());
     EXPECT_TRUE(wait_start_measurement());
 
-    auto now                        = m5::utility::millis();
-    constexpr unsigned long timeout = 1000;  // 1sec
-    auto timeout_at                 = now + timeout;
-    uint8_t count{0};
-    // Between first and second mesured
-    do {
-        unit->update();
-        bool upd = unit->updated();
-        count += upd ? 1 : 0;
-        now = m5::utility::millis();
-        if (upd && count == 1) {  // First?
-            timeout_at = now + timeout;
-        }
-        m5::utility::delay(1);
-    } while (count < 2 && now <= timeout_at);
+    test_periodic_measurement(unit.get(), 4, check_measurement_values);
 
-    EXPECT_EQ(count, 2);
-    EXPECT_LE(now, timeout_at) << now << " : " << timeout_at;
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->inPeriodic());
 
-    auto update_at = unit->updatedMillis();
-    EXPECT_LE(update_at, timeout_at);
+    EXPECT_EQ(unit->available(), 4);
+    EXPECT_TRUE(unit->full());
+    EXPECT_FALSE(unit->empty());
 
-    auto co2eq = unit->co2eq();
-    auto tvoc  = unit->tvoc();
-    M5_LOGI("%u %u", co2eq, tvoc);
+    uint32_t cnt{2};
+    while (unit->available() && cnt--) {
+        EXPECT_FALSE(unit->empty());
 
-    uint16_t h2{}, etoh{};
-    EXPECT_TRUE(unit->readRaw(h2, etoh));
+        // M5_LOGW("C:%u T:%u", unit->co2eq(), unit->tvoc());
 
-    M5_LOGI("%u/%u", h2, etoh);
+        EXPECT_NE(unit->co2eq(), 0U);
+        EXPECT_NE(unit->tvoc(), 0U);
+        EXPECT_EQ(unit->co2eq(), unit->oldest().co2eq());
+        EXPECT_EQ(unit->tvoc(), unit->oldest().tvoc());
+        unit->discard();
+    }
+
+    EXPECT_EQ(unit->available(), 2);
+    EXPECT_FALSE(unit->full());
+    EXPECT_FALSE(unit->empty());
+
+    unit->flush();
+    EXPECT_EQ(unit->co2eq(), 0U);
+    EXPECT_EQ(unit->tvoc(), 0U);
+    EXPECT_EQ(unit->available(), 0);
+    EXPECT_TRUE(unit->empty());
+    EXPECT_FALSE(unit->full());
 }

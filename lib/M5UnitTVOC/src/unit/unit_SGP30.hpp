@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_SGP30.hpp
   @brief SGP30 Unit for M5UnitUnified
@@ -21,15 +26,12 @@
   known measurement source. SGP30 has a built-in calibration function. In
   addition, eCO2 is calculated based on the concentration of H2 and cannot
   completely replace "true" CO2 sensors for laboratory use.
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_TVOC_UNIT_SGP30_HPP
 #define M5_UNIT_TVOC_UNIT_SGP30_HPP
 
 #include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
 
 namespace m5 {
 namespace unit {
@@ -39,6 +41,23 @@ namespace unit {
   @brief For SGP30
  */
 namespace sgp30 {
+
+///@cond
+// Max command duration(ms)
+// Max measurement duration (ms)
+constexpr uint16_t IAQ_INIT_DURATION{10};
+constexpr uint16_t MEASURE_IAQ_DURATION{12};
+constexpr uint16_t GET_IAQ_BASELINE_DURATION{10};
+constexpr uint16_t SET_IAQ_BASELINE_DURATION{10};
+constexpr uint16_t SET_ABSOLUTE_HUMIDITY_DURATION{10};
+constexpr uint16_t MEASURE_TEST_DURATION{220};
+constexpr uint16_t GET_FEATURE_SET_DURATION{10};
+constexpr uint16_t MEASURE_RAW_DURATION{25};
+constexpr uint16_t GET_TVOC_INCEPTIVE_BASELINE_DURATION{10};
+constexpr uint16_t SET_TVOC_INCEPTIVE_BASELINE_DURATION{10};
+constexpr uint16_t GET_SERIAL_ID_DURATION{10};
+///@endcond
+
 /*!
   @struct Feature
   @brief Structure of the SGP feature set number
@@ -61,13 +80,24 @@ struct Feature {
     uint16_t value{};
 };
 
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    std::array<uint8_t, 6> raw{};  //!< RAW data
+    uint16_t co2eq() const;        //!< Co2Eq (ppm)
+    uint16_t tvoc() const;         //!< TVOC (pbb)
+};
+
 }  // namespace sgp30
 
 /*!
   @class UnitSGP30
   @brief SGP30 unit
  */
-class UnitSGP30 : public Component {
+class UnitSGP30 : public Component,
+                  public PeriodicMeasurementAdapter<UnitSGP30, sgp30::Data> {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitSGP30, 0x58);
 
    public:
@@ -75,7 +105,7 @@ class UnitSGP30 : public Component {
       @struct config_t
       @brief Settings
      */
-    struct config_t {
+    struct config_t : Component::config_t {
         //! @brief Start periodic measurement on begin()?
         bool start_periodic{true};
         //! @brief  Baseline CO2eq initial value
@@ -92,7 +122,12 @@ class UnitSGP30 : public Component {
         uint16_t inceptive_tvoc{};
     };
 
-    explicit UnitSGP30(const uint8_t addr = DEFAULT_ADDRESS) : Component(addr) {
+    explicit UnitSGP30(const uint8_t addr = DEFAULT_ADDRESS)
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<sgp30::Data>(1)} {
+        auto ccfg  = component_config();
+        ccfg.clock = 400000U;
+        component_config(ccfg);
     }
     virtual ~UnitSGP30() {
     }
@@ -100,14 +135,14 @@ class UnitSGP30 : public Component {
     virtual bool begin() override;
     virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() {
+    inline config_t config() const {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t& cfg) {
+    inline void config(const config_t& cfg) {
         _cfg = cfg;
     }
     ///@}
@@ -121,89 +156,58 @@ class UnitSGP30 : public Component {
     inline uint8_t productVersion() const {
         return _version;
     }
-    //! @brief Baseline data updated?
-    inline bool updatedBaseline() const {
-        return _updatedBaseline;
-    }
-    /*!
-      @brief Time elapsed since start-up when the baseline data was updated
-      in update()
-      @return Updated time (Unit: ms)
-    */
-    inline unsigned long updatedBaselineMillis() const {
-        return _latestBaseline;
-    }
-    //! @brief Latest CO2eq (ppm)
+    ///@}
+
+    ///@name Measurement data by periodic
+    ///@{
+    //! @brief Oldest CO2eq (ppm)
     inline uint16_t co2eq() const {
-        return _CO2eq;
+        return !_data->empty() ? oldest().co2eq() : 0;
     }
-    //! @brief Latest TVOC (ppb)
+    //! @brief Oldest TVOC (ppb)
     inline uint16_t tvoc() const {
-        return _TVOC;
-    }
-    /*!
-      @brief Latest baseline CO2eq
-      @note Updates every hour
-    */
-    inline uint16_t basellineCo2eq() const {
-        return _baselineCO2eq;
-    }
-    /*!
-      @brief Latest baseline TVOC
-      @note Updates every hour
-     */
-    inline uint16_t baselineTvoc() const {
-        return _baselineTVOC;
+        return !_data->empty() ? oldest().tvoc() : 0;
     }
     ///@}
 
-    ///@name Measurement
+    ///@name Periodic measurement
     ///@{
     /*!
       @brief Start periodic measurement
+      @details Specify settings and measure
       @param co2eq iaq baseline for CO2eq
       @param tvoc iaq baseline for TVOC
-      @param humidity absolute humidity
+      @param humidity absolute humidity (disable if zero)
+      @param duration Max command duration(ms)
       @return True if successful
       @note 15 seconds wait is required before a valid measurement can be
       initiated
       @note In update(), waiting are taken into account
-      @warning Measurement duration max 10 ms
     */
-    bool startPeriodicMeasurement(const uint16_t co2eq, const uint16_t tvoc,
-                                  const uint16_t humidity);
+    bool startPeriodicMeasurement(
+        const uint16_t co2eq, const uint16_t tvoc, const uint16_t humidity,
+        const uint32_t duration = sgp30::IAQ_INIT_DURATION);
     /*!
       @brief Start periodic measurement
+      @details Measuring in the current settings
+      @param duration Max command duration(ms)
       @return True if successful
       @note 15 seconds wait is required before a valid measurement can be
-      initiated<br>
-      In update(), waiting are taken into account
-      @warning Measurement duration max 10 ms
+      initiated.
+      @note In update(), waiting are taken into account
     */
-    inline bool startPeriodicMeasurement() {
-        return start_periodic_measurement();
-    }
+    bool startPeriodicMeasurement(
+        const uint32_t duration = sgp30::IAQ_INIT_DURATION);
     /*!
       @brief Stop periodic measurement
       @return True if successful
     */
     bool stopPeriodicMeasurement();
     /*!
-      @brief Various measurements and store values
-      @param[out] co2eq
-      @param[out] tvoc
-      @return True if successful
-      @note When periodic measurements are taken, they are called in update
-      and the values are stored.
-      @warning Measurement duration max 12 ms
-    */
-    bool readMeasurement(uint16_t& co2eq, uint16_t& tvoc);
-    /*!
       @brief Read sensor raw signals
       @param[out] h2
       @param[out] etoh
       @return True if successful
-      @warning Measurement duration max 25 ms
     */
     bool readRaw(uint16_t& h2, uint16_t& etoh);
     ///@}
@@ -211,47 +215,48 @@ class UnitSGP30 : public Component {
     ///@name Correction
     ///@{
     /*!
-      @brief Gets the IAQ baseline
+      @brief Read the IAQ baseline
       @param[out] co2eq iaq baseline for CO2
       @param[out] tvoc iaq baseline for TVOC
       @return True if successful
-      @warning Measurement duration max 10 ms
     */
-    bool getIaqBaseline(uint16_t& co2eq, uint16_t& tvoc);
+    bool readIaqBaseline(uint16_t& co2eq, uint16_t& tvoc);
     /*!
       @brief Set the absolute humidity
       @param raw absolute humidity (disable if zero)
       @return True if successful
       @note Value is a fixed-point 8.8bit number
-      @warning Measurement duration max 10 ms
     */
-    bool setAbsoluteHumidity(const uint16_t raw);
+    bool setAbsoluteHumidity(
+        const uint16_t raw,
+        const uint32_t duration = sgp30::SET_ABSOLUTE_HUMIDITY_DURATION);
     /*!
       @brief Set the absolute humidity
       @param gm3 absolute humidity (g/m^3)
+      @param duration Max command duration(ms)
       @return True if successful
-      @warning Measurement duration max 10 ms
     */
-    bool setAbsoluteHumidity(const float gm3);
-
+    bool setAbsoluteHumidity(
+        const float gm3,
+        const uint32_t duration = sgp30::SET_ABSOLUTE_HUMIDITY_DURATION);
     /*!
-      @brief Gets the inceptive Basebine for TVOC
+      @brief Read the inceptive Basebine for TVOC
       @param[out] tvoc Inceptive baseline
       @return True if successful
-      @warning Measurement duration max 10 ms
       @warning Only available if product version is 0x21 or higher
     */
-    bool getTvocInceptiveBaseline(uint16_t& tvoc);
+    bool readTvocInceptiveBaseline(uint16_t& tvoc);
     /*!
       @brief Sets the inceptive Basebine for TVOC
       @param tvoc Inceptive baseline
       @return True if successful
-      @warning Measurement duration max 10 ms
       @warning The application of this feature is solely limited to the very
       first start-up period of an SGP sensor
       @warning Only available if product version is 0x21 or higher
     */
-    bool setTvocInceptiveBaseline(const uint16_t tvoc);
+    bool setTvocInceptiveBaseline(
+        const uint16_t tvoc,
+        const uint32_t duration = sgp30::SET_TVOC_INCEPTIVE_BASELINE_DURATION);
     ///@}
 
     /*!
@@ -259,50 +264,50 @@ class UnitSGP30 : public Component {
       @param[out] result self-test return code
       @return True if successful
       @note If the test is OK, the result will be 0xd400
-      @warning Measurement duration max 220 ms
       @warning Must not be executed after startPeriodicMeasurement
     */
     bool measureTest(uint16_t& result);
     /*!
-      @brief General reset
-      @details Reset using I2C general call
-      @warning This is a reset by General command, the command is also sent
-      to all devices with I2C connections
-      @return True if successful
-    */
+       @brief General reset
+       @details Reset using I2C general call
+       @warning This is a reset by General command, the command is also
+       sent to all devices with I2C connections
+       @return True if successful
+     */
     bool generalReset();
     /*!
-      @brief Gets the feature set
+      @brief Read the feature set
       @param feature
       @return True if successful
-      @warning Measurement duration max 10 ms
      */
-    bool getFeatureSet(sgp30::Feature& feature);
+    bool readFeatureSet(sgp30::Feature& feature);
     /*!
-      @brief Gets the serial number
+      @brief Read the serial number
       @return True if successful
       @note Serial number is 48bits
     */
-    bool getSerialNumber(uint64_t& number);
+    bool readSerialNumber(uint64_t& number);
     /*!
-      @brief Get the serial number string
+      @brief Read the serial number string
       @param[out] number Output buffer
       @return True if successful
       @warning number must be at least 13 bytes
     */
-    bool getSerialNumber(char* number);
+    bool readSerialNumber(char* number);
 
    protected:
-    bool start_periodic_measurement();
+    bool start_periodic_measurement(const uint32_t durariotn);
     bool set_iaq_baseline(const uint16_t co2eq, const uint16_t tvoc);
+
+    bool read_measurement(sgp30::Data& d);
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitSGP30,
+                                                               sgp30::Data);
 
    protected:
     uint8_t _version{};  // Chip version
-    bool _updatedBaseline{};
-    types::elapsed_time_t _latestBaseline{};
 
-    uint16_t _CO2eq{}, _TVOC{};
-    uint16_t _baselineCO2eq{}, _baselineTVOC{};
+    types::elapsed_time_t _can_measure_time{};
+    std::unique_ptr<m5::container::CircularBuffer<sgp30::Data>> _data{};
 
     config_t _cfg{};
 };
