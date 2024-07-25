@@ -80,7 +80,6 @@ bool UnitSGP30::begin() {
 
 void UnitSGP30::update(const bool force) {
     _updated         = false;
-    _updatedBaseline = false;
     if (_periodic) {
         elapsed_time_t at{m5::utility::millis()};
         if (at < _can_measure_time) {
@@ -233,7 +232,6 @@ bool UnitSGP30::generalReset() {
     uint8_t cmd{0x06};
     if (generalCall(&cmd, 1)) {
         _periodic = false;
-        _latest = _latestBaseline = 0;
         m5::utility::delay(10);
         return true;
     }
