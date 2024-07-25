@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_MAX30100.cpp
   @brief MAX30100 Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "unit_MAX30100.hpp"
 #include <M5Utility.hpp>
@@ -29,14 +30,31 @@ constexpr elapsed_time_t interval_table[] = {
 namespace m5 {
 namespace unit {
 
+namespace max30100 {
+uint16_t Data::ir() const {
+    return m5::types::big_uint16_t(raw[0], raw[1]).get();
+}
+uint16_t Data::red() const {
+    return m5::types::big_uint16_t(raw[2], raw[3]).get();
+}
+
+}  // namespace max30100
+
 // class UnitMAX30100
 const char UnitMAX30100::name[] = "UnitMAX30100";
 const types::uid_t UnitMAX30100::uid{"UnitMAX30100"_mmh3};
 const types::uid_t UnitMAX30100::attr{0};
 
 bool UnitMAX30100::begin() {
-    assert(m5::math::is_powerof2(max30100::MAX_FIFO_DEPTH) &&
-           "MAX_FIFO_DEPTH must be power of 2");
+    assert(_cfg.stored_size >= max30100::MAX_FIFO_DEPTH &&
+           "stored_size must be greater than MAX_FIFO_DEPT");
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
+    }
 
     // Check PartID
     uint8_t pid{};
@@ -65,26 +83,15 @@ bool UnitMAX30100::begin() {
 
 void UnitMAX30100::update(const bool force) {
     _updated = false;
-    if (_periodic) {
+    if (inPeriodic()) {
         auto at = m5::utility::millis();
         if (force || !_latest || at >= _latest + _interval) {
-            _updated = readFIFOData();
+            _updated = read_FIFO();
             if (_updated) {
                 _latest = at;
             }
         }
     }
-}
-
-bool UnitMAX30100::getRawData(uint16_t& ir, uint16_t& red, uint8_t prev) {
-    if (prev >= _buffer.size()) {
-        return false;
-    }
-
-    auto it = _buffer.end() - (prev + 1);
-    ir      = it->ir;
-    red     = it->red;
-    return true;
 }
 
 bool UnitMAX30100::getModeConfiguration(max30100::ModeConfiguration& mc) {
@@ -129,7 +136,7 @@ bool UnitMAX30100::setSpO2Configuration(const max30100::SpO2Configuration sc) {
     return set_spo2_configration(sc.value);
 }
 
-bool UnitMAX30100::setSamplingRate(const max30100::SamplingRate rate) {
+bool UnitMAX30100::setSamplingRate(const max30100::Sampling rate) {
     max30100::SpO2Configuration sc{};
     if (get_spo2_configration(sc.value)) {
         sc.samplingRate(rate);
@@ -168,48 +175,6 @@ bool UnitMAX30100::resetFIFO() {
            writeRegister8(FIFO_READ_POINTER, 0);
 }
 
-bool UnitMAX30100::readFIFOData() {
-    uint8_t wptr{}, rptr{};
-    if (!read_register8(FIFO_WRITE_POINTER, wptr) ||
-        !read_register8(FIFO_READ_POINTER, rptr) ||
-        !read_register8(FIFO_OVERFLOW_COUNTER, _overflow)) {
-        M5_LIB_LOGE("Failed to read ptrs");
-        return false;
-    }
-
-    uint_fast8_t readCount =
-        _overflow ? max30100::MAX_FIFO_DEPTH
-                  : (wptr - rptr) & (max30100::MAX_FIFO_DEPTH - 1);
-
-    // M5_LIB_LOGI(">>cnt:%u of:%u", readCount, _overflow);
-
-    _retrived = 0;
-
-    if (readCount) {
-        std::array<uint8_t, 4> buf{};
-        for (uint_fast8_t i = 0; i < readCount; ++i) {
-            // //Note that FIFO_DATA_REGISTER cannot be burst read.
-            if (!read_register(FIFO_DATA_REGISTER, buf.data(), buf.size())) {
-                // Recover the reading position
-                M5_LIB_LOGE("Failed to read");
-                if (!writeRegister8(FIFO_READ_POINTER, rptr + i)) {
-                    M5_LIB_LOGE("Failed to recover");
-                }
-                return false;
-            }
-            m5::types::big_uint16_t red(buf[0], buf[1]);
-            m5::types::big_uint16_t ir(buf[2], buf[3]);
-
-            // M5_LIB_LOGI("ir:%u red:%u", ir.get(), red.get());
-
-            _buffer.push_back({.ir = ir.get(), .red = red.get()});
-            ++_retrived;
-        }
-        return (_retrived != 0);
-    }
-    return false;
-}
-
 bool UnitMAX30100::startMeasurementTemperature() {
     max30100::ModeConfiguration mc{};
     if (get_mode_configration(mc.value)) {
@@ -237,6 +202,44 @@ bool UnitMAX30100::readMeasurementTemperature(float& temp) {
 }
 
 //
+bool UnitMAX30100::read_FIFO() {
+    uint8_t wptr{}, rptr{};
+    if (!read_register8(FIFO_WRITE_POINTER, wptr) ||
+        !read_register8(FIFO_READ_POINTER, rptr) ||
+        !read_register8(FIFO_OVERFLOW_COUNTER, _overflow)) {
+        M5_LIB_LOGE("Failed to read ptrs");
+        return false;
+    }
+
+    uint_fast8_t readCount =
+        _overflow ? max30100::MAX_FIFO_DEPTH
+                  : (wptr - rptr) & (max30100::MAX_FIFO_DEPTH - 1);
+
+    // M5_LIB_LOGI(">>cnt:%u of:%u", readCount, _overflow);
+
+    _retrived = 0;
+
+    if (readCount) {
+        Data d{};
+        for (uint_fast8_t i = 0; i < readCount; ++i) {
+            // //Note that FIFO_DATA_REGISTER cannot be burst read.
+            if (!read_register(FIFO_DATA_REGISTER, d.raw.data(),
+                               d.raw.size())) {
+                // Recover the reading position
+                M5_LIB_LOGE("Failed to read");
+                if (!writeRegister8(FIFO_READ_POINTER, rptr + i)) {
+                    M5_LIB_LOGE("Failed to recover");
+                }
+                return false;
+            }
+            _data->push_back(d);
+            ++_retrived;
+        }
+        return (_retrived != 0);
+    }
+    return false;
+}
+
 bool UnitMAX30100::get_mode_configration(uint8_t& c) {
     return read_register8(MODE_CONFIGURATION, c);
 }

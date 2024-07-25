@@ -26,11 +26,9 @@ m5::unit::UnitMAX30100 unitMAX30100;
 void setup() {
     M5.begin();
 
-    m5::utility::delay(3000);
-
     if (0) {
         auto cfg         = unitMAX30100.config();
-        cfg.samplingRate = m5::unit::max30100::SamplingRate::Sampling1000;
+        cfg.samplingRate = m5::unit::max30100::Sampling::Rate1000;
         cfg.pulseWidth   = m5::unit::max30100::LedPulseWidth::PW200;
         unitMAX30100.config(cfg);
     }
@@ -58,7 +56,7 @@ void setup() {
 #else
 #pragma message "Using Wire"
     // Using TwoWire
-    Wire.begin(pin_num_sda, pin_num_scl, 100000U);
+    Wire.begin(pin_num_sda, pin_num_scl, 400000U);
     if (!Units.add(unitMAX30100, Wire) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         lcd.clear(TFT_RED);
@@ -78,12 +76,9 @@ void loop() {
     M5.update();
     Units.update();
     if (unitMAX30100.updated()) {
-        uint16_t ir{}, red{};
-        auto retrived = unitMAX30100.retrived();
-        for (uint8_t i = 0; i < retrived; ++i) {
-            if (unitMAX30100.getRawData(ir, red, retrived - i - 1)) {
-                M5_LOGI("\n>IR:%u\n>RED:%u", ir, red);
-            }
+        while (unitMAX30100.available()) {
+            M5_LOGI("\n>IR:%u\n>RED:%u", unitMAX30100.ir(), unitMAX30100.red());
+            unitMAX30100.discard();
         }
     }
 }

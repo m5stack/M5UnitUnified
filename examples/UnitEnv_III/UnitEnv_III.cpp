@@ -17,10 +17,10 @@
 
 //
 // Using single shot measurement If defined
-//#define USING_SINGLE_SHOT
+// #define USING_SINGLE_SHOT
 
 // Using combined unit if defined
-//#define USING_ENV3
+// #define USING_ENV3
 
 namespace {
 auto& lcd = M5.Display;
@@ -63,6 +63,15 @@ void setup() {
         qmp6988.config(cfg);
     }
 #endif
+
+    {
+        auto cfg                     = qmp6988.config();
+        cfg.oversampling_temperature = m5::unit::qmp6988::Oversampling::X1;
+        cfg.oversampling_pressure    = m5::unit::qmp6988::Oversampling::X1;
+        cfg.filter                   = m5::unit::qmp6988::Filter::Coeff16;
+        cfg.standby_time             = m5::unit::qmp6988::StandbyTime::Time1ms;
+        qmp6988.config(cfg);
+    }
 
 #if defined(USING_ENV3)
 #if defined(USING_M5HAL)

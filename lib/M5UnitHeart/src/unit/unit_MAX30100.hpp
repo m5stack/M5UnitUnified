@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_MAX30100.hpp
   @brief MAX30100 Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_HEART_UNIT_MAX30100_HPP
 #define M5_UNIT_HEART_UNIT_MAX30100_HPP
@@ -15,15 +16,18 @@
 
 namespace m5 {
 namespace unit {
-
+/*!
+  @namespace max30100
+  @brief For MAX30100
+ */
 namespace max30100 {
 /*!
   @enum Mode
   @brief For Mode control
  */
 enum class Mode : uint8_t {
-    HROnly = 0x02,  //!< @brief HR only enabled
-    SPO2,           //!< @brief SPO2 and HR enabled
+    HROnly = 0x02,  //!< HR only enabled
+    SPO2,           //!< SPO2 and HR enabled
 };
 
 /*!
@@ -67,19 +71,19 @@ struct ModeConfiguration {
 };
 
 /*!
-  @enum SamplingRate
+  @enum Sampling
   @brief Sample rate for pulse
   @details Unit is the number of sample per second
  */
-enum class SamplingRate : uint8_t {
-    Sampling50,    //!< @brief 50 sps
-    Sampling100,   //!< @brief 100 sps
-    Sampling167,   //!< @brief 167 sps
-    Sampling200,   //!< @brief 200 sps
-    Sampling400,   //!< @brief 400 sps
-    Sampling600,   //!< @brief 600 sps
-    Sampling800,   //!< @brief 800 sps
-    Sampling1000,  //!< @brief 1000 sps
+enum class Sampling : uint8_t {
+    Rate50,    //!< 50 sps
+    Rate100,   //!< 100 sps
+    Rate167,   //!< 167 sps
+    Rate200,   //!< 200 sps
+    Rate400,   //!< 400 sps
+    Rate600,   //!< 600 sps
+    Rate800,   //!< 800 sps
+    Rate1000,  //!< 1000 sps
 };
 
 /*!
@@ -87,10 +91,10 @@ enum class SamplingRate : uint8_t {
   @brief  LED pulse width (the IR and RED have the same pulse width)
 */
 enum class LedPulseWidth {
-    PW200,   //!< @brief 200 us (ADC 13 bits)
-    PW400,   //!< @brief 400 us (ADC 14 bits)
-    PW800,   //!< @brief 800 us (ADC 15 bits)
-    PW1600,  //!< @brief 1600 us (ADC 16 bits)
+    PW200,   //!< 200 us (ADC 13 bits)
+    PW400,   //!< 400 us (ADC 14 bits)
+    PW800,   //!< 800 us (ADC 15 bits)
+    PW1600,  //!< 1600 us (ADC 16 bits)
 };
 
 /*!
@@ -128,8 +132,8 @@ struct SpO2Configuration {
     bool highResolution() const {
         return value & (1U << 6);
     }
-    SamplingRate samplingRate() const {
-        return static_cast<SamplingRate>((value >> 2) & 0x07);
+    Sampling samplingRate() const {
+        return static_cast<Sampling>((value >> 2) & 0x07);
     }
     LedPulseWidth ledPulseWidth() const {
         return static_cast<LedPulseWidth>(value & 0x03);
@@ -141,7 +145,7 @@ struct SpO2Configuration {
     void highResolution(const bool b) {
         value = (value & ~(1U << 6)) | ((b ? 1 : 0) << 6);
     }
-    void samplingRate(const SamplingRate rate) {
+    void samplingRate(const Sampling rate) {
         value = (value & ~(0x07 << 2)) |
                 ((m5::stl::to_underlying(rate) & 0x07) << 2);
     }
@@ -151,7 +155,7 @@ struct SpO2Configuration {
     ///@}
 
     uint8_t value{};
-};  // namespace max30100
+};
 
 /*!
   @enum CurrentControl
@@ -206,13 +210,25 @@ struct LedConfiguration {
 //! @brief FIFO depth
 constexpr uint8_t MAX_FIFO_DEPTH{16};
 
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    std::array<uint8_t, 4> raw{};
+    uint16_t ir() const;
+    uint16_t red() const;
+};
+
 }  // namespace max30100
 
 /*!
   @class UnitMAX30100
   @brief Pulse oximetry and heart-rate sensor
 */
-class UnitMAX30100 : public Component {
+class UnitMAX30100
+    : public Component,
+      public PeriodicMeasurementAdapter<UnitMAX30100, max30100::Data> {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitMAX30100, 0x57);
 
    public:
@@ -220,12 +236,11 @@ class UnitMAX30100 : public Component {
       @struct config_t
       @brief Settings
      */
-    struct config_t {
+    struct config_t : Component::config_t {
         //! @brief Operating mode
         max30100::Mode mode{max30100::Mode::HROnly};
         //! @brief Sampling rate
-        max30100::SamplingRate samplingRate{
-            m5::unit::max30100::SamplingRate::Sampling100};
+        max30100::Sampling samplingRate{m5::unit::max30100::Sampling::Rate100};
         //! @brief Led pulse width
         max30100::LedPulseWidth pulseWidth{
             m5::unit::max30100::LedPulseWidth::PW1600};
@@ -240,7 +255,16 @@ class UnitMAX30100 : public Component {
     };
 
     explicit UnitMAX30100(const uint8_t addr = DEFAULT_ADDRESS)
-        : Component(addr) {
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<max30100::Data>(
+              max30100::MAX_FIFO_DEPTH)} {
+        auto cfg        = config();
+        cfg.stored_size = max30100::MAX_FIFO_DEPTH;
+        config(cfg);
+
+        auto ccfg  = component_config();
+        ccfg.clock = 400000U;
+        component_config(ccfg);
     }
     virtual ~UnitMAX30100() {
     }
@@ -273,25 +297,23 @@ class UnitMAX30100 : public Component {
     inline uint8_t overflow() const {
         return _overflow;
     }
-
-    /*!
-      @brief Gets the latest data
-      @param[out] ir,red Outout latest data
-      @param[in] prev Forward offset if more than one data set is retrieved
-      0:latest, 1: one previous, 2: two previous...
-    */
-    bool getRawData(uint16_t& ir, uint16_t& red, uint8_t prev = 0);
     ///@}
 
-    // API
-    ///@name Status
+    ///@name Measurement data by periodic
     ///@{
-    //    bool readInterruptStatus();
+    //! @brief Oldest CO2eq (ppm)
+    inline uint16_t ir() const {
+        return !_data->empty() ? oldest().ir() : 0;
+    }
+    //! @brief Oldest TVOC (ppb)
+    inline uint16_t red() const {
+        return !_data->empty() ? oldest().red() : 0;
+    }
     ///@}
 
-    ///@name Mode Configuration
     ///@warning Note that there are different combinations that can be set
     /// depending on the mode See also SpO2Configuration
+    ///@name Mode Configuration
     ///@{
     bool getModeConfiguration(max30100::ModeConfiguration& mc);
     bool setModeConfiguration(const max30100::ModeConfiguration mc);
@@ -304,13 +326,13 @@ class UnitMAX30100 : public Component {
     }
     ///@}
 
-    ///@name SpO2 Configuration
     ///@warning Note that there are different combinations that can be set
     /// depending on the mode See also SpO2Configuration
+    ///@name SpO2 Configuration
     ///@{
     bool getSpO2Configuration(max30100::SpO2Configuration& sc);
     bool setSpO2Configuration(const max30100::SpO2Configuration sc);
-    bool setSamplingRate(const max30100::SamplingRate rate);
+    bool setSamplingRate(const max30100::Sampling rate);
     bool setLedPulseWidth(const max30100::LedPulseWidth width);
     inline bool enableHighResolution() {
         return enable_high_resolution(true);
@@ -320,10 +342,10 @@ class UnitMAX30100 : public Component {
     }
     ///@}
 
-    ///@name LED Configuration
     ///@warning In the heart-rate only mode, the red LED is inactive.
     /// and only the IR LED is used to capture optical data and determine the
     /// heart rate.
+    ///@name LED Configuration
     ///@{
     bool getLedConfiguration(max30100::LedConfiguration& lc);
     bool setLedConfiguration(const max30100::LedConfiguration lc);
@@ -334,7 +356,6 @@ class UnitMAX30100 : public Component {
     ///@name FIFO
     ///@{
     bool resetFIFO();
-    bool readFIFOData();
     ///@}
 
     ///@name Temperature
@@ -342,12 +363,15 @@ class UnitMAX30100 : public Component {
     bool startMeasurementTemperature();
     bool isMeasurementTemperature();
     bool readMeasurementTemperature(float& temp);
-
     ///@}
 
     bool reset();
 
    protected:
+    bool read_FIFO();
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitMAX30100,
+                                                               max30100::Data);
+
     bool get_mode_configration(uint8_t& c);
     bool set_mode_configration(const uint8_t c);
     bool enable_power_save(const bool enabled);
@@ -362,16 +386,14 @@ class UnitMAX30100 : public Component {
 
    protected:
     max30100::Mode _mode{};
-    max30100::SamplingRate _samplingRate{};
+    max30100::Sampling _samplingRate{};
     size_t _latestCoount{};
     uint8_t _retrived{};  // Number of elements last retrieved.
     uint8_t _overflow{};
 
-    struct Measured {
-        uint16_t ir;
-        uint16_t red;
-    };
-    m5::container::FixedCircularBuffer<Measured, max30100::MAX_FIFO_DEPTH> _buffer;
+    //    m5::container::FixedCircularBuffer<Measured, max30100::MAX_FIFO_DEPTH>
+    //        _buffer;
+    std::unique_ptr<m5::container::CircularBuffer<max30100::Data>> _data{};
 
     config_t _cfg{};
 };

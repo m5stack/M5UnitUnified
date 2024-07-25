@@ -31,7 +31,7 @@ class WireImpl : public Adapter::Impl {
     virtual m5::hal::error::error_t readWithTransaction(
         uint8_t* data, const size_t len) override {
         assert(_addr);
-        _wire->setClock(_clock);
+
         if (data && _wire->requestFrom(_addr, len)) {
             auto count = std::min(len, (size_t)_wire->available());
             for (size_t i = 0; i < count; ++i) {
