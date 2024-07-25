@@ -31,10 +31,8 @@ const ::testing::Environment* global_fixture =
 class TestQMP6988 : public ComponentTestBase<UnitQMP6988, bool> {
    protected:
     virtual UnitQMP6988* get_instance() override {
-        //        return new m5::unit::UnitQMP6988();
-        auto ptr = new m5::unit::UnitQMP6988();
-        auto cfg = ptr->config();
-        // cfg.start_periodic = false;
+        auto ptr        = new m5::unit::UnitQMP6988();
+        auto cfg        = ptr->config();
         cfg.stored_size = 2;
         ptr->config(cfg);
         return ptr;
@@ -83,6 +81,20 @@ void check_measurement_values(UnitQMP6988* u) {
 TEST_P(TestQMP6988, MeasurementCondition) {
     SCOPED_TRACE(ustr);
 
+    // This process fails during periodic measurements.
+    for (auto&& ta : os_table) {
+        for (auto&& pa : os_table) {
+            auto s = m5::utility::formatString("OS:%u/%u", ta, pa);
+            SCOPED_TRACE(s);
+
+            EXPECT_FALSE(unit->setOversamplings(ta, pa));
+            EXPECT_FALSE(unit->setOversamplingTemperature(ta));
+            EXPECT_FALSE(unit->setOversamplingPressure(pa));
+        }
+    }
+
+    // Success if not in periodic measurement
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
     for (auto&& ta : os_table) {
         for (auto&& pa : os_table) {
             Oversampling t;
@@ -112,6 +124,13 @@ TEST_P(TestQMP6988, MeasurementCondition) {
 TEST_P(TestQMP6988, IIRFilter) {
     SCOPED_TRACE(ustr);
 
+    // This process fails during periodic measurements.
+    for (auto&& e : filter_table) {
+        EXPECT_FALSE(unit->setFilterCoeff(e));
+    }
+
+    // Success if not in periodic measurement
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
     for (auto&& e : filter_table) {
         EXPECT_TRUE(unit->setFilterCoeff(e));
 
@@ -132,6 +151,15 @@ TEST_P(TestQMP6988, UseCase) {
     Oversampling t;
     Oversampling p;
 
+    // This process fails during periodic measurements.
+    EXPECT_FALSE(unit->setWeathermonitoring());
+    EXPECT_FALSE(unit->setDropDetection());
+    EXPECT_FALSE(unit->setElevatorDetection());
+    EXPECT_FALSE(unit->setStairDetection());
+    EXPECT_FALSE(unit->setIndoorNavigation());
+
+    // Success if not in periodic measurement
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
     {
         SCOPED_TRACE("Weather");
         EXPECT_TRUE(unit->setWeathermonitoring());
@@ -191,6 +219,13 @@ TEST_P(TestQMP6988, UseCase) {
 TEST_P(TestQMP6988, Setup) {
     SCOPED_TRACE(ustr);
 
+    // This process fails during periodic measurements.
+    for (auto&& e : standby_table) {
+        EXPECT_FALSE(unit->setStandbyTime(e));
+    }
+
+    // Success if not in periodic measurement
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
     for (auto&& e : standby_table) {
         EXPECT_TRUE(unit->setStandbyTime(e));
 
@@ -240,8 +275,8 @@ TEST_P(TestQMP6988, SingleShot) {
                     EXPECT_TRUE(std::isfinite(d.fahrenheit()));
                     EXPECT_TRUE(std::isfinite(d.pressure()));
 
-                    // M5_LOGI("T:%f/%f P:%f", d.celsius(), d.fahrenheit(),
-                    //         d.pressure());
+                    // M5_LOGI("%s> T:%f/%f P:%f", s.c_str(), d.celsius(),
+                    //         d.fahrenheit(), d.pressure());
                 }
 
                 Oversampling t;
@@ -340,7 +375,14 @@ TEST_P(TestQMP6988, Periodic) {
         EXPECT_TRUE(unit->inPeriodic());
         EXPECT_EQ(unit->updatedMillis(), 0);
 
+#if 1
         test_periodic_measurement(unit.get(), 4, check_measurement_values);
+
+#else
+        auto avg = test_periodic_measurement(unit.get(), idx == 0 ? 100 : 10,
+                                             check_measurement_values);
+        M5_LOGW("%s>I:%lu A:%u", s.c_str(), unit->interval(), avg);
+#endif
 
         EXPECT_TRUE(unit->stopPeriodicMeasurement());
         EXPECT_FALSE(unit->inPeriodic());

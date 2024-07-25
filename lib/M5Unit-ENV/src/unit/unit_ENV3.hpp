@@ -24,7 +24,7 @@ namespace unit {
   @details This unit itself has no I/O, but holds SHT30 and QMP6988
  */
 class UnitENV3 : public Component {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitENV3, 0xFF);
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitENV3, 0x00);
 
    public:
     UnitSHT30 sht30;      //!< @brief SHT30 instance

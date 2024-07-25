@@ -43,6 +43,9 @@ class UnitSCD40 : public Component,
     explicit UnitSCD40(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr),
           _data{new m5::container::CircularBuffer<scd4x::Data>(1)} {
+        auto ccfg  = component_config();
+        ccfg.clock = 400000U;
+        component_config(ccfg);
     }
     virtual ~UnitSCD40() {
     }

@@ -42,7 +42,7 @@ enum class PowerMode : uint8_t {
     //! @brief Minimal power consumption, but no measurements are taken
     Sleep = 0,
     //! @brief Energise the circuit for measurement only when measuring
-    Force = 1,
+    Force = 1,  // 2 also force mode
     //! @brief Normally energized (periodic measurement)
     Normal = 3,
 };
@@ -263,6 +263,7 @@ class UnitQMP6988
       @return True if successful
       @warning The specified settings are maintained after call
       @warning During periodic detection runs, an error is returned
+      @warning If Oversampling::Skip is specified, no measurement is taken
     */
     bool measureSingleshot(qmp6988::Data& d, const qmp6988::Oversampling ost,
                            const qmp6988::Oversampling osp,
@@ -286,6 +287,7 @@ class UnitQMP6988
       @param f filter
       @return True if successful
       @warning The specified settings are maintained after call
+      @warning If Oversampling::Skip is specified, no measurement is taken
     */
     bool startPeriodicMeasurement(const qmp6988::StandbyTime st,
                                   const qmp6988::Oversampling ost,
@@ -353,6 +355,8 @@ class UnitQMP6988
       @param ost Oversampling for temperature
       @param osp Oversampling for pressure
       @return True if successful
+      @warning If Oversampling::Skip is specified, no measurement is taken
+      @warning During periodic detection runs, an error is returned
     */
     bool setOversamplings(const qmp6988::Oversampling ost,
                           const qmp6988::Oversampling osp);
@@ -384,6 +388,7 @@ class UnitQMP6988
       @brief Sets the IIR filter co-efficient
       @param f filter
       @return True if successful
+      @warning During periodic detection runs, an error is returned
     */
     bool setFilterCoeff(const qmp6988::Filter& f);
     ///@}
@@ -402,7 +407,8 @@ class UnitQMP6988
       @return True if successful
       @note The periodic measurement interval is calculated by this value,
       oversampling, and filter settings
-     */
+      @warning During periodic detection runs, an error is returned
+    */
     bool setStandbyTime(const qmp6988::StandbyTime st);
     ///@}
 
@@ -443,8 +449,8 @@ namespace command {
 
 constexpr uint8_t CHIP_ID{0xD1};
 
-constexpr uint8_t READ_TEMPERATURE{0xFA};  // ~ FC 3bytes
 constexpr uint8_t READ_PRESSURE{0xF7};     // ~ F9 3bytes
+constexpr uint8_t READ_TEMPERATURE{0xFA};  // ~ FC 3bytes
 
 constexpr uint8_t IO_SETUP{0xF5};
 constexpr uint8_t CONTROL_MEASUREMENT{0xF4};
@@ -453,7 +459,7 @@ constexpr uint8_t IIR_FILTER{0xF1};
 
 constexpr uint8_t RESET{0xE0};
 
-constexpr uint8_t READ_COMPENSATION_COEFFICIENT{0xA0};  // ~ 0xB8 25 butes
+constexpr uint8_t READ_COMPENSATION_COEFFICIENT{0xA0};  // ~ 0xB8 25 bytes
 
 }  // namespace command
 }  // namespace qmp6988
