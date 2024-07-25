@@ -158,7 +158,7 @@ struct Data {
     }
     float celsius() const;     //!< temperature (Celsius)
     float fahrenheit() const;  //!< temperature (Fahrenheit)
-    float pressure() const;
+    float pressure() const;    //!< pressure (Pa)
     const Calibration* calib{};
 };
 
@@ -196,6 +196,9 @@ class UnitQMP6988
     explicit UnitQMP6988(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr),
           _data{new m5::container::CircularBuffer<qmp6988::Data>(1)} {
+        auto ccfg  = component_config();
+        ccfg.clock = 400000U;
+        component_config(ccfg);
     }
     virtual ~UnitQMP6988() {
     }

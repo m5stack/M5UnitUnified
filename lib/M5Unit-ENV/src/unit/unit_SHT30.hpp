@@ -123,6 +123,9 @@ class UnitSHT30 : public Component,
     explicit UnitSHT30(const uint8_t addr = DEFAULT_ADDRESS)
         : Component(addr),
           _data{new m5::container::CircularBuffer<sht30::Data>(1)} {
+        auto ccfg  = component_config();
+        ccfg.clock = 400000U;
+        component_config(ccfg);
     }
     virtual ~UnitSHT30() {
     }
