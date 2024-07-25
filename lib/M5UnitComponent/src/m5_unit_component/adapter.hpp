@@ -51,7 +51,12 @@ class Adapter {
     inline uint8_t address() const {
         return _impl->address();
     }
-
+    inline uint32_t clock() const {
+        return _impl->clock();
+    }
+    inline void setClock(const uint32_t clock) {
+        return _impl->setClock(clock);
+    }
     //! @brief Dupicate adapter
     Adapter* duplicate(const uint8_t addr);
 
@@ -90,14 +95,24 @@ class Adapter {
         Impl() = default;
         explicit Impl(const uint8_t addr) : _addr(addr) {
         }
+        Impl(const uint8_t addr, const uint32_t clock)
+            : _addr(addr), _clock(clock) {
+        }
+
         virtual ~Impl() = default;
 
         inline uint8_t address() const {
             return _addr;
         }
+        inline uint32_t clock() const {
+            return _clock;
+        }
+        inline void setClock(const uint32_t clock) {
+            _clock = clock;
+        }
 
         virtual Impl* duplicate(const uint8_t addr) {
-            return new Impl(addr);
+            return new Impl(addr, _clock);
         }
 
         virtual m5::hal::error::error_t readWithTransaction(uint8_t*,
@@ -128,7 +143,8 @@ class Adapter {
         }
 
        protected:
-        const uint8_t _addr{}; //I2C address
+        uint8_t _addr{};
+        uint32_t _clock{100000};
     };
     ///@endcond
 

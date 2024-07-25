@@ -56,10 +56,12 @@ class Component {
       @brief Component basic settings
      */
     struct component_config_t {
-        //! @brief Does the user call Unit's update? (default as false)
-        bool self_update{};
-        //! @brief Maximum number of units that can be connected (default as 0)
-        uint8_t max_children{};
+        //! Clock for communication (default as 100000)
+        uint32_t clock{100000};
+        //! Does the user call Unit's update? (default as false)
+        bool self_update{false};
+        //! Maximum number of units that can be connected (default as 0)
+        uint8_t max_children{0};
     };
 
     /*!
@@ -100,18 +102,22 @@ class Component {
     ///@name Settings
     ///@{
     /*! @brief Gets the configuration */
-    component_config_t component_config() {
+    inline component_config_t component_config() {
         return _uccfg;
     }
     //! @brief Set the configuration
-    void component_config(const component_config_t& cfg) {
+    inline void component_config(const component_config_t& cfg) {
         _uccfg = cfg;
     }
+
     ///@}
 
     ///@name Functions that must be inherited
     ///@{
-    /*! @brief Begin unit */
+    /*!
+      @brief Begin unit
+      @warning Call parent begin in inherited function
+    */
     virtual bool begin() {
         return true;
     }
@@ -155,7 +161,7 @@ class Component {
         return _addr;
     }
     //! @brief Gets the adapter for children
-    Adapter* getAdapter(const uint8_t ch) {
+    inline Adapter* getAdapter(const uint8_t ch) {
         return ensure_adapter(ch);
     }
     ///@}
@@ -192,7 +198,6 @@ class Component {
     /*! @brief Assgin m5::hal::bus */
     virtual bool assign(m5::hal::bus::Bus* bus);
     /*! @brief Assgin TwoWire */
-    //    [[deprecated("use assign(m5::hal::bus::Bus* bus);")]]
     virtual bool assign(TwoWire& wire);
     ///@}
 
@@ -200,16 +205,16 @@ class Component {
     ///@name Parent-children relationship
     ///@{
     /*! @brief Has parent unit? */
-    bool hasParent() const {
+    inline bool hasParent() const {
         return _parent;
     }
     //! @brief Are there any other devices connected to the same parent unit
     //! besides yourself?
-    bool hasSiblings() const {
+    inline bool hasSiblings() const {
         return _prev || _next;
     }
     //! @brief Are there other devices connected to me?
-    bool hasChildren() const {
+    inline bool hasChildren() const {
         return _child;
     }
     //! @brief Number of units connected to me
@@ -256,16 +261,16 @@ class Component {
 
     ///@name Iterator for children
     ///@{
-    child_iterator childBegin() noexcept {
+    inline child_iterator childBegin() noexcept {
         return child_iterator(_child);
     }
-    child_iterator childEnd() noexcept {
+    inline child_iterator childEnd() noexcept {
         return child_iterator(nullptr);
     }
-    const_child_iterator childBegin() const noexcept {
+    inline const_child_iterator childBegin() const noexcept {
         return const_child_iterator(_child);
     }
-    const_child_iterator childEnd() const noexcept {
+    inline const_child_iterator childEnd() const noexcept {
         return const_child_iterator(nullptr);
     }
     ///@}
@@ -404,11 +409,11 @@ class PeriodicMeasurementAdapter {
         return full_periodic_measurement_data();
     }
     //! @brief Retrieve oldest stored data
-    MD oldest() const {
+    inline MD oldest() const {
         return static_cast<const Derived*>(this)->oldest_periodic_data();
     }
     //! @brief Retrieve latest stored data
-    MD latest() const {
+    inline MD latest() const {
         return static_cast<const Derived*>(this)->latest_periodic_data();
     }
     //! @brief Discard  the oldest data accumulated

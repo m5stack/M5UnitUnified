@@ -21,6 +21,7 @@ const types::attr_t Component::attr{0};
 
 Component::Component(const uint8_t addr)
     : _adapter{new Adapter(addr)}, _addr{addr} {
+    assert(_adapter);
 }
 
 size_t Component::childrenSize() const {
@@ -108,6 +109,7 @@ Component* Component::child(const uint8_t ch) const {
 bool Component::assign(m5::hal::bus::Bus* bus) {
     if (_addr) {
         _adapter.reset(new Adapter(bus, _addr));
+        _adapter->setClock(_uccfg.clock);
     }
     return static_cast<bool>(_adapter);
 }
@@ -115,6 +117,7 @@ bool Component::assign(m5::hal::bus::Bus* bus) {
 bool Component::assign(TwoWire& wire) {
     if (_addr) {
         _adapter.reset(new Adapter(wire, _addr));
+        _adapter->setClock(_uccfg.clock);
     }
     return static_cast<bool>(_adapter);
 }

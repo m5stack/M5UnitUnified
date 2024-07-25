@@ -13,6 +13,7 @@
 
 #include <M5Utility.hpp>
 #include <thread>
+#include <cassert>
 
 namespace m5 {
 namespace unit {
@@ -33,6 +34,7 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
                                    void (*callback)(U*) = nullptr) {
     static_assert(std::is_base_of<m5::unit::Component, U>::value,
                   "U must be derived from Component");
+    assert(times >= 2);
 
     auto interval = unit->interval();
     decltype(interval) avg{}, avgCnt{};
@@ -48,20 +50,21 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
                 auto duration = um - prev;
                 ++avgCnt;
                 avg += duration;
-                // EXPECT_LE(duration, interval + 1);
+                // M5_LOGI("dur:%ld", duration);
+                //  EXPECT_LE(duration, interval + 1);
             }
             prev = um;
             if (callback) {
                 callback(unit);
             }
         }
-        // m5::utility::delay(1);
         std::this_thread::yield();
     }
     EXPECT_EQ(cnt, 0U);
     avg /= avgCnt;
-    //There is room for consideration on the tolerance
-    EXPECT_LE(avg, decltype(interval)(interval * 1.1f));
+    // There is room for consideration on the tolerance
+    // EXPECT_LE(avg, decltype(interval)(interval * 1.1f));
+    EXPECT_LE(avg, decltype(interval)(interval + 1));
     return avg;
 }
 
