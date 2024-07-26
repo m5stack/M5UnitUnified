@@ -13,6 +13,7 @@
 #include <M5UnitComponent.hpp>
 #include "m5_utility/stl/extension.hpp"
 #include "m5_utility/container/circular_buffer.hpp"
+#include <limits>  // NaN
 
 namespace m5 {
 namespace unit {
@@ -216,8 +217,22 @@ constexpr uint8_t MAX_FIFO_DEPTH{16};
  */
 struct Data {
     std::array<uint8_t, 4> raw{};
-    uint16_t ir() const;
-    uint16_t red() const;
+    uint16_t ir() const;   //!< IR
+    uint16_t red() const;  //!< RED
+};
+
+/*!
+  @struct TemperatureData
+  @brief Measurement data group for temperature
+ */
+struct TemperatureData {
+    std::array<uint8_t, 2> raw{};
+    //! temperature (Celsius)
+    inline float temperature() const {
+        return celsius();
+    }
+    float celsius() const;     //!< temperature (Celsius)
+    float fahrenheit() const;  //!< temperature (Fahrenheit)
 };
 
 }  // namespace max30100
@@ -234,7 +249,7 @@ class UnitMAX30100
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
     struct config_t : Component::config_t {
         //! @brief Operating mode
@@ -284,14 +299,27 @@ class UnitMAX30100
     }
     ///@}
 
-    ///@name Properties
+    ///@name Measurement data by periodic
     ///@{
-    //! @brief Number of data last retrieved
+    //! @brief Oldest CO2eq (ppm)
+    inline uint16_t ir() const {
+        return !empty() ? oldest().ir() : 0;
+    }
+    //! @brief Oldest TVOC (ppb)
+    inline uint16_t red() const {
+        return !empty() ? oldest().red() : 0;
+    }
+    /*!
+      @brief Number of data last retrieved
+      @note The number of data retrieved by the latest update, not all data
+      accumulated
+      @sa available()
+    */
     inline uint8_t retrived() const {
         return _retrived;
     }
     /*!
-      @brief The number of samples lost.
+      @brief The number of samples lost
       @note It saturates at 15
      */
     inline uint8_t overflow() const {
@@ -299,23 +327,11 @@ class UnitMAX30100
     }
     ///@}
 
-    ///@name Measurement data by periodic
-    ///@{
-    //! @brief Oldest CO2eq (ppm)
-    inline uint16_t ir() const {
-        return !_data->empty() ? oldest().ir() : 0;
-    }
-    //! @brief Oldest TVOC (ppb)
-    inline uint16_t red() const {
-        return !_data->empty() ? oldest().red() : 0;
-    }
-    ///@}
-
     ///@warning Note that there are different combinations that can be set
     /// depending on the mode See also SpO2Configuration
     ///@name Mode Configuration
     ///@{
-    bool getModeConfiguration(max30100::ModeConfiguration& mc);
+    bool readModeConfiguration(max30100::ModeConfiguration& mc);
     bool setModeConfiguration(const max30100::ModeConfiguration mc);
     bool setMode(const max30100::Mode mode);
     bool enablePowerSave() {
@@ -330,7 +346,7 @@ class UnitMAX30100
     /// depending on the mode See also SpO2Configuration
     ///@name SpO2 Configuration
     ///@{
-    bool getSpO2Configuration(max30100::SpO2Configuration& sc);
+    bool readSpO2Configuration(max30100::SpO2Configuration& sc);
     bool setSpO2Configuration(const max30100::SpO2Configuration sc);
     bool setSamplingRate(const max30100::Sampling rate);
     bool setLedPulseWidth(const max30100::LedPulseWidth width);
@@ -343,11 +359,11 @@ class UnitMAX30100
     ///@}
 
     ///@warning In the heart-rate only mode, the red LED is inactive.
-    /// and only the IR LED is used to capture optical data and determine the
-    /// heart rate.
+    /// and only the IR LED is used to capture optical data and determine
+    /// the heart rate.
     ///@name LED Configuration
     ///@{
-    bool getLedConfiguration(max30100::LedConfiguration& lc);
+    bool readLedConfiguration(max30100::LedConfiguration& lc);
     bool setLedConfiguration(const max30100::LedConfiguration lc);
     bool setLedCurrent(const max30100::CurrentControl ir,
                        const max30100::CurrentControl red);
@@ -358,27 +374,35 @@ class UnitMAX30100
     bool resetFIFO();
     ///@}
 
-    ///@name Temperature
+    ///@note The temperature sensor data can be used to compensate the SpO2
+    /// error with ambient temperature changes
+    ///@name Measurement temperature
     ///@{
-    bool startMeasurementTemperature();
-    bool isMeasurementTemperature();
-    bool readMeasurementTemperature(float& temp);
+    /*!
+      @brief Measure tempeature single shot
+      @param[out] temp Temperature(Celsius)
+      @return True if successful
+      @warning Blocking until measured about 29 ms
+     */
+    bool measureTemperatureSingleshot(max30100::TemperatureData& td);
     ///@}
 
     bool reset();
 
    protected:
     bool read_FIFO();
+    bool read_measurement_temperature(max30100::TemperatureData& td);
+
     M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitMAX30100,
                                                                max30100::Data);
 
-    bool get_mode_configration(uint8_t& c);
+    bool read_mode_configration(uint8_t& c);
     bool set_mode_configration(const uint8_t c);
     bool enable_power_save(const bool enabled);
-    bool get_spo2_configration(uint8_t& c);
+    bool read_spo2_configration(uint8_t& c);
     bool set_spo2_configration(const uint8_t c);
     bool enable_high_resolution(const bool enabled);
-    bool get_led_configration(uint8_t& c);
+    bool read_led_configration(uint8_t& c);
     bool set_led_configration(const uint8_t c);
 
     bool read_register(const uint8_t reg, uint8_t* buf, const size_t len);
@@ -387,12 +411,7 @@ class UnitMAX30100
    protected:
     max30100::Mode _mode{};
     max30100::Sampling _samplingRate{};
-    size_t _latestCoount{};
-    uint8_t _retrived{};  // Number of elements last retrieved.
-    uint8_t _overflow{};
-
-    //    m5::container::FixedCircularBuffer<Measured, max30100::MAX_FIFO_DEPTH>
-    //        _buffer;
+    uint8_t _retrived{}, _overflow{};
     std::unique_ptr<m5::container::CircularBuffer<max30100::Data>> _data{};
 
     config_t _cfg{};

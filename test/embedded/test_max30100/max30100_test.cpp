@@ -23,6 +23,7 @@
 using namespace m5::unit::googletest;
 using namespace m5::unit;
 using namespace m5::unit::max30100;
+using namespace m5::unit::max30100::command;
 
 const ::testing::Environment* global_fixture =
     ::testing::AddGlobalTestEnvironment(new GlobalFixture<400000U>());
@@ -30,7 +31,12 @@ const ::testing::Environment* global_fixture =
 class TestMAX30100 : public ComponentTestBase<UnitMAX30100, bool> {
    protected:
     virtual UnitMAX30100* get_instance() override {
-        return new m5::unit::UnitMAX30100();
+        auto ptr = new m5::unit::UnitMAX30100();
+        if (ptr) {
+            auto cfg = ptr->config();
+            ptr->config(cfg);
+        }
+        return ptr;
     }
     virtual bool is_using_hal() const override {
         return GetParam();
@@ -64,18 +70,18 @@ bool is_allowed_settings(const Mode mode, const Sampling rate,
            (1U << m5::stl::to_underlying(pw));
 }
 
+constexpr Mode mode_table[] = {
+    Mode::SPO2,
+    Mode::HROnly,
+};
+
 }  // namespace
 
 TEST_P(TestMAX30100, Configration) {
     SCOPED_TRACE(ustr);
 
     {
-        constexpr Mode table[] = {
-            Mode::SPO2,
-            Mode::HROnly,
-        };
-
-        for (auto&& m : table) {
+        for (auto&& m : mode_table) {
             auto s = m5::utility::formatString("Mode:%u", m);
             SCOPED_TRACE(s.c_str());
             // M5_LOGI("%s", s.c_str());
@@ -83,14 +89,14 @@ TEST_P(TestMAX30100, Configration) {
             ModeConfiguration mc{};
             EXPECT_TRUE(unit->setMode(m));
 
-            EXPECT_TRUE(unit->getModeConfiguration(mc));
+            EXPECT_TRUE(unit->readModeConfiguration(mc));
             EXPECT_EQ(mc.mode(), m);
 
             auto mm = (m == Mode::HROnly ? Mode::SPO2 : Mode::HROnly);
             mc.mode(mm);
             EXPECT_TRUE(unit->setModeConfiguration(mc));
 
-            EXPECT_TRUE(unit->getModeConfiguration(mc));
+            EXPECT_TRUE(unit->readModeConfiguration(mc));
             EXPECT_EQ(mc.mode(), mm);
         }
 
@@ -104,14 +110,14 @@ TEST_P(TestMAX30100, Configration) {
 
             EXPECT_TRUE(ps ? unit->enablePowerSave()
                            : unit->disablePowerSave());
-            EXPECT_TRUE(unit->getModeConfiguration(mc));
+            EXPECT_TRUE(unit->readModeConfiguration(mc));
             EXPECT_EQ(mc.shdn(), ps);
 
             bool f = !ps;
             mc.shdn(f);
             EXPECT_TRUE(unit->setModeConfiguration(mc));
 
-            EXPECT_TRUE(unit->getModeConfiguration(mc));
+            EXPECT_TRUE(unit->readModeConfiguration(mc));
             EXPECT_EQ(mc.shdn(), f);
         }
     }
@@ -139,7 +145,7 @@ TEST_P(TestMAX30100, Configration) {
                     // M5_LOGI("%s", s.c_str());
 
                     SpO2Configuration sc{};
-                    EXPECT_TRUE(unit->getSpO2Configuration(sc));
+                    EXPECT_TRUE(unit->readSpO2Configuration(sc));
                     sc.samplingRate(rate);
                     sc.ledPulseWidth(pw);
                     if (is_allowed_settings(Mode::SPO2, rate, pw)) {
@@ -170,7 +176,7 @@ TEST_P(TestMAX30100, Configration) {
                     // M5_LOGI("%s", s.c_str());
 
                     SpO2Configuration sc{};
-                    EXPECT_TRUE(unit->getSpO2Configuration(sc));
+                    EXPECT_TRUE(unit->readSpO2Configuration(sc));
                     sc.samplingRate(rate);
                     sc.ledPulseWidth(pw);
                     if (is_allowed_settings(Mode::HROnly, rate, pw)) {
@@ -204,7 +210,7 @@ TEST_P(TestMAX30100, Configration) {
                                : unit->disableHighResolution());
 
                 SpO2Configuration sc{};
-                EXPECT_TRUE(unit->getSpO2Configuration(sc));
+                EXPECT_TRUE(unit->readSpO2Configuration(sc));
                 EXPECT_EQ(sc.highResolution(), hr);
             }
         }
@@ -236,7 +242,7 @@ TEST_P(TestMAX30100, Configration) {
 
                     EXPECT_TRUE(unit->setLedCurrent(ir, red));
 
-                    EXPECT_TRUE(unit->getLedConfiguration(lc));
+                    EXPECT_TRUE(unit->readLedConfiguration(lc));
                     EXPECT_EQ(lc.irLed(), ir);
                     EXPECT_EQ(lc.redLed(), red);
 
@@ -244,7 +250,7 @@ TEST_P(TestMAX30100, Configration) {
                     lc.redLed(red);
                     EXPECT_TRUE(unit->setLedConfiguration(lc));
 
-                    EXPECT_TRUE(unit->getLedConfiguration(lc));
+                    EXPECT_TRUE(unit->readLedConfiguration(lc));
                     EXPECT_EQ(lc.irLed(), ir);
                     EXPECT_EQ(lc.redLed(), red);
                 }
@@ -264,7 +270,7 @@ TEST_P(TestMAX30100, Configration) {
 
                     EXPECT_TRUE(unit->setLedCurrent(ir, red));
 
-                    EXPECT_TRUE(unit->getLedConfiguration(lc));
+                    EXPECT_TRUE(unit->readLedConfiguration(lc));
                     EXPECT_EQ(lc.irLed(), ir);
                     EXPECT_EQ(lc.redLed(), red);
 
@@ -272,7 +278,7 @@ TEST_P(TestMAX30100, Configration) {
                     lc.redLed(red);
                     EXPECT_TRUE(unit->setLedConfiguration(lc));
 
-                    EXPECT_TRUE(unit->getLedConfiguration(lc));
+                    EXPECT_TRUE(unit->readLedConfiguration(lc));
                     EXPECT_EQ(lc.irLed(), ir);
                     EXPECT_EQ(lc.redLed(), red);
                 }
@@ -291,33 +297,23 @@ TEST_P(TestMAX30100, Temperature) {
     sc.ledPulseWidth(LedPulseWidth::PW1600);
     sc.highResolution(true);
     EXPECT_TRUE(unit->setSpO2Configuration(sc));
-
     EXPECT_TRUE(
         unit->setLedCurrent(CurrentControl::mA7_6, CurrentControl::mA7_6));
 
-    constexpr int times{5};
-    int cnt{};
-    float temperature{};
-    std::vector<float> temps;
+    for (auto&& m : mode_table) {
+        auto s = m5::utility::formatString("Mode:%u", m);
+        SCOPED_TRACE(s.c_str());
+        EXPECT_TRUE(unit->setMode(m));
 
-    while (cnt < times) {
-        auto start_at = m5::utility::millis();
-        EXPECT_TRUE(unit->startMeasurementTemperature());
-        while (!unit->isMeasurementTemperature()) {
-            if (m5::utility::millis() - start_at > 1000) {
-                break;
-            }
+        TemperatureData td{};
+        uint32_t cnt{8};
+        while (cnt--) {
+            EXPECT_TRUE(unit->measureTemperatureSingleshot(td));
+            EXPECT_TRUE(std::isfinite(td.celsius()));
+            EXPECT_TRUE(std::isfinite(td.fahrenheit()));
+            M5_LOGI("TempS>C:%f F:%f", td.celsius(), td.fahrenheit());
         }
-        EXPECT_TRUE(unit->readMeasurementTemperature(temperature));
-        EXPECT_TRUE(std::isfinite(temperature));
-        temps.push_back(temperature);
-
-        // M5_LOGI("temp:%f", temperature);
-        m5::utility::delay(50);
-        ++cnt;
     }
-    EXPECT_EQ(cnt, times);
-    EXPECT_EQ(temps.size(), times);
 }
 
 TEST_P(TestMAX30100, Reset) {
@@ -333,8 +329,8 @@ TEST_P(TestMAX30100, Reset) {
     EXPECT_TRUE(
         unit->setLedCurrent(CurrentControl::mA7_6, CurrentControl::mA7_6));
 
-    EXPECT_TRUE(unit->writeRegister8(command::FIFO_WRITE_POINTER, 1));
-    EXPECT_TRUE(unit->writeRegister8(command::FIFO_READ_POINTER, 1));
+    EXPECT_TRUE(unit->writeRegister8(FIFO_WRITE_POINTER, 1));
+    EXPECT_TRUE(unit->writeRegister8(FIFO_READ_POINTER, 1));
 
     // reset
     EXPECT_TRUE(unit->reset());
@@ -344,16 +340,16 @@ TEST_P(TestMAX30100, Reset) {
         SpO2Configuration sc{};
         LedConfiguration lc{};
 
-        EXPECT_TRUE(unit->getModeConfiguration(mc));
+        EXPECT_TRUE(unit->readModeConfiguration(mc));
         EXPECT_EQ(mc.value, 0);
-        EXPECT_TRUE(unit->getSpO2Configuration(sc));
+        EXPECT_TRUE(unit->readSpO2Configuration(sc));
         EXPECT_EQ(sc.value, 0);
-        EXPECT_TRUE(unit->getLedConfiguration(lc));
+        EXPECT_TRUE(unit->readLedConfiguration(lc));
         EXPECT_EQ(lc.value, 0);
 
         uint8_t wptr{}, rptr{};
-        EXPECT_TRUE(unit->readRegister8(command::FIFO_WRITE_POINTER, wptr, 0));
-        EXPECT_TRUE(unit->readRegister8(command::FIFO_READ_POINTER, rptr, 0));
+        EXPECT_TRUE(unit->readRegister8(FIFO_WRITE_POINTER, wptr, 0));
+        EXPECT_TRUE(unit->readRegister8(FIFO_READ_POINTER, rptr, 0));
         EXPECT_EQ(wptr, 0U);
         EXPECT_EQ(rptr, 0U);
     }

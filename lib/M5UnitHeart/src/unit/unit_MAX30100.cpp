@@ -25,6 +25,8 @@ constexpr elapsed_time_t interval_table[] = {
     1000 / 400, 1000 / 600, 1000 / 800, 1000 / 1000,
 };
 
+constexpr uint32_t MEASURE_TEMPERATURE_DURATION{29};  // 29ms
+
 }  // namespace
 
 namespace m5 {
@@ -36,6 +38,14 @@ uint16_t Data::ir() const {
 }
 uint16_t Data::red() const {
     return m5::types::big_uint16_t(raw[2], raw[3]).get();
+}
+
+float TemperatureData::celsius() const {
+    return (int8_t)raw[0] + raw[1] * 0.0625f;
+}
+
+float TemperatureData::fahrenheit() const {
+    return celsius() * 9.0f / 5.0f + 32.f;
 }
 
 }  // namespace max30100
@@ -94,8 +104,8 @@ void UnitMAX30100::update(const bool force) {
     }
 }
 
-bool UnitMAX30100::getModeConfiguration(max30100::ModeConfiguration& mc) {
-    return get_mode_configration(mc.value);
+bool UnitMAX30100::readModeConfiguration(max30100::ModeConfiguration& mc) {
+    return read_mode_configration(mc.value);
 }
 
 bool UnitMAX30100::setModeConfiguration(const max30100::ModeConfiguration mc) {
@@ -104,7 +114,7 @@ bool UnitMAX30100::setModeConfiguration(const max30100::ModeConfiguration mc) {
 
 bool UnitMAX30100::setMode(const max30100::Mode m) {
     max30100::ModeConfiguration mc{};
-    if (get_mode_configration(mc.value)) {
+    if (read_mode_configration(mc.value)) {
         mc.mode(m);
         return set_mode_configration(mc.value);
     }
@@ -119,7 +129,7 @@ bool UnitMAX30100::reset() {
         // timeout 1 sec
         do {
             //  Is reset sequence completed?
-            if (get_mode_configration(mc.value) && !mc.reset()) {
+            if (read_mode_configration(mc.value) && !mc.reset()) {
                 return true;
             }
             m5::utility::delay(1);
@@ -128,8 +138,8 @@ bool UnitMAX30100::reset() {
     return false;
 }
 
-bool UnitMAX30100::getSpO2Configuration(max30100::SpO2Configuration& sc) {
-    return get_spo2_configration(sc.value);
+bool UnitMAX30100::readSpO2Configuration(max30100::SpO2Configuration& sc) {
+    return read_spo2_configration(sc.value);
 }
 
 bool UnitMAX30100::setSpO2Configuration(const max30100::SpO2Configuration sc) {
@@ -138,7 +148,7 @@ bool UnitMAX30100::setSpO2Configuration(const max30100::SpO2Configuration sc) {
 
 bool UnitMAX30100::setSamplingRate(const max30100::Sampling rate) {
     max30100::SpO2Configuration sc{};
-    if (get_spo2_configration(sc.value)) {
+    if (read_spo2_configration(sc.value)) {
         sc.samplingRate(rate);
         return set_spo2_configration(sc.value);
     }
@@ -147,15 +157,15 @@ bool UnitMAX30100::setSamplingRate(const max30100::Sampling rate) {
 
 bool UnitMAX30100::setLedPulseWidth(const max30100::LedPulseWidth width) {
     max30100::SpO2Configuration sc{};
-    if (get_spo2_configration(sc.value)) {
+    if (read_spo2_configration(sc.value)) {
         sc.ledPulseWidth(width);
         return set_spo2_configration(sc.value);
     }
     return false;
 }
 
-bool UnitMAX30100::getLedConfiguration(max30100::LedConfiguration& lc) {
-    return get_led_configration(lc.value);
+bool UnitMAX30100::readLedConfiguration(max30100::LedConfiguration& lc) {
+    return read_led_configration(lc.value);
 }
 bool UnitMAX30100::setLedConfiguration(const max30100::LedConfiguration lc) {
     return set_led_configration(lc.value);
@@ -175,9 +185,10 @@ bool UnitMAX30100::resetFIFO() {
            writeRegister8(FIFO_READ_POINTER, 0);
 }
 
+#if 0
 bool UnitMAX30100::startMeasurementTemperature() {
     max30100::ModeConfiguration mc{};
-    if (get_mode_configration(mc.value)) {
+    if (read_mode_configration(mc.value)) {
         mc.temperature(true);
         return set_mode_configration(mc.value);
     }
@@ -187,7 +198,7 @@ bool UnitMAX30100::startMeasurementTemperature() {
 bool UnitMAX30100::isMeasurementTemperature() {
     max30100::ModeConfiguration mc{};
 
-    return get_mode_configration(mc.value) && !mc.temperature();
+    return read_mode_configration(mc.value) && !mc.temperature();
 }
 
 bool UnitMAX30100::readMeasurementTemperature(float& temp) {
@@ -197,6 +208,25 @@ bool UnitMAX30100::readMeasurementTemperature(float& temp) {
     if (read_register(TEMP_INTEGER, v.data(), v.size())) {
         temp = (int8_t)v.u8[0] + v.u8[1] * 0.0625f;
         return true;
+    }
+    return false;
+}
+#endif
+
+bool UnitMAX30100::measureTemperatureSingleshot(TemperatureData& td) {
+    max30100::ModeConfiguration mc{};
+    if (read_mode_configration(mc.value)) {
+        mc.temperature(true);
+        if (set_mode_configration(mc.value)) {
+            auto timeout_at =
+                m5::utility::millis() + MEASURE_TEMPERATURE_DURATION * 2;
+            bool done{};
+            do {
+                m5::utility::delay(MEASURE_TEMPERATURE_DURATION);
+                done = read_mode_configration(mc.value) && !mc.temperature();
+            } while (!done && m5::utility::millis() <= timeout_at);
+            return done && read_measurement_temperature(td);
+        }
     }
     return false;
 }
@@ -240,7 +270,11 @@ bool UnitMAX30100::read_FIFO() {
     return false;
 }
 
-bool UnitMAX30100::get_mode_configration(uint8_t& c) {
+bool UnitMAX30100::read_measurement_temperature(max30100::TemperatureData& td) {
+    return read_register(TEMP_INTEGER, td.raw.data(), td.raw.size());
+}
+
+bool UnitMAX30100::read_mode_configration(uint8_t& c) {
     return read_register8(MODE_CONFIGURATION, c);
 }
 
@@ -256,14 +290,14 @@ bool UnitMAX30100::set_mode_configration(const uint8_t c) {
 
 bool UnitMAX30100::enable_power_save(const bool enabled) {
     max30100::ModeConfiguration mc{};
-    if (get_mode_configration(mc.value)) {
+    if (read_mode_configration(mc.value)) {
         mc.shdn(enabled);
         return set_mode_configration(mc.value);
     }
     return false;
 }
 
-bool UnitMAX30100::get_spo2_configration(uint8_t& c) {
+bool UnitMAX30100::read_spo2_configration(uint8_t& c) {
     return read_register8(SPO2_CONFIGURATION, c);
 }
 
@@ -272,7 +306,7 @@ bool UnitMAX30100::set_spo2_configration(const uint8_t c) {
     // in the configuration. However, the value is not actually set, so
     // check it.
     uint8_t chk{};
-    if (writeRegister8(SPO2_CONFIGURATION, c) && get_spo2_configration(chk) &&
+    if (writeRegister8(SPO2_CONFIGURATION, c) && read_spo2_configration(chk) &&
         (chk == c)) {
         max30100::SpO2Configuration sc;
         sc.value      = c;
@@ -285,27 +319,28 @@ bool UnitMAX30100::set_spo2_configration(const uint8_t c) {
 
 bool UnitMAX30100::enable_high_resolution(const bool enabled) {
     max30100::SpO2Configuration sc{};
-    if (get_spo2_configration(sc.value)) {
+    if (read_spo2_configration(sc.value)) {
         sc.highResolution(enabled);
         return set_spo2_configration(sc.value);
     }
     return false;
 }
 
-bool UnitMAX30100::get_led_configration(uint8_t& c) {
+bool UnitMAX30100::read_led_configration(uint8_t& c) {
     return read_register8(LED_CONFIGURATION, c);
 }
 bool UnitMAX30100::set_led_configration(const uint8_t c) {
     return writeRegister8(LED_CONFIGURATION, c);
 }
 
+// Max30100 works with stop bit false, so wrap
 bool UnitMAX30100::read_register8(const uint8_t reg, uint8_t& v) {
-    return readRegister8(reg, v, 0, false);
+    return readRegister8(reg, v, 0, false /*stop*/);
 }
 
 bool UnitMAX30100::read_register(const uint8_t reg, uint8_t* buf,
                                  const size_t len) {
-    return readRegister(reg, buf, len, 0, false);
+    return readRegister(reg, buf, len, 0, false /*stop*/);
 }
 
 }  // namespace unit
