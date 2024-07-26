@@ -67,9 +67,9 @@ std::tuple<const char*, Repeatability, bool> ss_table[] = {
 };
 
 void check_measurement_values(UnitSHT30* u) {
-    EXPECT_TRUE(std::isfinite(u->celsius()));
-    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
-    EXPECT_TRUE(std::isfinite(u->humidity()));
+    EXPECT_TRUE(std::isfinite(u->latest().celsius()));
+    EXPECT_TRUE(std::isfinite(u->latest().fahrenheit()));
+    EXPECT_TRUE(std::isfinite(u->latest().humidity()));
 }
 
 }  // namespace

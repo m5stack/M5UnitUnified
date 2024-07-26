@@ -91,9 +91,9 @@ constexpr ModeParams mode_table[] = {
 
 void check_measurement_values(UnitSCD40* u) {
     EXPECT_NE(u->co2(), 0);
-    EXPECT_TRUE(std::isfinite(u->celsius()));
-    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
-    EXPECT_TRUE(std::isfinite(u->humidity()));
+    EXPECT_TRUE(std::isfinite(u->latest().celsius()));
+    EXPECT_TRUE(std::isfinite(u->latest().fahrenheit()));
+    EXPECT_TRUE(std::isfinite(u->latest().humidity()));
 }
 
 }  // namespace

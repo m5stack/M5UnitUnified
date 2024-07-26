@@ -71,9 +71,9 @@ constexpr Oversampling os_table[] = {
 };
 
 void check_measurement_values(UnitQMP6988* u) {
-    EXPECT_TRUE(std::isfinite(u->celsius()));
-    EXPECT_TRUE(std::isfinite(u->fahrenheit()));
-    EXPECT_TRUE(std::isfinite(u->pressure()));
+    EXPECT_TRUE(std::isfinite(u->latest().celsius()));
+    EXPECT_TRUE(std::isfinite(u->latest().fahrenheit()));
+    EXPECT_TRUE(std::isfinite(u->latest().pressure()));
 }
 
 }  // namespace
