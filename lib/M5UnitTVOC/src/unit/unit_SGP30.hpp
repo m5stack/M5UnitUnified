@@ -103,7 +103,7 @@ class UnitSGP30 : public Component,
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
     struct config_t : Component::config_t {
         //! @brief Start periodic measurement on begin()?
@@ -162,11 +162,11 @@ class UnitSGP30 : public Component,
     ///@{
     //! @brief Oldest CO2eq (ppm)
     inline uint16_t co2eq() const {
-        return !_data->empty() ? oldest().co2eq() : 0;
+        return !empty() ? oldest().co2eq() : 0;
     }
     //! @brief Oldest TVOC (ppb)
     inline uint16_t tvoc() const {
-        return !_data->empty() ? oldest().tvoc() : 0;
+        return !empty() ? oldest().tvoc() : 0;
     }
     ///@}
 

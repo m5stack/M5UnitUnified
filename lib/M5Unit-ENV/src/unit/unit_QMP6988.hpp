@@ -222,25 +222,25 @@ class UnitQMP6988
     ///@{
     //! @brief Oldest measured temperature (Celsius)
     inline float temperature() const {
-        return (!_data->empty() && _osTemp != qmp6988::Oversampling::Skip)
+        return (!empty() && _osTemp != qmp6988::Oversampling::Skip)
                    ? oldest().temperature()
                    : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured temperature (Celsius)
     inline float celsius() const {
-        return (!_data->empty() && _osTemp != qmp6988::Oversampling::Skip)
+        return (!empty() && _osTemp != qmp6988::Oversampling::Skip)
                    ? oldest().celsius()
                    : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured temperature (Fahrenheit)
     inline float fahrenheit() const {
-        return (!_data->empty() && _osTemp != qmp6988::Oversampling::Skip)
+        return (!empty() && _osTemp != qmp6988::Oversampling::Skip)
                    ? oldest().fahrenheit()
                    : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured pressure (Pa)
     inline float pressure() const {
-        return (!_data->empty() && _osPressure != qmp6988::Oversampling::Skip)
+        return (!empty() && _osPressure != qmp6988::Oversampling::Skip)
                    ? oldest().pressure()
                    : std::numeric_limits<float>::quiet_NaN();
     }

@@ -149,23 +149,23 @@ class UnitSHT30 : public Component,
     ///@{
     //! @brief Oldest measured temperature (Celsius)
     inline float temperature() const {
-        return !_data->empty() ? oldest().temperature()
-                               : std::numeric_limits<float>::quiet_NaN();
+        return !empty() ? oldest().temperature()
+                        : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured temperature (Celsius)
     inline float celsius() const {
-        return !_data->empty() ? oldest().celsius()
-                               : std::numeric_limits<float>::quiet_NaN();
+        return !empty() ? oldest().celsius()
+                        : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured temperature (Fahrenheit)
     inline float fahrenheit() const {
-        return !_data->empty() ? oldest().fahrenheit()
-                               : std::numeric_limits<float>::quiet_NaN();
+        return !empty() ? oldest().fahrenheit()
+                        : std::numeric_limits<float>::quiet_NaN();
     }
     //! @brief Oldest measured humidity (RH)
     inline float humidity() const {
-        return !_data->empty() ? oldest().humidity()
-                               : std::numeric_limits<float>::quiet_NaN();
+        return !empty() ? oldest().humidity()
+                        : std::numeric_limits<float>::quiet_NaN();
     }
     ///@}
 
