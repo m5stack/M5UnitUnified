@@ -385,7 +385,7 @@ class Component {
 };
 
 /*!
-  @struct PeriodicMeasurementAdapter
+  @class PeriodicMeasurementAdapter
   @brief Interface class for periodic measurement
   @datails Common interface for accumulated periodic measurement data
   @tparam Derived Derived class
@@ -426,11 +426,11 @@ class PeriodicMeasurementAdapter {
     }
     ///@}
    protected:
-    inline virtual size_t available_periodic_measurement_data() const = 0;
-    inline virtual bool empty_periodic_measurement_data() const       = 0;
-    inline virtual bool full_periodic_measurement_data() const        = 0;
-    inline virtual void discard_periodic_measurement_data()           = 0;
-    inline virtual void flush_periodic_measurement_data()             = 0;
+    virtual size_t available_periodic_measurement_data() const = 0;
+    virtual bool empty_periodic_measurement_data() const       = 0;
+    virtual bool full_periodic_measurement_data() const        = 0;
+    virtual void discard_periodic_measurement_data()           = 0;
+    virtual void flush_periodic_measurement_data()             = 0;
     // MUST IMPLEMENT MD Derived::oldest_periodic_data() const ; (Not virtual
     // method) MUST IMPLEMENT MD Derived::latestt_periodic_data() const ; (Not
     // virtual method)
@@ -471,6 +471,7 @@ class PeriodicMeasurementAdapter {
     inline virtual types::attr_t unit_attribute() const override { \
         return attr;                                               \
     }
+
 // Helper for creating derived class from PeriodicMeasurementAdapter
 #define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md) \
    protected:                                                               \

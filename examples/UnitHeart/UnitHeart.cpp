@@ -12,6 +12,7 @@
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <unit/unit_MAX30100.hpp>
+#include <utility/heart_rate.hpp>
 #if !defined(USING_M5HAL)
 #include <Wire.h>
 #endif
@@ -20,16 +21,28 @@ namespace {
 auto& lcd = M5.Display;
 m5::unit::UnitUnified Units;
 m5::unit::UnitMAX30100 unitMAX30100;
+m5::max30100::HeartRate heartRate(100);
+
+uint32_t getSamplingRate(const m5::unit::max30100::Sampling rate) {
+    static constexpr uint32_t table[] = {50,  100, 167, 200,
+                                         400, 600, 800, 1000};
+    return table[m5::stl::to_underlying(rate)];
+}
 
 }  // namespace
 
 void setup() {
     M5.begin();
 
+    // Another settings
     if (0) {
         auto cfg         = unitMAX30100.config();
-        cfg.samplingRate = m5::unit::max30100::Sampling::Rate1000;
-        cfg.pulseWidth   = m5::unit::max30100::LedPulseWidth::PW200;
+        cfg.samplingRate = m5::unit::max30100::Sampling::Rate400;
+        cfg.pulseWidth   = m5::unit::max30100::LedPulseWidth::PW400;
+        cfg.irCurrent    = m5::unit::max30100::CurrentControl::mA7_6;
+        cfg.redCurrent   = m5::unit::max30100::CurrentControl::mA7_6;
+        heartRate.setSamplingRate(getSamplingRate(cfg.samplingRate));
+        heartRate.setThreshold(25.0f);  // depends on ir/redCurrent
         unitMAX30100.config(cfg);
     }
 
@@ -77,8 +90,26 @@ void loop() {
     Units.update();
     if (unitMAX30100.updated()) {
         while (unitMAX30100.available()) {
-            M5_LOGI("\n>IR:%u\n>RED:%u", unitMAX30100.ir(), unitMAX30100.red());
+            // M5_LOGI("\n>IR:%u\n>RED:%u", unitMAX30100.ir(),
+            // unitMAX30100.red());
+            bool beat = heartRate.push_back((float)unitMAX30100.ir(),
+                                            (float)unitMAX30100.red());
+            if (beat) {
+                M5_LOGI("Beat!");
+            }
+
             unitMAX30100.discard();
+        }
+        auto bpm = heartRate.calculate();
+        M5_LOGW("\n>HRR:%f\n>SpO2:%f", bpm, heartRate.SpO2());
+    }
+
+    // buffer clear and measure tempeature
+    if (M5.BtnA.wasClicked()) {
+        heartRate.clear();
+        m5::unit::max30100::TemperatureData td{};
+        if (unitMAX30100.measureTemperatureSingleshot(td)) {
+            M5_LOGI("\n>Temp:%f", td.celsius());
         }
     }
 }

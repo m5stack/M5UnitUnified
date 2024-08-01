@@ -185,34 +185,6 @@ bool UnitMAX30100::resetFIFO() {
            writeRegister8(FIFO_READ_POINTER, 0);
 }
 
-#if 0
-bool UnitMAX30100::startMeasurementTemperature() {
-    max30100::ModeConfiguration mc{};
-    if (read_mode_configration(mc.value)) {
-        mc.temperature(true);
-        return set_mode_configration(mc.value);
-    }
-    return false;
-}
-
-bool UnitMAX30100::isMeasurementTemperature() {
-    max30100::ModeConfiguration mc{};
-
-    return read_mode_configration(mc.value) && !mc.temperature();
-}
-
-bool UnitMAX30100::readMeasurementTemperature(float& temp) {
-    m5::types::big_uint16_t v{};
-    temp = std::numeric_limits<float>::quiet_NaN();
-
-    if (read_register(TEMP_INTEGER, v.data(), v.size())) {
-        temp = (int8_t)v.u8[0] + v.u8[1] * 0.0625f;
-        return true;
-    }
-    return false;
-}
-#endif
-
 bool UnitMAX30100::measureTemperatureSingleshot(TemperatureData& td) {
     max30100::ModeConfiguration mc{};
     if (read_mode_configration(mc.value)) {

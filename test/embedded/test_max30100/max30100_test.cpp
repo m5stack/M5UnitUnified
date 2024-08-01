@@ -311,7 +311,7 @@ TEST_P(TestMAX30100, Temperature) {
             EXPECT_TRUE(unit->measureTemperatureSingleshot(td));
             EXPECT_TRUE(std::isfinite(td.celsius()));
             EXPECT_TRUE(std::isfinite(td.fahrenheit()));
-            M5_LOGI("TempS>C:%f F:%f", td.celsius(), td.fahrenheit());
+            // M5_LOGI("TempS>C:%f F:%f", td.celsius(), td.fahrenheit());
         }
     }
 }
@@ -397,11 +397,14 @@ TEST_P(TestMAX30100, Periodic) {
     EXPECT_TRUE(unit->updated());
 
     EXPECT_GE(unit->available(), 10U);
+    auto retrived = unit->retrived();
+    EXPECT_GT(retrived, 0U);
     EXPECT_FALSE(unit->full());
     EXPECT_FALSE(unit->empty());
 
     unit->flush();
     EXPECT_EQ(unit->available(), 0U);
+    EXPECT_EQ(unit->retrived(), retrived);  // Not clear on flush
     EXPECT_FALSE(unit->full());
     EXPECT_TRUE(unit->empty());
 
@@ -411,6 +414,7 @@ TEST_P(TestMAX30100, Periodic) {
     EXPECT_TRUE(unit->updated());
 
     EXPECT_EQ(unit->available(), MAX_FIFO_DEPTH);
+    EXPECT_GT(unit->retrived(), 0U);
     EXPECT_TRUE(unit->full());
     EXPECT_FALSE(unit->empty());
     EXPECT_GT(unit->overflow(), 0U);

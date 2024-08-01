@@ -34,7 +34,7 @@ enum class Mode : uint8_t {
 /*!
   @struct ModeConfiguration
   @brief Accessor for ModeConfiguration
- */
+*/
 struct ModeConfiguration {
     ///@name Getter
     ///@{
@@ -240,6 +240,8 @@ struct TemperatureData {
 /*!
   @class UnitMAX30100
   @brief Pulse oximetry and heart-rate sensor
+  @note The only single measurement is temperature; other data is constantly
+  measured and stored
 */
 class UnitMAX30100
     : public Component,
@@ -263,10 +265,12 @@ class UnitMAX30100
         bool highResolution{true};
         //! @brief Led current for IR
         m5::unit::max30100::CurrentControl irCurrent{
-            m5::unit::max30100::CurrentControl::mA7_6};
+            //            m5::unit::max30100::CurrentControl::mA7_6};
+            m5::unit::max30100::CurrentControl::mA27_1};
         //! @brief Led current for Red
         m5::unit::max30100::CurrentControl redCurrent{
-            m5::unit::max30100::CurrentControl::mA7_6};
+            //            m5::unit::max30100::CurrentControl::mA7_6};
+            m5::unit::max30100::CurrentControl::mA27_1};
     };
 
     explicit UnitMAX30100(const uint8_t addr = DEFAULT_ADDRESS)
@@ -331,12 +335,26 @@ class UnitMAX30100
     /// depending on the mode See also SpO2Configuration
     ///@name Mode Configuration
     ///@{
+    /*!
+      @brief Read Mode configuration
+      @param[out] mc ModeConfigration
+      @return True if successful
+     */
     bool readModeConfiguration(max30100::ModeConfiguration& mc);
+    /*!
+      @brief Set Mode configuration
+      @brief read Mode configuration
+      @param mc ModeConfigration
+      @return True if successful
+    */
     bool setModeConfiguration(const max30100::ModeConfiguration mc);
+    //! @brief Set Mode
     bool setMode(const max30100::Mode mode);
+    //! @brief Enable power save mode
     bool enablePowerSave() {
         return enable_power_save(true);
     }
+    //! @brief Disable power save mode
     bool disablePowerSave() {
         return enable_power_save(false);
     }
@@ -346,13 +364,27 @@ class UnitMAX30100
     /// depending on the mode See also SpO2Configuration
     ///@name SpO2 Configuration
     ///@{
+    /*!
+      @brief Read SpO2 configrartion
+      @param[out] sc SpO2Configration
+      @return True if successful
+    */
     bool readSpO2Configuration(max30100::SpO2Configuration& sc);
+    /*!
+      @brief Set SpO2 configrartion
+      @param sc SpO2Configration
+      @return True if successful
+    */
     bool setSpO2Configuration(const max30100::SpO2Configuration sc);
+    //! @brief Set sampling rate
     bool setSamplingRate(const max30100::Sampling rate);
+    //! @brief Set LED pulse width
     bool setLedPulseWidth(const max30100::LedPulseWidth width);
+    //! @brief Enable high resolution mode
     inline bool enableHighResolution() {
         return enable_high_resolution(true);
     }
+    //! @brief Disable high resolution mode
     inline bool disableHighResolution() {
         return enable_high_resolution(false);
     }
@@ -363,15 +395,21 @@ class UnitMAX30100
     /// the heart rate.
     ///@name LED Configuration
     ///@{
+    /*!
+      @brief Read Led configrartion
+      @param[out] lc LedConfigration
+      @return True if successful
+    */
     bool readLedConfiguration(max30100::LedConfiguration& lc);
+    /*!
+      @brief Set Led configrartion
+      @param lc LedConfigration
+      @return True if successful
+    */
     bool setLedConfiguration(const max30100::LedConfiguration lc);
+    //! @brief Set IR/RED current
     bool setLedCurrent(const max30100::CurrentControl ir,
                        const max30100::CurrentControl red);
-    ///@}
-
-    ///@name FIFO
-    ///@{
-    bool resetFIFO();
     ///@}
 
     ///@note The temperature sensor data can be used to compensate the SpO2
@@ -387,6 +425,16 @@ class UnitMAX30100
     bool measureTemperatureSingleshot(max30100::TemperatureData& td);
     ///@}
 
+    /*!
+      @brief Reset FIFO buffer
+      @return True if successful
+    */
+    bool resetFIFO();
+    /*!
+      @brief Software reset
+      @return True if successful
+      @warning Blocked until the reset process is completed
+     */
     bool reset();
 
    protected:
