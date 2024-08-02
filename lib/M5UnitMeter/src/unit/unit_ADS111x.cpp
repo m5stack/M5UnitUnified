@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_ADS111x.cpp
-  @brief ADS111x Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  @brief Base class for ADS111x families
 */
 #include "unit_ADS111x.hpp"
 #include <M5Utility.hpp>
@@ -27,9 +28,21 @@ constexpr float coefficient_table[] = {
     1024.f / 32767,
     512.f / 32767,
     256.f / 32767,
-    // dupicated
+    // dupicated[6,7]
     256.f / 32767,
     256.f / 32767,
+};
+
+constexpr static Gain gain_table[] = {
+    Gain::PGA_6144,
+    Gain::PGA_4096,
+    Gain::PGA_2048,
+    Gain::PGA_1024,
+    Gain::PGA_512,
+    Gain::PGA_256,
+    // duplicated [6,7]
+    Gain::PGA_256,
+    Gain::PGA_256,
 };
 
 }  // namespace
@@ -42,27 +55,36 @@ const types::uid_t UnitADS111x::uid{"UnitADS111x"_mmh3};
 const types::uid_t UnitADS111x::attr{0};
 
 bool UnitADS111x::begin() {
-    auto cfg = config();
+    assert(_cfg.stored_size && "stored_size must be greater than zero");
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
+    }
 
-    if (address() & 0x80) {
-        M5_LIB_LOGE("Invalid address");
+    // Check address
+    if (!m5::utility::isValidI2CAddress(address())) {
+        M5_LIB_LOGE("Invalid address %x", address());
         return false;
     }
 
+    // Processing of the derived class
     if (!on_begin()) {
-        M5_LIB_LOGE("Failed to set settings");
+        M5_LIB_LOGE("Failed to on_begin in derived class");
         return false;
     }
 
-    if (!get_config(_adsCfg)) {
+    if (!read_config(_adsCfg)) {
         M5_LIB_LOGE("Failed to get config");
         return false;
     }
     apply_interval(_adsCfg.dr());
     apply_coefficient(_adsCfg.pga());
 
-    return cfg.periodic ? startPeriodicMeasurement()
-                        : stopPeriodicMeasurement();
+    return _cfg.start_periodic ? startPeriodicMeasurement()
+                               : stopPeriodicMeasurement();
 }
 
 void UnitADS111x::update(const bool force) {
@@ -73,32 +95,23 @@ void UnitADS111x::update(const bool force) {
             // The rate of continuous conversion is equal to the programmeddata
             // rate. Data can be read at any time and always reflect the most
             // recent completed conversion.
-            _updated = getAdcRaw(_value);
+            ads111x::Data d{};
+            _updated = read_adc_raw(d);
             if (_updated) {
                 _latest = at;
+                _data->push_back(d);
             }
         }
     }
 }
 
 Gain UnitADS111x::gain() const {
-    constexpr static Gain table[] = {
-        Gain::PGA_6144,
-        Gain::PGA_4096,
-        Gain::PGA_2048,
-        Gain::PGA_1024,
-        Gain::PGA_512,
-        Gain::PGA_256,
-        // duplicated
-        Gain::PGA_256,
-        Gain::PGA_256,
-    };
-    return table[m5::stl::to_underlying(_adsCfg.pga())];
+    return gain_table[m5::stl::to_underlying(_adsCfg.pga())];
 }
 
-bool UnitADS111x::setRate(ads111x::Rate rate) {
+bool UnitADS111x::setSamplingRate(ads111x::Sampling rate) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.dr(rate);
         if (write_config(c)) {
             apply_interval(_adsCfg.dr());
@@ -108,37 +121,69 @@ bool UnitADS111x::setRate(ads111x::Rate rate) {
     return false;
 }
 
-bool UnitADS111x::startPeriodicMeasurement() {
+bool UnitADS111x::start_periodic_measurement() {
+    if (inPeriodic()) {
+        return false;
+    }
+
     Config c{};
     _updated = false;
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.mode(false);
-        return write_config(c);
+        _periodic = write_config(c);
+        _latest   = 0;
+        return _periodic;
     }
     return false;
 }
 
-bool UnitADS111x::stopPeriodicMeasurement() {
+bool UnitADS111x::start_periodic_measurement(const ads111x::Sampling rate) {
+    return !inPeriodic() && setSamplingRate(rate) &&
+           start_periodic_measurement();
+}
+
+bool UnitADS111x::stop_periodic_measurement() {
     Config c{};
-    _updated = false;
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.mode(true);
-        return write_config(c);
+        if (write_config(c)) {
+            _periodic = false;
+            return true;
+        }
     }
     return false;
 }
 
-bool UnitADS111x::startSingleMeasurement() {
+bool UnitADS111x::measureSingleshot(ads111x::Data& d,
+                                    const uint32_t timeoutMillis) {
     if (inPeriodic()) {
         M5_LIB_LOGW("Periodic measurements are running");
         return false;
     }
-    _updated = false;
+
+    if (start_single_measurement()) {
+        auto timeout_at = m5::utility::millis() + timeoutMillis;
+        bool done{};
+        do {
+            done = !in_conversion();
+        } while (!done && m5::utility::millis() <= timeout_at);
+        if (done) {
+            return read_adc_raw(d);
+        }
+    }
+    return false;
+}
+
+bool UnitADS111x::start_single_measurement() {
+    if (inPeriodic()) {
+        M5_LIB_LOGW("Periodic measurements are running");
+        return false;
+    }
 
     Config c{};
-    if (get_config(c)) {
-        // This bit determines the operational status of the device. OS can only
-        // be written when in power-down state and has no effect when a
+    if (read_config(c)) {
+        // This bit determines the operational status of the device. OS can
+        // only be written when in power-down state and has no effect when a
         // conversion is ongoing.
         c.os(true);
         return write_config(c);
@@ -146,30 +191,13 @@ bool UnitADS111x::startSingleMeasurement() {
     return false;
 }
 
-bool UnitADS111x::inConversion() {
+bool UnitADS111x::in_conversion() {
     Config c{};
-    return get_config(c) && !c.os();
+    return read_config(c) && !c.os();
 }
 
-bool UnitADS111x::readSingleMeasurement(int16_t& raw,
-                                        const uint32_t timeoutMillis) {
-    if (!inPeriodic() && startSingleMeasurement()) {
-        auto timeout_at = m5::utility::millis() + timeoutMillis;
-        bool done{};
-        do {
-            done = !inConversion();
-        } while (!done && m5::utility::millis() <= timeout_at);
-        if (done) {
-            return getAdcRaw(raw);
-        }
-    }
-    return false;
-}
-
-bool UnitADS111x::getAdcRaw(int16_t& raw) {
-    uint16_t value{};
-    if (readRegister16(CONVERSION_REG, value, 0)) {
-        raw = (int16_t)value;
+bool UnitADS111x::read_adc_raw(ads111x::Data& d) {
+    if (readRegister16(CONVERSION_REG, d.raw, 0)) {
         return true;
     }
     return false;
@@ -184,7 +212,7 @@ bool UnitADS111x::generalReset() {
     Config c{};
     do {
         // power-down mode?
-        if (get_config(_adsCfg) && _adsCfg.mode()) {
+        if (read_config(_adsCfg) && _adsCfg.mode()) {
             done = true;
             break;
         }
@@ -198,7 +226,7 @@ bool UnitADS111x::generalReset() {
     return done;
 }
 
-bool UnitADS111x::getThreshould(int16_t& high, int16_t& low) {
+bool UnitADS111x::readThreshould(int16_t& high, int16_t& low) {
     uint16_t hh{}, ll{};
     if (readRegister16(HIGH_THRESHOLD_REG, hh, 0) &&
         readRegister16(LOW_THRESHOLD_REG, ll, 0)) {
@@ -219,7 +247,7 @@ bool UnitADS111x::setThreshould(const int16_t high, const int16_t low) {
 }
 
 //
-bool UnitADS111x::get_config(ads111x::Config& c) {
+bool UnitADS111x::read_config(ads111x::Config& c) {
     return readRegister16(CONFIG_REG, c.value, 0);
 }
 
@@ -231,7 +259,7 @@ bool UnitADS111x::write_config(const ads111x::Config& c) {
     return false;
 }
 
-void UnitADS111x::apply_interval(const ads111x::Rate rate) {
+void UnitADS111x::apply_interval(const ads111x::Sampling rate) {
     auto idx = m5::stl::to_underlying(rate);
     assert(idx < m5::stl::size(interval_table) && "Illegal value");
     _interval = interval_table[idx];
@@ -245,7 +273,7 @@ void UnitADS111x::apply_coefficient(const ads111x::Gain gain) {
 
 bool UnitADS111x::set_multiplexer(const ads111x::Mux mux) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.mux(mux);
         return write_config(c);
     }
@@ -254,7 +282,7 @@ bool UnitADS111x::set_multiplexer(const ads111x::Mux mux) {
 
 bool UnitADS111x::set_gain(const ads111x::Gain gain) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.pga(gain);
         if (write_config(c)) {
             apply_coefficient(_adsCfg.pga());
@@ -266,7 +294,7 @@ bool UnitADS111x::set_gain(const ads111x::Gain gain) {
 
 bool UnitADS111x::set_comparator_mode(const bool b) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.comp_mode(b);
         return write_config(c);
     }
@@ -275,7 +303,7 @@ bool UnitADS111x::set_comparator_mode(const bool b) {
 
 bool UnitADS111x::set_comparator_polarity(const bool b) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.comp_pol(b);
         return write_config(c);
     }
@@ -284,7 +312,7 @@ bool UnitADS111x::set_comparator_polarity(const bool b) {
 
 bool UnitADS111x::set_latching_comparator(const bool b) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.comp_lat(b);
         return write_config(c);
     }
@@ -293,40 +321,11 @@ bool UnitADS111x::set_latching_comparator(const bool b) {
 
 bool UnitADS111x::set_comparator_queue(const ads111x::ComparatorQueue q) {
     Config c{};
-    if (get_config(c)) {
+    if (read_config(c)) {
         c.comp_que(q);
         return write_config(c);
     }
     return false;
 }
-
-// class UnitADS1113
-const char UnitADS1113::name[] = "UnitADS1113";
-const types::uid_t UnitADS1113::uid{"UnitADS1113"_mmh3};
-const types::uid_t UnitADS1113::attr{0};
-bool UnitADS1113::on_begin() {
-    M5_LIB_LOGD("mux, gain, and comp_que  not support");
-    return setRate(_cfg.rate);
-}
-
-// class UnitADS1114
-const char UnitADS1114::name[] = "UnitADS1114";
-const types::uid_t UnitADS1114::uid{"UnitADS1114"_mmh3};
-const types::uid_t UnitADS1114::attr{0};
-bool UnitADS1114::on_begin() {
-    M5_LIB_LOGD("mux is not support");
-    return setRate(_cfg.rate) && setGain(_cfg.gain) &&
-           setComparatorQueue(_cfg.comp_que);
-}
-
-// class UnitADS1115
-const char UnitADS1115::name[] = "UnitADS1115";
-const types::uid_t UnitADS1115::uid{"UnitADS1115"_mmh3};
-const types::uid_t UnitADS1115::attr{0};
-bool UnitADS1115::on_begin() {
-    return setRate(_cfg.rate) && setMultiplexer(_cfg.mux) &&
-           setGain(_cfg.gain) && setComparatorQueue(_cfg.comp_que);
-}
-
 }  // namespace unit
 }  // namespace m5

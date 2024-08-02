@@ -106,7 +106,7 @@ void UnitSCD40::update(const bool force) {
     }
 }
 
-bool UnitSCD40::startPeriodicMeasurement(const Mode mode) {
+bool UnitSCD40::start_periodic_measurement(const Mode mode) {
     if (inPeriodic()) {
         M5_LIB_LOGD("Periodic measurements are running");
         return false;
@@ -120,7 +120,7 @@ bool UnitSCD40::startPeriodicMeasurement(const Mode mode) {
     return _periodic;
 }
 
-bool UnitSCD40::stopPeriodicMeasurement(const uint32_t duration) {
+bool UnitSCD40::stop_periodic_measurement(const uint32_t duration) {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
         m5::utility::delay(duration);

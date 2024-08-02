@@ -153,9 +153,17 @@ TEST_P(TestSCD40, BasicCommand) {
 TEST_P(TestSCD40, Periodic) {
     SCOPED_TRACE(ustr);
 
+    // Empty
+    EXPECT_EQ(unit->co2(), 0U);
+    EXPECT_FALSE(std::isfinite(unit->tempeature()));
+    EXPECT_FALSE(std::isfinite(unit->celsius()));
+    EXPECT_FALSE(std::isfinite(unit->fahrenheit()));
+    EXPECT_FALSE(std::isfinite(unit->humidity()));
+
+    //
     uint32_t idx{};
     for (auto&& m : mode_table) {
-        auto s = m5::utility::formatString("Mode:%u", m);
+        auto s = m5::utility::formatString("Mode:%s", m.s);
         SCOPED_TRACE(s.c_str());
 
         EXPECT_TRUE(unit->startPeriodicMeasurement(m.mode));

@@ -62,6 +62,7 @@ void lowPassButterworthFilter(const float x, butterworthFilter_t& fr) {
     fr.result = fr.v[0] + fr.v[1];
 }
 
+#if 0
 std::pair<float /*AC*/, float /*DC*/> calculateACDC(
     const std::deque<float>& data) {
     float maxVal = *std::max_element(data.begin(), data.end());
@@ -69,6 +70,7 @@ std::pair<float /*AC*/, float /*DC*/> calculateACDC(
     return {maxVal - minVal,
             std::accumulate(data.begin(), data.end(), 0.0f) / data.size()};
 }
+#endif
 
 }  // namespace
 
@@ -76,13 +78,11 @@ namespace m5 {
 namespace max30100 {
 
 HeartRate::HeartRate(const uint32_t srate, const float threshold,
-                     const size_t max_dataIR_size)
-    : _samplingRate{srate},
-      _threshold(threshold),
-      _maxDataSize{max_dataIR_size} {
+                     const size_t max_data_size)
+    : _samplingRate{srate}, _threshold(threshold), _maxDataSize{max_data_size} {
     assert(srate && "SamplingRate must not be zero");
-    if (!max_dataIR_size) {
-        _maxDataSize = srate * 30U;
+    if (!max_data_size) {
+        _maxDataSize = (size_t)srate * 30U;
     }
     calculateButterworthCoefficients(_samplingRate, 10.0f, _bwfIR.a0, _bwfIR.a1,
                                      _bwfIR.b1);

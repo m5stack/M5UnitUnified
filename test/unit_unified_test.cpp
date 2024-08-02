@@ -20,6 +20,9 @@
 #include <unit/unit_MAX30100.hpp>
 #include <unit/unit_MFRC522.hpp>
 #include <unit/unit_WS1850S.hpp>
+#include <unit/unit_ads1113.hpp>
+#include <unit/unit_ads1114.hpp>
+#include <unit/unit_ads1115.hpp>
 #include <unit/unit_Ameter.hpp>
 #include <unit/unit_Vmeter.hpp>
 #include <unit/unit_SGP30.hpp>

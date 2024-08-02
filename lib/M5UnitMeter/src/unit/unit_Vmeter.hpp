@@ -1,15 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_Vmeter.hpp
   @brief Vmeter (ADS1115 + CA-IS3020S) Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_METER_UNIT_V_METER_HPP
 #define M5_UNIT_METER_UNIT_V_METER_HPP
 
-#include "unit_ADS1115_with_EEPROM.hpp"
+#include "unit_ADS1115.hpp"
 
 namespace m5 {
 namespace unit {
@@ -35,9 +36,26 @@ class UnitVmeter : public UnitADS1115WithEEPROM {
     }
 
     //! @brief Resolution of 1 LSB
-    inline virtual float resolution() const {
+    inline float resolution() const {
         return coefficient() / PRESSURE_COEFFICIENT;
     }
+
+    //! @brief Gets the correction value
+    inline float correction() const {
+        return _correction;
+    }
+
+    //! @brief Oldest voltage
+    inline float voltage() const {
+        return !empty() ? correction() * std::abs(adc())
+                        : std::numeric_limits<float>::quiet_NaN();
+    }
+    
+   protected:
+    virtual void apply_coefficient(const ads111x::Gain gain) override;
+
+   protected:
+    float _correction{1.0f};
 };
 }  // namespace unit
 }  // namespace m5

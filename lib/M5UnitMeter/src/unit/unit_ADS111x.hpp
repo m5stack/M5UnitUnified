@@ -1,66 +1,72 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_ADS111x.hpp
-  @brief ADS111x Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  @brief Base class for ADS111x families
 */
 #ifndef M5_UNIT_METER_UNIT_ADS111X_HPP
 #define M5_UNIT_METER_UNIT_ADS111X_HPP
 
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
+#include <limits>
 
 namespace m5 {
 namespace unit {
 
+/*!
+  @namespace ads111x
+  @brief For ADS111x families
+ */
 namespace ads111x {
-
 /*!
   @enum Mux
   @brief Input multiplexer
   @warning This feature serve nofunction on the ADS1113 and ADS1114
 */
 enum class Mux : uint8_t {
-    AIN_01,  //!< @brief Positive:AIN0 Negative:AIN1 as default
-    AIN_03,  //!< @brief Positive:AIN0 Negative:AIN3
-    AIN_13,  //!< @brief Positive:AIN1 Negative:AIN3
-    AIN_23,  //!< @brief Positive:AIN2 Negative:AIN3
-    GND_0,   //!< @brief Positive:AIN0 Negative:GND
-    GND_1,   //!< @brief Positive:AIN1 Negative:GND
-    GND_2,   //!< @brief Positive:AIN2 Negative:GND
-    GND_3,   //!< @brief Positive:AIN3 Negative:GND
+    AIN_01,  //!< Positive:AIN0 Negative:AIN1 as default
+    AIN_03,  //!< Positive:AIN0 Negative:AIN3
+    AIN_13,  //!< Positive:AIN1 Negative:AIN3
+    AIN_23,  //!< Positive:AIN2 Negative:AIN3
+    GND_0,   //!< Positive:AIN0 Negative:GND
+    GND_1,   //!< Positive:AIN1 Negative:GND
+    GND_2,   //!< Positive:AIN2 Negative:GND
+    GND_3,   //!< Positive:AIN3 Negative:GND
 };
 
 /*!
-  @enum FSR
+  @enum Gain
   @brief Programmable gain amplifier
   @warning This feature serve nofunction on the ADS1113
  */
 enum class Gain : uint8_t {
-    PGA_6144,  //!< @brief +/- 6.144 V
-    PGA_4096,  //!< @brief +/- 4.096 V
-    PGA_2048,  //!< @brief +/- 2.048 V as default
-    PGA_1024,  //!< @brief +/- 1.024 V
-    PGA_512,   //!< @brief +/- 0.512 V
-    PGA_256,   //!< @brief +/- 0.256 V
-    // 6,7 PGA_256 (duplicate)
+    PGA_6144,  //!< +/- 6.144 V
+    PGA_4096,  //!< +/- 4.096 V
+    PGA_2048,  //!< +/- 2.048 V as default
+    PGA_1024,  //!< +/- 1.024 V
+    PGA_512,   //!< +/- 0.512 V
+    PGA_256,   //!< +/- 0.256 V
+    // [6,7] PGA_256 (duplicate)
 };
 
 /*!
-  @enum Rate
+  @enum Sampling
   @brief Data rate setting (samples per second)
  */
-enum class Rate : uint8_t {
-    SPS_8,    //!< @brief 8 sps
-    SPS_16,   //!< @brief 16 sps
-    SPS_32,   //!< @brief 32 sps
-    SPS_64,   //!< @brief 64 sps
-    SPS_128,  //!< @brief 128 sps as default
-    SPS_250,  //!< @brief 250 sps
-    SPS_475,  //!< @brief 475 sps
-    SPS_860,  //!< @brief 860 sps
+enum class Sampling : uint8_t {
+    Rate8,    //!< 8 sps
+    Rate16,   //!< 16 sps
+    Rate32,   //!< 32 sps
+    Rate64,   //!< 64 sps
+    Rate128,  //!< 128 sps as default
+    Rate250,  //!< 250 sps
+    Rate475,  //!< 475 sps
+    Rate860,  //!< 860 sps
 };
 
 /*!
@@ -70,11 +76,11 @@ enum class Rate : uint8_t {
   @warning This feature serve nofunction on the ADS1113
 */
 enum class ComparatorQueue : uint8_t {
-    One,      //!< @brief Assert after one conversion
-    Two,      //!< @brief Assert after two conversion
-    Four,     //!< @brief Assert after four conversion
-    Disable,  //!< @brief Disable comparator and set ALERT/RDY pin to
-              //!< high-impedance as default
+    One,      //!< Assert after one conversion
+    Two,      //!< Assert after two conversion
+    Four,     //!< Assert after four conversion
+    Disable,  //!< Disable comparator and set ALERT/RDY pin to high-impedance as
+              //!< default
 };
 
 /*!
@@ -106,9 +112,9 @@ struct Config {
     inline bool mode() const {
         return value & (1U << 8);
     }
-    //! @brief Data rate
-    inline Rate dr() const {
-        return static_cast<Rate>((value >> 5) & 0x07);
+    //! @brief Sampling rate
+    inline Sampling dr() const {
+        return static_cast<Sampling>((value >> 5) & 0x07);
     }
     /*!
       @brief Comparator mode
@@ -156,7 +162,7 @@ struct Config {
     inline void mode(const bool b) {
         value = (value & ~(1U << 8)) | ((b ? 1U : 0) << 8);
     }
-    inline void dr(const Rate r) {
+    inline void dr(const Sampling r) {
         value =
             (value & ~(0x07 << 5)) | ((m5::stl::to_underlying(r) & 0x07) << 5);
     }
@@ -177,23 +183,37 @@ struct Config {
     uint16_t value{};
 };
 
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    uint16_t raw{};
+    //! @brief ADC
+    inline int16_t adc() const {
+        return static_cast<int16_t>(raw);
+    }
+};
+
 }  // namespace ads111x
 
 /*!
   @class UnitADS111x
   @brief Base class for ADS111x series
  */
-class UnitADS111x : public Component {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS111x, 0xFF);
+class UnitADS111x
+    : public Component,
+      public PeriodicMeasurementAdapter<UnitADS111x, ads111x::Data> {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS111x, 0x00);
 
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
-    struct config_t {
-        bool periodic{true};
-        ads111x::Rate rate{ads111x::Rate::SPS_128};
+    struct config_t : public Component::config_t {
+        bool start_periodic{true};
+        ads111x::Sampling rate{ads111x::Sampling::Rate128};
         // The following items are not supported by some classes
         ads111x::Mux mux{ads111x::Mux::AIN_01};
         ads111x::Gain gain{ads111x::Gain::PGA_2048};
@@ -201,7 +221,8 @@ class UnitADS111x : public Component {
     };
 
     explicit UnitADS111x(const uint8_t addr = DEFAULT_ADDRESS)
-        : Component(addr) {
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<ads111x::Data>(1)} {
     }
     virtual ~UnitADS111x() {
     }
@@ -209,32 +230,39 @@ class UnitADS111x : public Component {
     virtual bool begin() override;
     virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() {
+    inline config_t config() {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t& cfg) {
+    inline void config(const config_t& cfg) {
         _cfg = cfg;
     }
     ///@}
 
     ///@name Properties
     ///@{
-    //! @brief Gets the latest adc
-    inline int16_t adc() const {
-        return _value;
-    }
-    //! @breif Coefficient value
+    /*!
+      @breif Coefficient value
+      @note Changes as gain changes
+    */
     inline float coefficient() const {
         return _coefficient;
     }
     ///@}
 
-    ///@name Configration
+    ///@name Measurement data by periodic
+    ///@{
+    //! @brief Oldest measured ADC
+    inline int16_t adc() const {
+        return !empty() ? oldest().adc() : std::numeric_limits<int16_t>::min();
+    }
+    ///@}
+
     ///@warning ADS1113, ADS1114 and ADS1115 differ in the items that can be set
+    ///@name Configration
     ///@{
     /*! @brief Gets the input multiplexer */
     inline ads111x::Mux multiplexer() const {
@@ -242,8 +270,8 @@ class UnitADS111x : public Component {
     }
     //! @brief Gets the programmable gain amplifier
     ads111x::Gain gain() const;
-    //! @brief Gets the data rate
-    inline ads111x::Rate rate() const {
+    //! @brief Gets the sampling rate
+    inline ads111x::Sampling samplingRate() const {
         return _adsCfg.dr();
     }
     /*!
@@ -280,11 +308,12 @@ class UnitADS111x : public Component {
     /*!
       @brief Set the programmable gain amplifier
       @warning the threshould values  must be updated whenever the PGA settings
-      are changed (@sa setThreshould)
+      are changed
+      @sa setThreshould
      */
     virtual bool setGain(const ads111x::Gain gain) = 0;
     /*! @brief Set the data rate  */
-    bool setRate(const ads111x::Rate rate);
+    bool setSamplingRate(const ads111x::Sampling rate);
     //! @brief Set the comparator mode
     virtual bool setComparatorMode(const bool b) = 0;
     //! @brief Set the comparator polarity
@@ -295,57 +324,31 @@ class UnitADS111x : public Component {
     virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) = 0;
     ///@}
 
-    ///@name Measurement
+    ///@name Single shot measurement
     ///@{
     /*!
-      @brief Start periodic measurement
+      @brief Measurement single shot
+      @details Measuring in the current settings
+      @param[out] data Measuerd data
+      @param timeoutMillis Timeout for measure
       @return True if successful
-      @note Frequencies etc. must already be set
-     */
-    bool startPeriodicMeasurement();
-    /*!
-      @brief Stop periodic measurement
-      @return True if successful
+      @warning During periodic detection runs, an error is returned
+      @warning Until it can be measured, it will be blocked until the timeout
+      time
     */
-    bool stopPeriodicMeasurement();
-    /*!
-      @brief Start single measurement
-      @return True if successful
-      @note After calling this function, the value can be retrieved after the
-      conversion has been completed
-      @warning Not measured periodic
-     */
-    bool startSingleMeasurement();
-    //! @brief In conversion?
-    bool inConversion();  // TODO: to const
-    /*!
-      @brief Get raw value
-      @param raw[out] Raw value
-      @return True if successful
-      @warning Not under conversion
-     */
-    bool getAdcRaw(int16_t& raw);
-    /*!
-      @brief Read value using single measurement
-      @param[out] raw Raw value
-      @param timeoutMillis Timeout time (Unit: ms)
-      @return True if successful
-      @note Helper function summarising measurement start~waiting for
-      conversion~getting value
-      @warning Not measured periodic
-     */
-    bool readSingleMeasurement(int16_t& raw, const uint32_t timeoutMillis = 10);
+    bool measureSingleshot(ads111x::Data& d,
+                           const uint32_t timeoutMillis = 1000);
     ///@}
 
     ///@name Threshold
     ///@{
     /*!
-      @brief Gets the threshould values
+      @brief Reads the threshould values
       @param[out] high upper thresould value
       @param[out] low lower thresould value
       @return True if successful
     */
-    bool getThreshould(int16_t& high, int16_t& low);
+    bool readThreshould(int16_t& high, int16_t& low);
     /*!
       @brief Set the threshould values
       @param high upper thresould value
@@ -365,14 +368,39 @@ class UnitADS111x : public Component {
     bool generalReset();
 
    protected:
-    inline virtual bool on_begin() {
-        return true;
-    }
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@name Periodic measurement
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @details Measuring in the current settings
+      @return True if successful
+    */
+    bool start_periodic_measurement();
+    /*!
+      @brief Start periodic measurement
+      @details Specify settings and measure
+      @param rate Data sampling rate
+      @return True if successful
+    */
+    bool start_periodic_measurement(const ads111x::Sampling rate);
+    /*!
+      @brief Stop periodic measurement
+      @return True if successful
+    */
+    bool stop_periodic_measurement();
+    ///@}
 
-    bool get_config(ads111x::Config& c);
+    virtual bool on_begin() = 0;  // Call in begin
+
+    bool read_adc_raw(ads111x::Data& d);
+    bool start_single_measurement();
+    bool in_conversion();
+
+    bool read_config(ads111x::Config& c);
     bool write_config(const ads111x::Config& c);
-    void apply_interval(const ads111x::Rate rate);
-    void apply_coefficient(const ads111x::Gain gain);
+    void apply_interval(const ads111x::Sampling rate);
+    virtual void apply_coefficient(const ads111x::Gain gain);
 
     bool set_multiplexer(const ads111x::Mux mux);
     bool set_gain(const ads111x::Gain gain);
@@ -381,150 +409,15 @@ class UnitADS111x : public Component {
     bool set_latching_comparator(const bool b);
     bool set_comparator_queue(const ads111x::ComparatorQueue c);
 
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitADS111x,
+                                                               ads111x::Data);
+
    protected:
-    int16_t _value{};  // Latest raw data
+    std::unique_ptr<m5::container::CircularBuffer<ads111x::Data>> _data{};
     float _coefficient{};
     ads111x::Config _adsCfg{};
 
     config_t _cfg{};
-};
-
-/*!
-  @class  UnitADS1113
-  @brief ADS1113 unit
- */
-class UnitADS1113 : public UnitADS111x {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1113, 0xFF);
-
-   public:
-    explicit UnitADS1113(const uint8_t addr = DEFAULT_ADDRESS)
-        : UnitADS111x(addr) {
-    }
-    virtual ~UnitADS1113() {
-    }
-
-    ///@name Configration
-    ///@{
-    /*! @brief Not support @warning Not support */
-    virtual bool setMultiplexer(const ads111x::Mux) override {
-        return false;
-    }
-    //!  @brief Not support @warning Not support
-    virtual bool setGain(const ads111x::Gain) override {
-        return false;
-    }
-    //!  @brief Not support @warning Not support
-    virtual bool setComparatorMode(const bool) override {
-        return false;
-    }
-    //!  @brief Not support @warning Not support
-    virtual bool setComparatorPolarity(const bool) override {
-        return false;
-    }
-    //!  @brief Not support @warning Not support
-    virtual bool setLatchingComparator(const bool) override {
-        return false;
-    }
-    //!  @brief Not support @warning Not support
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue) override {
-        return false;
-    }
-    ///@}
-
-   protected:
-    virtual bool on_begin() override;
-};
-
-/*!
-  @class  UnitADS1114
-  @brief ADS1114 unit
- */
-class UnitADS1114 : public UnitADS111x {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1114, 0xFF);
-
-   public:
-    explicit UnitADS1114(const uint8_t addr = DEFAULT_ADDRESS)
-        : UnitADS111x(addr) {
-    }
-    virtual ~UnitADS1114() {
-    }
-
-    ///@name Configration
-    ///@{
-    /*!  @brief Not support @warning Not support */
-    virtual bool setMultiplexer(const ads111x::Mux) override {
-        return false;
-    }
-    //! @brief Set the programmable gain amplifier
-    virtual bool setGain(const ads111x::Gain gain) override {
-        return set_gain(gain);
-    }
-    //! @brief Set the comparator mode
-    virtual bool setComparatorMode(const bool b) override {
-        return set_comparator_mode(b);
-    }
-    //! @brief Set the comparator polarity
-    virtual bool setComparatorPolarity(const bool b) override {
-        return set_comparator_polarity(b);
-    }
-    //! @brief Set the latching comparator
-    virtual bool setLatchingComparator(const bool b) override {
-        return set_latching_comparator(b);
-    }
-    //! @brief Set the comparator queue
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) override {
-        return set_comparator_queue(c);
-    }
-    ///@}
-
-   protected:
-    virtual bool on_begin() override;
-};
-
-/*!
-  @class  UnitADS1115
-  @brief ADS1115 unit
- */
-class UnitADS1115 : public UnitADS111x {
-    M5_UNIT_COMPONENT_HPP_BUILDER(UnitADS1115, 0xFF);
-
-   public:
-    explicit UnitADS1115(const uint8_t addr = DEFAULT_ADDRESS)
-        : UnitADS111x(addr) {
-    }
-    virtual ~UnitADS1115() {
-    }
-
-    ///@name Configration
-    ///@{
-    /*! @brief Set the input multiplexer */
-    virtual bool setMultiplexer(const ads111x::Mux mux) override {
-        return set_multiplexer(mux);
-    }
-    //! @brief Set the programmable gain amplifier
-    virtual bool setGain(const ads111x::Gain gain) override {
-        return set_gain(gain);
-    }
-    //! @brief Set the comparator mode
-    virtual bool setComparatorMode(const bool b) override {
-        return set_comparator_mode(b);
-    }
-    //! @brief Set the comparator polarity
-    virtual bool setComparatorPolarity(const bool b) override {
-        return set_comparator_polarity(b);
-    }
-    //! @brief Set the latching comparator
-    virtual bool setLatchingComparator(const bool b) override {
-        return set_latching_comparator(b);
-    }
-    //! @brief Set the comparator queue
-    virtual bool setComparatorQueue(const ads111x::ComparatorQueue c) override {
-        return set_comparator_queue(c);
-    }
-    ///@}
-
-   protected:
-    virtual bool on_begin() override;
 };
 
 ///@cond

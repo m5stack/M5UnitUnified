@@ -187,22 +187,6 @@ class UnitSHT30 : public Component,
         const bool stretch             = true);
     ///@}
 
-    ///@name Periodic measurement
-    ///@{
-    /*!
-      @brief Start periodic measurement
-      @param mps Measurement per second
-      @param rep Repeatability accuracy level
-      @return True if successful
-    */
-    bool startPeriodicMeasurement(
-        const sht30::MPS mps           = sht30::MPS::One,
-        const sht30::Repeatability rep = sht30::Repeatability::High);
-    /*!
-      @brief Stop periodic measurement
-      @return True if successful
-    */
-    bool stopPeriodicMeasurement();
     /*!
       @brief set ART mode
       @details After issuing the ART command the sensor will start acquiring
@@ -211,7 +195,6 @@ class UnitSHT30 : public Component,
       @warning Only available during periodic measurements.
     */
     bool accelerateResponseTime();
-    ///@}
 
     ///@name Reset
     ///@{
@@ -284,6 +267,25 @@ class UnitSHT30 : public Component,
     ///@}
 
    protected:
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@name Periodic measurement
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @param mps Measurement per second
+      @param rep Repeatability accuracy level
+      @return True if successful
+    */
+    bool start_periodic_measurement(
+        const sht30::MPS mps           = sht30::MPS::One,
+        const sht30::Repeatability rep = sht30::Repeatability::High);
+    /*!
+      @brief Stop periodic measurement
+      @return True if successful
+    */
+    bool stop_periodic_measurement();
+    ///@}
+
     bool read_measurement(sht30::Data& d);
 
     M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitSHT30,

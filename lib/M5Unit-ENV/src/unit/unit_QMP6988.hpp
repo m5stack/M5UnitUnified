@@ -273,36 +273,6 @@ class UnitQMP6988
                            const qmp6988::Filter& f);
     ///@}
 
-    ///@name Periodic measurement
-    ///@{
-    /*!
-      @brief Start periodic measurement
-      @details Measuring in the current settings
-      @return True if successful
-    */
-    bool startPeriodicMeasurement();
-    /*!
-      @brief Start periodic measurement
-      @details Specify settings and measure
-      @param st standby time (same as interval)
-      @param ost Oversampling for temperature
-      @param osp Oversampling for pressure
-      @param f filter
-      @return True if successful
-      @warning The specified settings are maintained after call
-      @warning If Oversampling::Skip is specified, no measurement is taken
-    */
-    bool startPeriodicMeasurement(const qmp6988::StandbyTime st,
-                                  const qmp6988::Oversampling ost,
-                                  const qmp6988::Oversampling osp,
-                                  const qmp6988::Filter& f);
-    /*!
-      @brief Stop periodic measurement
-      @return True if successful
-    */
-    bool stopPeriodicMeasurement();
-    ///@}
-
     ///@name Typical use case setup
     ///@{
     /*! @brief For weather monitoring */
@@ -421,6 +391,37 @@ class UnitQMP6988
     bool readStatus(qmp6988::Status& s);
 
    protected:
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@name Periodic measurement
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @details Measuring in the current settings
+      @return True if successful
+    */
+    bool start_periodic_measurement();
+    /*!
+      @brief Start periodic measurement
+      @details Specify settings and measure
+      @param st standby time (same as interval)
+      @param ost Oversampling for temperature
+      @param osp Oversampling for pressure
+      @param f filter
+      @return True if successful
+      @warning The specified settings are maintained after call
+      @warning If Oversampling::Skip is specified, no measurement is taken
+    */
+    bool start_periodic_measurement(const qmp6988::StandbyTime st,
+                                    const qmp6988::Oversampling ost,
+                                    const qmp6988::Oversampling osp,
+                                    const qmp6988::Filter& f);
+    /*!
+      @brief Stop periodic measurement
+      @return True if successful
+    */
+    bool stop_periodic_measurement();
+    ///@}
+
     bool read_calibration(qmp6988::Calibration& c);
     bool read_measurement_condition(uint8_t& cond);
     bool set_measurement_condition(const uint8_t cond);

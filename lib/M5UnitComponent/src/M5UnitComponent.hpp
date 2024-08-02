@@ -364,6 +364,7 @@ class Component {
     UnitUnified* _manager{};
     std::unique_ptr<m5::unit::Adapter> _adapter{};
 
+    // For periodic measurement
     types::elapsed_time_t _latest{}, _interval{};
     bool _periodic{};  // During periodic measurement?
     bool _updated{};
@@ -387,13 +388,50 @@ class Component {
 /*!
   @class PeriodicMeasurementAdapter
   @brief Interface class for periodic measurement
-  @datails Common interface for accumulated periodic measurement data
+  @details Common interface for accumulated periodic measurement data
+  @details Provide a common interface for periodic measurements for each unit
   @tparam Derived Derived class
   @tparam MD Type of the measurement data group
- */
+  @warning MUST IMPLEMENT some functions (NOT VERTUAL)
+  - MD Derived::oldest_periodic_data() const;
+  - MD Derived::latestt_periodic_data() const;
+  - bool Derived::start_periodic_measurement(any arguments);
+  - bool Derived::stop_periodic_measurement():
+  @warning  MUST ADD std::unique_ptr<m5::container::CircularBuffer<MD>> _data{}
+  in Derived class
+  @warning This class is an interface class and should not have any data
+  @note See also M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER
+  @note
+*/
 template <class Derived, typename MD>
 class PeriodicMeasurementAdapter {
    public:
+    ///@name Periodic measurement
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @tparam Args Optional arguments
+      @return True if successful
+      @note Call Derived::start_periodic_measurement
+    */
+    template <typename... Args>
+    bool startPeriodicMeasurement(Args&&... args) {
+        return static_cast<Derived*>(this)->start_periodic_measurement(
+            std::forward<Args>(args)...);
+    }
+    /*!
+      @brief Stop periodic measurement
+      @tparam Args Optional arguments
+      @return True if successful
+      @note Call Derived::stop_periodic_measurement
+    */
+    template <typename... Args>
+    bool stopPeriodicMeasurement(Args&&... args) {
+        return static_cast<Derived*>(this)->stop_periodic_measurement(
+            std::forward<Args>(args)...);
+    }
+    ///@}
+
     ///@name Data
     ///@{
     //! @brief Gets the number of stored data
@@ -426,22 +464,15 @@ class PeriodicMeasurementAdapter {
     }
     ///@}
    protected:
+    ///@note Must implement in derived class
+    ///@name Pure virtual functions
+    ///@{
     virtual size_t available_periodic_measurement_data() const = 0;
     virtual bool empty_periodic_measurement_data() const       = 0;
     virtual bool full_periodic_measurement_data() const        = 0;
     virtual void discard_periodic_measurement_data()           = 0;
     virtual void flush_periodic_measurement_data()             = 0;
-    // MUST IMPLEMENT MD Derived::oldest_periodic_data() const ; (Not virtual
-    // method) MUST IMPLEMENT MD Derived::latestt_periodic_data() const ; (Not
-    // virtual method)
-
-#if 0
-    // TODO : those managed by PMA class
-    types::elapsed_time_t _latest{}, _interval{};
-    // --> _latest = 0; on startPeriodic if successful
-    bool _periodic{};  // During periodic measurement?
-    bool _updated{};
-#endif
+    ///@}
 };
 
 }  // namespace unit

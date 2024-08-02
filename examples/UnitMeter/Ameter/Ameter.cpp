@@ -23,16 +23,13 @@ auto& lcd = M5.Display;
 m5::unit::UnitUnified Units;
 m5::unit::UnitAmeter unit;
 
-float correction{1.0f};
-Rate rate{Rate::SPS_32};
+Sampling rate{Sampling::Rate32};
 constexpr uint16_t sps_table[] = {8, 16, 32, 64, 128, 250, 475, 860};
 
 }  // namespace
 
 void setup() {
     M5.begin();
-
-    m5::utility::delay(3000);
 
     // Settings
     auto cfg = unit.config();
@@ -77,10 +74,9 @@ void setup() {
     M5_LOGI("M5UnitUnified has been begun");
     M5_LOGI("%s", Units.debugInfo().c_str());
 
-    correction = unit.resolution() * unit.calibrationFactor();
-
-    M5_LOGI(">>RES:%f COEE:%f CF:%f periodic :%d", unit.resolution(),
-            unit.coefficient(), unit.calibrationFactor(), unit.inPeriodic());
+    M5_LOGI(">RES:%f COEE:%f CF:%f CORR:%f periodic :%d", unit.resolution(),
+            unit.coefficient(), unit.calibrationFactor(), unit.correction(),
+            unit.inPeriodic());
 
     lcd.clear(TFT_DARKGREEN);
 }
@@ -89,18 +85,16 @@ void loop() {
     M5.update();
     Units.update();
     if (unit.updated()) {
-        int16_t raw{};
-        raw = unit.latestData();
-        // Line graphs can be viewed on a plotter
-        // ArduinoIDE, PlatformIO with Teleolot
-        M5_LOGI("\n>Current:%f", std::fabs(raw) * correction);
+        while (unit.available()) {
+            M5_LOGI("\n>Current:%f", unit.current());
+            unit.discard();
+        }
     }
 
     if (M5.BtnA.wasClicked()) {
-        rate = static_cast<Rate>((m5::stl::to_underlying(rate) + 1) & 0x07);
-        M5_LOGI("Change to %u sps", sps_table[m5::stl::to_underlying(rate)]);
-        if (unit.setRate(rate)) {
-            correction = unit.resolution() * unit.calibrationFactor();
+        rate = static_cast<Sampling>((m5::stl::to_underlying(rate) + 1) & 0x07);
+        if (!unit.setSamplingRate(rate)) {
+            M5_LOGE("Failed to setSamplingRate");
         }
     }
 }

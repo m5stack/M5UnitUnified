@@ -137,8 +137,8 @@ bool UnitSHT30::measureSingleshot(Data& d, const sht30::Repeatability rep,
     return false;
 }
 
-bool UnitSHT30::startPeriodicMeasurement(const sht30::MPS mps,
-                                         const sht30::Repeatability rep) {
+bool UnitSHT30::start_periodic_measurement(const sht30::MPS mps,
+                                           const sht30::Repeatability rep) {
     constexpr static uint16_t periodic_cmd[] = {
         // 0.5 mps
         START_PERIODIC_MPS_HALF_HIGH,
@@ -184,7 +184,7 @@ bool UnitSHT30::startPeriodicMeasurement(const sht30::MPS mps,
     return _periodic;
 }
 
-bool UnitSHT30::stopPeriodicMeasurement() {
+bool UnitSHT30::stop_periodic_measurement() {
     if (writeRegister(STOP_PERIODIC_MEASUREMENT)) {
         _periodic = false;
         _latest   = 0;

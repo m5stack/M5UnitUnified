@@ -291,14 +291,14 @@ class UnitMAX30100
     virtual bool begin() override;
     virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
-    config_t config() {
+    inline config_t config() {
         return _cfg;
     }
     //! @brief Set the configration
-    void config(const config_t& cfg) {
+    inline void config(const config_t& cfg) {
         _cfg = cfg;
     }
     ///@}
@@ -438,6 +438,18 @@ class UnitMAX30100
     bool reset();
 
    protected:
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@note MAX30100 is always measured periodic
+    ///@name Periodic measurement
+    ///@{
+    inline bool start_periodic_measurement() {
+        return false;
+    }
+    inline bool stop_periodic_measurement() {
+        return false;
+    }
+    ///@}
+
     bool read_FIFO();
     bool read_measurement_temperature(max30100::TemperatureData& td);
 

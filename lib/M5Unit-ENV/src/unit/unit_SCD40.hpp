@@ -96,29 +96,14 @@ class UnitSCD40 : public Component,
     ///@name Periodic measurement
     ///@{
     /*!
-      @brief Start periodic measurement
-      @param mode Mode of periodic measurement
-      @return True if successful
-    */
-    bool startPeriodicMeasurement(const scd4x::Mode mode = scd4x::Mode::Normal);
-    /*!
       @brief Start low power periodic measurements
       @return True if successful
     */
     inline bool startLowPowerPeriodicMeasurement() {
         return startPeriodicMeasurement(scd4x::Mode::LowPower);
     }
-    /*!
-      @brief Stop measurement
-      @param duration Max command duration(ms)
-      @warning The sensor will only respond to other commands after waiting 500
-      ms after issuing the stop_periodic_measurement command
-      @return True if successful
-    */
-    bool stopPeriodicMeasurement(
-        const uint32_t duration = scd4x::STOP_PERIODIC_MEASUREMENT_DURATION);
     ///@}
-
+    
     ///@name On-Chip Output Signal Compensation
     ///@{
     /*!
@@ -260,6 +245,27 @@ class UnitSCD40 : public Component,
     ///@}
 
    protected:
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@name Periodic measurement
+    ///@{
+    /*!
+      @brief Start periodic measurement
+      @param mode Mode of periodic measurement
+      @return True if successful
+    */
+    bool start_periodic_measurement(
+        const scd4x::Mode mode = scd4x::Mode::Normal);
+    /*!
+      @brief Stop measurement
+      @param duration Max command duration(ms)
+      @warning The sensor will only respond to other commands after waiting 500
+      ms after issuing the stop_periodic_measurement command
+      @return True if successful
+    */
+    bool stop_periodic_measurement(
+        const uint32_t duration = scd4x::STOP_PERIODIC_MEASUREMENT_DURATION);
+    ///@}
+
     bool read_data_ready_status();
     bool read_measurement(scd4x::Data &d, const bool all = true);
 

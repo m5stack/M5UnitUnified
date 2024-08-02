@@ -223,17 +223,17 @@ void UnitQMP6988::update(const bool force) {
     }
 }
 
-bool UnitQMP6988::startPeriodicMeasurement() {
+bool UnitQMP6988::start_periodic_measurement() {
     if (inPeriodic()) {
         return false;
     }
     return setPowerMode(qmp6988::PowerMode::Normal);
 }
 
-bool UnitQMP6988::startPeriodicMeasurement(const qmp6988::StandbyTime st,
-                                           const qmp6988::Oversampling ost,
-                                           const qmp6988::Oversampling osp,
-                                           const qmp6988::Filter& f) {
+bool UnitQMP6988::start_periodic_measurement(const qmp6988::StandbyTime st,
+                                             const qmp6988::Oversampling ost,
+                                             const qmp6988::Oversampling osp,
+                                             const qmp6988::Filter& f) {
     if (inPeriodic()) {
         return false;
     }
@@ -246,7 +246,7 @@ bool UnitQMP6988::startPeriodicMeasurement(const qmp6988::StandbyTime st,
            setStandbyTime(st) && set_measurement_condition(cm.value);
 }
 
-bool UnitQMP6988::stopPeriodicMeasurement() {
+bool UnitQMP6988::stop_periodic_measurement() {
     return setPowerMode(qmp6988::PowerMode::Sleep);
 }
 

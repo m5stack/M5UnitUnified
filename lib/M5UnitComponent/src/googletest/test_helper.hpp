@@ -27,7 +27,7 @@ namespace googletest {
   @param callback Function pointer called when the measurement is updated
   @return Average of the measurement interval
   @pre startPeriodicMeasurement must already have been called and _interval has
-  been set
+  been set and _latest was cleared
  */
 template <class U>
 uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
@@ -60,7 +60,9 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
         }
         std::this_thread::yield();
     }
+
     EXPECT_EQ(cnt, 0U);
+    EXPECT_EQ(avgCnt, times - 1);
     avg /= avgCnt;
     // There is room for consideration on the tolerance
     // EXPECT_LE(avg, decltype(interval)(interval * 1.1f));

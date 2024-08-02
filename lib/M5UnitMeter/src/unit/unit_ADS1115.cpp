@@ -1,12 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
-  @file unit_ADS1115_with_EEPROM.cpp
-  @brief Base class for Ameter and Vmeter
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
+  @file unit_ADS1115.cpp
+  @brief ADS1115 Unit for M5UnitUnified
 */
-#include "unit_ADS1115_with_EEPROM.hpp"
+#include "unit_ads1115.hpp"
 #include <M5Utility.hpp>
 
 #if 0
@@ -26,13 +27,30 @@
 ======== [5]:1   -1,-1
 #endif
 
+using namespace m5::utility::mmh3;
+using namespace m5::unit::types;
+using namespace m5::unit::ads111x;
+using namespace m5::unit::ads111x::command;
+
+namespace {
+constexpr Gain gain_table[] = {
+    Gain::PGA_6144, Gain::PGA_4096, Gain::PGA_2048,
+    Gain::PGA_1024, Gain::PGA_512,  Gain::PGA_256,
+};
+}
+
 namespace m5 {
 namespace unit {
+// class UnitADS1115
+const char UnitADS1115::name[] = "UnitADS1115";
+const types::uid_t UnitADS1115::uid{"UnitADS1115"_mmh3};
+const types::uid_t UnitADS1115::attr{0};
+bool UnitADS1115::on_begin() {
+    return setSamplingRate(_cfg.rate) && setMultiplexer(_cfg.mux) &&
+           setGain(_cfg.gain) && setComparatorQueue(_cfg.comp_que);
+}
 
-using namespace m5::utility::mmh3;
-using namespace ads111x;
-using namespace ads111x::command;
-
+// class UnitADS1115WithEEPROM
 const char UnitADS1115WithEEPROM::name[] = "UnitADS1115WithEEPROM";
 const types::uid_t UnitADS1115WithEEPROM::uid{"UnitADS1115WithEEPROM"_mmh3};
 const types::uid_t UnitADS1115WithEEPROM::attr{0};
@@ -57,17 +75,9 @@ bool UnitADS1115WithEEPROM::assign(TwoWire& wire) {
     return false;
 }
 
-bool UnitADS1115WithEEPROM::begin() {
-    if (!UnitADS1115::begin()) {
-        return false;
-    }
-
-    Gain table[] = {
-        Gain::PGA_6144, Gain::PGA_4096, Gain::PGA_2048,
-        Gain::PGA_1024, Gain::PGA_512,  Gain::PGA_256,
-    };
+bool UnitADS1115WithEEPROM::on_begin() {
     int idx{};
-    for (auto&& e : table) {
+    for (auto&& e : gain_table) {
         if (!read_calibration(e, _calibration[idx].hope,
                               _calibration[idx].actual)) {
             M5_LIB_LOGE("Failed ti read calibration data");
