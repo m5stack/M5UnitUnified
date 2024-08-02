@@ -175,8 +175,8 @@ TEST_P(TestSGP30, Periodic) {
 
         // M5_LOGW("C:%u T:%u", unit->co2eq(), unit->tvoc());
 
-        //EXPECT_NE(unit->co2eq(), 0U);
-        //EXPECT_NE(unit->tvoc(), 0U);
+        // EXPECT_NE(unit->co2eq(), 0U);
+        // EXPECT_NE(unit->tvoc(), 0U);
         EXPECT_EQ(unit->co2eq(), unit->oldest().co2eq());
         EXPECT_EQ(unit->tvoc(), unit->oldest().tvoc());
         unit->discard();
