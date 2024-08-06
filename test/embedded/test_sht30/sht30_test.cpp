@@ -18,6 +18,7 @@
 #include <unit/unit_SHT30.hpp>
 #include <chrono>
 #include <iostream>
+#include <iomanip>
 #include <bitset>
 
 using namespace m5::unit::googletest;
