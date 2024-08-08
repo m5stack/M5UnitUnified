@@ -37,10 +37,12 @@ class TestSCD40 : public ComponentTestBase<UnitSCD40, bool> {
 #else
         auto ptr = new m5::unit::UnitSCD40();
 #endif
-        auto cfg           = ptr->config();
-        cfg.start_periodic = false;
-        cfg.stored_size    = 2;
-        ptr->config(cfg);
+        if (ptr) {
+            auto cfg           = ptr->config();
+            cfg.start_periodic = false;
+            cfg.stored_size    = 2;
+            ptr->config(cfg);
+        }
         return ptr;
     }
     virtual bool is_using_hal() const override {

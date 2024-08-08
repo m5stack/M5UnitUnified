@@ -27,6 +27,8 @@
 
 #include <M5UnitComponent.hpp>
 #include <m5_utility/container/circular_buffer.hpp>
+#include <array>
+#include <memory>
 
 namespace m5 {
 namespace unit {
@@ -87,6 +89,8 @@ enum class Frequency : int8_t {
   @brief Measurement data group
  */
 struct Data {
+    Data() {
+    }
     // Common
     // [0,1]:gesture
     // Proximity
@@ -144,7 +148,6 @@ struct Data {
 };
 
 }  // namespace paj7620u2
-
 
 /*!
   @class UnitPAJ7620U2

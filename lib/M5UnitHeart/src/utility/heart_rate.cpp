@@ -79,7 +79,9 @@ namespace max30100 {
 
 HeartRate::HeartRate(const uint32_t srate, const float threshold,
                      const size_t max_data_size)
-    : _samplingRate{srate}, _threshold(threshold), _maxDataSize{max_data_size} {
+    : _samplingRate{(float)srate},
+      _threshold(threshold),
+      _maxDataSize{max_data_size} {
     assert(srate && "SamplingRate must not be zero");
     if (!max_data_size) {
         _maxDataSize = (size_t)srate * 30U;

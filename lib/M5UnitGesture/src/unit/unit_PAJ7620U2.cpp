@@ -569,7 +569,7 @@ bool UnitPAJ7620U2::readObjectCenter(uint16_t& x, uint16_t& y) {
 }
 
 bool UnitPAJ7620U2::readCursor(uint16_t& x, uint16_t& y) {
-    std::array<uint8_t, 4> raw{};  // X_LOW , 4?
+    //    std::array<uint8_t, 4> raw{};  // X_LOW , 4?
 
     uint8_t xl{}, xh{}, yl{}, yh{};
     if (read_banked_register8(CURSOR_CLAMP_CENTER_X_LOW, xl) &&
