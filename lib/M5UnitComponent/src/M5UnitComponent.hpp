@@ -463,7 +463,8 @@ class PeriodicMeasurementAdapter {
         flush_periodic_measurement_data();
     }
     ///@}
-   protected:
+
+  protected:
     ///@note Must implement in derived class
     ///@name Pure virtual functions
     ///@{

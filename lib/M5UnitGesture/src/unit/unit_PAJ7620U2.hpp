@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_PAJ7620U2.hpp
   @brief PAJ7620U2 Unit for M5UnitUnified
@@ -16,19 +21,20 @@
 
   Support 9 gestures:
   Up, Down, Left, Right, Front, Back, Clockwise, Counterclockwise, Quick wave
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #ifndef M5_UNIT_GESTURE_UNIT_PAJ7620U2_HPP
 #define M5_UNIT_GESTURE_UNIT_PAJ7620U2_HPP
 
 #include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
 
 namespace m5 {
 namespace unit {
 
+/*!
+  @namespace paj7620u2
+  @brief For PAJ7620U2
+ */
 namespace paj7620u2 {
 /*!
   @enum Gesture
@@ -47,11 +53,11 @@ enum class Gesture : uint16_t {
     Clockwise        = 1U << 6,   //!< Clockwise
     CounterClockwise = 1U << 7,   //!< Counter clock wise
     Wave             = 1U << 8,   //!< Wave
-    Approach         = 1U << 9,   //!< Approach (Proximity mode)
+    Approach         = 1U << 9,   //!< Approach (proximity mode)
     HasObject        = 1U << 10,  //!< Has object (cursor mode)
     WakeupTrigger    = 1U << 11,  //!< Wakeup (trigger mode)
     Confirm          = 1U << 12,  //!< Confirm (confirm mode)
-    Abort            = 1U << 13,  //!< Abort (onfirm mode)
+    Abort            = 1U << 13,  //!< Abort (confirm mode)
     Reserve          = 1U << 14,
     NoObject         = 1U << 15,  //!< No object (cursor mode)
 };
@@ -70,35 +76,110 @@ enum class Mode : uint8_t {
   @brief Frequency
   Operating frequency
 */
-enum class Frequency : uint8_t {
-    Normal,  //!< 120Hz
-    Gaming,  //!< 240Hz
+enum class Frequency : int8_t {
+    Unknown = -1,  //!< Unknown freq
+    Normal,        //!< 120Hz
+    Gaming,        //!< 240Hz
+};
+
+/*!
+  @struct Data
+  @brief Measurement data group
+ */
+struct Data {
+    // Common
+    // [0,1]:gesture
+    // Proximity
+    // [2]:proximity [3]:approach
+    // Cirosr
+    // [2,3]:X [4,5]:Y
+    std::array<uint8_t, 2 + 4> raw{};
+    Gesture data_gesture{};
+    Mode data_mode{};
+    union {
+        struct {
+            uint8_t proximity_brightness;
+            bool proximity_approach;
+        };
+        struct {
+            uint16_t cursor_x{}, cursor_y{};
+        };
+    };
+
+    //! @brief Gets the data mode
+    inline Mode mode() const {
+        return data_mode;
+    }
+    //! @brief Gets the gesture (Common)
+    Gesture gesture() const {
+        return data_gesture;
+    }
+    ///@name Proximity mode
+    ///@{
+    /*! @brief Gets the brightness */
+    inline uint8_t brightness() const {
+        return (data_mode == Mode::Proximity) ? proximity_brightness : 0;
+    }
+    /*! @brief Detect the approach? */
+    inline bool approach() const {
+        return (data_mode == Mode::Proximity) ? proximity_approach : false;
+    }
+    ///@}
+    ///@name Cursor mode
+    ///@{
+    /*! @brief Has object? */
+    inline bool hasObject() const {
+        return (data_mode == Mode::Cursor) ? gesture() == Gesture::HasObject
+                                           : false;
+    }
+    /*! @brief Gets the cursor X the any object */
+    inline uint16_t cursorX() const {
+        return (data_mode == Mode::Cursor) ? cursor_x : 0xFFFF;
+    }
+    /*! @brief Gets the cursor Y the any object */
+    inline uint16_t cursorY() const {
+        return (data_mode == Mode::Cursor) ? cursor_y : 0xFFFF;
+    }
+    ///@}
 };
 
 }  // namespace paj7620u2
+
 
 /*!
   @class UnitPAJ7620U2
   @brief PAJ7620U2 unit
  */
-class UnitPAJ7620U2 : public Component {
+class UnitPAJ7620U2
+    : public Component,
+      public PeriodicMeasurementAdapter<UnitPAJ7620U2, paj7620u2::Data> {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitPAJ7620U2, 0x73);
 
    public:
     /*!
       @struct config_t
-      @brief Settings
+      @brief Settings for begin
      */
-    struct config_t {
+    struct config_t : public Component::config_t {
+        //! @brief Start periodic measurement on begin?
+        bool start_periodic{true};
+        //! @brief Set mode on begin
         paj7620u2::Mode mode{paj7620u2::Mode::Gesture};
+        //! bbrief Set freq o begin
         paj7620u2::Frequency frequency{paj7620u2::Frequency::Normal};
+        //! @brief Flip horizontal on begin
         bool hflip{false};
+        //! @brief Flip verticl on begin
         bool vflip{true};
+        //! @brief Set rotation on begin
         uint8_t rotation{0};
+        //! Store only when value is a change
+        bool store_on_change{true};
     };
 
     explicit UnitPAJ7620U2(const uint8_t addr = DEFAULT_ADDRESS)
-        : Component(addr) {
+        : Component(addr),
+          _data{new m5::container::CircularBuffer<paj7620u2::Data>(1)} {
     }
     virtual ~UnitPAJ7620U2() {
     }
@@ -106,7 +187,7 @@ class UnitPAJ7620U2 : public Component {
     virtual bool begin() override;
     virtual void update(const bool force = false) override;
 
-    ///@name Settings
+    ///@name Settings for begin
     ///@{
     /*! @brief Gets the configration */
     config_t config() {
@@ -118,61 +199,44 @@ class UnitPAJ7620U2 : public Component {
     }
     ///@}
 
-    ///@name Properties
+    /*! @fn  bool PeriodicMeasurementAdapter::startPeriodicMeasurement()
+     * @brief TEST
+     */
+
+    ///@name Measurement data by periodic
     ///@{
-    //! @brief Latest gesture
+    /*! @brief Oldest gesture */
     inline paj7620u2::Gesture gesture() const {
-        return _gesture;
+        return !empty() ? oldest().gesture() : paj7620u2::Gesture::None;
     }
-    /*!
-      @brief Latest brightness
-      @retval 0:Out of bounds
-      @retval 1...255  [1:Far - Near:255]
-      @note Return valid values if detection is Mode::Proximity
-     */
+    //! @brief Oldest brightness if Proximity mode
     inline uint8_t brightness() const {
-        return _mode == paj7620u2::Mode::Proximity ? _brightness : 0;
+        return !empty() ? oldest().brightness() : 0;
     }
-    /*!
-      @brief Latest approach status
-      @retval true approach
-      @reval false Not approach
-      @note Return valid values if detection is Mode::Proximity
-     */
+    //! @brief Oldest approach status if Proximity mode
     inline bool approach() const {
-        return _mode == paj7620u2::Mode::Proximity ? _approach : false;
+        return !empty() ? oldest().approach() : false;
     }
-    /*!
-      @brief Latest has object
-      @retval true has object
-      @note Return valid values if detection is Mode::Cursor
-    */
+    //! @brief Oldest has object status if Cursor mode
     bool hasObject() {
-        return _mode == paj7620u2::Mode::Cursor
-                   ? (_gesture == paj7620u2::Gesture::HasObject)
-                   : false;
+        return !empty() ? oldest().hasObject() : false;
     }
-    /*!
-      @brief Latest cursorX
-      @note Return valid values if detection is Mode::Cursor
-     */
-    inline uint16_t cursorX() const {
-        return _mode == paj7620u2::Mode::Cursor ? _cursorX : 0xFFFF;
+    //! @brief Oldest cursor X if Cursor mode
+    uint16_t cursorX() const {
+        return !empty() ? oldest().cursorX() : 0xFFFF;
     }
-    /*!
-      @brief Latest cursorY
-      @note Return valid values if detection is Mode::Cursor
-     */
-    inline uint16_t cursorY() const {
-        return _mode == paj7620u2::Mode::Cursor ? _cursorY : 0xFFFF;
+    //! @brief Oldest cursor Y if Cursor mode
+    uint16_t cursorY() const {
+        return !empty() ? oldest().cursorY() : 0xFFFF;
     }
     ///@}
 
     /*!
       @brief Get the rotation
+      @return Rotation [0...3]
       @sa setRotatation
     */
-    inline uint8_t getRotation() const {
+    inline uint8_t rotation() const {
         return _rotation;
     }
     /*!
@@ -188,10 +252,22 @@ class UnitPAJ7620U2 : public Component {
      */
     void setRotate(const uint8_t rot);
 
-    /*! @brief Get the Frequency */
-    inline paj7620u2::Frequency frequency() const {
+    //! @brief Gets the inner frequency
+    paj7620u2::Frequency frequency() const {
         return _frequency;
     }
+    /*!
+      @brief Read the raw frequency
+      @param[out] raw raw frequency
+      @return True if successful
+     */
+    bool readFrequency(uint8_t& raw);
+    /*!
+      @brief Read the frequency
+      @param[out] f Frequency
+      @return True if successful
+     */
+    bool readFrequency(paj7620u2::Frequency& f);
     /*!
       @brief Set the frequency
       @param f Frequency
@@ -258,23 +334,23 @@ class UnitPAJ7620U2 : public Component {
     bool readProximity(uint8_t& brightness, uint8_t& approach);
 
     /*!
-      @brief Gets the threshold for detect approch
+      @brief Read the threshold for detect approach
       @param[out] high High threshold
       @param[out] low Lowthreshold
       @note Approach:brightness >= high
       @note Not approach: brightness <= low
       @warning Only valid in Proximity mode
      */
-    bool getApprochThreshold(uint8_t& high, uint8_t& low);
+    bool readApproachThreshold(uint8_t& high, uint8_t& low);
     /*!
-      @brief Sets the threshold for detect approch
+      @brief Sets the threshold for detect approach
       @param high High threshold
       @param low Lowthreshold
       @note Approach:brightness >= high
       @note Not approach: brightness <= low
       @warning Only valid in Proximity mode
      */
-    bool setApprochThreshold(const uint8_t high, const uint8_t low);
+    bool setApproachThreshold(const uint8_t high, const uint8_t low);
     ///@}
 
     ///@name For detect cursor
@@ -303,10 +379,10 @@ class UnitPAJ7620U2 : public Component {
     bool setMode(const paj7620u2::Mode m);
     ///@}
 
-    //! @brief Gets the horizontal flipping
-    bool getHorizontalFlip(bool& flip);
-    //! @brief Gets the vertical flipping
-    bool getVerticalFlip(bool& flip);
+    //! @brief Read the horizontal flipping
+    bool readHorizontalFlip(bool& flip);
+    //! @brief Read the vertical flipping
+    bool readVerticalFlip(bool& flip);
     //! @brief Sets the horizontal flipping
     bool setHorizontalFlip(const bool flip);
     //! @brief Sets the vertical flipping
@@ -335,6 +411,20 @@ class UnitPAJ7620U2 : public Component {
     ///@}
 
    protected:
+    ///@note Call via startPeriodicMeasurement/stopPeriodicMeasurement
+    ///@name Periodic measurement
+    ///@{
+    bool start_periodic_measurement(const uint32_t intervalMs = 0);
+
+    bool start_periodic_measurement(const paj7620u2::Mode mode,
+                                    const paj7620u2::Frequency freq,
+                                    const uint32_t intervalMs);
+
+    bool stop_periodic_measurement();
+    ///@}
+    M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(UnitPAJ7620U2,
+                                                               paj7620u2::Data);
+
     bool select_bank(const uint8_t bank, const bool force = false);
 
     bool read_banked_register(const uint16_t reg, uint8_t* buf,
@@ -346,9 +436,13 @@ class UnitPAJ7620U2 : public Component {
     bool write_banked_register8(const uint16_t reg, const uint8_t value);
     bool write_banked_register16(const uint16_t reg, const uint16_t value);
 
-    bool update_gesture();
-    bool update_proximity();
-    bool update_cursor();
+    bool update_gesture(paj7620u2::Data& d);
+    bool update_proximity(paj7620u2::Data& d);
+    bool update_cursor(paj7620u2::Data& d);
+
+    bool read_gesture(paj7620u2::Data& d);
+    bool read_proximity(paj7620u2::Data& d);
+    bool read_cursor(paj7620u2::Data& d);
 
     bool was_wakeup();
     bool get_chip_id(uint16_t& id);
@@ -360,15 +454,7 @@ class UnitPAJ7620U2 : public Component {
     paj7620u2::Frequency _frequency{};
     uint8_t _rotation{};
 
-    // latest data
-    // gesture
-    paj7620u2::Gesture _gesture{paj7620u2::Gesture::None};
-    // proximity
-    uint8_t _brightness{};
-    bool _approach{};
-    // cursor
-    uint16_t _cursorX{}, _cursorY{};
-
+    std::unique_ptr<m5::container::CircularBuffer<paj7620u2::Data>> _data{};
     config_t _cfg{};
 };
 

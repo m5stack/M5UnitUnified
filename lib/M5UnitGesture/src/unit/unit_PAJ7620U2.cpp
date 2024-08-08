@@ -1,10 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
+ *
+ * SPDX-License-Identifier: MIT
+ */
 /*!
   @file unit_PAJ7620U2.cpp
   @brief PAJ7620U2Unit for M5UnitUnified
-
-  SPDX-FileCopyrightText: 2024 M5Stack Technology CO LTD
-
-  SPDX-License-Identifier: MIT
 */
 #include "unit_PAJ7620U2.hpp"
 #include <M5Utility.hpp>
@@ -93,7 +94,6 @@ constexpr Pair register_for_initialize[] = {
     {0xEF, 0x00},  // Bank 0
     {0x41, 0xFF},  // Re-enable interrupts for first 8 gestures
     {0x42, 0x01}   // Re-enable interrupts for wave gesture
-
 #else
     {0xEF, 0x00},  // Bank 0
     {0x37, 0x07},  // R_CursorClampLeft [4:0]
@@ -342,6 +342,15 @@ const types::uid_t UnitPAJ7620U2::uid{"UnitPAJ7620U2"_mmh3};
 const types::uid_t UnitPAJ7620U2::attr{0};
 
 bool UnitPAJ7620U2::begin() {
+    assert(_cfg.stored_size && "stored_size must be greater than zero");
+    if (_cfg.stored_size != _data->capacity()) {
+        _data.reset(new m5::container::CircularBuffer<Data>(_cfg.stored_size));
+        if (!_data) {
+            M5_LIB_LOGE("Failed to allocate");
+            return false;
+        }
+    }
+
     uint16_t id{};
     uint8_t ver{};
 
@@ -375,40 +384,76 @@ bool UnitPAJ7620U2::begin() {
             return false;
         }
     }
-    return select_bank(0, true) && setFrequency(_cfg.frequency) &&
-           setMode(_cfg.mode);
+    if (!select_bank(0, true) || !setFrequency(_cfg.frequency) ||
+        !setMode(_cfg.mode)) {
+        M5_LIB_LOGE("Fauled to settings");
+        return false;
+    }
+
+    return _cfg.start_periodic ? startPeriodicMeasurement() : true;
 }
 
-void UnitPAJ7620U2::update(const bool /* force*/) {
-    switch (_mode) {
-        case Mode::Gesture:
-            _updated = update_gesture();
-            break;
-        case Mode::Proximity:
-            _updated = update_proximity();
-            break;
-        case Mode::Cursor:
-            _updated = update_cursor();
-            break;
-        default:
-            _updated = false;
-            break;
-    }
-    if (_updated) {
-        _latest = m5::utility::millis();
+void UnitPAJ7620U2::update(const bool force) {
+    _updated = false;
+    if (inPeriodic()) {
+        elapsed_time_t at{m5::utility::millis()};
+        if (force || !_latest || at >= _latest + _interval) {
+            Data d{};
+            switch (_mode) {
+                case Mode::Gesture:
+                    _updated = update_gesture(d);
+                    if (_updated && _cfg.store_on_change && !empty()) {
+                        _updated = latest().gesture() != d.gesture();
+                    }
+                    break;
+                case Mode::Proximity:
+                    _updated = update_proximity(d);
+                    if (_updated && _cfg.store_on_change && !empty()) {
+                        _updated = latest().gesture() != d.gesture() ||
+                                   latest().brightness() != d.brightness() ||
+                                   latest().approach() != d.approach();
+                    }
+                    break;
+                case Mode::Cursor:
+                    _updated = update_cursor(d);
+                    if (_updated && _cfg.store_on_change && !empty()) {
+                        _updated = latest().gesture() != d.gesture() ||
+                                   latest().cursorX() != d.cursorX() ||
+                                   latest().cursorY() != d.cursorY();
+                    }
+                    break;
+                default:
+                    return;
+            }
+            if (_updated) {
+                _latest     = at;
+                d.data_mode = _mode;
+                _data->push_back(d);
+            }
+        }
     }
 }
 
-bool UnitPAJ7620U2::update_gesture() {
+bool UnitPAJ7620U2::update_gesture(paj7620u2::Data& d) {
+#if 0
     Gesture ges{};
     if (readGesture(ges) && ges != _gesture) {
         _gesture = ges;
         return true;
     }
     return false;
+#else
+    if (read_gesture(d)) {
+        d.data_gesture = rotate_gesture(
+            static_cast<Gesture>(*(uint16_t*)d.raw.data()), _rotation);
+        return true;
+    }
+    return false;
+#endif
 }
 
-bool UnitPAJ7620U2::update_proximity() {
+bool UnitPAJ7620U2::update_proximity(paj7620u2::Data& d) {
+#if 0
     uint8_t br{}, app{};
     Gesture ges{};
     if (readGesture(ges) && readProximity(br, app)) {
@@ -420,9 +465,18 @@ bool UnitPAJ7620U2::update_proximity() {
         }
     }
     return false;
+#else
+    if (read_gesture(d) && read_proximity(d)) {
+        d.proximity_brightness = d.raw[2];
+        d.proximity_approach   = d.raw[3];
+        return true;
+    }
+    return false;
+#endif
 }
 
-bool UnitPAJ7620U2::update_cursor() {
+bool UnitPAJ7620U2::update_cursor(paj7620u2::Data& d) {
+#if 0
     Gesture ges{};
     uint16_t x{_cursorX}, y{_cursorY};
 
@@ -440,6 +494,29 @@ bool UnitPAJ7620U2::update_cursor() {
         }
     }
     return false;
+#else
+    if (read_gesture(d) && d.gesture() == Gesture::HasObject &&
+        read_cursor(d)) {
+        d.cursor_x = (((uint16_t)(d.raw[3] & 0X0F)) << 8) | d.raw[2];
+        d.cursor_y = (((uint16_t)(d.raw[5] & 0X0F)) << 8) | d.raw[4];
+        return true;
+    }
+    return false;
+
+#endif
+}
+
+bool UnitPAJ7620U2::read_gesture(Data& d) {
+    return read_banked_register(INT_FLAG_1, d.raw.data(), d.raw.size());
+}
+
+bool UnitPAJ7620U2::read_proximity(Data& d) {
+    return read_banked_register(S_AVGY, d.raw.data() + 2, 1) &&
+           read_banked_register(S_STATE, d.raw.data() + 3, 1);
+}
+
+bool UnitPAJ7620U2::read_cursor(Data& d) {
+    return read_banked_register(OBJECT_CENTER_X_LOW, d.raw.data() + 2, 4);
 }
 
 bool UnitPAJ7620U2::readGesture(Gesture& ges) {
@@ -492,6 +569,8 @@ bool UnitPAJ7620U2::readObjectCenter(uint16_t& x, uint16_t& y) {
 }
 
 bool UnitPAJ7620U2::readCursor(uint16_t& x, uint16_t& y) {
+    std::array<uint8_t, 4> raw{};  // X_LOW , 4?
+
     uint8_t xl{}, xh{}, yl{}, yh{};
     if (read_banked_register8(CURSOR_CLAMP_CENTER_X_LOW, xl) &&
         read_banked_register8(CURSOR_CLAMP_CENTER_X_HIGH, xh) &&
@@ -516,8 +595,30 @@ bool UnitPAJ7620U2::resume() {
     return was_wakeup() && enable(true);
 }
 
+bool UnitPAJ7620U2::readFrequency(uint8_t& raw) {
+    return read_banked_register8(R_REF_CLK_CNT_LOW, raw);
+}
+
+bool UnitPAJ7620U2::readFrequency(Frequency& f) {
+    f = Frequency::Unknown;
+
+    uint8_t raw{};
+    if (readFrequency(raw)) {
+        int8_t idx{};
+        for (auto&& e : freq_table) {
+            if (e == raw) {
+                f = static_cast<Frequency>(idx);
+                return true;
+            }
+            ++idx;
+        }
+    }
+    return false;
+}
+
 bool UnitPAJ7620U2::setFrequency(const Frequency f) {
-    if (!write_banked_register8(R_REF_CLK_CNT_LOW,
+    if (f == Frequency::Unknown ||
+        !write_banked_register8(R_REF_CLK_CNT_LOW,
                                 freq_table[m5::stl::to_underlying(f)])) {
         return false;
     }
@@ -549,28 +650,25 @@ bool UnitPAJ7620U2::setMode(const Mode m) {
         }
         ++rv;
     }
-    _mode    = m;
-    _gesture = Gesture::None;
-    _cursorX = _cursorY = 0xFFFF;
-    _brightness         = 0;
-    _approach           = false;
+    _mode = m;
 
     // To resolve bank inconsistencies after register setting
     return select_bank(0, true) &&
            ((_mode != Mode::Proximity) ? setFrequency(_frequency) : true);
 }
 
-bool UnitPAJ7620U2::getApprochThreshold(uint8_t& high, uint8_t& low) {
+bool UnitPAJ7620U2::readApproachThreshold(uint8_t& high, uint8_t& low) {
     return read_banked_register8(R_POX_UB, high) &&
            read_banked_register8(R_POX_LB, low);
 }
 
-bool UnitPAJ7620U2::setApprochThreshold(const uint8_t high, const uint8_t low) {
+bool UnitPAJ7620U2::setApproachThreshold(const uint8_t high,
+                                         const uint8_t low) {
     return write_banked_register8(R_POX_UB, high) &&
            write_banked_register8(R_POX_LB, low);
 }
 
-bool UnitPAJ7620U2::getHorizontalFlip(bool& flip) {
+bool UnitPAJ7620U2::readHorizontalFlip(bool& flip) {
     uint8_t v{};
     if (read_banked_register8(LS_COMP_DAVG_V, v)) {
         flip = (v & 0x01);  // HFlip bit:0
@@ -579,7 +677,7 @@ bool UnitPAJ7620U2::getHorizontalFlip(bool& flip) {
     return false;
 }
 
-bool UnitPAJ7620U2::getVerticalFlip(bool& flip) {
+bool UnitPAJ7620U2::readVerticalFlip(bool& flip) {
     uint8_t v{};
     if (read_banked_register8(LS_COMP_DAVG_V, v)) {
         flip = (v & 0x02);  // VFlip bit:1
@@ -667,5 +765,31 @@ bool UnitPAJ7620U2::get_version(uint8_t& version) {
     return read_banked_register8(VERSION_ID, version);
 }
 
+bool UnitPAJ7620U2::start_periodic_measurement(const paj7620u2::Mode mode,
+                                               const paj7620u2::Frequency freq,
+                                               const uint32_t intervalMs) {
+    if (inPeriodic()) {
+        return false;
+    }
+    return setFrequency(freq) && setMode(mode) &&
+           start_periodic_measurement(intervalMs);
+}
+
+bool UnitPAJ7620U2::start_periodic_measurement(const uint32_t intervalMs) {
+    if (inPeriodic()) {
+        return false;
+    }
+    _interval = intervalMs;
+    _latest   = 0;
+    _periodic = true;
+    return true;
+}
+
+bool UnitPAJ7620U2::stop_periodic_measurement() {
+    _periodic = false;
+    return true;
+}
+
 }  // namespace unit
 }  // namespace m5
+
