@@ -20,9 +20,7 @@ namespace unit {
   @namespace utility
   @brief Utilities for M5UnitComponent
  */
-namespace utility {
-
-}  // namespace utility
+namespace utility {}  // namespace utility
 }  // namespace unit
 }  // namespace m5
 

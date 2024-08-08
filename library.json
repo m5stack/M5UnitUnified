@@ -15,9 +15,6 @@
       "name": "M5Utility"
     },
     {
-      "name": "M5UnitComponent"
-    },
-    {
       "name": "M5HAL"
     }
   ],
