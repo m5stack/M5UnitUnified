@@ -12,10 +12,10 @@
 #ifndef M5_UNIT_COMPONENT_ADAPTER_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_HPP
 
+#include <m5_hal/error.hpp> // M5HAL
 #include <cstdint>
 #include <cstddef>
 #include <memory>
-#include <m5_hal/error.hpp>
 
 class TwoWire;
 namespace m5 {

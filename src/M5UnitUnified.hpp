@@ -7,7 +7,7 @@
   @file M5UnitUnified.hpp
   @brief Main header of M5UnitUnified
 
-  @mainpage M5UnitUnfied
+  @mainpage M5UnitUnified
   Library for abstracted M5 units.  C++11 or later
 */
 #ifndef M5_UNIT_UNIFIED_HPP

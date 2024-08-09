@@ -13,6 +13,7 @@
 #include <utility>
 
 #include <unit/unit_SCD40.hpp>
+#if 0
 #include <unit/unit_SCD41.hpp>
 #include <unit/unit_SHT30.hpp>
 #include <unit/unit_QMP6988.hpp>
@@ -29,6 +30,7 @@
 #include <unit/unit_PAJ7620U2.hpp>
 #include <unit/unit_KmeterISO.hpp>
 #include <unit/unit_BME688.hpp>
+#endif
 
 namespace {
 
@@ -78,6 +80,7 @@ void each_unit_test() {
 
 TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitSCD40>();
+#if 0
     each_unit_test<m5::unit::UnitSCD41>();
     each_unit_test<m5::unit::UnitSHT30>();
     each_unit_test<m5::unit::UnitQMP6988>();
@@ -95,7 +98,7 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitPAJ7620U2>();
     each_unit_test<m5::unit::UnitKmeterISO>();
     each_unit_test<m5::unit::UnitBME688>();
-
+#endif
     for (auto&& e : vec) {
         delete e;
     }

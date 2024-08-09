@@ -11,7 +11,7 @@
 #include "unit_dummy.hpp"
 
 TEST(Component, Children) {
-    UnitDummy u0, u1, u2, u3;
+    m5::unit::UnitDummy u0, u1, u2, u3;
 
     //
     EXPECT_FALSE(u0.hasParent());
@@ -69,8 +69,8 @@ TEST(Component, Children) {
     EXPECT_LT(u3.channel(), 0);
 
     // iteration
-    UnitDummy* ptr[] = {&u1, &u2};
-    size_t i         = 0;
+    m5::unit::UnitDummy* ptr[] = {&u1, &u2};
+    size_t i                   = 0;
     for (auto it = u0.childBegin(); it != u0.childEnd(); ++it) {
         EXPECT_EQ(&(*it), ptr[i++]);
         //        printf("[%u]:%s\n", it->port(), (*it).deviceName());

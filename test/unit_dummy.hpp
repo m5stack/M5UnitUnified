@@ -11,12 +11,13 @@
 
 #include <M5UnitComponent.hpp>
 
+namespace m5 {
+namespace unit {
 // DummyComponent for UnitTest
 class UnitDummy : public m5::unit::Component {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitDummy, 0x00);
+
    public:
-    static const m5::unit::types::uid_t uid;
-    static const m5::unit::types::attr_t attr;
-    static const char name[];
     UnitDummy() : Component(0x00) {
     }
     virtual ~UnitDummy() {
@@ -25,22 +26,11 @@ class UnitDummy : public m5::unit::Component {
     virtual bool begin() override {
         return true;
     }
-    virtual void update(bool) override {
+    virtual void update(const bool force = false) override {
         ++count;
     }
     uint32_t count{};
-
-    
-   protected:
-    virtual const char* unit_device_name() const override {
-        return name;
-    }
-    virtual m5::unit::types::uid_t unit_identifier() const override {
-        return uid;
-    }
-    virtual m5::unit::types::attr_t unit_attribute() const override {
-        return attr;
-    }
 };
-
+}  // namespace unit
+}  // namespace m5
 #endif
