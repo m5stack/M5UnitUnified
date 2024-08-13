@@ -6,13 +6,4 @@
 
   SPDX-License-Identifier: MIT
 */
-
 #include "utility.hpp"
-
-namespace m5 {
-namespace unit {
-namespace utility {
-
-}  // namespace utility
-}  // namespace unit
-}  // namespace m5

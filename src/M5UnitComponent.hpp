@@ -73,14 +73,17 @@ class Component {
     ///@name Constructor
     ///@{
     explicit Component(const uint8_t addr = 0x00);
-    Component(const Component&)     = delete;
+
+    Component(const Component&) = delete;
+
     Component(Component&&) noexcept = default;
     ///@}
 
     ///@warning COPY PROHIBITED
     ///@name Assignment
     ///@{
-    Component& operator=(const Component&)     = delete;
+    Component& operator=(const Component&) = delete;
+
     Component& operator=(Component&&) noexcept = default;
     ///@}
 
@@ -449,9 +452,12 @@ class PeriodicMeasurementAdapter {
     static const types::attr_t attr;                               \
     static const char name[];                                      \
                                                                    \
-    cls(const cls&)                = delete;                       \
-    cls& operator=(const cls&)     = delete;                       \
-    cls(cls&&) noexcept            = default;                      \
+    cls(const cls&) = delete;                                      \
+                                                                   \
+    cls& operator=(const cls&) = delete;                           \
+                                                                   \
+    cls(cls&&) noexcept = default;                                 \
+                                                                   \
     cls& operator=(cls&&) noexcept = default;                      \
                                                                    \
    protected:                                                      \

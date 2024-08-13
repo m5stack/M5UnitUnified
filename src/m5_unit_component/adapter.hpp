@@ -42,11 +42,15 @@ class Adapter {
     Adapter(m5::hal::bus::Bus& bus, const uint8_t addr) : Adapter(&bus, addr) {
     }
     ///@}
-    Adapter(const Adapter&)                = delete;
-    Adapter(Adapter&&) noexcept            = default;
-    Adapter& operator=(const Adapter&)     = delete;
+    Adapter(const Adapter&) = delete;
+
+    Adapter(Adapter&&) noexcept = default;
+
+    Adapter& operator=(const Adapter&) = delete;
+
     Adapter& operator=(Adapter&&) noexcept = default;
-    ~Adapter()                             = default;
+
+    virtual ~Adapter() = default;
 
     inline uint8_t address() const {
         return _impl->address();
