@@ -6,10 +6,6 @@
 /*!
   @file M5UnitComponent.hpp
   @brief Main header of M5UnitComponent
-
-  @mainpage M5UnitComponent
-  Library for componentising the functions of each device so that they can be
-  handled by M5UnitUnified. C++11 or later.
 */
 #ifndef M5_UNIT_COMPONENT_HPP
 #define M5_UNIT_COMPONENT_HPP
@@ -33,16 +29,7 @@ class Adapter;
 }  // namespace unit
 }  // namespace m5
 
-/*!
-  @namespace m5
-  @brief Top level namespace of M5
- */
 namespace m5 {
-
-/*!
-  @namespace unit
-  @brief For unit components
-*/
 namespace unit {
 
 /*!
@@ -464,7 +451,7 @@ class PeriodicMeasurementAdapter {
     }
     ///@}
 
-  protected:
+   protected:
     ///@note Must implement in derived class
     ///@name Pure virtual functions
     ///@{
