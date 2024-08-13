@@ -40,8 +40,7 @@ bool UnitUnified::add(Component& u, TwoWire& wire) {
         return false;
     }
 
-    M5_LIB_LOGD("Add [%s]:0x%02x %zu", u.deviceName(), u.address(),
-                u.childrenSize());
+    M5_LIB_LOGD("Add [%s]:0x%02x %zu", u.deviceName(), u.address(), u.childrenSize());
     u._manager = this;
     u.assign(wire);
     u._order = ++_registerCount;
@@ -79,8 +78,7 @@ bool UnitUnified::add_children(Component& u) {
             return false;
         }
         if (!add(*it, ad)) {
-            M5_LIB_LOGE("Failed to add %s to %s", it->deviceName(),
-                        u.deviceName());
+            M5_LIB_LOGE("Failed to add %s to %s", it->deviceName(), u.deviceName());
             return false;
         }
         ++it;
@@ -92,8 +90,8 @@ bool UnitUnified::begin() {
     return !std::any_of(_units.begin(), _units.end(), [](Component* c) {
         bool ret = c->_begun = c->begin();
         if (!ret) {
-            M5_LIB_LOGE("Failed to begin: [%s] ID:{0X%08X} ADDR{0X%02X}",
-                        c->deviceName(), c->identifier(), c->address());
+            M5_LIB_LOGE("Failed to begin: [%s] ID:{0X%08X} ADDR{0X%02X}", c->deviceName(), c->identifier(),
+                        c->address());
         }
         return !ret;
     });
@@ -109,8 +107,7 @@ void UnitUnified::update() {
 }
 
 std::string UnitUnified::debugInfo() const {
-    std::string s = m5::utility::formatString("\nM5UnitUnified: %zu units\n",
-                                              _units.size());
+    std::string s = m5::utility::formatString("\nM5UnitUnified: %zu units\n", _units.size());
     for (auto&& u : _units) {
         if (!u->hasParent()) {
             s += make_unit_info(u, 0);
@@ -119,10 +116,8 @@ std::string UnitUnified::debugInfo() const {
     return m5::utility::trim(s);
 }
 
-std::string UnitUnified::make_unit_info(const Component* u,
-                                        const uint8_t indent) const {
-    std::string s = m5::utility::formatString("%*c%s\n", indent * 4, ' ',
-                                              u->debugInfo().c_str());
+std::string UnitUnified::make_unit_info(const Component* u, const uint8_t indent) const {
+    std::string s = m5::utility::formatString("%*c%s\n", indent * 4, ' ', u->debugInfo().c_str());
 
     if (u->hasChildren()) {
         s += make_unit_info(u->_child, indent + 1);

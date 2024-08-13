@@ -73,8 +73,7 @@ class UnitUnified {
     bool add_children(Component& u);
     bool add(Component& u, m5::unit::Adapter* a);
 
-    std::string make_unit_info(const Component* u,
-                               const uint8_t indent = 0) const;
+    std::string make_unit_info(const Component* u, const uint8_t indent = 0) const;
 
    protected:
     container_type _units;

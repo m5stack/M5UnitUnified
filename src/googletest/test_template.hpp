@@ -56,8 +56,7 @@ class GlobalFixture : public ::testing::Environment {
  */
 template <typename U, typename TP>
 class ComponentTestBase : public ::testing::TestWithParam<TP> {
-    static_assert(std::is_base_of<m5::unit::Component, U>::value,
-                  "U must be derived from Component");
+    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
    protected:
     virtual void SetUp() override {
@@ -67,8 +66,7 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
             GTEST_SKIP();
             return;
         }
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(),
-                                         is_using_hal() ? "HAL" : "Wire");
+        ustr = m5::utility::formatString("%s:%s", unit->deviceName(), is_using_hal() ? "HAL" : "Wire");
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
             GTEST_SKIP();
@@ -87,8 +85,7 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
             i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
             i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
             auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) &&
-                   Units.begin();
+            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) && Units.begin();
         }
         // Using TwoWire
         return Units.add(*unit, Wire) && Units.begin();

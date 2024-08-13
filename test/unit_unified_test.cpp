@@ -59,8 +59,7 @@ void each_unit_test() {
 
     // Identical IDs exist?
     for (auto&& e : vec) {
-        EXPECT_NE(unit->identifier(), e->identifier())
-            << unit->deviceName() << " / " << e->deviceName();
+        EXPECT_NE(unit->identifier(), e->identifier()) << unit->deviceName() << " / " << e->deviceName();
     }
 
     // Move

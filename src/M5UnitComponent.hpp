@@ -270,62 +270,38 @@ class Component {
 
     ///@name Read/Write
     ///@{
-    m5::hal::error::error_t readWithTransaction(uint8_t* data,
-                                                const size_t len);
+    m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len,
-                      const uint32_t delayMillis, const bool stop = true);
+    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len, const uint32_t delayMillis,
+                      const bool stop = true);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool readRegister8(const Reg reg, uint8_t& result,
-                       const uint32_t delayMillis, const bool stop = true);
+    bool readRegister8(const Reg reg, uint8_t& result, const uint32_t delayMillis, const bool stop = true);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool readRegister16(const Reg reg, uint16_t& result,
-                        const uint32_t delayMillis, const bool stop = true);
-    m5::hal::error::error_t writeWithTransaction(const uint8_t* data,
-                                                 const size_t len,
+    bool readRegister16(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop = true);
+    m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true);
+    template <typename Reg,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
+                                      std::nullptr_t>::type = nullptr>
+    m5::hal::error::error_t writeWithTransaction(const Reg reg, const uint8_t* data, const size_t len,
                                                  const bool stop = true);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    m5::hal::error::error_t writeWithTransaction(const Reg reg,
-                                                 const uint8_t* data,
-                                                 const size_t len,
-                                                 const bool stop = true);
+    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr, const size_t len = 0U, const bool stop = true);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr,
-                       const size_t len = 0U, const bool stop = true);
+    bool writeRegister8(const Reg reg, const uint8_t value, const bool stop = true);
     template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
+              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool writeRegister8(const Reg reg, const uint8_t value,
-                        const bool stop = true);
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value &&
-                                          std::is_unsigned<Reg>::value &&
-                                          sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    bool writeRegister16(const Reg reg, const uint16_t value,
-                         const bool stop = true);
+    bool writeRegister16(const Reg reg, const uint16_t value, const bool stop = true);
     ///@}
 
    protected:
@@ -403,8 +379,7 @@ class PeriodicMeasurementAdapter {
     */
     template <typename... Args>
     bool startPeriodicMeasurement(Args&&... args) {
-        return static_cast<Derived*>(this)->start_periodic_measurement(
-            std::forward<Args>(args)...);
+        return static_cast<Derived*>(this)->start_periodic_measurement(std::forward<Args>(args)...);
     }
     /*!
       @brief Stop periodic measurement
@@ -414,8 +389,7 @@ class PeriodicMeasurementAdapter {
     */
     template <typename... Args>
     bool stopPeriodicMeasurement(Args&&... args) {
-        return static_cast<Derived*>(this)->stop_periodic_measurement(
-            std::forward<Args>(args)...);
+        return static_cast<Derived*>(this)->stop_periodic_measurement(std::forward<Args>(args)...);
     }
     ///@}
 
@@ -492,31 +466,30 @@ class PeriodicMeasurementAdapter {
     }
 
 // Helper for creating derived class from PeriodicMeasurementAdapter
-#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md) \
-   protected:                                                               \
-    friend class PeriodicMeasurementAdapter<cls, md>;                       \
-                                                                            \
-    inline md oldest_periodic_data() const {                                \
-        return !_data->empty() ? _data->front().value() : md{};             \
-    }                                                                       \
-    inline md latest_periodic_data() const {                                \
-        return !_data->empty() ? _data->back().value() : md{};              \
-    }                                                                       \
-    inline virtual size_t available_periodic_measurement_data()             \
-        const override {                                                    \
-        return _data->size();                                               \
-    }                                                                       \
-    inline virtual bool empty_periodic_measurement_data() const override {  \
-        return _data->empty();                                              \
-    }                                                                       \
-    inline virtual bool full_periodic_measurement_data() const override {   \
-        return _data->full();                                               \
-    }                                                                       \
-    inline virtual void discard_periodic_measurement_data() override {      \
-        _data->pop_front();                                                 \
-    }                                                                       \
-    inline virtual void flush_periodic_measurement_data() override {        \
-        _data->clear();                                                     \
+#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)      \
+   protected:                                                                    \
+    friend class PeriodicMeasurementAdapter<cls, md>;                            \
+                                                                                 \
+    inline md oldest_periodic_data() const {                                     \
+        return !_data->empty() ? _data->front().value() : md{};                  \
+    }                                                                            \
+    inline md latest_periodic_data() const {                                     \
+        return !_data->empty() ? _data->back().value() : md{};                   \
+    }                                                                            \
+    inline virtual size_t available_periodic_measurement_data() const override { \
+        return _data->size();                                                    \
+    }                                                                            \
+    inline virtual bool empty_periodic_measurement_data() const override {       \
+        return _data->empty();                                                   \
+    }                                                                            \
+    inline virtual bool full_periodic_measurement_data() const override {        \
+        return _data->full();                                                    \
+    }                                                                            \
+    inline virtual void discard_periodic_measurement_data() override {           \
+        _data->pop_front();                                                      \
+    }                                                                            \
+    inline virtual void flush_periodic_measurement_data() override {             \
+        _data->clear();                                                          \
     }
 
 ///@endcond

@@ -42,11 +42,11 @@ class Adapter {
     Adapter(m5::hal::bus::Bus& bus, const uint8_t addr) : Adapter(&bus, addr) {
     }
     ///@}
-    Adapter(const Adapter&)            = delete;
-    Adapter(Adapter&&)                 = default;
-    Adapter& operator=(const Adapter&) = delete;
-    Adapter& operator=(Adapter&&)      = default;
-    ~Adapter()                         = default;
+    Adapter(const Adapter&)                = delete;
+    Adapter(Adapter&&) noexcept            = default;
+    Adapter& operator=(const Adapter&)     = delete;
+    Adapter& operator=(Adapter&&) noexcept = default;
+    ~Adapter()                             = default;
 
     inline uint8_t address() const {
         return _impl->address();
@@ -66,25 +66,21 @@ class Adapter {
     ///@name R/W
     ///@{
     /*! @brief Reading data with transactions */
-    inline m5::hal::error::error_t readWithTransaction(uint8_t* data,
-                                                       const size_t len) {
+    inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) {
         return _impl->readWithTransaction(data, len);
     }
     //! @brief Writeing data with transactions */
-    inline m5::hal::error::error_t writeWithTransaction(
-        const uint8_t* data, const size_t len, const bool stop = true) {
+    inline m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true) {
         return _impl->writeWithTransaction(data, len, stop);
     }
     //! @brief Writeing data with transactions (reg8)*/
-    inline m5::hal::error::error_t writeWithTransaction(
-        const uint8_t reg, const uint8_t* data, const size_t len,
-        const bool stop = true) {
+    inline m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                        const bool stop = true) {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
     //! @brief Writeing data with transactions (reg16) */
-    inline m5::hal::error::error_t writeWithTransaction(
-        const uint16_t reg, const uint8_t* data, const size_t len,
-        const bool stop = true) {
+    inline m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                        const bool stop = true) {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
     ///@}
@@ -95,8 +91,7 @@ class Adapter {
         Impl() = default;
         explicit Impl(const uint8_t addr) : _addr(addr) {
         }
-        Impl(const uint8_t addr, const uint32_t clock)
-            : _addr(addr), _clock(clock) {
+        Impl(const uint8_t addr, const uint32_t clock) : _addr(addr), _clock(clock) {
         }
 
         virtual ~Impl() = default;
@@ -115,30 +110,20 @@ class Adapter {
             return new Impl(addr, _clock);
         }
 
-        virtual m5::hal::error::error_t readWithTransaction(uint8_t*,
-                                                            const size_t) {
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t*, const size_t) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t*,
-                                                             const size_t,
-                                                             const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t*, const size_t, const bool) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t,
-                                                             const uint8_t*,
-                                                             const size_t,
-                                                             const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t, const uint8_t*, const size_t, const bool) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t,
-                                                             const uint8_t*,
-                                                             const size_t,
-                                                             const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t, const uint8_t*, const size_t, const bool) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
-        virtual m5::hal::error::error_t generalCall(const uint8_t*,
-                                                    const size_t) {
+        virtual m5::hal::error::error_t generalCall(const uint8_t*, const size_t) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 

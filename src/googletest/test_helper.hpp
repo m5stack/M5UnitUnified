@@ -31,11 +31,9 @@ namespace googletest {
   been set and _latest was cleared
  */
 template <class U>
-uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8,
-                                   void (*callback)(U*)       = nullptr,
+uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, void (*callback)(U*) = nullptr,
                                    const bool skip_after_test = false) {
-    static_assert(std::is_base_of<m5::unit::Component, U>::value,
-                  "U must be derived from Component");
+    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
     auto interval = unit->interval();
     decltype(interval) avg{}, avgCnt{};
