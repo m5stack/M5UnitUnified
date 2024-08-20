@@ -12,7 +12,6 @@
 
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
-#include "m5_unit_component/utility.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -314,11 +313,11 @@ class Component {
     virtual types::attr_t unit_attribute() const = 0;
 
     // Ensure the adapter for children if Hub
-    virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
+    inline virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
         return nullptr;
     }
     // Select valid channel if exists(Hub etc...)
-    virtual m5::hal::error::error_t select_channel(const uint8_t) {
+    inline virtual m5::hal::error::error_t select_channel(const uint8_t) {
         return m5::hal::error::error_t::OK;
     }
 

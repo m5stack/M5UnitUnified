@@ -7,29 +7,23 @@
   UnitTest for M5UnitUnified
 */
 #include <gtest/gtest.h>
+#include <M5Unified.h>
 #include <M5UnitComponent.hpp>
 #include <M5UnitUnified.hpp>
 #include <algorithm>
 #include <utility>
 
-#include <unit/unit_SCD40.hpp>
+#include <M5UnitUnifiedENV.h>
+#include <M5UnitUnifiedMETER.h>
+#include <M5UnitUnifiedHEART.h>
+#include <M5UnitUnifiedHUB.h>
+#include <M5UnitUnifiedGESTURE.h>
+#include <M5UnitUnifiedKmeterISO.h>
+#include <M5UnitUnifiedTVOC.h>
+
 #if 0
-#include <unit/unit_SCD41.hpp>
-#include <unit/unit_SHT30.hpp>
-#include <unit/unit_QMP6988.hpp>
-#include <unit/unit_ENV3.hpp>
-#include <unit/unit_MAX30100.hpp>
 #include <unit/unit_MFRC522.hpp>
 #include <unit/unit_WS1850S.hpp>
-#include <unit/unit_ads1113.hpp>
-#include <unit/unit_ads1114.hpp>
-#include <unit/unit_ads1115.hpp>
-#include <unit/unit_Ameter.hpp>
-#include <unit/unit_Vmeter.hpp>
-#include <unit/unit_SGP30.hpp>
-#include <unit/unit_PAJ7620U2.hpp>
-#include <unit/unit_KmeterISO.hpp>
-#include <unit/unit_BME688.hpp>
 #endif
 
 namespace {
@@ -50,6 +44,8 @@ void each_unit_test() {
 
     U* unit = new U();
     EXPECT_TRUE((bool)unit);
+
+    M5_LOGI(">>%02XH %08X [%s]", U::DEFAULT_ADDRESS, U::uid, U::name);
 
     // Are the values the same via class and via instance?
     EXPECT_EQ(+U::DEFAULT_ADDRESS, unit->address());
@@ -77,26 +73,35 @@ void each_unit_test() {
 
 }  // namespace
 
+// Check each value and check duplicate uid
 TEST(UnitUnified, EachUnit) {
+    // ENV
     each_unit_test<m5::unit::UnitSCD40>();
-#if 0
     each_unit_test<m5::unit::UnitSCD41>();
     each_unit_test<m5::unit::UnitSHT30>();
     each_unit_test<m5::unit::UnitQMP6988>();
     each_unit_test<m5::unit::UnitENV3>();
-    each_unit_test<m5::unit::UnitMAX30100>();
-    each_unit_test<m5::unit::UnitMFRC522>();
-    each_unit_test<m5::unit::UnitWS1850S>();
+    each_unit_test<m5::unit::UnitBME688>();
+    // METER
     each_unit_test<m5::unit::UnitADS1113>();
     each_unit_test<m5::unit::UnitADS1114>();
     each_unit_test<m5::unit::UnitADS1115>();
     each_unit_test<m5::unit::UnitADS1115WithEEPROM>();
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();
-    each_unit_test<m5::unit::UnitSGP30>();
+    // HEART
+    each_unit_test<m5::unit::UnitMAX30100>();
+    // HUB
+    each_unit_test<m5::unit::UnitPCA9548AP>();
+    // GESTURE
     each_unit_test<m5::unit::UnitPAJ7620U2>();
-    each_unit_test<m5::unit::UnitKmeterISO>();
-    each_unit_test<m5::unit::UnitBME688>();
+    // KmeterISO
+    each_unit_test<m5::unit::UnitSTM32F030>();
+    // TVOC
+    each_unit_test<m5::unit::UnitSGP30>();
+#if 0
+    each_unit_test<m5::unit::UnitMFRC522>();
+    each_unit_test<m5::unit::UnitWS1850S>();
 #endif
     for (auto&& e : vec) {
         delete e;
