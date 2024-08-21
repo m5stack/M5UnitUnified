@@ -26,12 +26,15 @@ bool UnitUnified::add(Component& u, m5::hal::bus::Bus* bus) {
     }
 
     M5_LIB_LOGD("Add [%s]:0x%02x", u.deviceName(), u.address());
-    u._manager = this;
-    u.assign(bus);
-    u._order = ++_registerCount;
-    _units.emplace_back(&u);
 
-    return add_children(u);
+    u._manager = this;
+    if (u.assign(bus)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign");
+    return false;
 }
 
 bool UnitUnified::add(Component& u, TwoWire& wire) {
@@ -41,12 +44,15 @@ bool UnitUnified::add(Component& u, TwoWire& wire) {
     }
 
     M5_LIB_LOGD("Add [%s]:0x%02x %zu", u.deviceName(), u.address(), u.childrenSize());
-    u._manager = this;
-    u.assign(wire);
-    u._order = ++_registerCount;
-    _units.emplace_back(&u);
 
-    return add_children(u);
+    u._manager = this;
+    if (u.assign(wire)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign");
+    return false;
 }
 
 bool UnitUnified::add(Component& u, m5::unit::Adapter* ad) {
@@ -58,6 +64,7 @@ bool UnitUnified::add(Component& u, m5::unit::Adapter* ad) {
         M5_LIB_LOGE("Adapter null");
         return false;
     }
+
     M5_LIB_LOGD("Add [%s]:0x%02x", u.deviceName(), u.address());
 
     u._manager = this;
@@ -72,6 +79,7 @@ bool UnitUnified::add_children(Component& u) {
     auto it = u.childBegin();
     while (it != u.childEnd()) {
         auto ch = it->channel();
+
         auto ad = u.getAdapter(ch);
         if (!ad) {
             M5_LIB_LOGE("Failed to getAdapter() %s:%u", u.deviceName(), ch);

@@ -312,7 +312,7 @@ class Component {
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
 
-    // Ensure the adapter for children if Hub
+    // Ensure the adapter for children
     inline virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
         return nullptr;
     }

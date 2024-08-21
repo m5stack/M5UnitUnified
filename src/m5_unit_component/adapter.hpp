@@ -123,13 +123,11 @@ class Adapter {
         virtual m5::hal::error::error_t generalCall(const uint8_t*, const size_t) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-
        protected:
         uint8_t _addr{};
         uint32_t _clock{100000};
     };
     ///@endcond
-
    protected:
     std::unique_ptr<Impl> _impl{};
     Adapter* _parent{};
