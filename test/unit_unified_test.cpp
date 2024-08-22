@@ -96,7 +96,7 @@ TEST(UnitUnified, EachUnit) {
     // GESTURE
     each_unit_test<m5::unit::UnitPAJ7620U2>();
     // KmeterISO
-    each_unit_test<m5::unit::UnitSTM32F030>();
+    each_unit_test<m5::unit::UnitKmeterISO>();
     // TVOC
     each_unit_test<m5::unit::UnitSGP30>();
 #if 0

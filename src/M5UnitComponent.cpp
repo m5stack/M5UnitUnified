@@ -211,10 +211,12 @@ bool Component::generalCall(const uint8_t* data, const size_t len) {
 
 bool Component::changeAddress(const uint8_t addr) {
     if (m5::utility::isValidI2CAddress(addr)) {
+        M5_LIB_LOGI("Change to address %x", addr);
         _addr = addr;
         _adapter.reset(_adapter->duplicate(addr));
         return true;
     }
+    M5_LIB_LOGE("Invalid address %x", addr);
     return false;
 }
 
