@@ -50,7 +50,7 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, void (*cal
                 ++avgCnt;
                 avg += duration;
                 // M5_LOGI("dur:%ld", duration);
-                // EXPECT_LE(duration, interval + 1);
+                //  EXPECT_LE(duration, interval + 1);
             }
             prev = um;
             if (callback) {

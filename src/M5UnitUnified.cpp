@@ -80,9 +80,10 @@ bool UnitUnified::add_children(Component& u) {
     while (it != u.childEnd()) {
         auto ch = it->channel();
 
-        auto ad = u.getAdapter(ch);
+        M5_LIB_LOGV("%s duplicate %u", u.deviceName(), ch);
+        auto ad = u.duplicate_adapter(ch);
         if (!ad) {
-            M5_LIB_LOGE("Failed to getAdapter() %s:%u", u.deviceName(), ch);
+            M5_LIB_LOGE("Failed to ensure_adapter() %s:%u", u.deviceName(), ch);
             return false;
         }
         if (!add(*it, ad)) {

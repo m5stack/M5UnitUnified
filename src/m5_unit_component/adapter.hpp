@@ -129,9 +129,10 @@ class Adapter {
         uint32_t _clock{100000};
     };
     ///@endcond
+
    protected:
     std::unique_ptr<Impl> _impl{};
-    Adapter* _parent{};
+    //    Adapter* _parent{};
 };
 
 }  // namespace unit

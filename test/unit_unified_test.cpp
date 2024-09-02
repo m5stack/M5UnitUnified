@@ -86,7 +86,8 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitADS1113>();
     each_unit_test<m5::unit::UnitADS1114>();
     each_unit_test<m5::unit::UnitADS1115>();
-    each_unit_test<m5::unit::UnitADS1115WithEEPROM>();
+    //    each_unit_test<m5::unit::UnitADS1115WithEEPROM>();
+    each_unit_test<m5::unit::meter::UnitEEPROM>();
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();
     // HEART

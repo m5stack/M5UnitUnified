@@ -93,8 +93,7 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
 
     //!@brief Function returning true if M5HAL is used (decision based on TP)
     virtual bool is_using_hal() const = 0;
-    //! @brief return m5::unit::Component-derived class instance (decision based
-    //! on TP)
+    //! @brief return m5::unit::Component-derived class instance (decision based on TP)
     virtual U* get_instance() = 0;
 
     std::string ustr{};

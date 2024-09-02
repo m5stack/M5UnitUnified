@@ -149,9 +149,9 @@ class Component {
     inline uint8_t address() const {
         return _addr;
     }
-    //! @brief Gets the adapter for children
-    inline Adapter* getAdapter(const uint8_t ch) {
-        return ensure_adapter(ch);
+    //! @brief Gets the my access adapter
+    inline Adapter* adapter() const {
+        return _adapter.get();
     }
     ///@}
 
@@ -166,8 +166,7 @@ class Component {
         return _updated;
     }
     /*!
-      @brief Time elapsed since start-up when the measurement data was updated
-      in update()
+      @brief Time elapsed since start-up when the measurement data was updated in update()
       @return Updated time (Unit: ms)
     */
     inline types::elapsed_time_t updatedMillis() const {
@@ -197,8 +196,7 @@ class Component {
     inline bool hasParent() const {
         return _parent;
     }
-    //! @brief Are there any other devices connected to the same parent unit
-    //! besides yourself?
+    //! @brief Are there any other devices connected to the same parent unit besides yourself?
     inline bool hasSiblings() const {
         return _prev || _next;
     }
@@ -312,8 +310,9 @@ class Component {
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
 
-    // Ensure the adapter for children
-    inline virtual Adapter* ensure_adapter(const uint8_t /*ch*/) {
+    // Duplicate the adapter for children
+    // Note that ownership of the return pointer is delegated to the destination
+    inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/) {
         return nullptr;
     }
     // Select valid channel if exists(Hub etc...)
@@ -326,15 +325,15 @@ class Component {
     bool changeAddress(const uint8_t addr);
 
    protected:
-    UnitUnified* _manager{};
-    std::unique_ptr<m5::unit::Adapter> _adapter{};
-
     // For periodic measurement
     types::elapsed_time_t _latest{}, _interval{};
     bool _periodic{};  // During periodic measurement?
     bool _updated{};
 
    private:
+    UnitUnified* _manager{};
+    std::unique_ptr<m5::unit::Adapter> _adapter{};
+
     uint32_t _order{};
     component_config_t _uccfg{};
     int16_t _channel{-1};  // valid [0...]
