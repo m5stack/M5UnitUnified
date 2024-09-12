@@ -33,31 +33,29 @@ size_t Component::childrenSize() const {
     return sz;
 }
 
-bool Component::exists(const uint8_t ch) const {
+bool Component::existsChild(const uint8_t ch) const {
     if (!_child) {
         return false;
     }
-    return std::any_of(childBegin(), childEnd(),
-                       [&ch](const Component& c) { return c.channel() != 0xFF && ch == c.channel(); });
+    return std::any_of(childBegin(), childEnd(), [&ch](const Component& c) { return ch == c.channel(); });
 }
 
 bool Component::add(Component& c, const int16_t ch) {
-    if (childrenSize() >= _uccfg.max_children) {
+    if (childrenSize() >= _component_cfg.max_children) {
         M5_LIB_LOGE("Can't connect any more");
         return false;
     }
-    if (exists(ch)) {
-        M5_LIB_LOGE("Already connected channel:%u", ch);
+    if (existsChild(ch)) {
+        M5_LIB_LOGE("Already connected an other unit at channel:%u", ch);
         return false;
     }
     if (isRegistered()) {
         M5_LIB_LOGE(
-            "As the parent unit is already registered with the UnitUnified, no "
-            "additional children can be added.");
+            "As the parent unit is already registered with the UnitUnified, no additional children can be added");
         return false;
     }
     if (c.isRegistered()) {
-        M5_LIB_LOGE("Children already registered with UnitUnified cannot be added.");
+        M5_LIB_LOGE("Children already registered with UnitUnified cannot be added");
         return false;
     }
 
@@ -105,7 +103,7 @@ Component* Component::child(const uint8_t ch) const {
 bool Component::assign(m5::hal::bus::Bus* bus) {
     if (_addr) {
         _adapter.reset(new Adapter(bus, _addr));
-        _adapter->setClock(_uccfg.clock);
+        _adapter->setClock(_component_cfg.clock);
     }
     return static_cast<bool>(_adapter);
 }
@@ -113,7 +111,7 @@ bool Component::assign(m5::hal::bus::Bus* bus) {
 bool Component::assign(TwoWire& wire) {
     if (_addr) {
         _adapter.reset(new Adapter(wire, _addr));
-        _adapter->setClock(_uccfg.clock);
+        _adapter->setClock(_component_cfg.clock);
     }
     return static_cast<bool>(_adapter);
 }

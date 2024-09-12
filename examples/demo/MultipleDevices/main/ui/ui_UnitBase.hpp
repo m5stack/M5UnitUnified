@@ -20,6 +20,7 @@ class UnitUIBase {
     virtual ~UnitUIBase();
 
     bool lock(portTickType bt = portMAX_DELAY);
+    // TickType_t 
     void unlock();
 
     virtual void construct()                                            = 0;

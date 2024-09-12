@@ -32,13 +32,12 @@ void UnitVmeterSmallUI::construct() {
     _voltagePlotter.reset(new m5::ui::Plotter(_parent, pw, pw, ph));
     _voltagePlotter->setUnitString(vustr);
     _voltagePlotter->setGaugeColor(voltage_gauge_color);
-    
+
     _intermediateBuffer.reserve(pw);
     _intermediateBuffer.clear();
 }
 
 void UnitVmeterSmallUI::push_back(const float mv) {
-    //    _intermediateBuffer.emplace_back(std::fabs(mv));
     _intermediateBuffer.emplace_back(mv);
 }
 

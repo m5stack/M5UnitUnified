@@ -39,11 +39,13 @@ class Component {
    public:
     /*!
       @struct component_config_t
-      @brief Component basic settings
+      @brief Component basic settings for begin
      */
     struct component_config_t {
         //! Clock for communication (default as 100000)
         uint32_t clock{100000};
+        //! Maximum number of periodic measurement data to be stored
+        uint32_t stored_size{1};
         //! Does the user call Unit's update? (default as false)
         bool self_update{false};
         //! Maximum number of units that can be connected (default as 0)
@@ -55,17 +57,14 @@ class Component {
       @brief Base settings for begin
       @note Derived classes are defined by deriving their own config_t from this
      */
-    struct config_t {
-        //! Maximum number of periodic measurement data to be stored
-        uint32_t stored_size{1};
-    };
+    struct config_t {};
 
     ///@warning Define the same name and type in the derived class.
     ///@name Fixed parameters for class
     ///@{
-    static const types::uid_t uid;    //!< @brief Unique identifier for device
+    static const types::uid_t uid;    //!< @brief Unique identifier
     static const types::attr_t attr;  //!< @brief Attributes
-    static const char name[];         //!< @brief device name
+    static const char name[];         //!< @brief Device name string
     ///@}
 
     ///@warning COPY PROHIBITED
@@ -88,24 +87,23 @@ class Component {
 
     virtual ~Component() = default;
 
-    ///@name Settings
+    ///@name Component settings
     ///@{
     /*! @brief Gets the configuration */
     inline component_config_t component_config() {
-        return _uccfg;
+        return _component_cfg;
     }
     //! @brief Set the configuration
     inline void component_config(const component_config_t& cfg) {
-        _uccfg = cfg;
+        _component_cfg = cfg;
     }
-
     ///@}
 
     ///@name Functions that must be inherited
     ///@{
     /*!
       @brief Begin unit
-      @warning Call parent begin in inherited function
+      @details Initiate functions based on component config and unit config
     */
     virtual bool begin() {
         return true;
@@ -141,7 +139,7 @@ class Component {
     inline int16_t channel() const {
         return _channel;
     }
-    //! @brief Is registered to Units manager?
+    //! @brief Is the unit registered with the manager?
     inline bool isRegistered() const {
         return _manager != nullptr;
     }
@@ -149,7 +147,10 @@ class Component {
     inline uint8_t address() const {
         return _addr;
     }
-    //! @brief Gets the my access adapter
+    /*!
+      @brief Gets the access adapter
+      @warning Ownership is retained by the unit and should not be released
+     */
     inline Adapter* adapter() const {
         return _adapter.get();
     }
@@ -206,8 +207,8 @@ class Component {
     }
     //! @brief Number of units connected to me
     size_t childrenSize() const;
-    //! @brief Is there a unit connected to the specified channel?
-    bool exists(const uint8_t ch) const;
+    //! @brief Is there an other unit connected to the specified channel?
+    bool existsChild(const uint8_t ch) const;
     //! @brief Gets the deviceconnected to the specified channel
     Component* child(const uint8_t chhanle) const;
     //! @brief Connect the unit to the specified channel
@@ -216,49 +217,61 @@ class Component {
     bool selectChannel(const uint8_t ch = 8);
     ///@}
 
-    template <class T>
-    class Iterator : public std::iterator<std::forward_iterator_tag, T*> {
+    ///@cond
+    template <typename T>
+    class iterator {
        public:
-        explicit Iterator(T* c) : _cur(c) {
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
+
+        explicit iterator(Component* c = nullptr) : _ptr(c) {
         }
-        Iterator& operator++() {
-            if (_cur) {
-                _cur = _cur->_next;
-            }
+
+        reference operator*() const {
+            return *_ptr;
+        }
+        pointer operator->() const {
+            return _ptr;
+        }
+        iterator& operator++() {
+            _ptr = _ptr ? _ptr->_next : nullptr;
             return *this;
         }
-        inline T& operator*() const {
-            return *_cur;
+        iterator operator++(int) {
+            auto tmp = *this;
+            ++(*this);
+            return tmp;
         }
-        inline T* operator->() const {
-            return _cur;
+        friend bool operator==(const iterator& a, const iterator& b) {
+            return a._ptr == b._ptr;
         }
-        inline bool operator==(const Iterator& o) const {
-            return _cur == o._cur;
-        }
-        inline bool operator!=(const Iterator& o) const {
-            return !operator==(o);
+        friend bool operator!=(const iterator& a, const iterator& b) {
+            return a._ptr != b._ptr;
         }
 
        private:
-        T* _cur{};
+        Component* _ptr;
     };
-    using child_iterator       = Iterator<Component>;
-    using const_child_iterator = Iterator<const Component>;
+    ///@endcond
 
     ///@name Iterator for children
     ///@{
+    using child_iterator       = iterator<Component>;
+    using const_child_iterator = iterator<const Component>;
     inline child_iterator childBegin() noexcept {
         return child_iterator(_child);
     }
     inline child_iterator childEnd() noexcept {
-        return child_iterator(nullptr);
+        return child_iterator();
     }
     inline const_child_iterator childBegin() const noexcept {
         return const_child_iterator(_child);
     }
     inline const_child_iterator childEnd() const noexcept {
-        return const_child_iterator(nullptr);
+        return const_child_iterator();
     }
     ///@}
 
@@ -320,9 +333,11 @@ class Component {
         return m5::hal::error::error_t::OK;
     }
 
+    inline size_t stored_size() const {
+        return _component_cfg.stored_size;
+    }
     bool add_child(Component* c);
-    // Functions for dynamically addressable devices
-    bool changeAddress(const uint8_t addr);
+    bool changeAddress(const uint8_t addr);  // Functions for dynamically addressable devices
 
    protected:
     // For periodic measurement
@@ -335,7 +350,7 @@ class Component {
     std::unique_ptr<m5::unit::Adapter> _adapter{};
 
     uint32_t _order{};
-    component_config_t _uccfg{};
+    component_config_t _component_cfg{};
     int16_t _channel{-1};  // valid [0...]
     uint8_t _addr{};
     bool _begun{};
@@ -365,7 +380,6 @@ class Component {
   in Derived class
   @warning This class is an interface class and should not have any data
   @note See also M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER
-  @note
 */
 template <class Derived, typename MD>
 class PeriodicMeasurementAdapter {

@@ -28,7 +28,6 @@ class UnitVmeterSmallUI : public UnitUIBase {
    private:
     std::unique_ptr<m5::ui::Plotter> _voltagePlotter{};
     std::vector<float> _intermediateBuffer{};
-    float _averageV{};
 };
 
 #endif

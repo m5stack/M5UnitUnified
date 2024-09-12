@@ -10,9 +10,6 @@
 #include <M5Unified.h>
 #include <M5UnitComponent.hpp>
 #include <M5UnitUnified.hpp>
-#include <algorithm>
-#include <utility>
-
 #include <M5UnitUnifiedENV.h>
 #include <M5UnitUnifiedMETER.h>
 #include <M5UnitUnifiedHEART.h>
@@ -25,6 +22,9 @@
 #include <unit/unit_MFRC522.hpp>
 #include <unit/unit_WS1850S.hpp>
 #endif
+
+#include <algorithm>
+#include <utility>
 
 namespace {
 
@@ -86,7 +86,6 @@ TEST(UnitUnified, EachUnit) {
     each_unit_test<m5::unit::UnitADS1113>();
     each_unit_test<m5::unit::UnitADS1114>();
     each_unit_test<m5::unit::UnitADS1115>();
-    //    each_unit_test<m5::unit::UnitADS1115WithEEPROM>();
     each_unit_test<m5::unit::meter::UnitEEPROM>();
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();

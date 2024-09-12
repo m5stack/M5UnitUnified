@@ -56,102 +56,79 @@ UnitHEART unitHeart;         // channel 3
 
 auto& unitSHT30   = unitENV3.sht30;    // alias
 auto& unitQMP6988 = unitENV3.qmp6988;  // alias
-// UnitCO2 unitCO2;
-
-// m5::ui::RotaryCounter watchCounter(&lcd, 6);
 
 UnitVmeterSmallUI vmeterSmallUI(&lcd);
 UnitTVOCSmallUI tvocSmallUI(&lcd);
 UnitHEARTSmallUI heartSmallUI(&lcd);
 UnitENV3SmallUI env3SmallUI(&lcd);
-// UnitCO2SmallUI co2SmallUI(&lcd);
 
 volatile SemaphoreHandle_t _updateLock{};
+constexpr TickType_t ui_take_wait{0};
 
 void prepare() {
-    // Each unit
+    // Each unit settings
     {
         auto ccfg        = unitVmeter.component_config();
         ccfg.self_update = true;  // Don't update in UnitUnified::update, update explicitly myself.
+        ccfg.stored_size = 64;    // Number of elements in the circular buffer that the instance has.
         unitVmeter.component_config(ccfg);
 
         // Setup fro begin
-        auto cfg        = unitVmeter.config();
-        cfg.rate        = m5::unit::ads111x::Sampling::Rate128;  // 128 mps
-        cfg.stored_size = 128;  // Number of elements in the circular buffer that the instance has.
+        auto cfg = unitVmeter.config();
+        // 12 ms is used by TVOC, so frequency is reduced
+        cfg.rate = m5::unit::ads111x::Sampling::Rate64;  // 64mps
         unitVmeter.config(cfg);
     }
 
     {
-        auto ccfg        = unitTVOC.component_config();
-        ccfg.self_update = true;  // Don't update in UnitUnified::update, update explicitly myself.
-        unitTVOC.component_config(ccfg);
-
         // Setup fro begin
-        auto cfg        = unitTVOC.config();
-        cfg.interval    = 1000 / 50;            // 20 mps
-        cfg.stored_size = 1000 / cfg.interval;  // Number of elements in the circular buffer that the instance has
+        auto cfg     = unitTVOC.config();
+        cfg.interval = 1000 / 10;  // 10 mps
         unitTVOC.config(cfg);
+
+        auto ccfg        = unitTVOC.component_config();
+        ccfg.self_update = true;                 // Don't update in UnitUnified::update, update explicitly myself.
+        ccfg.stored_size = 1000 / cfg.interval;  // Number of elements in the circular buffer that the instance has
+        unitTVOC.component_config(ccfg);
     }
 
     {
         auto ccfg        = unitSHT30.component_config();
         ccfg.self_update = true;
+        ccfg.stored_size = 10;  // Number of elements in the circular buffer that the instance has
         unitSHT30.component_config(ccfg);
 
         // Setup fro begin
-        auto cfg        = unitSHT30.config();
-        cfg.mps         = m5::unit::sht30::MPS::Ten;  // 10 mps
-        cfg.stored_size = 10;                         // Number of elements in the circular buffer that the instance has
+        auto cfg = unitSHT30.config();
+        cfg.mps  = m5::unit::sht30::MPS::Ten;  // 10 mps
         unitSHT30.config(cfg);
     }
     {
         auto ccfg        = unitQMP6988.component_config();
         ccfg.self_update = true;
+        ccfg.stored_size = 16;  // Number of elements in the circular buffer that the instance has
         unitQMP6988.component_config(ccfg);
 
         // Setup fro begin
-        auto cfg         = unitQMP6988.config();
-        cfg.standby_time = m5::unit::qmp6988::StandbyTime::Time5ms;
-        cfg.stored_size  = 64;  // Number of elements in the circular buffer that the instance has
+        auto cfg = unitQMP6988.config();
+        cfg.standby_time =
+            m5::unit::qmp6988::StandbyTime::Time50ms;  // about 16 mps (Calculated from other parameters and this value
         unitQMP6988.config(cfg);
     }
 
     {
         auto ccfg        = unitHeart.component_config();
         ccfg.self_update = true;  // Don't update in UnitUnified::update, update explicitly myself.
+        ccfg.stored_size = 160;   // Number of elements in the circular buffer that the instance has
         unitHeart.component_config(ccfg);
-
-        // Setup fro begin
-        auto cfg        = unitHeart.config();
-        cfg.stored_size = 160;  // Number of elements in the circular buffer that the instance has
-        unitHeart.config(cfg);
     }
 
-#if 0
-    {
-        auto ccfg        = unitCO2.component_config();
-        ccfg.self_update = true;
-        unitCO2.component_config(ccfg);
-
-        auto cfg        = unitCO2.config();
-        cfg.stored_size = 4;
-        unitCO2.config(cfg);
-    }
-#endif
     // UI
-    // make_shared_sprites();
     heartSmallUI.construct();
     tvocSmallUI.construct();
     vmeterSmallUI.construct();
     env3SmallUI.construct();
     heartSmallUI.heartRate().setSamplingRate(m5::max30100::HeartRate::getSamplingRate(unitHeart.config().samplingRate));
-
-    // co2SmallUI.construct();
-    //  watchCounter.construct(&number10_6x8);
-    //  auto& numbers = watchCounter.numbers();
-    //  numbers[2]    = m5::ui::RotaryCounter::Number(&number6_6x8, 6);  // H
-    //  numbers[4]    = m5::ui::RotaryCounter::Number(&number6_6x8, 6);  // S
 }
 
 // task for Vmeter
@@ -168,7 +145,7 @@ void update_vmeter(void*) {
         // If measurement data is available, acquire it and pass it to the UI.
         // If the UI is locked, skip and continue.
         if (!unitVmeter.empty()) {
-            if (vmeterSmallUI.lock(10)) {
+            if (vmeterSmallUI.lock(ui_take_wait)) {
                 mcnt += unitVmeter.available();
                 while (unitVmeter.available()) {
                     vmeterSmallUI.push_back(unitVmeter.voltage());  // Gets the oldest data
@@ -177,7 +154,8 @@ void update_vmeter(void*) {
                 vmeterSmallUI.unlock();
             }
         }
-        std::this_thread::yield();
+        // std::this_thread::yield();
+        m5::utility::delay(1);
 
         ++fcnt;
         auto now = m5::utility::millis();
@@ -210,13 +188,14 @@ void update_tvoc(void*) {
     for (;;) {
         // Exclusive control of TwoWire access and unit updates
         xSemaphoreTake(_updateLock, portMAX_DELAY);
+        // TVOC measuement needs 12ms for read...
         unitTVOC.update();
         xSemaphoreGive(_updateLock);
 
         // If measurement data is available, acquire it and pass it to the UI.
         // If the UI is locked, skip and continue.
         if (!unitTVOC.empty()) {
-            if (tvocSmallUI.lock(10)) {
+            if (tvocSmallUI.lock(ui_take_wait)) {
                 mcnt += unitTVOC.available();
                 while (unitTVOC.available()) {
                     tvocSmallUI.push_back(unitTVOC.co2eq(), unitTVOC.tvoc());  // Gets the oldest data
@@ -225,7 +204,8 @@ void update_tvoc(void*) {
                 tvocSmallUI.unlock();
             }
         }
-        std::this_thread::yield();
+        //        std::this_thread::yield();
+        m5::utility::delay(1);
 
         ++fcnt;
         auto now = m5::utility::millis();
@@ -252,7 +232,7 @@ void update_sht30(void*) {
         // If measurement data is available, acquire it and pass it to the UI.
         // If the UI is locked, skip and continue.
         if (!unitSHT30.empty()) {
-            if (env3SmallUI.lock(10)) {
+            if (env3SmallUI.lock(ui_take_wait)) {
                 mcnt += unitSHT30.available();
                 auto latest = unitSHT30.latest();
                 env3SmallUI.sht30_push_back(latest.temperature(), latest.humidity());  // Gets the latest data
@@ -260,7 +240,7 @@ void update_sht30(void*) {
                 env3SmallUI.unlock();
             }
         }
-        // std::this_thread::yield();
+        //        std::this_thread::yield();
         m5::utility::delay(1);
 
         ++fcnt;
@@ -288,7 +268,7 @@ void update_qmp6988(void*) {
         // If measurement data is available, acquire it and pass it to the UI.
         // If the UI is locked, skip and continue.
         if (!unitQMP6988.empty()) {
-            if (env3SmallUI.lock(10)) {
+            if (env3SmallUI.lock(ui_take_wait)) {
                 mcnt += unitQMP6988.available();
                 auto latest = unitQMP6988.latest();
                 env3SmallUI.qmp6988_push_back(latest.temperature(), latest.pressure());  // Gets the latest data
@@ -324,7 +304,7 @@ void update_heart(void*) {
         // If measurement data is available, acquire it and pass it to the UI.
         // If the UI is locked, skip and continue.
         if (!unitHeart.empty()) {
-            if (heartSmallUI.lock(10)) {
+            if (heartSmallUI.lock(ui_take_wait)) {
                 mcnt += unitHeart.available();
                 while (unitHeart.available()) {
                     heartSmallUI.push_back(unitHeart.ir(), unitHeart.red());
@@ -333,7 +313,8 @@ void update_heart(void*) {
                 heartSmallUI.unlock();
             }
         }
-        std::this_thread::yield();
+        m5::utility::delay(1);
+        // std::this_thread::yield();
 
         ++fcnt;
         auto now = m5::utility::millis();
@@ -346,41 +327,6 @@ void update_heart(void*) {
     }
 }
 
-#if 0
-// Task for CO2
-void update_co2(void*) {
-    static uint32_t fcnt{}, mps{}, mcnt{};
-    static unsigned long start_at{};
-
-    for (;;) {
-        xSemaphoreTake(_updateLock, portMAX_DELAY);
-        unitCO2.update();
-        xSemaphoreGive(_updateLock);
-
-        if (!unitCO2.empty()) {
-            if (co2SmallUI.lock(10)) {
-                mcnt += unitCO2.available();
-                auto latest = unitCO2.latest();
-                co2SmallUI.push_back(latest.co2(), latest.temperature());
-                unitCO2.flush();
-                co2SmallUI.unlock();
-            }
-        }
-        //        std::this_thread::yield();
-        m5::utility::delay(10);
-
-        ++fcnt;
-        auto now = m5::utility::millis();
-        if (now >= start_at + 1000) {
-            mps = fcnt;
-            M5_LOGW("CO2:%u (%u)", mps, mcnt);
-            fcnt = mcnt = 0;
-            start_at    = now;
-        }
-    }
-}
-#endif
-
 void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset) {
     vmeterSmallUI.push(&dst, 0, 0 + yoffset);
     tvocSmallUI.push(&dst, lcd.width() >> 1, 0 + yoffset);
@@ -390,6 +336,8 @@ void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset) {
 }  // namespace
 
 void setup() {
+    m5::utility::delay(1500);
+
     M5.begin();
     lcd.startWrite();
     lcd.clear(TFT_DARKGRAY);
@@ -411,16 +359,6 @@ void setup() {
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
     Wire.end();
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
-
-#if 0
-    // Check regs
-    for (uint8_t reg = 0x08; reg <= 0x7F; ++reg) {
-        Wire.beginTransmission(reg);
-        if (Wire.endTransmission() == 0) {
-            M5_LOGI("reg[%02x] available", reg);
-        }
-    }
-#endif
 
     if (!unitPaHub.add(unitVmeter, 0)   /* Connect Vmeter to PaHub2 ch:0 */
         || !unitPaHub.add(unitTVOC, 1)  /* Connect TVOC to PaHub2 ch:1 */
@@ -449,18 +387,16 @@ void setup() {
     //
     _updateLock = xSemaphoreCreateBinary();
     xSemaphoreGive(_updateLock);
-    xTaskCreateUniversal(update_vmeter, "vmeter", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
+    xTaskCreateUniversal(update_vmeter, "vmeter", 8192, nullptr, 2, nullptr, PRO_CPU_NUM);
     xTaskCreateUniversal(update_tvoc, "tvoc", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
     xTaskCreateUniversal(update_sht30, "sht30", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
     xTaskCreateUniversal(update_qmp6988, "qmp6988", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
     xTaskCreateUniversal(update_heart, "heart", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
-    //  xTaskCreateUniversal(update_co2, "co2", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
 }
 
 void loop() {
     static uint32_t fpsCnt{}, fps{};
     static unsigned long start_at{};
-    // constexpr uint16_t bg[SPLIT_NUM] = {TFT_RED, TFT_BLUE, TFT_GREEN, TFT_YELLOW};
 
     ++fpsCnt;
     auto now = m5::utility::millis();
@@ -472,11 +408,16 @@ void loop() {
     }
 
     M5.update();
+
+    // All units do their own updates, so there is no need to call for a unit-wide update here.
+    // xSemaphoreTake(_updateLock, portMAX_DELAY);
+    // unitTVOC.update();
+    // xSemaphoreGive(_updateLock);
+
     tvocSmallUI.update();
     vmeterSmallUI.update();
     heartSmallUI.update();
     env3SmallUI.update();
-    // co2SmallUI.update();
 
     static uint32_t current{};
     int32_t offset{};
@@ -484,7 +425,6 @@ void loop() {
     while (cnt--) {
         auto& spr = strips[current];
         spr.clear();
-        // spr.clear(bg[cnt]);
         drawUI(spr, 0, offset);
         spr.pushSprite(&lcd, 0, -offset);
         current ^= 1;
