@@ -37,7 +37,6 @@
 #include "ui/ui_UnitTVOC.hpp"
 #include "ui/ui_UnitVmeter.hpp"
 #include "ui/ui_UnitENV3.hpp"
-// #include "ui/ui_UnitCO2.hpp"
 
 using namespace m5::unit;
 
@@ -112,7 +111,7 @@ void prepare() {
         // Setup fro begin
         auto cfg = unitQMP6988.config();
         cfg.standby_time =
-            m5::unit::qmp6988::StandbyTime::Time50ms;  // about 16 mps (Calculated from other parameters and this value
+            m5::unit::qmp6988::Standby::Time50ms;  // about 16 mps (Calculated from other parameters and this value
         unitQMP6988.config(cfg);
     }
 
@@ -128,7 +127,7 @@ void prepare() {
     tvocSmallUI.construct();
     vmeterSmallUI.construct();
     env3SmallUI.construct();
-    heartSmallUI.heartRate().setSamplingRate(m5::max30100::HeartRate::getSamplingRate(unitHeart.config().samplingRate));
+    heartSmallUI.heartRate().setSampleRate(m5::max30100::HeartRate::getSampleRate(unitHeart.config().sample_rate));
 }
 
 // task for Vmeter
@@ -161,7 +160,7 @@ void update_vmeter(void*) {
         auto now = m5::utility::millis();
         if (now >= start_at + 1000) {
             mps = fcnt;
-            M5_LOGW("Vmeter:%u (%u)", mps, mcnt);
+            M5_LOGD("Vmeter:%u (%u)", mps, mcnt);
             fcnt = mcnt = 0;
             start_at    = now;
         }
@@ -211,7 +210,7 @@ void update_tvoc(void*) {
         auto now = m5::utility::millis();
         if (now >= start_at + 1000) {
             mps = fcnt;
-            M5_LOGW("TVOC:%u (%u)", mps, mcnt);
+            M5_LOGD("TVOC:%u (%u)", mps, mcnt);
             fcnt = mcnt = 0;
             start_at    = now;
         }
@@ -247,7 +246,7 @@ void update_sht30(void*) {
         auto now = m5::utility::millis();
         if (now >= start_at + 1000) {
             mps = fcnt;
-            M5_LOGW("SHT30:%u (%u)", mps, mcnt);
+            M5_LOGD("SHT30:%u (%u)", mps, mcnt);
             fcnt = mcnt = 0;
             start_at    = now;
         }
@@ -283,7 +282,7 @@ void update_qmp6988(void*) {
         auto now = m5::utility::millis();
         if (now >= start_at + 1000) {
             mps = fcnt;
-            M5_LOGW("QMP6988:%u (%u)", mps, mcnt);
+            M5_LOGD("QMP6988:%u (%u)", mps, mcnt);
             fcnt = mcnt = 0;
             start_at    = now;
         }
@@ -320,7 +319,7 @@ void update_heart(void*) {
         auto now = m5::utility::millis();
         if (now >= start_at + 1000) {
             mps = fcnt;
-            M5_LOGW("Heart:%u (%u)", mps, mcnt);
+            M5_LOGD("Heart:%u (%u)", mps, mcnt);
             fcnt = mcnt = 0;
             start_at    = now;
         }
@@ -336,12 +335,9 @@ void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset) {
 }  // namespace
 
 void setup() {
-    m5::utility::delay(1500);
-
     M5.begin();
     lcd.startWrite();
     lcd.clear(TFT_DARKGRAY);
-
     //
     strip_height = lcd.height() / SPLIT_NUM;
     uint32_t cnt{};
@@ -402,7 +398,7 @@ void loop() {
     auto now = m5::utility::millis();
     if (now >= start_at + 1000) {
         fps = fpsCnt;
-        M5_LOGW("FPS:%u", fps);
+        M5_LOGD("FPS:%u", fps);
         fpsCnt   = 0;
         start_at = now;
     }

@@ -52,13 +52,6 @@ class Component {
         uint8_t max_children{0};
     };
 
-    /*!
-      @struct config_t
-      @brief Base settings for begin
-      @note Derived classes are defined by deriving their own config_t from this
-     */
-    struct config_t {};
-
     ///@warning Define the same name and type in the derived class.
     ///@name Fixed parameters for class
     ///@{
@@ -89,11 +82,11 @@ class Component {
 
     ///@name Component settings
     ///@{
-    /*! @brief Gets the configuration */
+    /*! @brief Gets the common configurations in each unit */
     inline component_config_t component_config() {
         return _component_cfg;
     }
-    //! @brief Set the configuration
+    //! @brief Set the common configurations in each unit
     inline void component_config(const component_config_t& cfg) {
         _component_cfg = cfg;
     }
@@ -366,7 +359,7 @@ class Component {
 
 /*!
   @class PeriodicMeasurementAdapter
-  @brief Interface class for periodic measurement
+  @brief Interface class for periodic measurement (CRTP)
   @details Common interface for accumulated periodic measurement data
   @details Provide a common interface for periodic measurements for each unit
   @tparam Derived Derived class
@@ -393,7 +386,8 @@ class PeriodicMeasurementAdapter {
       @note Call Derived::start_periodic_measurement
     */
     template <typename... Args>
-    bool startPeriodicMeasurement(Args&&... args) {
+    inline bool startPeriodicMeasurement(Args&&... args) {
+        // Prepare for future common initiation preprocessing needs
         return static_cast<Derived*>(this)->start_periodic_measurement(std::forward<Args>(args)...);
     }
     /*!
@@ -403,7 +397,8 @@ class PeriodicMeasurementAdapter {
       @note Call Derived::stop_periodic_measurement
     */
     template <typename... Args>
-    bool stopPeriodicMeasurement(Args&&... args) {
+    inline bool stopPeriodicMeasurement(Args&&... args) {
+        // Prepare for future common stopping preprocessing needs
         return static_cast<Derived*>(this)->stop_periodic_measurement(std::forward<Args>(args)...);
     }
     ///@}

@@ -5,7 +5,7 @@
  */
 /*!
   @file test_template.hpp
-  @brief Template for testing m5::unit::Component-derived classes
+  @brief Helper for testing UnitComponent
   @note Depends on GoogleTest
 */
 #ifndef M5_UNIT_COMPONENT_GOOGLETEST_TEMPLATE_HPP
