@@ -86,7 +86,7 @@ void Plotter::assign(m5::container::CircularBuffer<int32_t>& cb) {
 
 void Plotter::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
     dst->setClipRect(x, y, width(), height());
-    
+
     // gauge
     dst->drawFastHLine(x, y, _wid, _gaugeClr);
     dst->drawFastHLine(x, y + (_hgt >> 1), _wid, _gaugeClr);

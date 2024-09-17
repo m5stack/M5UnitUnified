@@ -3,5 +3,8 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#include "main/MultipleDevices.cpp"
+/*
+  For ArduinoIDE
+ */
 
+#include "main/MultipleDevices.cpp"

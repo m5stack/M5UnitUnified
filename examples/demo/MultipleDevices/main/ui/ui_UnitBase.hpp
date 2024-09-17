@@ -20,11 +20,11 @@ class UnitUIBase {
     virtual ~UnitUIBase();
 
     bool lock(portTickType bt = portMAX_DELAY);
-    // TickType_t 
+    // TickType_t
     void unlock();
 
-    virtual void construct()                                            = 0;
-    virtual void update()                                               = 0;
+    virtual void construct() = 0;
+    virtual void update()    = 0;
 
     virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y) = 0;
     inline void push(const int32_t x, const int32_t y) {

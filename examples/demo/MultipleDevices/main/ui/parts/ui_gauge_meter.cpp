@@ -36,17 +36,10 @@ void GaugeMeter::render(LovyanGFX* dst, const int32_t x, const int32_t y, const 
     dst->setClipRect(x, y, width(), height());
 
     int32_t r0{_radius}, r1{_radius - _thickness};
-    //    float sdeg{std::fmin(_minDeg, _maxDeg)};
-    //    float edeg{std::fmax(_minDeg, _maxDeg)};
-    float sdeg{_minDeg};
-    float edeg{_maxDeg};
-    if (_minDeg > _maxDeg) {
-
-
-
-
-
-    }
+    float sdeg{std::fmin(_minDeg, _maxDeg)};
+    float edeg{std::fmax(_minDeg, _maxDeg)};
+    // float sdeg{_minDeg};
+    // float edeg{_maxDeg};
 
     dst->fillArc(x + _cx, y + _cy, r0, r1, sdeg, edeg, backgroundColor());
     float deg = _minDeg + (_maxDeg - _minDeg) * ratio(val);

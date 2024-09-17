@@ -88,7 +88,9 @@ bool configTime(const char* posix_tz, const char* ssid, const char* password) {
     // Set RTC if exists
     if (M5.Rtc.isEnabled()) {
         time_t t = time(nullptr) + 1;
-        while (t > time(nullptr));
+        while (t > time(nullptr)) {
+            /* Nop */
+        }
         M5.Rtc.setDateTime(std::gmtime(&t));
     }
     return true;

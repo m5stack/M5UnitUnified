@@ -30,8 +30,9 @@ class UnitHEARTSmallUI : public UnitUIBase {
         }
     }
     void push_back(const int32_t ir, const int32_t red);
-    
-    void construct() override;;
+
+    void construct() override;
+
     void update() override;
     void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
@@ -45,8 +46,6 @@ class UnitHEARTSmallUI : public UnitUIBase {
         int32_t ir, red;
     };
     std::vector<Data> _intermediateBuffer{};
-
-
 };
 
 #endif
