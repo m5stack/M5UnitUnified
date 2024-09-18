@@ -137,3 +137,16 @@ GPIO、UART は将来対応予定です。
 
 他のユニットは開発、確認後追加されます。
 
+## Doxygen ドキュメント
+あなたのローカルマシンでドキュメントを生成したい場合は、以下のコマンドを実行してください。
+```
+bash docs/doxy.sh
+```
+docs/html の下に出力されます。  
+Git コミットのハッシュを html に出力したい場合は、 git クローンしたフォルダに対して実行してください。
+
+### 必要な物
+- [Doxyegn](https://www.doxygen.nl/)
+- [pcregrep](https://formulae.brew.sh/formula/pcre2)
+- [Git](https://git-scm.com/)
+
