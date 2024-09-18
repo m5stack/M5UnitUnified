@@ -13,7 +13,7 @@
   "dependencies":
   {
     "M5Utility": "https://github.com/m5stack/M5Utility.git",
-    "M5HAL": "https://github.com/m5stack/M5HAL.git",
+    "M5HAL": "https://github.com/m5stack/M5HAL.git"
   },
   "version": "0.0.0",
   "frameworks": ["arduino", "espidf"],
