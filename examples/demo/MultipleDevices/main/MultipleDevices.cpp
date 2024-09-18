@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  @brief Demonstration of using M5UnitUnified with multiple devices
-  @file MultipleDevices.cpp
+  Demonstration of using M5UnitUnified with multiple devices
 
   Required Devices:
   - Any Core with LCD
@@ -353,7 +352,6 @@ void setup() {
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
     auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
-    Wire.end();
     Wire.begin(pin_num_sda, pin_num_scl, 400000U);
 
     if (!unitPaHub.add(unitVmeter, 0)   /* Connect Vmeter to PaHub2 ch:0 */
