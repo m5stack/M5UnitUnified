@@ -10,13 +10,17 @@
     "type": "git",
     "url": "https://github.com/m5stack/M5UnitUnified.git"
   },
-  "dependencies":
-  {
+  "dependencies": {
     "M5Utility": "https://github.com/m5stack/M5Utility.git",
     "M5HAL": "https://github.com/m5stack/M5HAL.git"
   },
-  "version": "0.0.0",
-  "frameworks": ["arduino", "espidf"],
-  "platforms": ["espressif32"],
+  "version": "0.0.1",
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
+  "platforms": [
+    "espressif32"
+  ],
   "headers": "M5UnitUnified.h"
 }
