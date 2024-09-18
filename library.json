@@ -1,6 +1,6 @@
 {
   "name": "M5UnitUnified",
-  "description": "Library for M5 Units",
+  "description": "M5UnitUnified is a library for unified handling of various M5 units products.",
   "keywords": "M5UnitUnified",
   "authors": {
     "name": "M5Stack",
@@ -10,14 +10,11 @@
     "type": "git",
     "url": "https://github.com/m5stack/M5UnitUnified.git"
   },
-  "dependencies": [
-    {
-      "name": "M5Utility"
-    },
-    {
-      "name": "M5HAL"
-    }
-  ],
+  "dependencies":
+  {
+    "M5Utility": "https://github.com/m5stack/M5Utility.git",
+    "M5HAL": "https://github.com/m5stack/M5HAL.git",
+  },
   "version": "0.0.0",
   "frameworks": ["arduino", "espidf"],
   "platforms": ["espressif32"],
