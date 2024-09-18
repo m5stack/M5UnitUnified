@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  To update the unit yourself usage example (UnitCO2)
+  To update the unit yourself usage example
 */
 #include "main/SelfUpdate.cpp"

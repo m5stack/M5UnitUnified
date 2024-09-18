@@ -4,10 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  Simple usage example (UnitCO2)
+  Simple usage example
 */
 #include "main/Simple.cpp"
-
-
-
-

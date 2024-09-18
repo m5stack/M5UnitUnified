@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  To update the unit yourself usage example (UnitCO2)
+  Example of using only unit component without UnitUnified manager
 */
 #include "main/ComponentOnly.cpp"
