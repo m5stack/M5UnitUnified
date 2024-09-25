@@ -10,7 +10,6 @@
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedENV.h>  // *1 Include the header of the unit to be used
-
 m5::unit::UnitUnified Units;
 m5::unit::UnitCO2 unit;  // *2 Instance of the unit
 
@@ -45,7 +44,12 @@ void setup() {
         M5.Display.clear(TFT_RED);
         return;
     }
-    xTaskCreateUniversal(update_task, "update_task", 8192, nullptr, 1, nullptr, APP_CPU_NUM);
+    xTaskCreateUniversal(update_task, "update_task", 8192, nullptr, 1, nullptr,
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+                         PRO_CPU_NUM);
+#else
+                         APP_CPU_NUM);
+#endif
 }
 
 void loop() {

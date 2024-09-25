@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  Demonstration of using M5UnitUnified with multiple devices
+  Demonstration of using M5UnitUnified with multiple units
 
   Required Devices:
   - Any Core with LCD
