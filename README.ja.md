@@ -27,25 +27,20 @@ M5UnitUnified は、様々な M5 ユニット製品を統一的に扱うため�
 
 
 ## インストール方法
-Arduino/PlatformIO のライブラリへの登録はベータ版移行を予定しています。  
-それまでは手動でのインストールをお願いします。
+アルファ版ですが Arduino/PlatformIO のライブラリマネージャーに登録されています
 
 ### ArduinoIDE
-1.ZIP ファイルを各リポジトリからダウンロードします
-- M5UnitUnified
-- [M5Utility](https://github.com/m5stack/M5Utility/)
-- [M5HAL](https://github.com/m5stack/M5HAL)
-- [Unit to be used](#supported-units)
-2. あなたの ArduinoIDE のライブラリフォルダへ展開します
+1. ライブリマネージャから使用したいユニットのライブラリ (M5Unit-Foo) を選択してください
+
+依存する M5UnitUnfied 関連のライブラリは自動で DL されます
 
 ### PlatformIO
-1. platformio.ini の lib_deps に記述します
+1. platformio.ini の lib\_deps に記述してください
 ```ini
-lib_deps= https://github.com/m5stack/M5UnitUnified
-  https://github.com/m5stack/M5Utility
-  https://github.com/m5stack/M5HAL
-  https://github.com/m5stack/M5Unit-foo ; Unit to be used
+lib_deps=m5stack/M5Unit-foo ;使用したいユニットのライブラリ
 ```
+
+依存する M5UnitUnfied 関連のライブラリは自動で DL されます
 
 ## 使い方
 
@@ -136,6 +131,12 @@ GPIO、UART は将来対応予定です。
 - [UnitENVPro]((https://github.com/m5stack/M5Unit-ENV))
 
 他のユニットは開発、確認後追加されます。
+
+
+## Examples
+各ユニットのサンプルについては、各ユニットのリポジトリを参照してください。  
+このリポジトリにあるサンプルはM5UnitUnified全般のものです。
+
 
 ## Doxygen ドキュメント
 あなたのローカルマシンでドキュメントを生成したい場合は、以下のコマンドを実行してください。

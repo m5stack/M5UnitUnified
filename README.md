@@ -26,25 +26,22 @@ All M5UnitUnified and related libraries are under the [MIT license](LICENSE).
 
 
 ## How to install
-Registration to Arduino/PlatformIO librarry manager is scheduled after the beta version.  
-Until then, please install manually.
+Alpha version, but registered in the Library Manager
 
 ### Arduino IDE
-1. Download ZIP files from each repositories  
-- M5UnitUnified
-- [M5Utility](https://github.com/m5stack/M5Utility/)
-- [M5HAL](https://github.com/m5stack/M5HAL)
-- [Unit to be used](#supported-units)
-2. Extract the ZIP file to your ArduinoIDE library folder
+
+1. Using library manager and select the library of the unit you want to use (e.g. M5Unit-GESTURE)
+
+Dependent M5UnitUnfied related libraries will be downloaded automatically.
 
 ### PlatformIO
-1. Write lib_deps settings to platformio.ini
+1. Write lib\_deps settings to platformio.ini
 ```ini
-lib_deps= https://github.com/m5stack/M5UnitUnified
-  https://github.com/m5stack/M5Utility
-  https://github.com/m5stack/M5HAL
-  https://github.com/m5stack/M5Unit-foo ; Unit to be used
+lib_deps= m5stack/M5Unit-foo ; Unit to be used
 ```
+Dependent M5UnitUnfied related libraries will be downloaded automatically.
+
+
 ## How to use
 
 See also examples for each unit repositry too.
@@ -136,6 +133,11 @@ Other devices will be added after confirmation of operation.
 - [UnitENVPro]((https://github.com/m5stack/M5Unit-ENV))
 
 Other units will be added after they are developed and tested.
+
+
+## Examples
+For exampless of each unit, please refer to the respective unit's repository.  
+The examples in this repository are for M5UnitUnified in general
 
 
 ## Doxygen document
