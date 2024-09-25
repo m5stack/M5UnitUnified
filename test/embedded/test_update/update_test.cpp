@@ -14,7 +14,8 @@
 
 using namespace m5::unit;
 
-TEST(Component, Update) {
+TEST(Component, Update)
+{
     UnitUnified units;
     UnitDummy u;
     EXPECT_FALSE(u.isRegistered());

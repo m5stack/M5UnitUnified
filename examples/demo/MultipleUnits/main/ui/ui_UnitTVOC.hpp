@@ -16,8 +16,9 @@
 #include <memory>
 
 class UnitTVOCSmallUI : public UnitUIBase {
-   public:
-    explicit UnitTVOCSmallUI(LovyanGFX* parent) : UnitUIBase(parent) {
+public:
+    explicit UnitTVOCSmallUI(LovyanGFX* parent) : UnitUIBase(parent)
+    {
     }
     void push_back(const int32_t co2, const int32_t tvoc);
 
@@ -26,7 +27,7 @@ class UnitTVOCSmallUI : public UnitUIBase {
     void update() override;
     void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
-   private:
+private:
     std::unique_ptr<m5::ui::Plotter> _co2Plotter{};
     std::unique_ptr<m5::ui::BarMeterV> _co2Bar{};
     std::unique_ptr<m5::ui::Plotter> _tvocPlotter{};

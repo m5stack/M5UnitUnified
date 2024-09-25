@@ -13,7 +13,8 @@
 m5::unit::UnitUnified Units;
 m5::unit::UnitCO2 unit;  // *2 Instance of the unit
 
-void update_task(void*) {
+void update_task(void*)
+{
     for (;;) {
         // If exclusive control is required for access to Wire, insert appropriate controls
         unit.update();  // Explicitly call unit.update() yourself
@@ -25,7 +26,8 @@ void update_task(void*) {
     }
 }
 
-void setup() {
+void setup()
+{
     M5.begin();
 
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
@@ -52,7 +54,8 @@ void setup() {
 #endif
 }
 
-void loop() {
+void loop()
+{
     M5.begin();
     Units.update();  // unit.update() is not called within this function
     M5_LOGI("loop");

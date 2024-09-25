@@ -15,8 +15,9 @@
 #include <memory>
 
 class UnitVmeterSmallUI : public UnitUIBase {
-   public:
-    explicit UnitVmeterSmallUI(LovyanGFX* parent) : UnitUIBase(parent) {
+public:
+    explicit UnitVmeterSmallUI(LovyanGFX* parent) : UnitUIBase(parent)
+    {
     }
 
     void push_back(const float mv);
@@ -25,7 +26,7 @@ class UnitVmeterSmallUI : public UnitUIBase {
     void update() override;
     void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
-   private:
+private:
     std::unique_ptr<m5::ui::Plotter> _voltagePlotter{};
     std::vector<float> _intermediateBuffer{};
 };

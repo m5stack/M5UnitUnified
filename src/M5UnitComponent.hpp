@@ -36,7 +36,7 @@ namespace unit {
   @brief Base class of unit component
  */
 class Component {
-   public:
+public:
     /*!
       @struct component_config_t
       @brief Component basic settings for begin
@@ -83,11 +83,13 @@ class Component {
     ///@name Component settings
     ///@{
     /*! @brief Gets the common configurations in each unit */
-    inline component_config_t component_config() {
+    inline component_config_t component_config()
+    {
         return _component_cfg;
     }
     //! @brief Set the common configurations in each unit
-    inline void component_config(const component_config_t& cfg) {
+    inline void component_config(const component_config_t& cfg)
+    {
         _component_cfg = cfg;
     }
     ///@}
@@ -98,14 +100,16 @@ class Component {
       @brief Begin unit
       @details Initiate functions based on component config and unit config
     */
-    virtual bool begin() {
+    virtual bool begin()
+    {
         return true;
     }
     /*!
       @brief Update unit
       @param force Forced communication for updates if true
     */
-    virtual void update(const bool force = false) {
+    virtual void update(const bool force = false)
+    {
         (void)force;
     }
     ///@}
@@ -113,38 +117,46 @@ class Component {
     ///@name Properties
     ///@{
     /*!  @brief Gets the device name */
-    inline const char* deviceName() const {
+    inline const char* deviceName() const
+    {
         return unit_device_name();
     }
     //! @brief Gets the identifier
-    inline types::uid_t identifier() const {
+    inline types::uid_t identifier() const
+    {
         return unit_identifier();
     }
     //! @brief Gets the attributes
-    inline types::attr_t attribute() const {
+    inline types::attr_t attribute() const
+    {
         return unit_attribute();
     }
     //! @brief Gets the registered order (== 0 means not yet)
-    inline uint32_t order() const {
+    inline uint32_t order() const
+    {
         return _order;
     }
     //! @brief Gets the channel if connected to another unit
-    inline int16_t channel() const {
+    inline int16_t channel() const
+    {
         return _channel;
     }
     //! @brief Is the unit registered with the manager?
-    inline bool isRegistered() const {
+    inline bool isRegistered() const
+    {
         return _manager != nullptr;
     }
     //! @brief Address used to access the device
-    inline uint8_t address() const {
+    inline uint8_t address() const
+    {
         return _addr;
     }
     /*!
       @brief Gets the access adapter
       @warning Ownership is retained by the unit and should not be released
      */
-    inline Adapter* adapter() const {
+    inline Adapter* adapter() const
+    {
         return _adapter.get();
     }
     ///@}
@@ -152,25 +164,29 @@ class Component {
     ///@name Periodic measurement
     ///@{
     /*! @brief In periodic measurement? */
-    inline bool inPeriodic() const {
+    inline bool inPeriodic() const
+    {
         return _periodic;
     }
     //! @brief Periodic measurement data updated?
-    inline bool updated() const {
+    inline bool updated() const
+    {
         return _updated;
     }
     /*!
       @brief Time elapsed since start-up when the measurement data was updated in update()
       @return Updated time (Unit: ms)
     */
-    inline types::elapsed_time_t updatedMillis() const {
+    inline types::elapsed_time_t updatedMillis() const
+    {
         return _latest;
     }
     /*!
       @brief Gets the periodic measurement interval
       @return interval time (Unit: ms)
      */
-    inline types::elapsed_time_t interval() const {
+    inline types::elapsed_time_t interval() const
+    {
         return _interval;
     }
     ///@}
@@ -187,15 +203,18 @@ class Component {
     ///@name Parent-children relationship
     ///@{
     /*! @brief Has parent unit? */
-    inline bool hasParent() const {
+    inline bool hasParent() const
+    {
         return _parent;
     }
     //! @brief Are there any other devices connected to the same parent unit besides yourself?
-    inline bool hasSiblings() const {
+    inline bool hasSiblings() const
+    {
         return _prev || _next;
     }
     //! @brief Are there other devices connected to me?
-    inline bool hasChildren() const {
+    inline bool hasChildren() const
+    {
         return _child;
     }
     //! @brief Number of units connected to me
@@ -213,39 +232,46 @@ class Component {
     ///@cond
     template <typename T>
     class iterator {
-       public:
+    public:
         using iterator_category = std::forward_iterator_tag;
         using difference_type   = std::ptrdiff_t;
         using value_type        = T;
         using pointer           = T*;
         using reference         = T&;
 
-        explicit iterator(Component* c = nullptr) : _ptr(c) {
+        explicit iterator(Component* c = nullptr) : _ptr(c)
+        {
         }
 
-        reference operator*() const {
+        reference operator*() const
+        {
             return *_ptr;
         }
-        pointer operator->() const {
+        pointer operator->() const
+        {
             return _ptr;
         }
-        iterator& operator++() {
+        iterator& operator++()
+        {
             _ptr = _ptr ? _ptr->_next : nullptr;
             return *this;
         }
-        iterator operator++(int) {
+        iterator operator++(int)
+        {
             auto tmp = *this;
             ++(*this);
             return tmp;
         }
-        friend bool operator==(const iterator& a, const iterator& b) {
+        friend bool operator==(const iterator& a, const iterator& b)
+        {
             return a._ptr == b._ptr;
         }
-        friend bool operator!=(const iterator& a, const iterator& b) {
+        friend bool operator!=(const iterator& a, const iterator& b)
+        {
             return a._ptr != b._ptr;
         }
 
-       private:
+    private:
         Component* _ptr;
     };
     ///@endcond
@@ -254,16 +280,20 @@ class Component {
     ///@{
     using child_iterator       = iterator<Component>;
     using const_child_iterator = iterator<const Component>;
-    inline child_iterator childBegin() noexcept {
+    inline child_iterator childBegin() noexcept
+    {
         return child_iterator(_child);
     }
-    inline child_iterator childEnd() noexcept {
+    inline child_iterator childEnd() noexcept
+    {
         return child_iterator();
     }
-    inline const_child_iterator childBegin() const noexcept {
+    inline const_child_iterator childBegin() const noexcept
+    {
         return const_child_iterator(_child);
     }
-    inline const_child_iterator childEnd() const noexcept {
+    inline const_child_iterator childEnd() const noexcept
+    {
         return const_child_iterator();
     }
     ///@}
@@ -310,7 +340,7 @@ class Component {
     bool writeRegister16(const Reg reg, const uint16_t value, const bool stop = true);
     ///@}
 
-   protected:
+protected:
     // Proper implementation in derived classes is required
     virtual const char* unit_device_name() const = 0;
     virtual types::uid_t unit_identifier() const = 0;
@@ -318,27 +348,30 @@ class Component {
 
     // Duplicate the adapter for children
     // Note that ownership of the return pointer is delegated to the destination
-    inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/) {
+    inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/)
+    {
         return nullptr;
     }
     // Select valid channel if exists(Hub etc...)
-    inline virtual m5::hal::error::error_t select_channel(const uint8_t) {
+    inline virtual m5::hal::error::error_t select_channel(const uint8_t)
+    {
         return m5::hal::error::error_t::OK;
     }
 
-    inline size_t stored_size() const {
+    inline size_t stored_size() const
+    {
         return _component_cfg.stored_size;
     }
     bool add_child(Component* c);
     bool changeAddress(const uint8_t addr);  // Functions for dynamically addressable devices
 
-   protected:
+protected:
     // For periodic measurement
     types::elapsed_time_t _latest{}, _interval{};
     bool _periodic{};  // During periodic measurement?
     bool _updated{};
 
-   private:
+private:
     UnitUnified* _manager{};
     std::unique_ptr<m5::unit::Adapter> _adapter{};
 
@@ -376,7 +409,7 @@ class Component {
 */
 template <class Derived, typename MD>
 class PeriodicMeasurementAdapter {
-   public:
+public:
     ///@name Periodic measurement
     ///@{
     /*!
@@ -386,7 +419,8 @@ class PeriodicMeasurementAdapter {
       @note Call Derived::start_periodic_measurement
     */
     template <typename... Args>
-    inline bool startPeriodicMeasurement(Args&&... args) {
+    inline bool startPeriodicMeasurement(Args&&... args)
+    {
         // Prepare for future common initiation preprocessing needs
         return static_cast<Derived*>(this)->start_periodic_measurement(std::forward<Args>(args)...);
     }
@@ -397,7 +431,8 @@ class PeriodicMeasurementAdapter {
       @note Call Derived::stop_periodic_measurement
     */
     template <typename... Args>
-    inline bool stopPeriodicMeasurement(Args&&... args) {
+    inline bool stopPeriodicMeasurement(Args&&... args)
+    {
         // Prepare for future common stopping preprocessing needs
         return static_cast<Derived*>(this)->stop_periodic_measurement(std::forward<Args>(args)...);
     }
@@ -406,36 +441,43 @@ class PeriodicMeasurementAdapter {
     ///@name Data
     ///@{
     //! @brief Gets the number of stored data
-    inline size_t available() const {
+    inline size_t available() const
+    {
         return available_periodic_measurement_data();
     }
     //! @brief Is empty stored data?
-    inline bool empty() const {
+    inline bool empty() const
+    {
         return empty_periodic_measurement_data();
     }
     //! @brief Is stored data full?
-    inline bool full() const {
+    inline bool full() const
+    {
         return full_periodic_measurement_data();
     }
     //! @brief Retrieve oldest stored data
-    inline MD oldest() const {
+    inline MD oldest() const
+    {
         return static_cast<const Derived*>(this)->oldest_periodic_data();
     }
     //! @brief Retrieve latest stored data
-    inline MD latest() const {
+    inline MD latest() const
+    {
         return static_cast<const Derived*>(this)->latest_periodic_data();
     }
     //! @brief Discard  the oldest data accumulated
-    inline void discard() {
+    inline void discard()
+    {
         discard_periodic_measurement_data();
     }
     //! @brief Discard all data
-    inline void flush() {
+    inline void flush()
+    {
         flush_periodic_measurement_data();
     }
     ///@}
 
-   protected:
+protected:
     ///@note Must implement in derived class
     ///@name Pure virtual functions
     ///@{
@@ -452,57 +494,67 @@ class PeriodicMeasurementAdapter {
 
 // Helper for creating derived classes from Component
 ///@cond
-#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                    \
-   public:                                                         \
-    constexpr static uint8_t DEFAULT_ADDRESS{(reg)};               \
-    static const types::uid_t uid;                                 \
-    static const types::attr_t attr;                               \
-    static const char name[];                                      \
-                                                                   \
-    cls(const cls&) = delete;                                      \
-                                                                   \
-    cls& operator=(const cls&) = delete;                           \
-                                                                   \
-    cls(cls&&) noexcept = default;                                 \
-                                                                   \
-    cls& operator=(cls&&) noexcept = default;                      \
-                                                                   \
-   protected:                                                      \
-    inline virtual const char* unit_device_name() const override { \
-        return name;                                               \
-    }                                                              \
-    inline virtual types::uid_t unit_identifier() const override { \
-        return uid;                                                \
-    }                                                              \
-    inline virtual types::attr_t unit_attribute() const override { \
-        return attr;                                               \
+#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                  \
+public:                                                          \
+    constexpr static uint8_t DEFAULT_ADDRESS{(reg)};             \
+    static const types::uid_t uid;                               \
+    static const types::attr_t attr;                             \
+    static const char name[];                                    \
+                                                                 \
+    cls(const cls&) = delete;                                    \
+                                                                 \
+    cls& operator=(const cls&) = delete;                         \
+                                                                 \
+    cls(cls&&) noexcept = default;                               \
+                                                                 \
+    cls& operator=(cls&&) noexcept = default;                    \
+                                                                 \
+protected:                                                       \
+    inline virtual const char* unit_device_name() const override \
+    {                                                            \
+        return name;                                             \
+    }                                                            \
+    inline virtual types::uid_t unit_identifier() const override \
+    {                                                            \
+        return uid;                                              \
+    }                                                            \
+    inline virtual types::attr_t unit_attribute() const override \
+    {                                                            \
+        return attr;                                             \
     }
 
 // Helper for creating derived class from PeriodicMeasurementAdapter
-#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)      \
-   protected:                                                                    \
-    friend class PeriodicMeasurementAdapter<cls, md>;                            \
-                                                                                 \
-    inline md oldest_periodic_data() const {                                     \
-        return !_data->empty() ? _data->front().value() : md{};                  \
-    }                                                                            \
-    inline md latest_periodic_data() const {                                     \
-        return !_data->empty() ? _data->back().value() : md{};                   \
-    }                                                                            \
-    inline virtual size_t available_periodic_measurement_data() const override { \
-        return _data->size();                                                    \
-    }                                                                            \
-    inline virtual bool empty_periodic_measurement_data() const override {       \
-        return _data->empty();                                                   \
-    }                                                                            \
-    inline virtual bool full_periodic_measurement_data() const override {        \
-        return _data->full();                                                    \
-    }                                                                            \
-    inline virtual void discard_periodic_measurement_data() override {           \
-        _data->pop_front();                                                      \
-    }                                                                            \
-    inline virtual void flush_periodic_measurement_data() override {             \
-        _data->clear();                                                          \
+#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)    \
+protected:                                                                     \
+    friend class PeriodicMeasurementAdapter<cls, md>;                          \
+                                                                               \
+    inline md oldest_periodic_data() const                                     \
+    {                                                                          \
+        return !_data->empty() ? _data->front().value() : md{};                \
+    }                                                                          \
+    inline md latest_periodic_data() const                                     \
+    {                                                                          \
+        return !_data->empty() ? _data->back().value() : md{};                 \
+    }                                                                          \
+    inline virtual size_t available_periodic_measurement_data() const override \
+    {                                                                          \
+        return _data->size();                                                  \
+    }                                                                          \
+    inline virtual bool empty_periodic_measurement_data() const override       \
+    {                                                                          \
+        return _data->empty();                                                 \
+    }                                                                          \
+    inline virtual bool full_periodic_measurement_data() const override        \
+    {                                                                          \
+        return _data->full();                                                  \
+    }                                                                          \
+    inline virtual void discard_periodic_measurement_data() override           \
+    {                                                                          \
+        _data->pop_front();                                                    \
+    }                                                                          \
+    inline virtual void flush_periodic_measurement_data() override             \
+    {                                                                          \
+        _data->clear();                                                        \
     }
 
 ///@endcond

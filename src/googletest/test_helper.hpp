@@ -21,7 +21,8 @@ namespace googletest {
 
 template <class U>
 uint32_t test_periodic_measurement(U* unit, const uint32_t times, const uint32_t tolerance,
-                                   const uint32_t timeout_duration, void (*callback)(U*), const bool skip_after_test) {
+                                   const uint32_t timeout_duration, void (*callback)(U*), const bool skip_after_test)
+{
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
     auto interval = unit->interval();
@@ -63,7 +64,8 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times, const uint32_t
 
 template <class U>
 uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, const uint32_t tolerance = 1,
-                                   void (*callback)(U*) = nullptr, const bool skip_after_test = false) {
+                                   void (*callback)(U*) = nullptr, const bool skip_after_test = false)
+{
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
     auto timeout_duration = (unit->interval() * 2) * times;
     return test_periodic_measurement(unit, times, tolerance, timeout_duration, callback, skip_after_test);
@@ -71,7 +73,8 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, const uint
 
 template <class U>
 uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, void (*callback)(U*) = nullptr,
-                                   const bool skip_after_test = false) {
+                                   const bool skip_after_test = false)
+{
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
     auto timeout_duration = (unit->interval() * 2) * times;
     return test_periodic_measurement(unit, times, 1, timeout_duration, callback, skip_after_test);

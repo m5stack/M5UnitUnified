@@ -39,7 +39,8 @@ const char* TypeName() {
 std::vector<m5::unit::Component*> vec;
 
 template <class U>
-void each_unit_test() {
+void each_unit_test()
+{
     SCOPED_TRACE(U::name);
 
     U* unit = new U();
@@ -74,7 +75,8 @@ void each_unit_test() {
 }  // namespace
 
 // Check each value and check duplicate uid
-TEST(UnitUnified, EachUnit) {
+TEST(UnitUnified, EachUnit)
+{
     // ENV
     each_unit_test<m5::unit::UnitSCD40>();
     each_unit_test<m5::unit::UnitSCD41>();

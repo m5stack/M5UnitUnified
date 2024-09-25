@@ -16,7 +16,8 @@ namespace ui {
 
 Plotter::Plotter(LovyanGFX* parent, const size_t maxPlot, const int32_t wid, const int32_t hgt,
                  const int32_t coefficient)
-    : _parent(parent), _wid{wid}, _hgt{hgt}, _coefficient(coefficient), _data(maxPlot), _autoScale{true} {
+    : _parent(parent), _wid{wid}, _hgt{hgt}, _coefficient(coefficient), _data(maxPlot), _autoScale{true}
+{
 }
 
 Plotter::Plotter(LovyanGFX* parent, const size_t maxPlot, const int32_t minimum, const int32_t maximum,
@@ -28,10 +29,12 @@ Plotter::Plotter(LovyanGFX* parent, const size_t maxPlot, const int32_t minimum,
       _hgt{hgt},
       _coefficient(coefficient),
       _data(maxPlot),
-      _autoScale{false} {
+      _autoScale{false}
+{
 }
 
-void Plotter::update() {
+void Plotter::update()
+{
     if (_cb && _autoScale && _cb->size() >= 2) {
         auto it = std::minmax_element(_cb->cbegin(), _cb->cend());
         _min    = *(it.first);
@@ -42,11 +45,13 @@ void Plotter::update() {
     }
 }
 
-void Plotter::push_back(const float val) {
+void Plotter::push_back(const float val)
+{
     push_back((int32_t)(val * _coefficient));
 }
 
-void Plotter::push_back(const int32_t val) {
+void Plotter::push_back(const int32_t val)
+{
     auto v = _autoScale ? val : std::min(std::max(val, _min), _max);
     _data.push_back(v);
 
@@ -75,7 +80,8 @@ void Plotter::push_back(const int32_t val) {
     }
 }
 
-void Plotter::assign(m5::container::CircularBuffer<int32_t>& cb) {
+void Plotter::assign(m5::container::CircularBuffer<int32_t>& cb)
+{
     _cb = &cb;
     if (_autoScale && _cb->size() >= 2) {
         auto it = std::minmax_element(_cb->cbegin(), _cb->cend());
@@ -84,7 +90,8 @@ void Plotter::assign(m5::container::CircularBuffer<int32_t>& cb) {
     }
 }
 
-void Plotter::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void Plotter::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     dst->setClipRect(x, y, width(), height());
 
     // gauge

@@ -17,7 +17,7 @@ namespace m5 {
 namespace ui {
 
 class Plotter {
-   public:
+public:
     Plotter(LovyanGFX* parent, const size_t maxPlot, const int32_t wid, const int32_t hgt,
             const int32_t coefficient = 1);
     Plotter(LovyanGFX* parent, const size_t maxPlot, const int32_t minimum, const int32_t maximum, const int32_t wid,
@@ -25,36 +25,45 @@ class Plotter {
 
     void update();
 
-    inline int32_t width() const {
+    inline int32_t width() const
+    {
         return _wid;
     }
-    inline int32_t height() const {
+    inline int32_t height() const
+    {
         return _hgt;
     }
-    inline int32_t minimum() const {
+    inline int32_t minimum() const
+    {
         return _min;
     }
-    inline int32_t maximum() const {
+    inline int32_t maximum() const
+    {
         return _max;
     }
 
     template <typename T>
-    void setNeedleColor(const T& clr) {
+    void setNeedleColor(const T& clr)
+    {
         _needleClr = clr;
     }
     template <typename T>
-    void setGaugeColor(const T& clr) {
+    void setGaugeColor(const T& clr)
+    {
         _gaugeClr = clr;
     }
     template <typename T>
-    void setBackgroundColor(const T& clr) {
+    void setBackgroundColor(const T& clr)
+    {
         _bgClr = clr;
     }
 
-    inline void setUnitString(const char* s) {
+    inline void setUnitString(const char* s)
+    {
         _ustr = s;
     }
-    inline void setGaugeTextDatum(const textdatum_t datum) {
+    inline void setGaugeTextDatum(const textdatum_t datum)
+    {
         _tdatum = datum;
     }
 
@@ -62,24 +71,28 @@ class Plotter {
     void push_back(const int32_t val);
     void assign(m5::container::CircularBuffer<int32_t>& cb);
 
-    inline void push(const int32_t x, const int32_t y) {
+    inline void push(const int32_t x, const int32_t y)
+    {
         push(_parent, x, y);
     }
     virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y);
 
-   protected:
-    m5gfx::rgb565_t needleColor() const {
+protected:
+    m5gfx::rgb565_t needleColor() const
+    {
         return _needleClr;
     }
-    m5gfx::rgb565_t gaugeColor() const {
+    m5gfx::rgb565_t gaugeColor() const
+    {
         return _gaugeClr;
     }
-    m5gfx::rgb565_t backgroundColor() const {
+    m5gfx::rgb565_t backgroundColor() const
+    {
         return _bgClr;
     }
 
-   protected:
-   private:
+protected:
+private:
     LovyanGFX* _parent{};
     int32_t _min{}, _max{}, _wid{}, _hgt{}, _coefficient{};
     m5::container::CircularBuffer<int32_t> _data;

@@ -63,7 +63,8 @@ UnitENV3SmallUI env3SmallUI(&lcd);
 volatile SemaphoreHandle_t _updateLock{};
 constexpr TickType_t ui_take_wait{0};
 
-void prepare() {
+void prepare()
+{
     // Each unit settings
     {
         auto ccfg        = unitVmeter.component_config();
@@ -130,7 +131,8 @@ void prepare() {
 }
 
 // task for Vmeter
-void update_vmeter(void*) {
+void update_vmeter(void*)
+{
     static uint32_t fcnt{}, mps{}, mcnt{};
     static unsigned long start_at{};
 
@@ -167,7 +169,8 @@ void update_vmeter(void*) {
 }
 
 // Task for TVOC
-void update_tvoc(void*) {
+void update_tvoc(void*)
+{
     static uint32_t fcnt{}, mps{}, mcnt{};
     static unsigned long start_at{};
 
@@ -217,7 +220,8 @@ void update_tvoc(void*) {
 }
 
 // Task for SHT30(ENV3)
-void update_sht30(void*) {
+void update_sht30(void*)
+{
     static uint32_t fcnt{}, mps{}, mcnt{};
     static unsigned long start_at{};
 
@@ -253,7 +257,8 @@ void update_sht30(void*) {
 }
 
 // Task for QMP6988(ENV3)
-void update_qmp6988(void*) {
+void update_qmp6988(void*)
+{
     static uint32_t fcnt{}, mps{}, mcnt{};
     static unsigned long start_at{};
 
@@ -289,7 +294,8 @@ void update_qmp6988(void*) {
 }
 
 // Task for HEART
-void update_heart(void*) {
+void update_heart(void*)
+{
     static uint32_t fcnt{}, mps{}, mcnt{};
     static unsigned long start_at{};
 
@@ -325,7 +331,8 @@ void update_heart(void*) {
     }
 }
 
-void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset) {
+void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset)
+{
     vmeterSmallUI.push(&dst, 0, 0 + yoffset);
     tvocSmallUI.push(&dst, lcd.width() >> 1, 0 + yoffset);
     env3SmallUI.push(&dst, 0, (lcd.height() >> 1) + yoffset);
@@ -333,7 +340,8 @@ void drawUI(LovyanGFX& dst, const uint32_t x, const uint32_t yoffset) {
 }
 }  // namespace
 
-void setup() {
+void setup()
+{
     M5.begin();
     lcd.startWrite();
     lcd.clear(TFT_DARKGRAY);
@@ -388,7 +396,8 @@ void setup() {
     xTaskCreateUniversal(update_heart, "heart", 8192, nullptr, 1, nullptr, PRO_CPU_NUM);
 }
 
-void loop() {
+void loop()
+{
     static uint32_t fpsCnt{}, fps{};
     static unsigned long start_at{};
 

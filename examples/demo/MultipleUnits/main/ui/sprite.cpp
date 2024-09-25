@@ -23,7 +23,8 @@ LGFX_Sprite number10_8x16;
 LGFX_Sprite number6_6x8;
 LGFX_Sprite number6_8x16;
 
-void make_shared_sprites() {
+void make_shared_sprites()
+{
     NumberSprite table[] = {
         {&fonts::Font0, &number10_6x8, 6, 8, 10},
         {&fonts::Font2, &number10_8x16, 8, 16, 10},

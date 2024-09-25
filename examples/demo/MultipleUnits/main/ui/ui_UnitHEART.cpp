@@ -26,7 +26,8 @@ constexpr int32_t max_spo2{100};
 constexpr char spO2ustr[] = "%";
 }  // namespace
 
-void UnitHEARTSmallUI::construct() {
+void UnitHEARTSmallUI::construct()
+{
     auto& lcd = M5.Display;
     _wid      = lcd.width() >> 1;
     _hgt      = lcd.height() >> 1;
@@ -42,11 +43,13 @@ void UnitHEARTSmallUI::construct() {
     _spO2Plotter->setGaugeTextDatum(textdatum_t::top_right);
 }
 
-void UnitHEARTSmallUI::push_back(const int32_t ir, const int32_t red) {
+void UnitHEARTSmallUI::push_back(const int32_t ir, const int32_t red)
+{
     _intermediateBuffer.emplace_back(Data{ir, red});
 }
 
-void UnitHEARTSmallUI::update() {
+void UnitHEARTSmallUI::update()
+{
     if (_beatCounter > 0) {
         --_beatCounter;
     }
@@ -66,7 +69,8 @@ void UnitHEARTSmallUI::update() {
     _spO2Plotter->update();
 }
 
-void UnitHEARTSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void UnitHEARTSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     auto f = dst->getFont();
     dst->setFont(&fonts::Font0);
     dst->setTextColor(TFT_WHITE);

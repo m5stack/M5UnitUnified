@@ -16,24 +16,21 @@ namespace m5 {
 namespace ui {
 
 class ScaleMeter : public Base {
-   public:
+public:
     ScaleMeter(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const float minDeg, const float maxDeg,
                const int32_t wid, const int32_t hgt, const int32_t cx, const int32_t cy, const uint32_t radius)
-        : Base(parent, minimum, maximum, wid, hgt),
-          _cx(cx),
-          _cy(cy),
-          _radius(radius),
-          _minDeg{minDeg},
-          _maxDeg{maxDeg} {
+        : Base(parent, minimum, maximum, wid, hgt), _cx(cx), _cy(cy), _radius(radius), _minDeg{minDeg}, _maxDeg{maxDeg}
+    {
     }
 
-    virtual ~ScaleMeter() {
+    virtual ~ScaleMeter()
+    {
     }
 
-   protected:
+protected:
     virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) override;
 
-   private:
+private:
     int32_t _cx{}, _cy{}, _radius{};
     float _minDeg{}, _maxDeg{};
 };

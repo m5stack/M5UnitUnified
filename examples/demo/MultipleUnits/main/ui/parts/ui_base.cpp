@@ -13,7 +13,8 @@
 namespace m5 {
 namespace ui {
 
-void Base::animate(const int32_t val, const elapsed_time_t dur) {
+void Base::animate(const int32_t val, const elapsed_time_t dur)
+{
     if (_to != val && _min != _max) {
         _from     = _value;
         _to       = std::min(std::max(val, _min), _max);
@@ -22,7 +23,8 @@ void Base::animate(const int32_t val, const elapsed_time_t dur) {
     }
 }
 
-bool Base::update() {
+bool Base::update()
+{
     if (_start_at) {
         auto now = m5::utility::millis();
         if (now >= _start_at + _duration) {

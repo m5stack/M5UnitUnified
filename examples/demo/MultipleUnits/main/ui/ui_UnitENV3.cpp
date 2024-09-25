@@ -27,13 +27,15 @@ constexpr int32_t max_hum{100};
 constexpr int32_t min_pres{0};
 constexpr int32_t max_pres{1500};
 
-m5gfx::rgb565_t temp_chooseColor(const int32_t val) {
+m5gfx::rgb565_t temp_chooseColor(const int32_t val)
+{
     return val > 0 ? m5gfx::rgb565_t(0xfe, 0xcb, 0xf2) : m5gfx::rgb565_t(0xb8, 0xc2, 0xf2);
 }
 
 }  // namespace
 
-void UnitENV3SmallUI::construct() {
+void UnitENV3SmallUI::construct()
+{
     auto& lcd = M5.Display;
     _wid      = lcd.width() >> 1;
     _hgt      = lcd.height() >> 1;
@@ -60,17 +62,20 @@ void UnitENV3SmallUI::construct() {
     _presMeter->setNeedleColor(pres_needle_color);
 }
 
-void UnitENV3SmallUI::sht30_push_back(const float tmp, const float hum) {
+void UnitENV3SmallUI::sht30_push_back(const float tmp, const float hum)
+{
     _tempMeterSHT->animate(tmp * COEFF, 10);
     _humMeter->animate(hum * COEFF, 10);
 }
 
-void UnitENV3SmallUI::qmp6988_push_back(const float tmp, const float pa) {
+void UnitENV3SmallUI::qmp6988_push_back(const float tmp, const float pa)
+{
     _tempMeterQMP->animate(tmp * COEFF, 10);
     _presMeter->animate(pa * COEFF * 0.01f, 10);  // pa to hPa
 }
 
-void UnitENV3SmallUI::update() {
+void UnitENV3SmallUI::update()
+{
     lock();
     _tempMeterSHT->update();
     _tempMeterQMP->update();
@@ -81,7 +86,8 @@ void UnitENV3SmallUI::update() {
     unlock();
 }
 
-void UnitENV3SmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void UnitENV3SmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     auto left   = x;
     auto right  = x + _wid - 1;
     auto top    = y;

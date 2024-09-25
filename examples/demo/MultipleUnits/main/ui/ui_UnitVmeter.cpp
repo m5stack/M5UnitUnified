@@ -20,7 +20,8 @@ constexpr m5gfx::rgb565_t voltage_gauge_color{129, 134, 80};
 constexpr char vustr[] = "mV";
 }  // namespace
 
-void UnitVmeterSmallUI::construct() {
+void UnitVmeterSmallUI::construct()
+{
     auto& lcd = M5.Display;
     _wid      = lcd.width() >> 1;
     _hgt      = lcd.height() >> 1;
@@ -37,11 +38,13 @@ void UnitVmeterSmallUI::construct() {
     _intermediateBuffer.clear();
 }
 
-void UnitVmeterSmallUI::push_back(const float mv) {
+void UnitVmeterSmallUI::push_back(const float mv)
+{
     _intermediateBuffer.emplace_back(mv);
 }
 
-void UnitVmeterSmallUI::update() {
+void UnitVmeterSmallUI::update()
+{
     lock();
     for (auto&& e : _intermediateBuffer) {
         _voltagePlotter->push_back(e);
@@ -50,7 +53,8 @@ void UnitVmeterSmallUI::update() {
     unlock();
     _voltagePlotter->update();
 }
-void UnitVmeterSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void UnitVmeterSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     auto left   = x;
     auto right  = x + _wid - 1;
     auto top    = y;

@@ -22,7 +22,8 @@ constexpr int32_t max_co2{6000};
 constexpr int32_t min_temp{-10};
 constexpr int32_t max_temp{40};
 
-m5gfx::rgb565_t temp_chooseColor(const int32_t val) {
+m5gfx::rgb565_t temp_chooseColor(const int32_t val)
+{
     return val > 0 ? m5gfx::rgb565_t(0xfe, 0xcb, 0xf2) : m5gfx::rgb565_t(0xb8, 0xc2, 0xf2);
 }
 
@@ -33,7 +34,8 @@ constexpr std::initializer_list<m5::ui::ColorRange> co2_color_table = {
     {6000, m5gfx::rgb565_t(TFT_RED)},
 };
 
-m5gfx::rgb565_t co2_chooseColor(const int32_t val) {
+m5gfx::rgb565_t co2_chooseColor(const int32_t val)
+{
     for (auto&& e : co2_color_table) {
         if (val <= e.lesseq) {
             return e.clr;
@@ -44,7 +46,8 @@ m5gfx::rgb565_t co2_chooseColor(const int32_t val) {
 
 }  // namespace
 
-void UnitCO2SmallUI::construct() {
+void UnitCO2SmallUI::construct()
+{
     auto& lcd  = M5.Display;
     _wid       = lcd.width() >> 1;
     _hgt       = lcd.height() >> 1;
@@ -58,18 +61,21 @@ void UnitCO2SmallUI::construct() {
         new m5::ui::ColorBarMeterH(_parent, min_co2, max_co2, _wid - GAP * 2, _hgt - wh - GAP * 2, co2_color_table));
 }
 
-void UnitCO2SmallUI::push_back(const int32_t co2, const float temp) {
+void UnitCO2SmallUI::push_back(const int32_t co2, const float temp)
+{
     _tempMeter->animate(temp * COEFF, 1000);
     _co2Meter->animate(co2, 1000);
 }
 
-void UnitCO2SmallUI::update() {
+void UnitCO2SmallUI::update()
+{
     _tempMeter->update();
     _tempMeter->setNeedleColor(temp_chooseColor(_tempMeter->value()));
     _co2Meter->update();
 }
 
-void UnitCO2SmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void UnitCO2SmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     auto left   = x;
     auto right  = x + _wid - 1;
     auto top    = y;

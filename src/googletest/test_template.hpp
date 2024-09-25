@@ -34,8 +34,9 @@ template <uint32_t FREQ, uint32_t WNUM = 0>
 class GlobalFixture : public ::testing::Environment {
     static_assert(WNUM < 2, "Wire number must be lesser than 2");
 
-   public:
-    void SetUp() override {
+public:
+    void SetUp() override
+    {
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
 
@@ -58,8 +59,9 @@ template <typename U, typename TP>
 class ComponentTestBase : public ::testing::TestWithParam<TP> {
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
-   protected:
-    virtual void SetUp() override {
+protected:
+    virtual void SetUp() override
+    {
         unit.reset(get_instance());
         if (!unit) {
             FAIL() << "Failed to get_instance";
@@ -73,10 +75,12 @@ class ComponentTestBase : public ::testing::TestWithParam<TP> {
         }
     }
 
-    virtual void TearDown() override {
+    virtual void TearDown() override
+    {
     }
 
-    virtual bool begin() {
+    virtual bool begin()
+    {
         if (is_using_hal()) {
             // Using M5HAL
             auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);

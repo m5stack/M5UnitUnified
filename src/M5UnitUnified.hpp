@@ -40,7 +40,7 @@ class Component;
   @brief For managing and leading units
  */
 class UnitUnified {
-   public:
+public:
     using container_type = std::vector<Component*>;
 
     ///@warning COPY PROHIBITED
@@ -76,16 +76,16 @@ class UnitUnified {
     //! @brief Output information for debug
     std::string debugInfo() const;
 
-   protected:
+protected:
     bool add_children(Component& u);
     bool add(Component& u, m5::unit::Adapter* a);
 
     std::string make_unit_info(const Component* u, const uint8_t indent = 0) const;
 
-   protected:
+protected:
     container_type _units{};
 
-   private:
+private:
     static uint32_t _registerCount;
 };
 

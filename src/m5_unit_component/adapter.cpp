@@ -23,11 +23,13 @@ namespace unit {
 #if defined(ARDUINO)
 // Impl for TwoWire
 class WireImpl : public Adapter::Impl {
-   public:
-    WireImpl(TwoWire& wire, const uint8_t addr) : Adapter::Impl(addr), _wire(&wire) {
+public:
+    WireImpl(TwoWire& wire, const uint8_t addr) : Adapter::Impl(addr), _wire(&wire)
+    {
     }
 
-    virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override {
+    virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override
+    {
         assert(_addr);
 
         if (data && _wire->requestFrom(_addr, len)) {
@@ -41,14 +43,16 @@ class WireImpl : public Adapter::Impl {
     }
 
     inline virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
-                                                                const bool stop) override {
+                                                                const bool stop) override
+    {
         _wire->setClock(_clock);
         return write_with_transaction(_addr, data, len, stop);
     }
 
     // TODO: rename to writeRegisterWithTransaction()
     virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
-                                                         const bool stop) override {
+                                                         const bool stop) override
+    {
         assert(_addr);
         _wire->setClock(_clock);
 
@@ -65,7 +69,8 @@ class WireImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
-                                                         const bool stop) override {
+                                                         const bool stop) override
+    {
         assert(_addr);
         _wire->setClock(_clock);
 
@@ -82,23 +87,27 @@ class WireImpl : public Adapter::Impl {
         return (ret == 0) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
     }
 
-    virtual Impl* duplicate(const uint8_t addr) override {
+    virtual Impl* duplicate(const uint8_t addr) override
+    {
         return new WireImpl(*_wire, addr);
     }
 
-    inline virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override {
+    inline virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override
+    {
         _wire->setClock(_clock);
         return write_with_transaction(0x00, data, len, true);
     }
 
-    virtual m5::hal::error::error_t wakeup() {
+    virtual m5::hal::error::error_t wakeup()
+    {
         _wire->setClock(_clock);
         return write_with_transaction(_addr, nullptr, 0, true);
     }
 
-   protected:
+protected:
     m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
-                                                   const bool stop) {
+                                                   const bool stop)
+    {
         _wire->beginTransmission(addr);
         if (data) {
             _wire->write(data, len);
@@ -110,22 +119,25 @@ class WireImpl : public Adapter::Impl {
         return (ret == 0) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
     }
 
-   private:
+private:
     TwoWire* _wire{};
 };
 #endif
 
 // Impl for M5::HAL
 struct BusImpl : public Adapter::Impl {
-    BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr) : Adapter::Impl(addr), _bus(bus) {
+    BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr) : Adapter::Impl(addr), _bus(bus)
+    {
         _access_cfg.i2c_addr = addr;
     }
 
-    virtual Impl* duplicate(const uint8_t addr) override {
+    virtual Impl* duplicate(const uint8_t addr) override
+    {
         return new BusImpl(_bus, addr);
     }
 
-    virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override {
+    virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override
+    {
         if (_bus && data) {
             auto acc = _bus->beginAccess(_access_cfg);
             if (acc) {
@@ -143,7 +155,8 @@ struct BusImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
-                                                         const bool stop) override {
+                                                         const bool stop) override
+    {
         if (_bus) {
             auto acc = _bus->beginAccess(_access_cfg);
             if (acc) {
@@ -163,7 +176,8 @@ struct BusImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
-                                                         const bool stop) override {
+                                                         const bool stop) override
+    {
         assert(_addr);
 
         if (_bus) {
@@ -189,7 +203,8 @@ struct BusImpl : public Adapter::Impl {
     }
 
     virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
-                                                         const bool stop) override {
+                                                         const bool stop) override
+    {
         assert(_addr);
 
         if (_bus) {
@@ -216,19 +231,22 @@ struct BusImpl : public Adapter::Impl {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
-    virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override {
+    virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override
+    {
         m5::hal::bus::I2CMasterAccessConfig gcfg = _access_cfg;
         gcfg.i2c_addr                            = 0x00;
         return write_with_transaction(gcfg, data, len, true);
     }
 
-    virtual m5::hal::error::error_t wakeup() {
+    virtual m5::hal::error::error_t wakeup()
+    {
         return write_with_transaction(_access_cfg, nullptr, 0, true);
     }
 
-   protected:
+protected:
     m5::hal::error::error_t write_with_transaction(const m5::hal::bus::I2CMasterAccessConfig& cfg, const uint8_t* data,
-                                                   const size_t len, const bool stop) {
+                                                   const size_t len, const bool stop)
+    {
         if (_bus) {
             auto acc = _bus->beginAccess(cfg);
             if (acc) {
@@ -251,33 +269,38 @@ struct BusImpl : public Adapter::Impl {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
-   private:
+private:
     m5::hal::bus::Bus* _bus{};
     m5::hal::bus::I2CMasterAccessConfig _access_cfg{};
 };
 
 // Adapter
-Adapter::Adapter(const uint8_t addr) : _impl{new Impl(addr)} {
+Adapter::Adapter(const uint8_t addr) : _impl{new Impl(addr)}
+{
     assert(_impl);
 }
 
 #if defined(ARDUINO)
-Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new WireImpl(wire, addr)} {
+Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new WireImpl(wire, addr)}
+{
     assert(_impl);
 }
 #else
 #pragma message "Not support TwoWire"
-Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new Impl(addr)} {
+Adapter::Adapter(TwoWire& wire, const uint8_t addr) : _impl{new Impl(addr)}
+{
     assert(_impl);
     M5_LIB_LOGE("Not support TwoWire");
 }
 #endif
 
-Adapter::Adapter(m5::hal::bus::Bus* bus, const uint8_t addr) : _impl{new BusImpl(bus, addr)} {
+Adapter::Adapter(m5::hal::bus::Bus* bus, const uint8_t addr) : _impl{new BusImpl(bus, addr)}
+{
     assert(_impl);
 }
 
-Adapter* Adapter::duplicate(const uint8_t addr) {
+Adapter* Adapter::duplicate(const uint8_t addr)
+{
     auto ptr = new Adapter(addr);
     if (ptr) {
         ptr->_impl.reset(_impl->duplicate(addr));
@@ -290,7 +313,8 @@ Adapter* Adapter::duplicate(const uint8_t addr) {
     return nullptr;
 }
 
-m5::hal::error::error_t Adapter::generalCall(const uint8_t* data, const size_t len) {
+m5::hal::error::error_t Adapter::generalCall(const uint8_t* data, const size_t len)
+{
     return _impl->generalCall(data, len);
 }
 

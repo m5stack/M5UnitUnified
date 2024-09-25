@@ -10,20 +10,24 @@
 
 #include "ui_UnitBase.hpp"
 
-UnitUIBase::UnitUIBase(LovyanGFX* parent) : _parent(parent) {
+UnitUIBase::UnitUIBase(LovyanGFX* parent) : _parent(parent)
+{
     _sem = xSemaphoreCreateBinary();
     xSemaphoreGive(_sem);
 }
 
-UnitUIBase::~UnitUIBase() {
+UnitUIBase::~UnitUIBase()
+{
     xSemaphoreTake(_sem, portMAX_DELAY);
     vSemaphoreDelete(_sem);
 }
 
-bool UnitUIBase::lock(portTickType bt) {
+bool UnitUIBase::lock(portTickType bt)
+{
     return xSemaphoreTake(_sem, bt) == pdTRUE;
 }
 
-void UnitUIBase::unlock() {
+void UnitUIBase::unlock()
+{
     xSemaphoreGive(_sem);
 }

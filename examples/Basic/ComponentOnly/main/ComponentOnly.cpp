@@ -13,7 +13,8 @@
 
 m5::unit::UnitCO2 unit;  // *2 Instance of the unit
 
-void setup() {
+void setup()
+{
     M5.begin();
 
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
@@ -29,7 +30,8 @@ void setup() {
     }
 }
 
-void loop() {
+void loop()
+{
     M5.begin();
     unit.update();  // Explicitly call unit.update() yourself
     if (unit.updated()) {

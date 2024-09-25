@@ -19,7 +19,8 @@ constexpr float table1[] = {0.125f, 0.125f * 3, 0.125f * 5, 0.125f * 7};
 namespace m5 {
 namespace ui {
 
-void BarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void BarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     dst->setClipRect(x, y, width(), height());
     const auto t   = height() >> 3;
     const auto gy  = y + t * 6;
@@ -44,7 +45,8 @@ void BarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const i
     dst->clearClipRect();
 }
 
-void BarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void BarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     dst->setClipRect(x, y, width(), height());
     const auto t   = width() >> 3;
     const auto gx  = x + t * 6;
@@ -67,7 +69,8 @@ void BarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const i
     dst->clearClipRect();
 }
 
-void ColorBarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void ColorBarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     const auto w  = width();
     const auto t  = height() >> 3;
     const auto h  = t << 2;
@@ -95,7 +98,8 @@ void ColorBarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, co
     dst->clearClipRect();
 }
 
-void ColorBarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void ColorBarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     const auto h  = height();
     const auto t  = width() >> 3;
     const auto w  = width() >> 1;

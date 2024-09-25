@@ -16,15 +16,18 @@
 #include <memory>
 
 class UnitHEARTSmallUI : public UnitUIBase {
-   public:
-    explicit UnitHEARTSmallUI(LovyanGFX* parent = nullptr) : UnitUIBase(parent) {
+public:
+    explicit UnitHEARTSmallUI(LovyanGFX* parent = nullptr) : UnitUIBase(parent)
+    {
     }
 
-    inline m5::max30100::HeartRate& heartRate() {
+    inline m5::max30100::HeartRate& heartRate()
+    {
         return _heartRate;
     }
 
-    inline void beat(bool beated) {
+    inline void beat(bool beated)
+    {
         if (beated) {
             _beatCounter = 4;
         }
@@ -36,7 +39,7 @@ class UnitHEARTSmallUI : public UnitUIBase {
     void update() override;
     void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
-   private:
+private:
     std::unique_ptr<m5::ui::Plotter> _irPlotter{};
     std::unique_ptr<m5::ui::Plotter> _spO2Plotter{};
     m5::max30100::HeartRate _heartRate{};

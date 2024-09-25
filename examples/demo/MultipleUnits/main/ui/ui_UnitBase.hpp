@@ -15,7 +15,7 @@
 #include <vector>
 
 class UnitUIBase {
-   public:
+public:
     explicit UnitUIBase(LovyanGFX* parent);
     virtual ~UnitUIBase();
 
@@ -27,15 +27,16 @@ class UnitUIBase {
     virtual void update()    = 0;
 
     virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y) = 0;
-    inline void push(const int32_t x, const int32_t y) {
+    inline void push(const int32_t x, const int32_t y)
+    {
         push(_parent, x, y);
     }
 
-   protected:
+protected:
     LovyanGFX* _parent{};
     int32_t _wid{}, _hgt{};
 
-   private:
+private:
     volatile SemaphoreHandle_t _sem{};
 };
 

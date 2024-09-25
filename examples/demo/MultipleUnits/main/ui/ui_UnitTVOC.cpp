@@ -26,7 +26,8 @@ constexpr std::initializer_list<m5::ui::ColorRange> tvocGauge = {
 
 }  // namespace
 
-void UnitTVOCSmallUI::construct() {
+void UnitTVOCSmallUI::construct()
+{
     auto& lcd = M5.Display;
     _wid      = lcd.width() >> 1;
     _hgt      = lcd.height() >> 1;
@@ -53,13 +54,15 @@ void UnitTVOCSmallUI::construct() {
     _intermediateBuffer.clear();
 }
 
-void UnitTVOCSmallUI::push_back(const int32_t co2, const int32_t tvoc) {
+void UnitTVOCSmallUI::push_back(const int32_t co2, const int32_t tvoc)
+{
     _co2Bar->animate(co2, 10);
     _tvocBar->animate(tvoc, 10);
     _intermediateBuffer.emplace_back(Data{co2, tvoc});
 }
 
-void UnitTVOCSmallUI::update() {
+void UnitTVOCSmallUI::update()
+{
     lock();
     for (auto&& e : _intermediateBuffer) {
         _co2Plotter->push_back(e.co2);
@@ -74,7 +77,8 @@ void UnitTVOCSmallUI::update() {
     _tvocPlotter->update();
 }
 
-void UnitTVOCSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+void UnitTVOCSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
+{
     auto left   = x;
     auto right  = x + _wid - 1;
     auto top    = y;

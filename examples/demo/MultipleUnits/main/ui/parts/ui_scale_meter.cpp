@@ -19,7 +19,8 @@ constexpr float table1[] = {0.125f, 0.125f * 3, 0.125f * 5, 0.125f * 7};
 namespace m5 {
 namespace ui {
 
-void ScaleMeter::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void ScaleMeter::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     dst->setClipRect(x, y, width(), height());
 
     auto rad = _radius - 1;

@@ -27,7 +27,8 @@ constexpr char defaultPosixTZ[] = "JST-9";  // Asia/Tokyo
 auto rng = std::default_random_engine{};
 }  // namespace
 
-bool isEnabledRTC() {
+bool isEnabledRTC()
+{
     // Check RTC if exists
     if (M5.Rtc.isEnabled()) {
         auto dt = M5.Rtc.getDateTime();  // GMT
@@ -41,12 +42,14 @@ bool isEnabledRTC() {
     return false;
 }
 
-void setTimezone(const char* posix_tz) {
+void setTimezone(const char* posix_tz)
+{
     setenv("TZ", posix_tz ? posix_tz : defaultPosixTZ, 1);
     tzset();
 }
 
-bool configTime(const char* posix_tz, const char* ssid, const char* password) {
+bool configTime(const char* posix_tz, const char* ssid, const char* password)
+{
     M5_LOGI("Configrate time");
 
     // WiFi connect

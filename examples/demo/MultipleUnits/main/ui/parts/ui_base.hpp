@@ -18,7 +18,7 @@ namespace m5 {
 namespace ui {
 
 class Base {
-   public:
+public:
     using elapsed_time_t = unsigned long;
 
     Base(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const int32_t wid, const int32_t hgt)
@@ -29,46 +29,59 @@ class Base {
           _from{minimum},
           _to{minimum},
           _wid{wid},
-          _hgt{hgt} {
+          _hgt{hgt}
+    {
     }
-    virtual ~Base() {
+    virtual ~Base()
+    {
     }
 
-    inline int32_t value() const {
+    inline int32_t value() const
+    {
         return _value;
     }
-    inline int32_t valueTo() const {
+    inline int32_t valueTo() const
+    {
         return _to;
     }
-    inline int32_t width() const {
+    inline int32_t width() const
+    {
         return _wid;
     }
-    inline int32_t height() const {
+    inline int32_t height() const
+    {
         return _hgt;
     }
-    inline int32_t range() const {
+    inline int32_t range() const
+    {
         return _max - _min;
     }
 
-    inline m5gfx::rgb565_t needleColor() const {
+    inline m5gfx::rgb565_t needleColor() const
+    {
         return _needleClr;
     }
-    inline m5gfx::rgb565_t gaugeColor() const {
+    inline m5gfx::rgb565_t gaugeColor() const
+    {
         return _gaugeClr;
     }
-    inline m5gfx::rgb565_t backgroundColor() const {
+    inline m5gfx::rgb565_t backgroundColor() const
+    {
         return _bgClr;
     }
     template <typename T>
-    void setNeedleColor(const T& clr) {
+    void setNeedleColor(const T& clr)
+    {
         _needleClr = clr;
     }
     template <typename T>
-    void setGaugeColor(const T& clr) {
+    void setGaugeColor(const T& clr)
+    {
         _gaugeClr = clr;
     }
     template <typename T>
-    void setBackgroundColor(const T& clr) {
+    void setBackgroundColor(const T& clr)
+    {
         _bgClr = clr;
     }
 
@@ -77,29 +90,34 @@ class Base {
     ///@name Control
     ///@{
     virtual void animate(const int32_t val, const elapsed_time_t dur);
-    inline void set(const int32_t val) {
+    inline void set(const int32_t val)
+    {
         animate(val, 0U);
     }
     ///@}
 
     ///@name Push
     ///@{
-    inline void push(const int32_t x, const int32_t y) {
+    inline void push(const int32_t x, const int32_t y)
+    {
         push(_parent, x, y);
     }
-    virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y) {
+    virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y)
+    {
         render(dst, x, y, _value);
     }
     ///@}
 
-   protected:
-    inline float ratio(const int32_t val) {
+protected:
+    inline float ratio(const int32_t val)
+    {
         return range() > 0 ? (std::min(std::max(val, _min), _max) - _min) / (float)range() : 0.0f;
     }
-    virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+    virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+    {
     }
 
-   private:
+private:
     LovyanGFX* _parent{};
     int32_t _min{}, _max{}, _value{}, _from{}, _to{}, _wid{}, _hgt{};
     elapsed_time_t _start_at{}, _duration{};

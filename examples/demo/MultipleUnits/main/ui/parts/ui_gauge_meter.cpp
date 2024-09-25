@@ -17,7 +17,8 @@ namespace ui {
 GaugeMeter::GaugeMeter(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const float minDeg,
                        const float maxDeg, const int32_t wid, const int32_t hgt, const int32_t thickness)
     : GaugeMeter(parent, minimum, maximum, minDeg, maxDeg, wid, hgt, (wid >> 1) - 1, (hgt >> 1) - 1,
-                 std::min(wid >> 1, hgt >> 1) - 1, thickness) {
+                 std::min(wid >> 1, hgt >> 1) - 1, thickness)
+{
 }
 
 GaugeMeter::GaugeMeter(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const float minDeg,
@@ -29,10 +30,12 @@ GaugeMeter::GaugeMeter(LovyanGFX* parent, const int32_t minimum, const int32_t m
       _radius(radius),
       _thickness{thickness},
       _minDeg{minDeg},
-      _maxDeg{maxDeg} {
+      _maxDeg{maxDeg}
+{
 }
 
-void GaugeMeter::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) {
+void GaugeMeter::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
+{
     dst->setClipRect(x, y, width(), height());
 
     int32_t r0{_radius}, r1{_radius - _thickness};

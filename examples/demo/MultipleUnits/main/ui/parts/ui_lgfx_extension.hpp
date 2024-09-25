@@ -28,7 +28,8 @@ namespace lgfx {
   @warning After this function call, the clip rectangle in dst is cleared.
 */
 inline void pushPartial(LovyanGFX* dst, const int32_t dx, const int32_t dy, const int32_t width, const int32_t height,
-                        LGFX_Sprite* src, const int32_t sx, const int32_t sy) {
+                        LGFX_Sprite* src, const int32_t sx, const int32_t sy)
+{
     dst->setClipRect(dx, dy, width, height);
     src->pushSprite(dst, dx - sx, dy - sy);
     dst->clearClipRect();
@@ -44,7 +45,8 @@ inline void pushPartial(LovyanGFX* dst, const int32_t dx, const int32_t dy, cons
  */
 template <typename T>
 void pushPartial(LovyanGFX* dst, const int32_t dx, const int32_t dy, const int32_t width, const int32_t height,
-                 LGFX_Sprite* src, const int32_t sx, const int32_t sy, const T& transp) {
+                 LGFX_Sprite* src, const int32_t sx, const int32_t sy, const T& transp)
+{
     dst->setClipRect(dx, dy, width, height);
     src->pushSprite(dst, dx - sx, dy - sy, transp);
     dst->clearClipRect();

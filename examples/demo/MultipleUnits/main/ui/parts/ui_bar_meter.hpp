@@ -21,14 +21,16 @@ namespace ui {
   @brief Horizontal bar meter
  */
 class BarMeterH : public Base {
-   public:
+public:
     BarMeterH(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const int32_t wid, const int32_t hgt)
-        : Base(parent, minimum, maximum, wid, hgt) {
+        : Base(parent, minimum, maximum, wid, hgt)
+    {
     }
-    virtual ~BarMeterH() {
+    virtual ~BarMeterH()
+    {
     }
 
-   protected:
+protected:
     virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) override;
 };
 
@@ -37,14 +39,16 @@ class BarMeterH : public Base {
   @brief Vertical bar meter
  */
 class BarMeterV : public Base {
-   public:
+public:
     BarMeterV(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const int32_t wid, const int32_t hgt)
-        : Base(parent, minimum, maximum, wid, hgt) {
+        : Base(parent, minimum, maximum, wid, hgt)
+    {
     }
-    virtual ~BarMeterV() {
+    virtual ~BarMeterV()
+    {
     }
 
-   protected:
+protected:
     virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) override;
 };
 
@@ -54,42 +58,48 @@ struct ColorRange {
 };
 
 class ColorBarMeterH : public Base {
-   public:
+public:
     ColorBarMeterH(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const int32_t wid,
                    const int32_t hgt, std::initializer_list<ColorRange> init = {})
-        : Base(parent, minimum, maximum, wid, hgt), _crange(init.begin(), init.end()) {
+        : Base(parent, minimum, maximum, wid, hgt), _crange(init.begin(), init.end())
+    {
     }
-    virtual ~ColorBarMeterH() {
+    virtual ~ColorBarMeterH()
+    {
     }
 
-    void setColorRange(std::initializer_list<ColorRange> init) {
+    void setColorRange(std::initializer_list<ColorRange> init)
+    {
         _crange = std::vector<ColorRange>(init);
     }
 
-   protected:
+protected:
     virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) override;
 
-   private:
+private:
     std::vector<ColorRange> _crange{};
 };
 
 class ColorBarMeterV : public Base {
-   public:
+public:
     ColorBarMeterV(LovyanGFX* parent, const int32_t minimum, const int32_t maximum, const int32_t wid,
                    const int32_t hgt, std::initializer_list<ColorRange> init = {})
-        : Base(parent, minimum, maximum, wid, hgt), _crange(init.begin(), init.end()) {
+        : Base(parent, minimum, maximum, wid, hgt), _crange(init.begin(), init.end())
+    {
     }
-    virtual ~ColorBarMeterV() {
+    virtual ~ColorBarMeterV()
+    {
     }
 
-    void setColorRange(std::initializer_list<ColorRange> init) {
+    void setColorRange(std::initializer_list<ColorRange> init)
+    {
         _crange = std::vector<ColorRange>(init);
     }
 
-   protected:
+protected:
     virtual void render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val) override;
 
-   private:
+private:
     std::vector<ColorRange> _crange{};
 };
 

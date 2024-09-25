@@ -16,8 +16,9 @@
 #include <memory>
 
 class UnitENV3SmallUI : public UnitUIBase {
-   public:
-    explicit UnitENV3SmallUI(LovyanGFX* parent) : UnitUIBase(parent) {
+public:
+    explicit UnitENV3SmallUI(LovyanGFX* parent) : UnitUIBase(parent)
+    {
     }
 
     void construct() override;
@@ -28,7 +29,7 @@ class UnitENV3SmallUI : public UnitUIBase {
     void update() override;
     void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
-   private:
+private:
     std::unique_ptr<m5::ui::GaugeMeter> _tempMeterSHT{};
     std::unique_ptr<m5::ui::GaugeMeter> _tempMeterQMP{};
     std::unique_ptr<m5::ui::ScaleMeter> _humMeter;

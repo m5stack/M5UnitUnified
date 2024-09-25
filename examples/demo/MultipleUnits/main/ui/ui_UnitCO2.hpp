@@ -18,8 +18,9 @@
 #include <memory>
 
 class UnitCO2SmallUI : public UnitUIBase {
-   public:
-    explicit UnitCO2SmallUI(LovyanGFX* parent = nullptr) : UnitUIBase(parent) {
+public:
+    explicit UnitCO2SmallUI(LovyanGFX* parent = nullptr) : UnitUIBase(parent)
+    {
     }
 
     void push_back(const int32_t co2, const float temp);
@@ -28,7 +29,7 @@ class UnitCO2SmallUI : public UnitUIBase {
     virtual void update() override;
     virtual void push(LovyanGFX* dst, const int32_t x, const int32_t y) override;
 
-   private:
+private:
     LovyanGFX* _parent{};
     int32_t _wid{}, _hgt{};
     std::unique_ptr<m5::ui::GaugeMeter> _tempMeter{};
