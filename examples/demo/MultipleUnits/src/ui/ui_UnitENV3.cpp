@@ -40,14 +40,14 @@ void UnitENV3SmallUI::construct()
     _wid      = lcd.width() >> 1;
     _hgt      = lcd.height() >> 1;
 
-    auto left   = 0 + GAP;
-    auto right  = _wid - GAP - 1;
-    auto top    = 0;
-    auto bottom = _hgt - 1;
-    auto w      = _wid / 5;
-    auto h      = _hgt / 2 - GAP * 2;
-    auto rad    = std::min(w, h / 2);
-    auto wh     = (std::min(_wid, _hgt) >> 1) - GAP * 2;
+    //    auto left   = 0 + GAP;
+    //    auto right  = _wid - GAP - 1;
+    //    auto top    = 0;
+    //    auto bottom = _hgt - 1;
+    auto w   = _wid / 5;
+    auto h   = _hgt / 2 - GAP * 2;
+    auto rad = std::min(w, h / 2);
+    auto wh  = (std::min(_wid, _hgt) >> 1) - GAP * 2;
 
     _tempMeterSHT.reset(
         new m5::ui::GaugeMeter(_parent, min_temp * COEFF, max_temp * COEFF, 25.0f, -25.0f + 360.f, wh, wh, 10));

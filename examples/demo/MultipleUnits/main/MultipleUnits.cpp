@@ -29,13 +29,10 @@
 #define ESP_IDF_VERSION                          ESP_IDF_VERSION_VAL(3, 2, 0)
 #endif
 
-#include "config_time.hpp"
-#include "ui/sprite.hpp"
-#include "ui/ui_UnitCO2.hpp"
-#include "ui/ui_UnitHEART.hpp"
-#include "ui/ui_UnitTVOC.hpp"
-#include "ui/ui_UnitVmeter.hpp"
-#include "ui/ui_UnitENV3.hpp"
+#include "../src/ui/ui_UnitVmeter.hpp"
+#include "../src/ui/ui_UnitTVOC.hpp"
+#include "../src/ui/ui_UnitENV3.hpp"
+#include "../src/ui/ui_UnitHEART.hpp"
 
 using namespace m5::unit;
 

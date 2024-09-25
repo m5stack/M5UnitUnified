@@ -71,13 +71,12 @@ void BarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const i
 
 void ColorBarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
 {
-    const auto w  = width();
-    const auto t  = height() >> 3;
-    const auto h  = t << 2;
-    const auto nh = t * 6;
-    auto left     = x;
-    auto top      = y + height() / 2 - height() / 4;
-    auto gw       = width() - 1;
+    const auto w = width();
+    const auto t = height() >> 3;
+    const auto h = t << 2;
+    auto left    = x;
+    auto top     = y + height() / 2 - height() / 4;
+    auto gw      = width() - 1;
 
     dst->setClipRect(x, y, width(), height());
 
@@ -100,13 +99,11 @@ void ColorBarMeterH::render(LovyanGFX* dst, const int32_t x, const int32_t y, co
 
 void ColorBarMeterV::render(LovyanGFX* dst, const int32_t x, const int32_t y, const int32_t val)
 {
-    const auto h  = height();
-    const auto t  = width() >> 3;
-    const auto w  = width() >> 1;
-    const auto nw = t * 6;
-    auto top      = y;
-    auto left     = x + width() / 2 - width() / 4;
-    auto gh       = height() - 1;
+    const auto h = height();
+    const auto w = width() >> 1;
+    auto top     = y;
+    auto left    = x + width() / 2 - width() / 4;
+    auto gh      = height() - 1;
 
     dst->setClipRect(x, y, width(), height());
 
