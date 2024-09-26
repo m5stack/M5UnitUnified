@@ -12,19 +12,12 @@
 #ifndef M5_UNIT_COMPONENT_ADAPTER_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_HPP
 
-#include <m5_hal/error.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <memory>
+#include <M5HAL.hpp>
 
 class TwoWire;
-namespace m5 {
-namespace hal {
-namespace bus {
-class Bus;
-}  // namespace bus
-}  // namespace hal
-}  // namespace m5
 
 namespace m5 {
 namespace unit {
@@ -33,13 +26,14 @@ namespace unit {
   @brief Adapters to treat M5HAL and TwoWire in the same way
  */
 class Adapter {
-   public:
+public:
     ///@name Constructor
     ///@{
     explicit Adapter(const uint8_t addr);
     Adapter(TwoWire& wire, const uint8_t addr);
     Adapter(m5::hal::bus::Bus* bus, const uint8_t addr);
-    Adapter(m5::hal::bus::Bus& bus, const uint8_t addr) : Adapter(&bus, addr) {
+    Adapter(m5::hal::bus::Bus& bus, const uint8_t addr) : Adapter(&bus, addr)
+    {
     }
     ///@}
     Adapter(const Adapter&) = delete;
@@ -52,13 +46,16 @@ class Adapter {
 
     virtual ~Adapter() = default;
 
-    inline uint8_t address() const {
+    inline uint8_t address() const
+    {
         return _impl->address();
     }
-    inline uint32_t clock() const {
+    inline uint32_t clock() const
+    {
         return _impl->clock();
     }
-    inline void setClock(const uint32_t clock) {
+    inline void setClock(const uint32_t clock)
+    {
         return _impl->setClock(clock);
     }
     //! @brief Dupicate adapter
@@ -70,76 +67,91 @@ class Adapter {
     ///@name R/W
     ///@{
     /*! @brief Reading data with transactions */
-    inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) {
+    inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len)
+    {
         return _impl->readWithTransaction(data, len);
     }
     //! @brief Writeing data with transactions */
-    inline m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true) {
+    inline m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true)
+    {
         return _impl->writeWithTransaction(data, len, stop);
     }
     //! @brief Writeing data with transactions (reg8)*/
     inline m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
-                                                        const bool stop = true) {
+                                                        const bool stop = true)
+    {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
     //! @brief Writeing data with transactions (reg16) */
     inline m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
-                                                        const bool stop = true) {
+                                                        const bool stop = true)
+    {
         return _impl->writeWithTransaction(reg, data, len, stop);
     }
     ///@}
 
     ///@cond
     class Impl {
-       public:
+    public:
         Impl() = default;
-        explicit Impl(const uint8_t addr) : _addr(addr) {
+        explicit Impl(const uint8_t addr) : _addr(addr)
+        {
         }
-        Impl(const uint8_t addr, const uint32_t clock) : _addr(addr), _clock(clock) {
+        Impl(const uint8_t addr, const uint32_t clock) : _addr(addr), _clock(clock)
+        {
         }
 
         virtual ~Impl() = default;
 
-        inline uint8_t address() const {
+        inline uint8_t address() const
+        {
             return _addr;
         }
-        inline uint32_t clock() const {
+        inline uint32_t clock() const
+        {
             return _clock;
         }
-        inline void setClock(const uint32_t clock) {
+        inline void setClock(const uint32_t clock)
+        {
             _clock = clock;
         }
 
-        virtual Impl* duplicate(const uint8_t addr) {
+        virtual Impl* duplicate(const uint8_t addr)
+        {
             return new Impl(addr, _clock);
         }
 
-        virtual m5::hal::error::error_t readWithTransaction(uint8_t*, const size_t) {
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t*, const size_t)
+        {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t*, const size_t, const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t*, const size_t, const bool)
+        {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t, const uint8_t*, const size_t, const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t, const uint8_t*, const size_t, const bool)
+        {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t, const uint8_t*, const size_t, const bool) {
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t, const uint8_t*, const size_t, const bool)
+        {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
-        virtual m5::hal::error::error_t generalCall(const uint8_t*, const size_t) {
+        virtual m5::hal::error::error_t generalCall(const uint8_t*, const size_t)
+        {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
-       protected:
+    protected:
         uint8_t _addr{};
         uint32_t _clock{100000};
     };
     ///@endcond
 
-   protected:
+protected:
     std::unique_ptr<Impl> _impl{};
-    Adapter* _parent{};
+    //    Adapter* _parent{};
 };
 
 }  // namespace unit

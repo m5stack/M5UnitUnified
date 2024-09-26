@@ -1,25 +1,32 @@
 {
-  "name": "M5UnitUnified",
-  "description": "Library for M5 Units",
-  "keywords": "M5UnitUnified",
-  "authors": {
-    "name": "M5Stack",
-    "url": "http://www.m5stack.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/m5stack/M5UnitUnified.git"
-  },
-  "dependencies": [
-    {
-      "name": "M5Utility"
+    "name": "M5UnitUnified",
+    "description": "M5UnitUnified is a library for unified handling of various M5 units products.(Alpha version)",
+    "keywords": "M5UnitUnified",
+    "authors": {
+        "name": "M5Stack",
+        "url": "http://www.m5stack.com"
     },
-    {
-      "name": "M5HAL"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/m5stack/M5UnitUnified.git"
+    },
+    "dependencies": {
+        "M5Utility": "https://github.com/m5stack/M5Utility.git",
+        "M5HAL": "https://github.com/m5stack/M5HAL.git"
+    },
+    "version": "0.0.1",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "espressif32"
+    ],
+    "headers": "M5UnitUnified.h",
+    "license": "MIT",
+    "export": {
+        "exclude":
+        [
+            "docs/html"
+        ]
     }
-  ],
-  "version": "0.0.0",
-  "frameworks": ["arduino", "espidf"],
-  "platforms": ["espressif32"],
-  "headers": "M5UnitUnified.h"
 }

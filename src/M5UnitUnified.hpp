@@ -8,7 +8,10 @@
   @brief Main header of M5UnitUnified
 
   @mainpage M5UnitUnified
-  Library for abstracted M5 units.  C++11 or later
+  M5UnitUnified  is a library for unified handling of various M5 unit products.
+  - Unified APIs
+  - Unified Connections
+  - Unified Licensing
 */
 #ifndef M5_UNIT_UNIFIED_HPP
 #define M5_UNIT_UNIFIED_HPP
@@ -37,21 +40,23 @@ class Component;
   @brief For managing and leading units
  */
 class UnitUnified {
-   public:
+public:
     using container_type = std::vector<Component*>;
 
+    ///@warning COPY PROHIBITED
     ///@name Constructor
     ///@{
-    UnitUnified()                   = default;
-    UnitUnified(const UnitUnified&) = delete;
-    UnitUnified(UnitUnified&&)      = default;
+    UnitUnified()                       = default;
+    UnitUnified(const UnitUnified&)     = delete;
+    UnitUnified(UnitUnified&&) noexcept = default;
     ///@}
 
+    ///@warning COPY PROHIBITED
     ///@name Assignment
     ///@{
     UnitUnified& operator=(const UnitUnified&) = delete;
 
-    UnitUnified& operator=(UnitUnified&&) = default;
+    UnitUnified& operator=(UnitUnified&&) noexcept = default;
     ///@}
 
     ///@name Adding unit to be managed
@@ -63,22 +68,24 @@ class UnitUnified {
     bool add(Component& u, TwoWire& wire);
     ///@}
 
+    //! @brief Begin of all units under management
     bool begin();
+    //! @brief Update of all units under management
     void update();
 
     //! @brief Output information for debug
     std::string debugInfo() const;
 
-   protected:
+protected:
     bool add_children(Component& u);
     bool add(Component& u, m5::unit::Adapter* a);
 
     std::string make_unit_info(const Component* u, const uint8_t indent = 0) const;
 
-   protected:
-    container_type _units;
+protected:
+    container_type _units{};
 
-   private:
+private:
     static uint32_t _registerCount;
 };
 

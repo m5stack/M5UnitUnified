@@ -10,7 +10,8 @@
 #include <M5UnitComponent.hpp>
 #include "unit_dummy.hpp"
 
-TEST(Component, Children) {
+TEST(Component, Children)
+{
     m5::unit::UnitDummy u0, u1, u2, u3;
 
     //

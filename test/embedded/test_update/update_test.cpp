@@ -14,7 +14,8 @@
 
 using namespace m5::unit;
 
-TEST(Component, Update) {
+TEST(Component, Update)
+{
     UnitUnified units;
     UnitDummy u;
     EXPECT_FALSE(u.isRegistered());
@@ -41,8 +42,7 @@ TEST(Component, Update) {
         units.update();  // Don't call u.update()
         EXPECT_EQ(u.count, 1U);
 
-        u.update();  // If component_config.iself_update is true, you have to
-                     // call it yourself
+        u.update();  // If component_config.self_update is true, you have to call it yourself
         EXPECT_EQ(u.count, 2U);
     }
 }

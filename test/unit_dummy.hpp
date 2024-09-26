@@ -17,16 +17,20 @@ namespace unit {
 class UnitDummy : public m5::unit::Component {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitDummy, 0x00);
 
-   public:
-    UnitDummy() : Component(0x00) {
+public:
+    UnitDummy() : Component(0x00)
+    {
     }
-    virtual ~UnitDummy() {
+    virtual ~UnitDummy()
+    {
     }
 
-    virtual bool begin() override {
+    virtual bool begin() override
+    {
         return true;
     }
-    virtual void update(const bool force = false) override {
+    virtual void update(const bool force = false) override
+    {
         ++count;
     }
     uint32_t count{};
