@@ -166,7 +166,7 @@ public:
     /*! @brief In periodic measurement? */
     inline bool inPeriodic() const
     {
-        return _periodic;
+        return in_periodic();
     }
     //! @brief Periodic measurement data updated?
     inline bool updated() const
@@ -345,6 +345,10 @@ protected:
     virtual const char* unit_device_name() const = 0;
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
+    inline virtual bool in_periodic() const
+    {
+        return _periodic;
+    }
 
     // Duplicate the adapter for children
     // Note that ownership of the return pointer is delegated to the destination

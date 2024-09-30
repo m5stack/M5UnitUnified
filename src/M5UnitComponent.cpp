@@ -126,7 +126,9 @@ bool Component::assign(TwoWire& wire)
 
 bool Component::selectChannel(const uint8_t ch)
 {
-    M5_LIB_LOGV("%s:%u", deviceName(), ch);
+    if (ch != 255) {
+        M5_LIB_LOGV("%s:%u", deviceName(), ch);
+    }
     bool ret{true};
     if (hasParent()) {
         ret = _parent->selectChannel(channel());
