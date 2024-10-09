@@ -121,7 +121,7 @@ GPIO、UART は将来対応予定です。
   - UnitCO2
   - UnitENVIII
   - UnitTVOC
-  - UnitENVPro (いくつか問題があり修正中)
+  - UnitENVPro
 - [M5Unit-METER](https://github.com/m5stack/M5Unit-METER)
   - UnitAmeter
   - UnitVmeter
@@ -132,13 +132,17 @@ GPIO、UART は将来対応予定です。
   - UnitGESTURE
 - [M5Unit-HEART](https://github.com/m5stack/M5Unit-HEART)
   - UnitHEART
+- [M5Unit-ToF4M](https://github.com/m5stack/M5Unit-ToF4M)
+  - UnitToF4M
+- [M5Unit-WeightI2C](https://github.com/m5stack/M5Unit-WeightI2C)
+  - UnitWeightI2C
 
 他のユニットは開発、確認後追加されます。
 
 
 ## Examples
 各ユニットのサンプルについては、各ユニットのリポジトリを参照してください。  
-このリポジトリにあるサンプルはM5UnitUnified全般のものです。
+[このリポジトリにあるサンプル](examples/Basic)は M5UnitUnified 全般のものです。
 
 
 ## Doxygen ドキュメント

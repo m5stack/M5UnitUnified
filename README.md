@@ -124,7 +124,7 @@ Other devices will be added after confirmation of operation.
   - UnitCO2
   - UnitENVIII
   - UnitTVOC
-  - UnitENVPro (There are a few problems)
+  - UnitENVPro
 - [M5Unit-METER](https://github.com/m5stack/M5Unit-METER)
   - UnitAmeter
   - UnitVmeter
@@ -135,12 +135,16 @@ Other devices will be added after confirmation of operation.
   - UnitGESTURE
 - [M5Unit-HEART](https://github.com/m5stack/M5Unit-HEART)
   - UnitHEART
+- [M5Unit-ToF4M](https://github.com/m5stack/M5Unit-ToF4M)
+  - UnitToF4M
+- [M5Unit-WeightI2C](https://github.com/m5stack/M5Unit-WeightI2C)
+  - UnitWeightI2C
 
 Other units will be added after they are developed and tested.
 
 ## Examples
 For exampless of each unit, please refer to the respective unit's repository.  
-The examples in this repository are for M5UnitUnified in general
+[The examples in this repository](examples/Basic) are for M5UnitUnified in general
 
 
 ## Doxygen document
