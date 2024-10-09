@@ -111,12 +111,12 @@ bool UnitUnified::begin()
     });
 }
 
-void UnitUnified::update()
+void UnitUnified::update(const bool force)
 {
     // Order of registration
     for (auto&& u : _units) {
         if (!u->_component_cfg.self_update && u->_begun) {
-            u->update();
+            u->update(force);
         }
     }
 }

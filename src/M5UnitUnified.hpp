@@ -71,7 +71,7 @@ public:
     //! @brief Begin of all units under management
     bool begin();
     //! @brief Update of all units under management
-    void update();
+    void update(const bool force = false);
 
     //! @brief Output information for debug
     std::string debugInfo() const;
