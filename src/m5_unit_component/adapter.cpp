@@ -31,6 +31,7 @@ public:
     virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override
     {
         assert(_addr);
+        _wire->setClock(_clock);
 
         if (data && _wire->requestFrom(_addr, len)) {
             auto count = std::min(len, (size_t)_wire->available());
@@ -45,11 +46,9 @@ public:
     inline virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
                                                                 const bool stop) override
     {
-        _wire->setClock(_clock);
         return write_with_transaction(_addr, data, len, stop);
     }
 
-    // TODO: rename to writeRegisterWithTransaction()
     virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
                                                          const bool stop) override
     {
@@ -94,13 +93,11 @@ public:
 
     inline virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override
     {
-        _wire->setClock(_clock);
         return write_with_transaction(0x00, data, len, true);
     }
 
     virtual m5::hal::error::error_t wakeup()
     {
-        _wire->setClock(_clock);
         return write_with_transaction(_addr, nullptr, 0, true);
     }
 
@@ -108,6 +105,7 @@ protected:
     m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
                                                    const bool stop)
     {
+        _wire->setClock(_clock);
         _wire->beginTransmission(addr);
         if (data) {
             _wire->write(data, len);
