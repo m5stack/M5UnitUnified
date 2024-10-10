@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['test_5fperiodic_5fmeasurement_0',['test_periodic_measurement',['../test__helper_8hpp.html#a55854c9cd65bcc392a387f81cdc082f4',1,'m5::unit::googletest']]]
+  ['update_0',['update',['../classm5_1_1unit_1_1_component.html#a030631a2cdedfb2a41913a58104e261d',1,'m5::unit::Component::update()'],['../classm5_1_1unit_1_1_unit_unified.html#aca9be8e0e9485a0e99a5c2fdff001333',1,'m5::unit::UnitUnified::update()']]],
+  ['updated_1',['updated',['../classm5_1_1unit_1_1_component.html#a83425f058d73a536fa5dfdb513b78d53',1,'m5::unit::Component']]],
+  ['updatedmillis_2',['updatedMillis',['../classm5_1_1unit_1_1_component.html#a8370f94e52cdeb21ab3ce7f771d7bc2b',1,'m5::unit::Component']]]
 ];

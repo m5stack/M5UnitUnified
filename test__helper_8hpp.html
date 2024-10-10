@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.0 git rev:784687d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.1 git rev:3681541</span>
    </div>
   </td>
  </tr>
@@ -103,7 +103,7 @@ $(function(){initNavTree('test__helper_8hpp.html',''); initResizable(true); });
 </div><!--header-->
 <div class="contents">
 
-<p>Helper for testing <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived classes.  
+<p>Helper for testing UnitComponent.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;M5Utility.hpp&gt;</code><br />
 <code>#include &lt;thread&gt;</code><br />
@@ -119,68 +119,23 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4" id="r_a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplParams" colspan="2">template&lt;class U &gt; </td></tr>
-<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a55854c9cd65bcc392a387f81cdc082f4">m5::unit::googletest::test_periodic_measurement</a> (U *unit, const uint32_t times=8, void(*callback)(U *)=nullptr, const bool skip_after_test=false)</td></tr>
-<tr class="memdesc:a55854c9cd65bcc392a387f81cdc082f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests for periodic measurement.  <br /></td></tr>
+<tr class="memitem:ac2a0eab0e21d2e953ffa9786ca5b6da2" id="r_ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memTemplParams" colspan="2"><a id="ac2a0eab0e21d2e953ffa9786ca5b6da2" name="ac2a0eab0e21d2e953ffa9786ca5b6da2"></a>
+template&lt;class U &gt; </td></tr>
+<tr class="memitem:ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times, const uint32_t tolerance, const uint32_t timeout_duration, void(*callback)(U *), const bool skip_after_test)</td></tr>
+<tr class="separator:ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fd7c8acf3a5274db85dd5a904ec32e1" id="r_a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memTemplParams" colspan="2"><a id="a1fd7c8acf3a5274db85dd5a904ec32e1" name="a1fd7c8acf3a5274db85dd5a904ec32e1"></a>
+template&lt;class U &gt; </td></tr>
+<tr class="memitem:a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times=8, const uint32_t tolerance=1, void(*callback)(U *)=nullptr, const bool skip_after_test=false)</td></tr>
+<tr class="separator:a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4" id="r_a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplParams" colspan="2"><a id="a55854c9cd65bcc392a387f81cdc082f4" name="a55854c9cd65bcc392a387f81cdc082f4"></a>
+template&lt;class U &gt; </td></tr>
+<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times=8, void(*callback)(U *)=nullptr, const bool skip_after_test=false)</td></tr>
 <tr class="separator:a55854c9cd65bcc392a387f81cdc082f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Helper for testing <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived classes. </p>
+<div class="textblock"><p>Helper for testing UnitComponent. </p>
 <dl class="section note"><dt>Note</dt><dd>Depends on GoogleTest </dd></dl>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="a55854c9cd65bcc392a387f81cdc082f4" name="a55854c9cd65bcc392a387f81cdc082f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55854c9cd65bcc392a387f81cdc082f4">&#9670;&#160;</a></span>test_periodic_measurement()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class U &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t m5::unit::googletest::test_periodic_measurement </td>
-          <td>(</td>
-          <td class="paramtype">U *</td>          <td class="paramname"><span class="paramname"><em>unit</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>times</em></span><span class="paramdefsep"> = </span><span class="paramdefval">8</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void(*</td>          <td class="paramname"><span class="paramname"><em>callback&#160;</em></span>)(U *)<span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool</td>          <td class="paramname"><span class="paramname"><em>skip_after_test</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Tests for periodic measurement. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">U</td><td>Classes derived from <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">unit</td><td>Instance pointer of the U </td></tr>
-    <tr><td class="paramname">times</td><td>Number of times to measure </td></tr>
-    <tr><td class="paramname">callback</td><td>Function pointer called when the measurement is updated </td></tr>
-    <tr><td class="paramname">skip_after_test</td><td>Skip check avg etc if true </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Average of the measurement interval </dd></dl>
-<dl class="section pre"><dt>Precondition</dt><dd>startPeriodicMeasurement must already have been called and _interval has been set and _latest was cleared </dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

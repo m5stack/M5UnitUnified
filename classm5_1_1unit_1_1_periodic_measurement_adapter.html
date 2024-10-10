@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.0 git rev:784687d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.1 git rev:3681541</span>
    </div>
   </td>
  </tr>
@@ -102,7 +102,7 @@ $(function(){initNavTree('classm5_1_1unit_1_1_periodic_measurement_adapter.html'
 </div><!--header-->
 <div class="contents">
 
-<p>Interface class for periodic measurement.  
+<p>Interface class for periodic measurement (CRTP)  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="_m5_unit_component_8hpp_source.html">M5UnitComponent.hpp</a>&gt;</code></p>
@@ -171,7 +171,7 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>flush_periodi
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;class Derived, typename MD&gt;<br />
-class m5::unit::PeriodicMeasurementAdapter&lt; Derived, MD &gt;</div><p>Interface class for periodic measurement. </p>
+class m5::unit::PeriodicMeasurementAdapter&lt; Derived, MD &gt;</div><p>Interface class for periodic measurement (CRTP) </p>
 <p>Common interface for accumulated periodic measurement data</p>
 <p>Provide a common interface for periodic measurements for each unit </p><dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -191,9 +191,7 @@ class m5::unit::PeriodicMeasurementAdapter&lt; Derived, MD &gt;</div><p>Interfac
 MUST ADD std::unique_ptr&lt;m5::container::CircularBuffer&lt;MD&gt;&gt; _data{} in Derived class </dd>
 <dd>
 This class is an interface class and should not have any data </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>See also M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER </dd>
-<dd>
-</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>See also M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a41fd64f96029d49a8b29a44de071e56b" name="a41fd64f96029d49a8b29a44de071e56b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a41fd64f96029d49a8b29a44de071e56b">&#9670;&#160;</a></span>startPeriodicMeasurement()</h2>
