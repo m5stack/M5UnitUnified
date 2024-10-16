@@ -102,6 +102,7 @@ bool UnitUnified::add_children(Component& u)
 bool UnitUnified::begin()
 {
     return !std::any_of(_units.begin(), _units.end(), [](Component* c) {
+        M5_LIB_LOGV("Try begin:%s", c->deviceName());
         bool ret = c->_begun = c->begin();
         if (!ret) {
             M5_LIB_LOGE("Failed to begin: [%s] ID:{0X%08X} ADDR{0X%02X}", c->deviceName(), c->identifier(),
