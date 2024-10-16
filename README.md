@@ -144,6 +144,9 @@ The examples in this repository are for M5UnitUnified in general
 
 
 ## Doxygen document
+
+[GitHub Pages](https://m5stack.github.io/M5UnitUnified/)
+
 If you want to generate documents on your local machine, execute the following command
 
 ```
