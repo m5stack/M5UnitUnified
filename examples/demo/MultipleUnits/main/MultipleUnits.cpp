@@ -123,7 +123,7 @@ void prepare()
     tvocSmallUI.construct();
     vmeterSmallUI.construct();
     env3SmallUI.construct();
-    heartSmallUI.heartRate().setSampleRate(m5::max30100::HeartRate::getSampleRate(unitHeart.config().sample_rate));
+    heartSmallUI.monitor().setSamplingRate(m5::unit::max30100::getSamplingRate(unitHeart.config().sampling_rate));
 }
 
 // task for Vmeter

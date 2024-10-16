@@ -21,9 +21,9 @@ public:
     {
     }
 
-    inline m5::max30100::HeartRate& heartRate()
+    inline m5::heart::PulseMonitor& monitor()
     {
-        return _heartRate;
+        return _monitor;
     }
 
     inline void beat(bool beated)
@@ -42,7 +42,7 @@ public:
 private:
     std::unique_ptr<m5::ui::Plotter> _irPlotter{};
     std::unique_ptr<m5::ui::Plotter> _spO2Plotter{};
-    m5::max30100::HeartRate _heartRate{};
+    m5::heart::PulseMonitor _monitor{100.0f};
     int32_t _beatCounter{}, _bpm{};
 
     struct Data {
