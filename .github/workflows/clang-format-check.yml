@@ -13,7 +13,9 @@ on:
       - '**.c'
       - '**.inl'
       - '**clang-format-check.yml'
-    pull_request:
+      - '**.clang-format'
+  pull_request:
+    paths:
       - '**.ino'
       - '**.cpp'
       - '**.hpp'
@@ -21,6 +23,8 @@ on:
       - '**.c'
       - '**.inl'
       - '**clang-format-check.yml'
+      - '**.clang-format'
+  workflow_dispatch:
 
 jobs:
   formatting-check:
@@ -29,12 +33,12 @@ jobs:
     strategy:
       matrix:
         path:
-          #- check: './'    # path to include
-          #  exclude: ''    # path to exclude
           - check: 'src'
+            exclude: ''
           - check: 'test'
-          - check: 'examples'
-          #   exclude: '(Fonts)' # Exclude file paths containing "Fonts"
+            exclude: ''
+          - check: 'examples/Basic'
+            exclude: ''
 
     steps:
       - name: Checkout
@@ -49,3 +53,4 @@ jobs:
           check-path: ${{ matrix.path['check'] }}
           exclude-regex: ${{ matrix.path['exclude'] }}
           include-regex: ${{ env.INCLUDE_REGEX }}
+
