@@ -15,8 +15,8 @@
 #include <M5UnitUnifiedHUB.h>
 #include <M5UnitUnifiedGESTURE.h>
 #include <M5UnitUnifiedHEART.h>
-#include <M5UnitUnifiedToF4M.h>
-#include <M5UnitUnifiedWeightI2C.h>
+#include <M5UnitUnifiedToF.h>
+#include <M5UnitUnifiedWEIGHT.h>
 
 #if 0
 #include <unit/unit_MFRC522.hpp>
@@ -104,13 +104,14 @@ TEST(UnitUnified, EachUnit)
     // HEART
     each_unit_test<m5::unit::UnitMAX30100>();
 
-    // ToF4M
-    each_unit_test<m5::unit::UnitToF4M>();    
+    // ToF
+    each_unit_test<m5::unit::UnitToF>();
+    each_unit_test<m5::unit::UnitToF4M>();
 
-    // Scale/Weight
+    // WEIGHT
     each_unit_test<m5::unit::UnitWeightI2C>();
     each_unit_test<m5::unit::UnitMiniscale>();
-    
+
 #if 0
     each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();
