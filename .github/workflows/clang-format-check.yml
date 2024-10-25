@@ -5,6 +5,11 @@ env:
 
 on:
   push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
     paths:
       - '**.ino'
       - '**.cpp'
