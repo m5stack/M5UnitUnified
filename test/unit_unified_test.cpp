@@ -15,7 +15,7 @@
 #include <M5UnitUnifiedHUB.h>
 #include <M5UnitUnifiedGESTURE.h>
 #include <M5UnitUnifiedHEART.h>
-#include <M5UnitUnifiedToF.h>
+#include <M5UnitUnifiedTOF.h>
 #include <M5UnitUnifiedWEIGHT.h>
 
 #if 0
@@ -104,7 +104,7 @@ TEST(UnitUnified, EachUnit)
     // HEART
     each_unit_test<m5::unit::UnitMAX30100>();
 
-    // ToF
+    // TOF
     each_unit_test<m5::unit::UnitToF>();
     each_unit_test<m5::unit::UnitToF4M>();
 
