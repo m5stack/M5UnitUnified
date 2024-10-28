@@ -101,18 +101,37 @@ Support ESP-IDF with M5HAL in the future.
 
 Support GPIO, UART in the future.
 
-### Supported core device (Operation confirmed)
+### Supported devices (Operation confirmed)
+See also https://docs.m5stack.com/en/products
 
-- M5Stack Core (BASIC / GRAY / FIRE)
-- M5Stack Core2
-- M5Stick CPlus
-- M5Paper
-- M5Stack CoreS3 CoreS3SE
-- M5ATOMS3
-- M5STAMPS3
-- M5Dial
-- M5Capsule
-- M5NanoC6
+- CORE
+    - [BASIC](https://docs.m5stack.com/en/core/basic) 
+        - [2.6](https://docs.m5stack.com/en/core/BASIC%20v2.6) 
+        - [GRAY](https://docs.m5stack.com/en/core/gray)
+    - [Core2](https://docs.m5stack.com/en/core/core2) 
+	    - [For AWS](https://docs.m5stack.com/en/core/core2_for_aws) 
+		- [v.1.1](https://docs.m5stack.com/en/core/Core2%20v1.1)
+    - [CoreS3](https://docs.m5stack.com/en/core/CoreS3) 
+	    - [CoreS3 SE](https://docs.m5stack.com/en/core/M5CoreS3%20SE)
+    - [FIRE](https://docs.m5stack.com/en/core/fire) 
+	    - [v2.6](https://docs.m5stack.com/en/core/fire_v2.6)
+    - [M5Dial](https://docs.m5stack.com/en/core/M5Dial)
+    - [M5Capsule](https://docs.m5stack.com/en/core/M5Capsule)
+    - [M5DinMeter](https://docs.m5stack.com/en/core/M5DinMeter)
+    - [M5NanoC6](https://docs.m5stack.com/en/core/M5NanoC6)
+- STICK	
+    - [M5Stick CPlus](https://docs.m5stack.com/en/core/m5stickc_plus)
+    - [M5Stick CPlus2](https://docs.m5stack.com/en/core/M5StickC%20PLUS2)
+- ATOM	
+    - [ATOM Matrix](https://docs.m5stack.com/en/core/ATOM%20Matrix)
+    - [AtomS3](https://docs.m5stack.com/en/core/AtomS3)
+    - [AtomS3R](https://docs.m5stack.com/en/core/AtomS3R)
+    - [AtomS3R Cam](https://docs.m5stack.com/en/core/AtomS3R%20Cam)
+- STAMP
+    - [StampS3](https://docs.m5stack.com/en/core/StampS3)
+- E-PAPER
+    - [CORE.INK](https://docs.m5stack.com/en/core/coreink)
+    - [M5PAPER](https://docs.m5stack.com/en/core/m5paper)
 
 Other devices will be added after confirmation of operation.
 
@@ -124,7 +143,7 @@ Other devices will be added after confirmation of operation.
   - UnitCO2
   - UnitENVIII
   - UnitTVOC
-  - UnitENVPro (There are a few problems)
+  - UnitENVPro
 - [M5Unit-METER](https://github.com/m5stack/M5Unit-METER)
   - UnitAmeter
   - UnitVmeter
@@ -135,15 +154,23 @@ Other devices will be added after confirmation of operation.
   - UnitGESTURE
 - [M5Unit-HEART](https://github.com/m5stack/M5Unit-HEART)
   - UnitHEART
+- [M5Unit-TOF](https://github.com/m5stack/M5Unit-TOF)
+  - UnitToF
+  - UnitToF4M
+- [M5Unit-WEIGHT](https://github.com/m5stack/M5Unit-WEIGHT)
+  - UnitWeightI2C
 
 Other units will be added after they are developed and tested.
 
 ## Examples
 For exampless of each unit, please refer to the respective unit's repository.  
-The examples in this repository are for M5UnitUnified in general
+[The examples in this repository](examples/Basic) are for M5UnitUnified in general
 
 
 ## Doxygen document
+
+[GitHub Pages](https://m5stack.github.io/M5UnitUnified/)
+
 If you want to generate documents on your local machine, execute the following command
 
 ```

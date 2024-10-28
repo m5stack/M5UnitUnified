@@ -12,11 +12,11 @@
 #include <M5UnitUnified.hpp>
 #include <M5UnitUnifiedENV.h>
 #include <M5UnitUnifiedMETER.h>
-#include <M5UnitUnifiedHEART.h>
 #include <M5UnitUnifiedHUB.h>
 #include <M5UnitUnifiedGESTURE.h>
-#include <M5UnitUnifiedKmeterISO.h>
-#include <M5UnitUnifiedTVOC.h>
+#include <M5UnitUnifiedHEART.h>
+#include <M5UnitUnifiedTOF.h>
+#include <M5UnitUnifiedWEIGHT.h>
 
 #if 0
 #include <unit/unit_MFRC522.hpp>
@@ -84,6 +84,8 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitQMP6988>();
     each_unit_test<m5::unit::UnitENV3>();
     each_unit_test<m5::unit::UnitBME688>();
+    each_unit_test<m5::unit::UnitSGP30>();
+
     // METER
     each_unit_test<m5::unit::UnitADS1113>();
     each_unit_test<m5::unit::UnitADS1114>();
@@ -91,16 +93,25 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::meter::UnitEEPROM>();
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();
-    // HEART
-    each_unit_test<m5::unit::UnitMAX30100>();
+    each_unit_test<m5::unit::UnitKmeterISO>();
+
     // HUB
     each_unit_test<m5::unit::UnitPCA9548AP>();
+
     // GESTURE
     each_unit_test<m5::unit::UnitPAJ7620U2>();
-    // KmeterISO
-    each_unit_test<m5::unit::UnitKmeterISO>();
-    // TVOC
-    each_unit_test<m5::unit::UnitSGP30>();
+
+    // HEART
+    each_unit_test<m5::unit::UnitMAX30100>();
+
+    // TOF
+    each_unit_test<m5::unit::UnitToF>();
+    each_unit_test<m5::unit::UnitToF4M>();
+
+    // WEIGHT
+    each_unit_test<m5::unit::UnitWeightI2C>();
+    each_unit_test<m5::unit::UnitMiniscale>();
+
 #if 0
     each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();

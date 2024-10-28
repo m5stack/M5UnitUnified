@@ -56,11 +56,15 @@ void UnitHEARTSmallUI::update()
 
     lock();
     for (auto&& e : _intermediateBuffer) {
-        beat(_heartRate.push_back(e.ir, e.red));
-        _bpm = _heartRate.calculate();
+        _monitor.push_back(e.ir, e.red);
+        _monitor.update();
 
-        _irPlotter->push_back(e.ir);
-        _spO2Plotter->push_back(_heartRate.SpO2());
+        beat(_monitor.isBeat());
+        _bpm = _monitor.bpm();
+
+        //        _irPlotter->push_back(e.ir);
+        _irPlotter->push_back(_monitor.latestIR());
+        _spO2Plotter->push_back(_monitor.SpO2());
     }
     _intermediateBuffer.clear();
     unlock();
@@ -94,7 +98,7 @@ void UnitHEARTSmallUI::push(LovyanGFX* dst, const int32_t x, const int32_t y)
     dst->drawString(s.c_str(), left + GAP * 2, top + GAP * 2 + _irPlotter->height());
 
     dst->setTextDatum(textdatum_t::bottom_right);
-    s = m5::utility::formatString("SpO2:%3.2f%%", _heartRate.SpO2());
+    s = m5::utility::formatString("SpO2:%3.2f%%", _monitor.SpO2());
     dst->drawString(s.c_str(), right - GAP, bottom - _spO2Plotter->height() - GAP);
 
     constexpr int32_t radius{4};
