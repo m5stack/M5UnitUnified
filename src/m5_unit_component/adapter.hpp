@@ -50,6 +50,7 @@ public:
     {
         return _impl->address();
     }
+
     inline uint32_t clock() const
     {
         return _impl->clock();
@@ -58,6 +59,16 @@ public:
     {
         return _impl->setClock(clock);
     }
+
+    int16_t scl() const
+    {
+        return _impl->scl();
+    }
+    int16_t sda() const
+    {
+        return _impl->sda();
+    }
+
     //! @brief Dupicate adapter
     Adapter* duplicate(const uint8_t addr);
 
@@ -114,6 +125,14 @@ public:
         inline void setClock(const uint32_t clock)
         {
             _clock = clock;
+        }
+        virtual int16_t scl() const
+        {
+            return -1;
+        }
+        virtual int16_t sda() const
+        {
+            return -1;
         }
 
         virtual Impl* duplicate(const uint8_t addr)

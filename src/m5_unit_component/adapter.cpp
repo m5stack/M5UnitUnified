@@ -16,6 +16,26 @@
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
+#include <driver/i2c.h>
+#include <soc/gpio_struct.h>
+#include <soc/gpio_sig_map.h>
+
+namespace {
+#if defined(ARDUINO)
+
+int search_pin_number(int peripheral_sig)
+{
+    int no = GPIO.func_in_sel_cfg[peripheral_sig].func_sel;
+    return no < GPIO_NUM_MAX ? no : -1;
+}
+
+uint8_t idx_table[][2] = {
+    {I2CEXT0_SDA_IN_IDX, I2CEXT0_SCL_IN_IDX},  // Wire
+    {I2CEXT1_SDA_IN_IDX, I2CEXT1_SCL_IN_IDX},  // Wire1
+};
+
+#endif
+}  // namespace
 
 namespace m5 {
 namespace unit {
@@ -26,6 +46,19 @@ class WireImpl : public Adapter::Impl {
 public:
     WireImpl(TwoWire& wire, const uint8_t addr) : Adapter::Impl(addr), _wire(&wire)
     {
+        uint32_t w = (&wire == &Wire1);
+        _sda       = search_pin_number(idx_table[w][0]);
+        _scl       = search_pin_number(idx_table[w][1]);
+        M5_LIB_LOGI("I2C SDA: %d, SCL: %d", _sda, _scl);
+    }
+
+    virtual int16_t scl() const override
+    {
+        return _scl;
+    }
+    virtual int16_t sda() const override
+    {
+        return _sda;
     }
 
     virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override
@@ -119,6 +152,7 @@ protected:
 
 private:
     TwoWire* _wire{};
+    int16_t _sda{}, _scl{};
 };
 #endif
 
