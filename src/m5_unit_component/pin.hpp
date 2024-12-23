@@ -16,15 +16,15 @@ namespace m5 {
 namespace unit {
 namespace gpio {
 
+// From M5GFX
 class pin_backup_t {
 public:
     explicit pin_backup_t(int pin_num = 1);
-
-    void setPin(int pin_num)
+    inline void setPin(int pin_num)
     {
         _pin_num = pin_num;
     }
-    int getPin(void) const
+    inline int8_t getPin(void) const
     {
         return _pin_num;
     }
