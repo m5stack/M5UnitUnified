@@ -35,10 +35,10 @@ void pin_backup_t::backup(void)
         _gpio_func_out_reg = *reinterpret_cast<uint32_t*>(GPIO_FUNC0_OUT_SEL_CFG_REG + (pin_num * 4));
 
 #if defined(GPIO_ENABLE1_REG)
-        _gpio_enable =
-            *reinterpret_cast<uint32_t*>(((pin_num & 32) ? GPIO_ENABLE1_REG : GPIO_ENABLE_REG)) & (1 << (pin_num & 31));
+        _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(((pin_num & 32) ? GPIO_ENABLE1_REG : GPIO_ENABLE_REG)) &
+                               (1U << (pin_num & 31))) != 0);
 #else
-        _gpio_enable = *reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1 << (pin_num & 31));
+        _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1U << (pin_num & 31)) != 0);
 #endif
 
         _in_func_num = -1;
