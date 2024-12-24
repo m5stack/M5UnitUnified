@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <memory>
 #include <M5HAL.hpp>
+#include "pin.hpp"
 
 class TwoWire;
 
@@ -50,6 +51,7 @@ public:
     {
         return _impl->address();
     }
+
     inline uint32_t clock() const
     {
         return _impl->clock();
@@ -58,6 +60,16 @@ public:
     {
         return _impl->setClock(clock);
     }
+
+    int16_t scl() const
+    {
+        return _impl->scl();
+    }
+    int16_t sda() const
+    {
+        return _impl->sda();
+    }
+
     //! @brief Dupicate adapter
     Adapter* duplicate(const uint8_t addr);
 
@@ -90,6 +102,30 @@ public:
     }
     ///@}
 
+    /// @warning Functionality required for a specific unit
+    /// @warning Will be improved when integrated with M5HAL
+    /// @name Temporary API
+    ///@{
+    bool begin()
+    {
+        return _impl->begin();
+    }
+    bool end()
+    {
+        return _impl->end();
+    }
+    void pinMode(uint8_t pin, uint8_t mode)
+    {
+        _impl->pinMode(pin, mode);
+    }
+    void digitalWrite(uint8_t pin, uint8_t val)
+    {
+        _impl->digitalWrite(pin, val);
+    }
+    bool pushPin();
+    bool popPin();
+    ///@}
+
     ///@cond
     class Impl {
     public:
@@ -114,6 +150,29 @@ public:
         inline void setClock(const uint32_t clock)
         {
             _clock = clock;
+        }
+        virtual int16_t scl() const
+        {
+            return -1;
+        }
+        virtual int16_t sda() const
+        {
+            return -1;
+        }
+
+        virtual bool begin()
+        {
+            return false;
+        }
+        virtual bool end()
+        {
+            return false;
+        }
+        virtual void pinMode(uint8_t pin, uint8_t mode)
+        {
+        }
+        virtual void digitalWrite(uint8_t pin, uint8_t val)
+        {
         }
 
         virtual Impl* duplicate(const uint8_t addr)
@@ -151,6 +210,8 @@ public:
 
 protected:
     std::unique_ptr<Impl> _impl{};
+    gpio::pin_backup_t _backupSCL{-1}, _backupSDA{-1};
+
     //    Adapter* _parent{};
 };
 

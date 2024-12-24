@@ -14,7 +14,7 @@
         "M5Utility": "https://github.com/m5stack/M5Utility.git",
         "M5HAL": "https://github.com/m5stack/M5HAL.git"
     },
-    "version": "0.0.2",
+    "version": "0.0.3",
     "frameworks": [
         "arduino"
     ],

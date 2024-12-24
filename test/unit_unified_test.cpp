@@ -17,11 +17,9 @@
 #include <M5UnitUnifiedHEART.h>
 #include <M5UnitUnifiedTOF.h>
 #include <M5UnitUnifiedWEIGHT.h>
-
-#if 0
-#include <unit/unit_MFRC522.hpp>
-#include <unit/unit_WS1850S.hpp>
-#endif
+#include <M5UnitUnifiedRFID.h>
+#include <M5UnitUnifiedANADIG.h>
+#include <M5UnitUnifiedTHERMO.h>
 
 #include <algorithm>
 #include <utility>
@@ -85,6 +83,9 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitENV3>();
     each_unit_test<m5::unit::UnitBME688>();
     each_unit_test<m5::unit::UnitSGP30>();
+    each_unit_test<m5::unit::UnitSHT40>();
+    each_unit_test<m5::unit::UnitBMP280>();
+    each_unit_test<m5::unit::UnitENV4>();
 
     // METER
     each_unit_test<m5::unit::UnitADS1113>();
@@ -112,10 +113,20 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitWeightI2C>();
     each_unit_test<m5::unit::UnitMiniscale>();
 
-#if 0
+    // RFID
     each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();
-#endif
+
+    // ADC,DAC
+    each_unit_test<m5::unit::UnitMCP4725>();
+    each_unit_test<m5::unit::UnitGP8413>();
+    each_unit_test<m5::unit::UnitADS1110>();
+
+    // THERMO
+    each_unit_test<m5::unit::UnitNCIR>();
+
+
+    
     for (auto&& e : vec) {
         delete e;
     }
