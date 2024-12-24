@@ -19,6 +19,7 @@
 #include <M5UnitUnifiedWEIGHT.h>
 #include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedANADIG.h>
+#include <M5UnitUnifiedTHERMO.h>
 
 #include <algorithm>
 #include <utility>
@@ -119,7 +120,13 @@ TEST(UnitUnified, EachUnit)
     // ADC,DAC
     each_unit_test<m5::unit::UnitMCP4725>();
     each_unit_test<m5::unit::UnitGP8413>();
+    each_unit_test<m5::unit::UnitADS1110>();
 
+    // THERMO
+    each_unit_test<m5::unit::UnitNCIR>();
+
+
+    
     for (auto&& e : vec) {
         delete e;
     }
