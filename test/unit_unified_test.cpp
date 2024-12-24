@@ -125,8 +125,6 @@ TEST(UnitUnified, EachUnit)
     // THERMO
     each_unit_test<m5::unit::UnitNCIR>();
 
-
-    
     for (auto&& e : vec) {
         delete e;
     }
