@@ -117,13 +117,14 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();
 
-    // ADC,DAC
+    // ANADIG
     each_unit_test<m5::unit::UnitMCP4725>();
     each_unit_test<m5::unit::UnitGP8413>();
     each_unit_test<m5::unit::UnitADS1110>();
 
     // THERMO
-    each_unit_test<m5::unit::UnitNCIR>();
+    each_unit_test<m5::unit::UnitMLX90614>();
+    each_unit_test<m5::unit::UnitMLX90614BAA>();
 
     for (auto&& e : vec) {
         delete e;
