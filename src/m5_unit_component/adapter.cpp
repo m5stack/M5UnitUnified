@@ -6,8 +6,7 @@
 /*!
   @file adapter.cpp
   @brief Adapters to treat M5HAL and TwoWire in the same way
-  @note  Currently handles TwoWire directly, but will handle via M5HAL in the
-  future
+  @note  Currently handles TwoWire directly, but will handle via M5HAL in the future
 */
 #include "adapter.hpp"
 #include <cassert>
@@ -56,10 +55,10 @@ class WireImpl : public Adapter::Impl {
 public:
     WireImpl(TwoWire& wire, const uint8_t addr) : Adapter::Impl(addr), _wire(&wire)
     {
-        uint32_t w = (&wire == &Wire1);
+        uint32_t w = (&wire != &Wire);
         _sda       = search_pin_number(idx_table[w][0]);
         _scl       = search_pin_number(idx_table[w][1]);
-        M5_LIB_LOGI("I2C SDA: %d, SCL: %d", _sda, _scl);
+        M5_LIB_LOGI("I2C SDA:%d, SCL:%d", _sda, _scl);
     }
 
     virtual int16_t scl() const override
@@ -96,8 +95,6 @@ public:
     virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override
     {
         assert(_addr);
-        //_wire->setClock(_clock); DON'T CALL
-
         if (data && _wire->requestFrom(_addr, len)) {
             auto count = std::min(len, (size_t)_wire->available());
             for (size_t i = 0; i < count; ++i) {
@@ -170,7 +167,7 @@ protected:
     m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
                                                    const bool stop)
     {
-        _wire->setClock(_clock);  //
+        _wire->setClock(_clock);
         _wire->beginTransmission(addr);
         if (data) {
             _wire->write(data, len);
@@ -420,40 +417,3 @@ bool Adapter::popPin()
 
 }  // namespace unit
 }  // namespace m5
-
-#if 0
-//CoreS3SE
-18:02:03.752 > [  3554][W][pin.cpp:65] restore(): restore pin:1 
-18:02:03.758 > [  3554][W][pin.cpp:67] restore(): restore IO_MUX_GPIO0_REG          :00001a00 -> 00001b00 
-18:02:03.766 > [  3560][W][pin.cpp:69] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:02:03.774 > [  3568][W][pin.cpp:71] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000100 -> 00000059 
-18:02:03.780 > [  3576][W][pin.cpp:85] restore(): restore GPIO_ENABLE_REG:00001818
-18:02:03.784 > [  3582][W][pin.cpp:65] restore(): restore pin:2 
-18:02:03.792 > [  3586][W][pin.cpp:67] restore(): restore IO_MUX_GPIO0_REG          :00001a00 -> 00001b00 
-18:02:03.800 > [  3594][W][pin.cpp:69] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:02:03.809 > [  3602][W][pin.cpp:71] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000100 -> 0000005a 
-18:02:03.815 > [  3611][W][pin.cpp:85] restore(): restore GPIO_ENABLE_REG:0000181a
-18:02:03.822 > [  3616][W][unit_MLX90614.cpp:311] start_periodic_measurement(): IIR:4 FIR:7 IT:140
-//NanoC6
-18:03:55.995 > [  2432][W][pin.cpp:65] restore(): restore pin:1 
-18:03:56.001 > [  2432][W][pin.cpp:66] restore(): restore IO_MUX_GPIO0_REG          :00001a02 -> 00001b02 
-18:03:56.009 > [  2439][W][pin.cpp:68] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:03:56.017 > [  2447][W][pin.cpp:70] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000080 -> 0000002d 
-18:03:56.023 > [  2455][W][pin.cpp:85] restore(): restore GPIO_ENABLE_REG:00000000
-18:03:56.027 > [  2461][W][pin.cpp:65] restore(): restore pin:2 
-18:03:56.035 > [  2465][W][pin.cpp:66] restore(): restore IO_MUX_GPIO0_REG          :00001a02 -> 00001b02 
-18:03:56.044 > [  2473][W][pin.cpp:68] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:03:56.051 > [  2481][W][pin.cpp:70] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000080 -> 0000002e 
-18:03:56.058 > [  2489][W][pin.cpp:85] restore(): restore GPIO_ENABLE_REG:00000002
-//Core
-18:24:54.954 > [  2690][W][pin.cpp:64] restore(): restore pin:22 
-18:24:54.959 > [  2690][W][pin.cpp:66] restore(): restore IO_MUX_GPIO0_REG          :00002a08 -> 00002b08 
-18:24:54.970 > [  2697][W][pin.cpp:68] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:24:54.975 > [  2705][W][pin.cpp:70] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000100 -> 0000001d 
-18:24:54.987 > [  2713][W][pin.cpp:84] restore(): restore GPIO_ENABLE_REG:0a84cf90
-18:24:54.992 > [  2719][W][pin.cpp:64] restore(): restore pin:21 
-18:24:54.998 > [  2723][W][pin.cpp:66] restore(): restore IO_MUX_GPIO0_REG          :00002a08 -> 00002b08 
-18:24:55.003 > [  2731][W][pin.cpp:68] restore(): restore GPIO_PIN0_REG             :00000000 -> 00000004 
-18:24:55.009 > [  2739][W][pin.cpp:70] restore(): restore GPIO_FUNC0_OUT_SEL_CFG_REG:00000100 -> 0000001e 
-18:24:55.020 > [  2747][W][pin.cpp:84] restore(): restore GPIO_ENABLE_REG:0ac4cf90
-#endif

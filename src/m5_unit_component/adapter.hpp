@@ -6,8 +6,7 @@
 /*!
   @file adapter.hpp
   @brief Adapters to treat M5HAL and TwoWire in the same way
-  @note  Currently handles TwoWire directly, but will handle via M5HAL in the
-  future
+  @note  Currently handles TwoWire directly, but will handle via M5HAL in the future
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_HPP
