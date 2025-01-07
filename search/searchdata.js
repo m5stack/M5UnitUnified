@@ -3,11 +3,11 @@ var indexSectionsWithContent =
   0: "abcdefghilmnoprstuw",
   1: "abcgpu",
   2: "gmtu",
-  3: "amt",
+  3: "ampt",
   4: "abcdefghilorsuw",
   5: "acmnsu",
   6: "aeu",
-  7: "m"
+  7: "lmt"
 };
 
 var indexSectionNames =

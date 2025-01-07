@@ -10,6 +10,7 @@ var hierarchy =
       [ "m5::unit::BusImpl", "structm5_1_1unit_1_1_bus_impl.html", null ]
     ] ],
     [ "m5::unit::PeriodicMeasurementAdapter< Derived, MD >", "classm5_1_1unit_1_1_periodic_measurement_adapter.html", null ],
+    [ "m5::unit::gpio::pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", null ],
     [ "testing::TestWithParam", null, [
       [ "m5::unit::googletest::ComponentTestBase< U, TP >", "classm5_1_1unit_1_1googletest_1_1_component_test_base.html", null ]
     ] ],
