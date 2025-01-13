@@ -32,7 +32,7 @@ void setup()
 
 void loop()
 {
-    M5.begin();
+    M5.update();
     unit.update();  // Explicitly call unit.update() yourself
     if (unit.updated()) {
         // *3 Obtaining unit-specific measurements
