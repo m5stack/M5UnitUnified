@@ -40,9 +40,13 @@ public:
         auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
         auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
 
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+        TwoWire* w[1] = {&Wire};
+#else
         TwoWire* w[2] = {&Wire, &Wire1};
-        if (i2cIsInit(WNUM)) {
-            M5_LOGW("Already inititlized Wire. Terminate and restart");
+#endif
+        if (WNUM < m5::stl::size(w) && i2cIsInit(WNUM)) {
+            M5_LOGW("Already inititlized Wire %d. Terminate and restart FREQ %u", WNUM, FREQ);
             w[WNUM]->end();
         }
         w[WNUM]->begin(pin_num_sda, pin_num_scl, FREQ);

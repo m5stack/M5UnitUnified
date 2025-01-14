@@ -33,7 +33,7 @@ void setup()
 
 void loop()
 {
-    M5.begin();
+    M5.update();
     Units.update();
     if (unit.updated()) {
         // *3 Obtaining unit-specific measurements

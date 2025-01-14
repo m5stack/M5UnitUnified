@@ -56,7 +56,7 @@ void setup()
 
 void loop()
 {
-    M5.begin();
+    M5.update();
     Units.update();  // unit.update() is not called within this function
     M5_LOGI("loop");
     m5::utility::delay(1000);
