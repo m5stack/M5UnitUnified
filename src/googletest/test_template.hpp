@@ -46,7 +46,7 @@ public:
         TwoWire* w[2] = {&Wire, &Wire1};
 #endif
         if (WNUM < m5::stl::size(w) && i2cIsInit(WNUM)) {
-            M5_LOGW("Already inititlized Wire. Terminate and restart");
+            M5_LOGW("Already inititlized Wire %d. Terminate and restart FREQ %u", WNUM, FREQ);
             w[WNUM]->end();
         }
         w[WNUM]->begin(pin_num_sda, pin_num_scl, FREQ);
