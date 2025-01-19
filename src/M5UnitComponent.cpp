@@ -171,7 +171,6 @@ bool Component::readRegister(const Reg reg, uint8_t* rbuf, const size_t len, con
     }
 
     m5::utility::delay(delayMillis);
-
     return (readWithTransaction(rbuf, len) == m5::hal::error::error_t::OK);
 }
 
@@ -186,12 +185,27 @@ bool Component::readRegister8(const Reg reg, uint8_t& result, const uint32_t del
 template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
-bool Component::readRegister16(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop)
+bool Component::read_register16E(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop,
+                                 const bool endian)
 {
-    m5::types::big_uint16_t buf{};
-    auto ret = readRegister(reg, buf.data(), buf.size(), delayMillis, stop);
+    uint8_t tmp[2]{};
+    auto ret = readRegister(reg, tmp, 2, delayMillis, stop);
     if (ret) {
-        result = buf.get();
+        result = (tmp[!endian] << 8) | tmp[endian];
+    }
+    return ret;
+}
+
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type>
+bool Component::read_register32E(const Reg reg, uint32_t& result, const uint32_t delayMillis, const bool stop,
+                                 const bool endian)
+{
+    uint8_t tmp[4]{};
+    auto ret = readRegister(reg, tmp, 4, delayMillis, stop);
+    if (ret) {
+        result = (tmp[0 + 3 * endian] | (tmp[1 + endian] << 8) | (tmp[2 - endian] << 16)) | (tmp[3 - 3 * endian] << 24);
     }
     return ret;
 }
@@ -217,10 +231,25 @@ bool Component::writeRegister8(const Reg reg, const uint8_t value, const bool st
 template <typename Reg,
           typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                   std::nullptr_t>::type>
-bool Component::writeRegister16(const Reg reg, const uint16_t value, const bool stop)
+bool Component::write_register16E(const Reg reg, const uint16_t value, const bool stop, const bool endian)
 {
-    m5::types::big_uint16_t u16{value};
-    return writeRegister(reg, u16.data(), u16.size(), stop);
+    uint8_t tmp[2]{};
+    tmp[endian]  = value & 0xFF;
+    tmp[!endian] = (value >> 8) & 0xFF;
+    return writeRegister(reg, tmp, 2, stop);
+}
+
+template <typename Reg,
+          typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
+                                  std::nullptr_t>::type>
+bool Component::write_register32E(const Reg reg, const uint32_t value, const bool stop, const bool endian)
+{
+    uint8_t tmp[4]{};
+    tmp[0 + endian * 3] = value & 0xFF;
+    tmp[1 + endian]     = (value >> 8) & 0xFF;
+    tmp[2 - endian]     = (value >> 16) & 0xFF;
+    tmp[3 - endian * 3] = (value >> 24) & 0xFF;
+    return writeRegister(reg, tmp, 4, stop);
 }
 
 bool Component::generalCall(const uint8_t* data, const size_t len)
@@ -251,15 +280,19 @@ template bool Component::readRegister<uint8_t>(const uint8_t, uint8_t*, const si
 template bool Component::readRegister<uint16_t>(const uint16_t, uint8_t*, const size_t, const uint32_t, const bool);
 template bool Component::readRegister8<uint8_t>(const uint8_t, uint8_t&, const uint32_t, const bool);
 template bool Component::readRegister8<uint16_t>(const uint16_t, uint8_t&, const uint32_t, const bool);
-template bool Component::readRegister16<uint8_t>(const uint8_t, uint16_t&, const uint32_t, const bool);
-template bool Component::readRegister16<uint16_t>(const uint16_t, uint16_t&, const uint32_t, const bool);
+template bool Component::read_register16E<uint8_t>(const uint8_t, uint16_t&, const uint32_t, const bool, const bool);
+template bool Component::read_register16E<uint16_t>(const uint16_t, uint16_t&, const uint32_t, const bool, const bool);
+template bool Component::read_register32E<uint8_t>(const uint8_t, uint32_t&, const uint32_t, const bool, const bool);
+template bool Component::read_register32E<uint16_t>(const uint16_t, uint32_t&, const uint32_t, const bool, const bool);
 
 template bool Component::writeRegister<uint8_t>(const uint8_t, const uint8_t*, const size_t, const bool);
 template bool Component::writeRegister<uint16_t>(const uint16_t, const uint8_t*, const size_t, const bool);
 template bool Component::writeRegister8<uint8_t>(const uint8_t, const uint8_t, const bool);
 template bool Component::writeRegister8<uint16_t>(const uint16_t, const uint8_t, const bool);
-template bool Component::writeRegister16<uint8_t>(const uint8_t, const uint16_t, const bool);
-template bool Component::writeRegister16<uint16_t>(const uint16_t, const uint16_t, const bool);
+template bool Component::write_register16E<uint8_t>(const uint8_t, const uint16_t, const bool, const bool);
+template bool Component::write_register16E<uint16_t>(const uint16_t, const uint16_t, const bool, const bool);
+template bool Component::write_register32E<uint8_t>(const uint8_t, const uint32_t, const bool, const bool);
+template bool Component::write_register32E<uint16_t>(const uint16_t, const uint32_t, const bool, const bool);
 
 template m5::hal::error::error_t Component::writeWithTransaction<uint8_t>(const uint8_t reg, const uint8_t* data,
                                                                           const size_t len, const bool stop);
