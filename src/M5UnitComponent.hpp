@@ -405,6 +405,7 @@ public:
     ///@warning To be removed in the next minor version increase
     ///@name Deprecated
     ///@{
+    // clang-format off
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
@@ -422,6 +423,7 @@ public:
     {
         return write_register16E(reg, value, stop, true);
     }
+    // clang-format on
     ///@}
 
 protected:
