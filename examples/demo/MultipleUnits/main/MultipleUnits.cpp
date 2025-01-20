@@ -106,7 +106,7 @@ void prepare()
 
         // Setup fro begin
         auto cfg = unitQMP6988.config();
-        cfg.standby_time =
+        cfg.standby =
             m5::unit::qmp6988::Standby::Time50ms;  // about 16 mps (Calculated from other parameters and this value
         unitQMP6988.config(cfg);
     }
