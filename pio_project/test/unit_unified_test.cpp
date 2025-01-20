@@ -20,6 +20,8 @@
 #include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedANADIG.h>
 #include <M5UnitUnifiedTHERMO.h>
+#include <M5UnitUnifiedDISTANCE.h>
+#include <M5UnitUnifiedEXTIO.h>
 
 #include <algorithm>
 #include <utility>
@@ -126,6 +128,12 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitMLX90614>();
     each_unit_test<m5::unit::UnitMLX90614BAA>();
 
+    // DISTANCE
+    each_unit_test<m5::unit::UnitRCWL9620>();
+
+    // EXTIO
+    each_unit_test<m5::unit::UnitExtIO2>();
+    
     for (auto&& e : vec) {
         delete e;
     }
