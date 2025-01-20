@@ -229,7 +229,7 @@ public:
     bool selectChannel(const uint8_t ch = 8);
     ///@}
 
-    ///@cond
+    ///@cond 0
     template <typename T>
     class iterator {
     public:
@@ -274,10 +274,7 @@ public:
     private:
         Component* _ptr;
     };
-    ///@endcond
 
-    ///@name Iterator for children
-    ///@{
     using child_iterator       = iterator<Component>;
     using const_child_iterator = iterator<const Component>;
     inline child_iterator childBegin() noexcept
@@ -296,7 +293,7 @@ public:
     {
         return const_child_iterator();
     }
-    ///@}
+    ///@endcond
 
     /*! @brief General call for I2C*/
     bool generalCall(const uint8_t* data, const size_t len);
@@ -304,8 +301,7 @@ public:
     //! @brief Output information for debug
     virtual std::string debugInfo() const;
 
-    ///@name Read/Write
-    ///@{
+    ///@cond 0
     m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len);
 
     template <typename Reg,
@@ -313,7 +309,6 @@ public:
                                       std::nullptr_t>::type = nullptr>
     bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len, const uint32_t delayMillis,
                       const bool stop = true);
-
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
@@ -400,11 +395,7 @@ public:
     {
         return write_register32E(reg, value, stop, false);
     }
-    ///@}
 
-    ///@warning To be removed in the next minor version increase
-    ///@name Deprecated
-    ///@{
     // clang-format off
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
@@ -424,7 +415,61 @@ public:
         return write_register16E(reg, value, stop, true);
     }
     // clang-format on
+    ///@endcond
+
+#if defined(DOXYGEN_PROCESS)
+    // There is a problem with the Doxygen output of templates containing std::enable_if,
+    // so we need a section for Dxygen output
+    ///@name Read/Write
+    ///@{
+    //! @brief Read any data with transaction
+    m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len);
+    //! @brief Read any data with transaction from register
+    template <typename Reg>
+    bool readRegister(const Reg reg, uint8_t* rbuf, const size_t len, const uint32_t delayMillis,
+                      const bool stop = true);
+    //! @brief Read byte with transaction from register
+    template <typename Reg>
+    bool readRegister8(const Reg reg, uint8_t& result, const uint32_t delayMillis, const bool stop = true);
+    //! @brief Read word in big-endian order with transaction from register
+    template <typename Reg>
+    bool readRegister16BE(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop = true);
+    //! @brief Read word in little-endian order with transaction from register
+    template <typename Reg>
+    bool readRegister16LE(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop = true);
+    //! @brief Read dword in big-endian order with transaction from register
+    template <typename Reg>
+    bool readRegister32BE(const Reg reg, uint32_t& result, const uint32_t delayMillis, const bool stop = true);
+    //! @brief Read dword in little-endian order with transaction from register
+    template <typename Reg>
+    bool readRegister32LE(const Reg reg, uint32_t& result, const uint32_t delayMillis, const bool stop = true);
+
+    //! @brief Write any data with transaction
+    m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true);
+    //! @brief Write any data with transaction to register
+    template <typename Reg>
+    m5::hal::error::error_t writeWithTransaction(const Reg reg, const uint8_t* data, const size_t len,
+                                                 const bool stop = true);
+    //! @brief Write any data with transaction to register
+    template <typename Reg>
+    bool writeRegister(const Reg reg, const uint8_t* buf = nullptr, const size_t len = 0U, const bool stop = true);
+    //! @brief Write byte with transaction to register
+    template <typename Reg>
+    bool writeRegister8(const Reg reg, const uint8_t value, const bool stop = true);
+    //! @brief Write word in big-endian order with transaction from register
+    template <typename Reg>
+    bool writeRegister16BE(const Reg reg, const uint16_t value, const bool stop = true);
+    //! @brief Write word in little-endian order with transaction from register
+    template <typename Reg>
+    bool writeRegister16LE(const Reg reg, const uint16_t value, const bool stop = true);
+    //! @brief Write dword in big-endian order with transaction from register
+    template <typename Reg>
+    bool writeRegister32BE(const Reg reg, const uint32_t value, const bool stop = true);
+    //! @brief Write dword in little-endian order with transaction from register
+    template <typename Reg>
+    bool writeRegister32LE(const Reg reg, const uint32_t value, const bool stop = true);
     ///@}
+#endif
 
 protected:
     // Proper implementation in derived classes is required
