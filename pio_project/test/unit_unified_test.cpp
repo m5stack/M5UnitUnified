@@ -135,7 +135,7 @@ TEST(UnitUnified, EachUnit)
 
     // EXTIO
     each_unit_test<m5::unit::UnitExtIO2>();
-#endif    
+#endif
     for (auto&& e : vec) {
         delete e;
     }
