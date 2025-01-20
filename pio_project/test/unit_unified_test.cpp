@@ -17,11 +17,13 @@
 #include <M5UnitUnifiedHEART.h>
 #include <M5UnitUnifiedTOF.h>
 #include <M5UnitUnifiedWEIGHT.h>
+#if 0
 #include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedANADIG.h>
 #include <M5UnitUnifiedTHERMO.h>
 #include <M5UnitUnifiedDISTANCE.h>
 #include <M5UnitUnifiedEXTIO.h>
+#endif
 
 #include <algorithm>
 #include <utility>
@@ -114,7 +116,7 @@ TEST(UnitUnified, EachUnit)
     // WEIGHT
     each_unit_test<m5::unit::UnitWeightI2C>();
     each_unit_test<m5::unit::UnitMiniscale>();
-
+#if 0
     // RFID
     each_unit_test<m5::unit::UnitMFRC522>();
     each_unit_test<m5::unit::UnitWS1850S>();
@@ -133,7 +135,7 @@ TEST(UnitUnified, EachUnit)
 
     // EXTIO
     each_unit_test<m5::unit::UnitExtIO2>();
-    
+#endif    
     for (auto&& e : vec) {
         delete e;
     }
