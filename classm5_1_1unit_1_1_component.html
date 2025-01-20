@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.4 git rev:ed0de47</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.5 git rev:3b942a7</span>
    </div>
   </td>
  </tr>
@@ -99,8 +99,9 @@ $(function(){initNavTree('classm5_1_1unit_1_1_component.html',''); initResizable
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classm5_1_1unit_1_1_component-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">m5::unit::Component Class Reference</div></div>
+  <div class="headertitle"><div class="title">m5::unit::Component Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -256,7 +257,77 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>selectChannel</b> (co
 <tr><td colspan="2"><div class="groupHeader">Read/Write</div></td></tr>
 <tr class="memitem:ab94824ccec085321fed35acb1150a5fe" id="r_ab94824ccec085321fed35acb1150a5fe"><td class="memItemLeft" align="right" valign="top"><a id="ab94824ccec085321fed35acb1150a5fe" name="ab94824ccec085321fed35acb1150a5fe"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *data, const size_t len)</td></tr>
+<tr class="memdesc:ab94824ccec085321fed35acb1150a5fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read any data with transaction. <br /></td></tr>
 <tr class="separator:ab94824ccec085321fed35acb1150a5fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92fd9b7ac67db281d8fdddfa6f713f07" id="r_a92fd9b7ac67db281d8fdddfa6f713f07"><td class="memTemplParams" colspan="2"><a id="a92fd9b7ac67db281d8fdddfa6f713f07" name="a92fd9b7ac67db281d8fdddfa6f713f07"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a92fd9b7ac67db281d8fdddfa6f713f07"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister</b> (const Reg reg, uint8_t *rbuf, const size_t len, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:a92fd9b7ac67db281d8fdddfa6f713f07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read any data with transaction from register. <br /></td></tr>
+<tr class="separator:a92fd9b7ac67db281d8fdddfa6f713f07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22dbec94a6047d2b08794109a1d37e1c" id="r_a22dbec94a6047d2b08794109a1d37e1c"><td class="memTemplParams" colspan="2"><a id="a22dbec94a6047d2b08794109a1d37e1c" name="a22dbec94a6047d2b08794109a1d37e1c"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a22dbec94a6047d2b08794109a1d37e1c"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister8</b> (const Reg reg, uint8_t &amp;result, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:a22dbec94a6047d2b08794109a1d37e1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read byte with transaction from register. <br /></td></tr>
+<tr class="separator:a22dbec94a6047d2b08794109a1d37e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1881bdc1017017260cdd9908e4754722" id="r_a1881bdc1017017260cdd9908e4754722"><td class="memTemplParams" colspan="2"><a id="a1881bdc1017017260cdd9908e4754722" name="a1881bdc1017017260cdd9908e4754722"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a1881bdc1017017260cdd9908e4754722"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister16BE</b> (const Reg reg, uint16_t &amp;result, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:a1881bdc1017017260cdd9908e4754722"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read word in big-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a1881bdc1017017260cdd9908e4754722"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a954afaa37ba1acb58fa55b61f158f817" id="r_a954afaa37ba1acb58fa55b61f158f817"><td class="memTemplParams" colspan="2"><a id="a954afaa37ba1acb58fa55b61f158f817" name="a954afaa37ba1acb58fa55b61f158f817"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a954afaa37ba1acb58fa55b61f158f817"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister16LE</b> (const Reg reg, uint16_t &amp;result, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:a954afaa37ba1acb58fa55b61f158f817"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read word in little-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a954afaa37ba1acb58fa55b61f158f817"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98a29fdddd204c57b96d2bacc8dc5506" id="r_a98a29fdddd204c57b96d2bacc8dc5506"><td class="memTemplParams" colspan="2"><a id="a98a29fdddd204c57b96d2bacc8dc5506" name="a98a29fdddd204c57b96d2bacc8dc5506"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a98a29fdddd204c57b96d2bacc8dc5506"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister32BE</b> (const Reg reg, uint32_t &amp;result, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:a98a29fdddd204c57b96d2bacc8dc5506"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read dword in big-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a98a29fdddd204c57b96d2bacc8dc5506"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8a788c0a766bd8f7ba3d9b3d607c9d6" id="r_af8a788c0a766bd8f7ba3d9b3d607c9d6"><td class="memTemplParams" colspan="2"><a id="af8a788c0a766bd8f7ba3d9b3d607c9d6" name="af8a788c0a766bd8f7ba3d9b3d607c9d6"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:af8a788c0a766bd8f7ba3d9b3d607c9d6"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>readRegister32LE</b> (const Reg reg, uint32_t &amp;result, const uint32_t delayMillis, const bool stop=true)</td></tr>
+<tr class="memdesc:af8a788c0a766bd8f7ba3d9b3d607c9d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read dword in little-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:af8a788c0a766bd8f7ba3d9b3d607c9d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac62700a935d04f0d80fe2f43e7b0fec7" id="r_ac62700a935d04f0d80fe2f43e7b0fec7"><td class="memItemLeft" align="right" valign="top"><a id="ac62700a935d04f0d80fe2f43e7b0fec7" name="ac62700a935d04f0d80fe2f43e7b0fec7"></a>
+m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeWithTransaction</b> (const uint8_t *data, const size_t len, const bool stop=true)</td></tr>
+<tr class="memdesc:ac62700a935d04f0d80fe2f43e7b0fec7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write any data with transaction. <br /></td></tr>
+<tr class="separator:ac62700a935d04f0d80fe2f43e7b0fec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f6b1eb17c5a6020103d0ed2eb7fc991" id="r_a5f6b1eb17c5a6020103d0ed2eb7fc991"><td class="memTemplParams" colspan="2"><a id="a5f6b1eb17c5a6020103d0ed2eb7fc991" name="a5f6b1eb17c5a6020103d0ed2eb7fc991"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a5f6b1eb17c5a6020103d0ed2eb7fc991"><td class="memTemplItemLeft" align="right" valign="top">m5::hal::error::error_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeWithTransaction</b> (const Reg reg, const uint8_t *data, const size_t len, const bool stop=true)</td></tr>
+<tr class="memdesc:a5f6b1eb17c5a6020103d0ed2eb7fc991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write any data with transaction to register. <br /></td></tr>
+<tr class="separator:a5f6b1eb17c5a6020103d0ed2eb7fc991"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a935cb3bdbbd3419e0cd976ee49d70786" id="r_a935cb3bdbbd3419e0cd976ee49d70786"><td class="memTemplParams" colspan="2"><a id="a935cb3bdbbd3419e0cd976ee49d70786" name="a935cb3bdbbd3419e0cd976ee49d70786"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a935cb3bdbbd3419e0cd976ee49d70786"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister</b> (const Reg reg, const uint8_t *buf=nullptr, const size_t len=0U, const bool stop=true)</td></tr>
+<tr class="memdesc:a935cb3bdbbd3419e0cd976ee49d70786"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write any data with transaction to register. <br /></td></tr>
+<tr class="separator:a935cb3bdbbd3419e0cd976ee49d70786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2eada03d7b8e4cbb60a3a5ec5f7e805f" id="r_a2eada03d7b8e4cbb60a3a5ec5f7e805f"><td class="memTemplParams" colspan="2"><a id="a2eada03d7b8e4cbb60a3a5ec5f7e805f" name="a2eada03d7b8e4cbb60a3a5ec5f7e805f"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a2eada03d7b8e4cbb60a3a5ec5f7e805f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister8</b> (const Reg reg, const uint8_t value, const bool stop=true)</td></tr>
+<tr class="memdesc:a2eada03d7b8e4cbb60a3a5ec5f7e805f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write byte with transaction to register. <br /></td></tr>
+<tr class="separator:a2eada03d7b8e4cbb60a3a5ec5f7e805f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48e52513db6c4203e506754eeb35bdaa" id="r_a48e52513db6c4203e506754eeb35bdaa"><td class="memTemplParams" colspan="2"><a id="a48e52513db6c4203e506754eeb35bdaa" name="a48e52513db6c4203e506754eeb35bdaa"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a48e52513db6c4203e506754eeb35bdaa"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister16BE</b> (const Reg reg, const uint16_t value, const bool stop=true)</td></tr>
+<tr class="memdesc:a48e52513db6c4203e506754eeb35bdaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write word in big-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a48e52513db6c4203e506754eeb35bdaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac461804889d563d43d4a3dbac6175281" id="r_ac461804889d563d43d4a3dbac6175281"><td class="memTemplParams" colspan="2"><a id="ac461804889d563d43d4a3dbac6175281" name="ac461804889d563d43d4a3dbac6175281"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:ac461804889d563d43d4a3dbac6175281"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister16LE</b> (const Reg reg, const uint16_t value, const bool stop=true)</td></tr>
+<tr class="memdesc:ac461804889d563d43d4a3dbac6175281"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write word in little-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:ac461804889d563d43d4a3dbac6175281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31203a6754896b7ab53a91c9f6d5ea9c" id="r_a31203a6754896b7ab53a91c9f6d5ea9c"><td class="memTemplParams" colspan="2"><a id="a31203a6754896b7ab53a91c9f6d5ea9c" name="a31203a6754896b7ab53a91c9f6d5ea9c"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a31203a6754896b7ab53a91c9f6d5ea9c"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister32BE</b> (const Reg reg, const uint32_t value, const bool stop=true)</td></tr>
+<tr class="memdesc:a31203a6754896b7ab53a91c9f6d5ea9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write dword in big-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a31203a6754896b7ab53a91c9f6d5ea9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a465efea2df8df7c15906bec3a897b0bf" id="r_a465efea2df8df7c15906bec3a897b0bf"><td class="memTemplParams" colspan="2"><a id="a465efea2df8df7c15906bec3a897b0bf" name="a465efea2df8df7c15906bec3a897b0bf"></a>
+template&lt;typename Reg &gt; </td></tr>
+<tr class="memitem:a465efea2df8df7c15906bec3a897b0bf"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>writeRegister32LE</b> (const Reg reg, const uint32_t value, const bool stop=true)</td></tr>
+<tr class="memdesc:a465efea2df8df7c15906bec3a897b0bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write dword in little-endian order with transaction from register. <br /></td></tr>
+<tr class="separator:a465efea2df8df7c15906bec3a897b0bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -276,25 +347,35 @@ static const char&#160;</td><td class="memItemRight" valign="bottom"><b>name</b>
 <tr class="memdesc:a4504b52feff0373be975a8d10d2dbff4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Device name string. <br /></td></tr>
 <tr class="separator:a4504b52feff0373be975a8d10d2dbff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader">Iterator for children</h2></td></tr>
-<tr class="memitem:a2d710c18148e02452a5446fea507ddc3" id="r_a2d710c18148e02452a5446fea507ddc3"><td class="memItemLeft" align="right" valign="top"><a id="a2d710c18148e02452a5446fea507ddc3" name="a2d710c18148e02452a5446fea507ddc3"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>child_iterator</b> = iterator&lt;<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a>&gt;</td></tr>
-<tr class="separator:a2d710c18148e02452a5446fea507ddc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1a46f78be94dcb5d4afa09d6408a7fc" id="r_af1a46f78be94dcb5d4afa09d6408a7fc"><td class="memItemLeft" align="right" valign="top"><a id="af1a46f78be94dcb5d4afa09d6408a7fc" name="af1a46f78be94dcb5d4afa09d6408a7fc"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>const_child_iterator</b> = iterator&lt;const <a class="el" href="classm5_1_1unit_1_1_component.html">Component</a>&gt;</td></tr>
-<tr class="separator:af1a46f78be94dcb5d4afa09d6408a7fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b7f5f45a87c4a80f378c83e620493d8" id="r_a5b7f5f45a87c4a80f378c83e620493d8"><td class="memItemLeft" align="right" valign="top"><a id="a5b7f5f45a87c4a80f378c83e620493d8" name="a5b7f5f45a87c4a80f378c83e620493d8"></a>
-child_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>childBegin</b> () noexcept</td></tr>
-<tr class="separator:a5b7f5f45a87c4a80f378c83e620493d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d18c2649f16b4424e8f546f4a50e8bf" id="r_a1d18c2649f16b4424e8f546f4a50e8bf"><td class="memItemLeft" align="right" valign="top"><a id="a1d18c2649f16b4424e8f546f4a50e8bf" name="a1d18c2649f16b4424e8f546f4a50e8bf"></a>
-child_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>childEnd</b> () noexcept</td></tr>
-<tr class="separator:a1d18c2649f16b4424e8f546f4a50e8bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2864e9244568b8fe3b7d229b35a13586" id="r_a2864e9244568b8fe3b7d229b35a13586"><td class="memItemLeft" align="right" valign="top"><a id="a2864e9244568b8fe3b7d229b35a13586" name="a2864e9244568b8fe3b7d229b35a13586"></a>
-const_child_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>childBegin</b> () const noexcept</td></tr>
-<tr class="separator:a2864e9244568b8fe3b7d229b35a13586"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b640960b057378933f0045301af0613" id="r_a2b640960b057378933f0045301af0613"><td class="memItemLeft" align="right" valign="top"><a id="a2b640960b057378933f0045301af0613" name="a2b640960b057378933f0045301af0613"></a>
-const_child_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>childEnd</b> () const noexcept</td></tr>
-<tr class="separator:a2b640960b057378933f0045301af0613"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a6f63ff0a09a91403bdb85e46bf498c99" id="r_a6f63ff0a09a91403bdb85e46bf498c99"><td class="memItemLeft" align="right" valign="top"><a id="a6f63ff0a09a91403bdb85e46bf498c99" name="a6f63ff0a09a91403bdb85e46bf498c99"></a>
+virtual const char *&#160;</td><td class="memItemRight" valign="bottom"><b>unit_device_name</b> () const =0</td></tr>
+<tr class="separator:a6f63ff0a09a91403bdb85e46bf498c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13796da280c60798367873d9d29378d3" id="r_a13796da280c60798367873d9d29378d3"><td class="memItemLeft" align="right" valign="top"><a id="a13796da280c60798367873d9d29378d3" name="a13796da280c60798367873d9d29378d3"></a>
+virtual <a class="el" href="types_8hpp.html#aa318127d82066eef622818d81f339fb1">types::uid_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>unit_identifier</b> () const =0</td></tr>
+<tr class="separator:a13796da280c60798367873d9d29378d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4c6c05dd5cf8824fed6d63607c24a2b" id="r_ab4c6c05dd5cf8824fed6d63607c24a2b"><td class="memItemLeft" align="right" valign="top"><a id="ab4c6c05dd5cf8824fed6d63607c24a2b" name="ab4c6c05dd5cf8824fed6d63607c24a2b"></a>
+virtual <a class="el" href="types_8hpp.html#a83f188a1b8eda604451b89d9714fe947">types::attr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>unit_attribute</b> () const =0</td></tr>
+<tr class="separator:ab4c6c05dd5cf8824fed6d63607c24a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a409d28fe4bb5518202363b3ba28aa653" id="r_a409d28fe4bb5518202363b3ba28aa653"><td class="memItemLeft" align="right" valign="top"><a id="a409d28fe4bb5518202363b3ba28aa653" name="a409d28fe4bb5518202363b3ba28aa653"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>in_periodic</b> () const</td></tr>
+<tr class="separator:a409d28fe4bb5518202363b3ba28aa653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d5ada03c6d21892d850d7a6d187b45f" id="r_a8d5ada03c6d21892d850d7a6d187b45f"><td class="memItemLeft" align="right" valign="top"><a id="a8d5ada03c6d21892d850d7a6d187b45f" name="a8d5ada03c6d21892d850d7a6d187b45f"></a>
+virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>duplicate_adapter</b> (const uint8_t)</td></tr>
+<tr class="separator:a8d5ada03c6d21892d850d7a6d187b45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7dcc7e5bee47026d60e489472d1a62d" id="r_aa7dcc7e5bee47026d60e489472d1a62d"><td class="memItemLeft" align="right" valign="top"><a id="aa7dcc7e5bee47026d60e489472d1a62d" name="aa7dcc7e5bee47026d60e489472d1a62d"></a>
+virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>select_channel</b> (const uint8_t)</td></tr>
+<tr class="separator:aa7dcc7e5bee47026d60e489472d1a62d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b32489f278daf25ad1e2fe79c6a5b05" id="r_a5b32489f278daf25ad1e2fe79c6a5b05"><td class="memItemLeft" align="right" valign="top"><a id="a5b32489f278daf25ad1e2fe79c6a5b05" name="a5b32489f278daf25ad1e2fe79c6a5b05"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>stored_size</b> () const</td></tr>
+<tr class="separator:a5b32489f278daf25ad1e2fe79c6a5b05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b2368b63e8b75d8d3df613e48bec6f3" id="r_a1b2368b63e8b75d8d3df613e48bec6f3"><td class="memItemLeft" align="right" valign="top"><a id="a1b2368b63e8b75d8d3df613e48bec6f3" name="a1b2368b63e8b75d8d3df613e48bec6f3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>add_child</b> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> *c)</td></tr>
+<tr class="separator:a1b2368b63e8b75d8d3df613e48bec6f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3b12a9f415e14f6315d79b94d1cbf29" id="r_af3b12a9f415e14f6315d79b94d1cbf29"><td class="memItemLeft" align="right" valign="top"><a id="af3b12a9f415e14f6315d79b94d1cbf29" name="af3b12a9f415e14f6315d79b94d1cbf29"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>changeAddress</b> (const uint8_t addr)</td></tr>
+<tr class="separator:af3b12a9f415e14f6315d79b94d1cbf29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class of unit component. </p>
