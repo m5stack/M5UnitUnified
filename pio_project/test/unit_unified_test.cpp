@@ -17,13 +17,14 @@
 #include <M5UnitUnifiedHEART.h>
 #include <M5UnitUnifiedTOF.h>
 #include <M5UnitUnifiedWEIGHT.h>
-#if 0
-#include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedANADIG.h>
+#include <M5UnitUnifiedCOLOR.h>
 #include <M5UnitUnifiedTHERMO.h>
+
+#include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedDISTANCE.h>
 #include <M5UnitUnifiedEXTIO.h>
-#endif
+#include <M5UnitUnifiedKEYBOARD.h>
 
 #include <algorithm>
 #include <utility>
@@ -108,34 +109,44 @@ TEST(UnitUnified, EachUnit)
 
     // HEART
     each_unit_test<m5::unit::UnitMAX30100>();
+    each_unit_test<m5::unit::UnitMAX30102>();
 
     // TOF
-    each_unit_test<m5::unit::UnitToF>();
-    each_unit_test<m5::unit::UnitToF4M>();
+    each_unit_test<m5::unit::UnitVL53L0X>();
+    each_unit_test<m5::unit::UnitVL53L1X>();
 
     // WEIGHT
     each_unit_test<m5::unit::UnitWeightI2C>();
-    each_unit_test<m5::unit::UnitMiniscale>();
-#if 0
-    // RFID
-    each_unit_test<m5::unit::UnitMFRC522>();
-    each_unit_test<m5::unit::UnitWS1850S>();
+    each_unit_test<m5::unit::UnitMiniScales>();
 
     // ANADIG
     each_unit_test<m5::unit::UnitMCP4725>();
     each_unit_test<m5::unit::UnitGP8413>();
     each_unit_test<m5::unit::UnitADS1110>();
 
+    // COLOR
+    each_unit_test<m5::unit::UnitTCS34725>();
+    
     // THERMO
     each_unit_test<m5::unit::UnitMLX90614>();
     each_unit_test<m5::unit::UnitMLX90614BAA>();
+
+    // RFID
+    each_unit_test<m5::unit::UnitMFRC522>();
+    each_unit_test<m5::unit::UnitWS1850S>();
 
     // DISTANCE
     each_unit_test<m5::unit::UnitRCWL9620>();
 
     // EXTIO
     each_unit_test<m5::unit::UnitExtIO2>();
-#endif
+
+    // KEYBOARD
+    each_unit_test<m5::unit::UnitKeyboard>();
+    each_unit_test<m5::unit::UnitKeyboardBitwise>();
+    each_unit_test<m5::unit::UnitCardKB>();
+    each_unit_test<m5::unit::UnitFacesQWERTY>();
+    
     for (auto&& e : vec) {
         delete e;
     }
