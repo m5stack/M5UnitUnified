@@ -1,4 +1,4 @@
-	name: Arduino Lint Check
+name: Arduino Lint Check
 on:
   push:
     branches: [ master, main ]
