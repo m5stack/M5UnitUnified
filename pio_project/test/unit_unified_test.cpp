@@ -126,7 +126,7 @@ TEST(UnitUnified, EachUnit)
 
     // COLOR
     each_unit_test<m5::unit::UnitTCS34725>();
-    
+
     // THERMO
     each_unit_test<m5::unit::UnitMLX90614>();
     each_unit_test<m5::unit::UnitMLX90614BAA>();
@@ -146,7 +146,7 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitKeyboardBitwise>();
     each_unit_test<m5::unit::UnitCardKB>();
     each_unit_test<m5::unit::UnitFacesQWERTY>();
-    
+
     for (auto&& e : vec) {
         delete e;
     }
