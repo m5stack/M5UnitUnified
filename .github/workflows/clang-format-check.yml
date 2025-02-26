@@ -40,7 +40,7 @@ jobs:
         path:
           - check: 'src'
             exclude: ''
-          - check: 'test'
+          - check: 'pio_project/test'
             exclude: ''
           - check: 'examples/Basic'
             exclude: ''

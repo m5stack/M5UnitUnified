@@ -99,66 +99,8 @@ ESP-IDF は将来対応予定です。
 
 GPIO、UART は将来対応予定です。
 
-
-### サポートされるデバイス (動作確認済)
-こちらを参照 https://docs.m5stack.com/en/products
-
-- CORE
-    - [BASIC](https://docs.m5stack.com/en/core/basic) 
-        - [2.6](https://docs.m5stack.com/en/core/BASIC%20v2.6) 
-        - [GRAY](https://docs.m5stack.com/en/core/gray)
-    - [Core2](https://docs.m5stack.com/en/core/core2) 
-	    - [For AWS](https://docs.m5stack.com/en/core/core2_for_aws) 
-		- [v.1.1](https://docs.m5stack.com/en/core/Core2%20v1.1)
-    - [CoreS3](https://docs.m5stack.com/en/core/CoreS3) 
-	    - [CoreS3 SE](https://docs.m5stack.com/en/core/M5CoreS3%20SE)
-    - [FIRE](https://docs.m5stack.com/en/core/fire) 
-	    - [v2.6](https://docs.m5stack.com/en/core/fire_v2.6)
-    - [M5Dial](https://docs.m5stack.com/en/core/M5Dial)
-    - [M5Capsule](https://docs.m5stack.com/en/core/M5Capsule)
-    - [M5DinMeter](https://docs.m5stack.com/en/core/M5DinMeter)
-    - [M5NanoC6](https://docs.m5stack.com/en/core/M5NanoC6)
-- STICK	
-    - [M5Stick CPlus](https://docs.m5stack.com/en/core/m5stickc_plus)
-    - [M5Stick CPlus2](https://docs.m5stack.com/en/core/M5StickC%20PLUS2)
-- ATOM	
-    - [ATOM Matrix](https://docs.m5stack.com/en/core/ATOM%20Matrix)
-    - [AtomS3](https://docs.m5stack.com/en/core/AtomS3)
-    - [AtomS3R](https://docs.m5stack.com/en/core/AtomS3R)
-    - [AtomS3R Cam](https://docs.m5stack.com/en/core/AtomS3R%20Cam)
-- STAMP
-    - [StampS3](https://docs.m5stack.com/en/core/StampS3)
-- E-PAPER
-    - [CORE.INK](https://docs.m5stack.com/en/core/coreink)
-    - [M5PAPER](https://docs.m5stack.com/en/core/m5paper)
-
-他のデバイスは動作確認されたのち追加されます。
-
-### サポートされるユニット
-
-#### 動作確認済
-- [M5Unit-ENV](https://github.com/m5stack/M5Unit-ENV)
-  - UnitCO2
-  - UnitENVIII
-  - UnitTVOC
-  - UnitENVPro
-- [M5Unit-METER](https://github.com/m5stack/M5Unit-METER)
-  - UnitAmeter
-  - UnitVmeter
-  - UnitKmeterISO
-- [M5Unit-HUB](https://github.com/m5stack/M5Unit-HUB)
-  - UnitPaHub2
-- [M5Unit-GESTURE](https://github.com/m5stack/M5Unit-GESTURE)
-  - UnitGESTURE
-- [M5Unit-HEART](https://github.com/m5stack/M5Unit-HEART)
-  - UnitHEART
-- [M5Unit-TOF](https://github.com/m5stack/M5Unit-TOF)
-  - UnitToF
-  - UnitToF4M
-- [M5Unit-WEIGHT](https://github.com/m5stack/M5Unit-WEIGHT)
-  - UnitWeightI2C
-
-他のユニットは開発、確認後追加されます。
+### サポートされるデバイス,ユニット
+[Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)を参照
 
 
 ## Examples
