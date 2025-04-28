@@ -159,7 +159,6 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitATECC608B>();
     each_unit_test<m5::unit::UnitATECC608B_TNGTLS>();
 
-    
     for (auto&& e : vec) {
         delete e;
     }
