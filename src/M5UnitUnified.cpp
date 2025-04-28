@@ -99,17 +99,31 @@ bool UnitUnified::add_children(Component& u)
     return true;
 }
 
-bool UnitUnified::begin()
+bool UnitUnified::begin(const bool resetAndPlay)
 {
-    return !std::any_of(_units.begin(), _units.end(), [](Component* c) {
-        M5_LIB_LOGV("Try begin:%s", c->deviceName());
-        bool ret = c->_begun = c->begin();
-        if (!ret) {
-            M5_LIB_LOGE("Failed to begin: [%s] ID:{0X%08X} ADDR{0X%02X}", c->deviceName(), c->identifier(),
-                        c->address());
-        }
-        return !ret;
+    bool result{true};
+    M5_LIB_LOGW("Try begin 1st");
+    std::for_each(_units.begin(), _units.end(), [&result](Component* c) {
+        c->_begun = c->begin();
+        M5_LIB_LOGW("  [%s]:%u", c->deviceName(), c->_begun);
+        result &= c->_begun;
     });
+
+    // Reinitialize only successful
+    // If there is a device with the same address, initialize it again because the previous unit may fall into the above
+    // state on subsequent initialization
+    if (resetAndPlay) {
+        result = true;
+        M5_LIB_LOGW("Try begin 2nd");
+        std::for_each(_units.begin(), _units.end(), [&result](Component* c) {
+            if (c->_begun) {
+                c->_begun = c->begin();
+                M5_LIB_LOGW("  [%s]:%u", c->deviceName(), c->_begun);
+                result &= c->_begun;
+            }
+        });
+    }
+    return result;
 }
 
 void UnitUnified::update(const bool force)

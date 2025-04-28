@@ -68,10 +68,46 @@ public:
     bool add(Component& u, TwoWire& wire);
     ///@}
 
-    //! @brief Begin of all units under management
-    bool begin();
+    /*!
+      @brief Begin of all units under management
+      @param resetAndPlay Use the Reset and play function if true
+      @return True if successful
+      @note Reset and play is only available for supported units
+    */
+    bool begin(const bool resetAndPlay = false);
     //! @brief Update of all units under management
     void update(const bool force = false);
+
+    ///@name Reset and play
+    ///@{
+    /*!
+      @brief Retrieve the specified unit that has been successfully initiated
+      @tparam T Unit class type
+      @param prev Obtains the corresponding unit located next to the specified unit,
+      Get first match if nullptr
+      @retval pointer Unit
+      @retval nullptr Not exists
+     */
+    template <class T>
+    T* get(const T* prev = nullptr)
+    {
+        static_assert(std::is_base_of<Component, T>::value, "T muse be derived of Component");
+        auto it = _units.begin();
+        if (prev) {
+            it = std::find(it, _units.end(), prev);
+            if (it == _units.end()) {
+                return nullptr;
+            }
+            ++it;
+        }
+        for (; it != _units.end(); ++it) {
+            Component* u = *it;
+            if (u->_begun && T::uid == u->identifier() && (T::attr & types::ATTRIBUTE_RESET_AND_PLAY)) {
+                return static_cast<T*>(u);
+            }
+        }
+        return nullptr;
+    }
 
     //! @brief Output information for debug
     std::string debugInfo() const;

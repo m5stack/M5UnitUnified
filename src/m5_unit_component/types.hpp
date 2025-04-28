@@ -24,6 +24,12 @@ using uid_t          = uint32_t;       //!< @brief Component unique identifier
 using attr_t         = uint32_t;       //!< @brief Component attribute bits
 using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms)
 
+
+///@name Attribute
+///@{
+constexpr attr_t ATTRIBUTE_RESET_AND_PLAY{0x00000001}; //!< Reset & Play support
+///@}
+
 }  // namespace types
 }  // namespace unit
 }  // namespace m5

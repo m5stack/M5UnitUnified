@@ -271,8 +271,9 @@ bool Component::changeAddress(const uint8_t addr)
 
 std::string Component::debugInfo() const
 {
-    return m5::utility::formatString("[%s]:ID{0X%08x}:ADDR{0X%02x/0X%02x} parent:%u children:%zu", deviceName(),
-                                     identifier(), address(), _adapter->address(), hasParent(), childrenSize());
+    return m5::utility::formatString("%s:[%s]ID{0X%08x}:ADDR{0X%02x/0X%02x} parent:%u children:%zu",
+                                     _begun ? "OK" : "NG", deviceName(), identifier(), address(), _adapter->address(),
+                                     hasParent(), childrenSize());
 }
 
 // Explicit template instantiation
