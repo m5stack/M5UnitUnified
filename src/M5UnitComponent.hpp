@@ -23,16 +23,12 @@ class TwoWire;
 
 namespace m5 {
 namespace unit {
+
 class UnitUnified;
 class Adapter;
-}  // namespace unit
-}  // namespace m5
-
-namespace m5 {
-namespace unit {
 
 /*!
-  @class Component
+  @class m5::unit::Component
   @brief Base class of unit component
  */
 class Component {
@@ -63,7 +59,7 @@ public:
     ///@warning COPY PROHIBITED
     ///@name Constructor
     ///@{
-    explicit Component(const uint8_t addr = 0x00);
+    explicit Component(const uint8_t addr = 0x00);  // I2C address
 
     Component(const Component&) = delete;
 
@@ -159,6 +155,24 @@ public:
     {
         return _adapter.get();
     }
+    //! @brief Gets the access adapter
+    template <class T>
+    inline T* asAdapter()
+    {
+        return static_cast<T*>(_adapter.get());
+    }
+    //! @brief Gets the access adapter
+    template <class T>
+    inline const T* asAdapter() const
+    {
+        return static_cast<const T*>(_adapter.get());
+    }
+    ///@}
+
+    ///@name Attributes
+    ///@{
+    bool canAccessI2C() const;
+    bool canAccessGPIO() const;
     ///@}
 
     ///@name Periodic measurement
@@ -197,6 +211,8 @@ public:
     virtual bool assign(m5::hal::bus::Bus* bus);
     /*! @brief Assgin TwoWire */
     virtual bool assign(TwoWire& wire);
+    /*! @brief Assgin GPIO */
+    virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
     ///@}
 
     ///@note For daisy-chaining units such as hubs
@@ -205,12 +221,12 @@ public:
     /*! @brief Has parent unit? */
     inline bool hasParent() const
     {
-        return _parent;
+        return _parent != nullptr;
     }
     //! @brief Are there any other devices connected to the same parent unit besides yourself?
     inline bool hasSiblings() const
     {
-        return _prev || _next;
+        return (_prev != nullptr) || (_next != nullptr);
     }
     //! @brief Are there other devices connected to me?
     inline bool hasChildren() const
@@ -221,7 +237,12 @@ public:
     size_t childrenSize() const;
     //! @brief Is there an other unit connected to the specified channel?
     bool existsChild(const uint8_t ch) const;
-    //! @brief Gets the deviceconnected to the specified channel
+    //! @brief Gets the parent unit
+    inline Component* parent()
+    {
+        return _parent;
+    }
+    //! @brief Gets the device connected to the specified channel
     Component* child(const uint8_t chhanle) const;
     //! @brief Connect the unit to the specified channel
     bool add(Component& c, const int16_t channel);
@@ -301,6 +322,7 @@ public:
     //! @brief Output information for debug
     virtual std::string debugInfo() const;
 
+    // I2C R/W
     ///@cond 0
     m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len);
 
@@ -346,7 +368,7 @@ public:
         return read_register32E(reg, result, delayMillis, stop, false);
     }
 
-    m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const bool stop = true);
+    m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len, const uint32_t exparam = 1);
 
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
@@ -415,6 +437,21 @@ public:
         return write_register16E(reg, value, stop, true);
     }
     // clang-format on
+
+    // GPIO
+    bool pinModeRX(const gpio::Mode m);
+    bool writeDigitalRX(const bool high);
+    bool readDigitalRX(bool& high);
+    bool writeAnalogRX(const uint16_t v);
+    bool readAnalogRX(uint16_t& v);
+    bool pulseInRX(uint32_t& duration, const int state, const uint32_t timeout_us = 1000000);
+
+    bool pinModeTX(const gpio::Mode m);
+    bool writeDigitalTX(const bool high);
+    bool readDigitalTX(bool& high);
+    bool writeAnalogTX(const uint16_t v);
+    bool readAnalogTX(uint16_t& v);
+    bool pulseInTX(uint32_t& duration, const int state, const uint32_t timeout_us = 1000000);
     ///@endcond
 
 #if defined(DOXYGEN_PROCESS)
@@ -482,12 +519,21 @@ protected:
     }
 
     // Duplicate the adapter for children
+    // Returns the appropriate adapter pointer for the child
     // Note that ownership of the return pointer is delegated to the destination
+    // DEPRECATED!!
+    [[deprecated("Use ensure_adapter. To be removed in the next minor version increase")]]
     inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/)
     {
         return nullptr;
     }
-    // Select valid channel if exists(Hub etc...)
+
+    inline virtual std::shared_ptr<Adapter> ensure_adapter(const uint8_t /*ch*/)
+    {
+        return _adapter;  // By default, offer my adapter for sharing
+    }
+
+    // Select valid channel if exists(PaHub etc...)
     inline virtual m5::hal::error::error_t select_channel(const uint8_t)
     {
         return m5::hal::error::error_t::OK;
@@ -497,9 +543,11 @@ protected:
     {
         return _component_cfg.stored_size;
     }
-    bool add_child(Component* c);
-    bool changeAddress(const uint8_t addr);  // Functions for dynamically addressable devices
 
+    bool add_child(Component* c);
+
+    // I2C
+    bool changeAddress(const uint8_t addr);  // Functions for dynamically addressable devices
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
@@ -527,7 +575,7 @@ protected:
 
 private:
     UnitUnified* _manager{};
-    std::unique_ptr<m5::unit::Adapter> _adapter{};
+    std::shared_ptr<m5::unit::Adapter> _adapter{};
 
     uint32_t _order{};
     component_config_t _component_cfg{};

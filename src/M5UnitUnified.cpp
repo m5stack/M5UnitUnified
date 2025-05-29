@@ -34,7 +34,7 @@ bool UnitUnified::add(Component& u, m5::hal::bus::Bus* bus)
         _units.emplace_back(&u);
         return add_children(u);
     }
-    M5_LIB_LOGE("Failed to assign");
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
     return false;
 }
 
@@ -45,7 +45,7 @@ bool UnitUnified::add(Component& u, TwoWire& wire)
         return false;
     }
 
-    M5_LIB_LOGD("Add [%s]:0x%02x %zu", u.deviceName(), u.address(), u.childrenSize());
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
 
     u._manager = this;
     if (u.assign(wire)) {
@@ -53,7 +53,26 @@ bool UnitUnified::add(Component& u, TwoWire& wire)
         _units.emplace_back(&u);
         return add_children(u);
     }
-    M5_LIB_LOGE("Failed to assign");
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+
+bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] rx:%d tx:%d %zu", u.deviceName(), rx_pin, tx_pin, u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(rx_pin, tx_pin)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessGPIO());
     return false;
 }
 
@@ -68,23 +87,27 @@ bool UnitUnified::add(Component& u, m5::unit::Adapter* ad)
         return false;
     }
 
-    M5_LIB_LOGD("Add [%s]:0x%02x", u.deviceName(), u.address());
+    M5_LIB_LOGD("Add [%s] by adapter %u", u.deviceName(), u.address());
 
     u._manager = this;
     u._adapter.reset(ad);
+    M5_LIB_LOGD("  Shared:%u", u._adapter.use_count());
+
     u._order = ++_registerCount;
     _units.emplace_back(&u);
 
     return add_children(u);
 }
 
+// Add children if exists
 bool UnitUnified::add_children(Component& u)
 {
     auto it = u.childBegin();
     while (it != u.childEnd()) {
         auto ch = it->channel();
 
-        M5_LIB_LOGV("%s duplicate %u", u.deviceName(), ch);
+        M5_LIB_LOGV("%s child:%s channel:%u", u.deviceName(), it->deviceName(), ch);
+#if 0
         auto ad = u.duplicate_adapter(ch);
         if (!ad) {
             M5_LIB_LOGE("Failed to duplicate_adapter() %s:%u", u.deviceName(), ch);
@@ -94,6 +117,22 @@ bool UnitUnified::add_children(Component& u)
             M5_LIB_LOGE("Failed to add %s to %s", it->deviceName(), u.deviceName());
             return false;
         }
+#else
+        if (it->isRegistered()) {
+            M5_LIB_LOGE("Already registered %s", it->deviceName());
+            return false;
+        }
+        it->_manager = this;
+        it->_adapter = u.ensure_adapter(ch);
+        M5_LIB_LOGD("  Shared:%u %u", u._adapter.use_count(), it->_adapter.use_count());
+        it->_order = ++_registerCount;
+        _units.emplace_back(&*it);
+
+        if (!add_children(*it)) {
+            return false;
+        }
+#endif
+
         ++it;
     }
     return true;
@@ -105,8 +144,7 @@ bool UnitUnified::begin()
         M5_LIB_LOGV("Try begin:%s", c->deviceName());
         bool ret = c->_begun = c->begin();
         if (!ret) {
-            M5_LIB_LOGE("Failed to begin: [%s] ID:{0X%08X} ADDR{0X%02X}", c->deviceName(), c->identifier(),
-                        c->address());
+            M5_LIB_LOGE("Failed to begin: %s", c->debugInfo().c_str());
         }
         return !ret;
     });
