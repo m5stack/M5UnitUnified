@@ -226,7 +226,8 @@ public:
         return _impl->pulseInTX(duration, state, timeout_us);
     }
 
-    // clang-format off    
+    // clang-format off
+
     // WARNING
     // Patches for old units for minor version upgrades (will be removed as soon as no longer needed)
     // For M5Unit-CRYPTO
@@ -247,8 +248,9 @@ public:
     bool begin();
     [[deprecated("Patches for old units")]]
     bool end();
+
     // clang-format on
-    
+
 private:
     Type _type{Type::Unknown};
 
