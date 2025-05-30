@@ -8,8 +8,10 @@
 */
 #include <gtest/gtest.h>
 #include <M5Unified.h>
+
 #include <M5UnitComponent.hpp>
 #include <M5UnitUnified.hpp>
+
 #include <M5UnitUnifiedENV.h>
 #include <M5UnitUnifiedMETER.h>
 #include <M5UnitUnifiedHUB.h>
@@ -159,7 +161,6 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitATECC608B>();
     each_unit_test<m5::unit::UnitATECC608B_TNGTLS>();
 
-    
     for (auto&& e : vec) {
         delete e;
     }
