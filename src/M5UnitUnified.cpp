@@ -76,6 +76,7 @@ bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
     return false;
 }
 
+#if 0
 bool UnitUnified::add(Component& u, m5::unit::Adapter* ad)
 {
     if (u.isRegistered()) {
@@ -98,6 +99,7 @@ bool UnitUnified::add(Component& u, m5::unit::Adapter* ad)
 
     return add_children(u);
 }
+#endif
 
 // Add children if exists
 bool UnitUnified::add_children(Component& u)

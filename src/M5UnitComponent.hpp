@@ -155,7 +155,9 @@ public:
     {
         return _adapter.get();
     }
+
     //! @brief Gets the access adapter
+#if 0
     template <class T>
     inline T* asAdapter()
     {
@@ -167,6 +169,24 @@ public:
     {
         return static_cast<const T*>(_adapter.get());
     }
+#else
+    template <class T>
+    inline auto asAdapter(const Adapter::Type t) ->
+        typename std::remove_cv<typename std::remove_pointer<T>::type>::type*
+    {
+        using U = typename std::remove_cv<typename std::remove_pointer<T>::type>::type;
+        static_assert(std::is_base_of<Adapter, U>::value, "T must be derived from Adapter");
+        return (_adapter->type() == t) ? static_cast<U*>(_adapter.get()) : nullptr;
+    }
+    template <class T>
+    inline auto asAdapter(const Adapter::Type t) const -> const
+        typename std::remove_cv<typename std::remove_pointer<T>::type>::type*
+    {
+        using U = typename std::remove_cv<typename std::remove_pointer<T>::type>::type;
+        static_assert(std::is_base_of<Adapter, U>::value, "T must be derived from Adapter");
+        return (_adapter->type() == t) ? static_cast<const U*>(_adapter.get()) : nullptr;
+    }
+#endif
     ///@}
 
     ///@name Attributes

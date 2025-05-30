@@ -46,6 +46,7 @@ bool Component::existsChild(const uint8_t ch) const
 
 bool Component::canAccessI2C() const
 {
+    // TODO
     // Tentative decisions until all units' attributes are corrected
     // return attribute() & attribute::AccessI2C;
     return true;
@@ -338,7 +339,7 @@ bool Component::changeAddress(const uint8_t addr)
     if (canAccessI2C() && m5::utility::isValidI2CAddress(addr)) {
         M5_LIB_LOGI("Change to address %x", addr);
         _addr = addr;
-        _adapter.reset(asAdapter<AdapterI2C>()->duplicate(addr));
+        _adapter.reset(asAdapter<AdapterI2C>(Adapter::Type::I2C)->duplicate(addr));
         return true;
     }
     M5_LIB_LOGE("Failed to change, %u, %x", canAccessI2C(), addr);
@@ -351,11 +352,12 @@ std::string Component::debugInfo() const
     switch (_adapter->type()) {
         case Adapter::Type::I2C:
             tmp = m5::utility::formatString("%p:%u ADDR:%02X", _adapter.get(), _adapter.use_count(),
-                                            asAdapter<AdapterI2C>()->address());
+                                            asAdapter<AdapterI2C>(Adapter::Type::I2C)->address());
             break;
         case Adapter::Type::GPIO:
             tmp = m5::utility::formatString("%p:%u RX:%d TX:%d", _adapter.get(), _adapter.use_count(),
-                                            asAdapter<AdapterGPIO>()->rx_pin(), asAdapter<AdapterGPIO>()->tx_pin());
+                                            asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->rx_pin(),
+                                            asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->tx_pin());
             break;
         default:
             tmp = m5::utility::formatString("%p:%u Type:%d", _adapter.get(), _adapter.use_count(), _adapter->type());

@@ -136,8 +136,10 @@ public:
         {
             return _bus;
         }
+
         inline virtual void setClock(const uint32_t clock) override
         {
+            I2CImpl::setClock(clock);
             _access_cfg.freq = clock;
         }
         virtual I2CImpl* duplicate(const uint8_t addr) override;

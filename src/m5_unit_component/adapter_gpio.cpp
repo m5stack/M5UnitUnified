@@ -241,7 +241,7 @@ constexpr int8_t gpio_to_adc_table[] = {
 #error Invalid target
 #endif
 
-adc_channel_t gpio_to_adc_channel(const int8_t pin)
+int8_t gpio_to_adc_channel(const int8_t pin)
 {
     if (pin < 0 || pin >= m5::stl::size(gpio_to_adc_table)) {
         return static_cast<adc_channel_t>(-1);
@@ -250,6 +250,7 @@ adc_channel_t gpio_to_adc_channel(const int8_t pin)
     return static_cast<adc_channel_t>(v < 10 ? v : v - 10);
 }
 
+#if 0
 // -1:ivalid 0:ADC1 1:ADC2
 int gpio_to_adc12(const int8_t pin)
 {
@@ -257,6 +258,7 @@ int gpio_to_adc12(const int8_t pin)
                ? (gpio_to_adc_table[pin] < 0 ? -1 : (gpio_to_adc_table[pin] >= 10 ? 1 : 0))
                : -1;
 }
+#endif
 
 }  // namespace
 
@@ -298,7 +300,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pin_mode(const gpio_num_t pin
         gpio_config(&cfg);
         return m5::hal::error::error_t::OK;
     }
-    return m5::hal::error::error_t::UNKNOWN_ERROR;
+    return m5::hal::error::error_t::INVALID_ARGUMENT;
 }
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_digital(const gpio_num_t pin, const bool high)
@@ -334,7 +336,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 {
     value = 0;
 
-    const int8_t ch = gpio_to_adc_table[pin];
+    const auto ch = gpio_to_adc_channel(pin);
     if (ch < 0) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
@@ -350,7 +352,8 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
         value = static_cast<uint16_t>(v);
         return m5::hal::error::error_t::OK;
 #else
-        return m5::hal::error::error_t::UNKNOWN_ERROR;
+        M5_LIB_LOGE("Not support ADC2");
+        return m5::hal::error::error_t::NOT_IMPLEMENTED;
 #endif
     }
     // ADC1

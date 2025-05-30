@@ -392,5 +392,49 @@ bool AdapterI2C::popPin()
 #endif
 }
 
+// WARNING
+// Patches for old units for minor version upgrades (will be removed as soon as no longer needed)
+uint32_t Adapter::clock() const
+{
+    return type() == Type::I2C ? ((AdapterI2C*)this)->clock() : 0;
+}
+
+void Adapter::setClock(const uint32_t clock)
+{
+    if (type() == Type::I2C) {
+        ((AdapterI2C*)this)->setClock(clock);
+    }
+}
+
+int16_t Adapter::sda() const
+{
+    return type() == Type::I2C ? ((AdapterI2C*)this)->sda() : -1;
+}
+
+int16_t Adapter::scl() const
+{
+    return type() == Type::I2C ? ((AdapterI2C*)this)->scl() : -1;
+}
+
+void Adapter::pinMode(const uint8_t pin, const uint8_t mode)
+{
+    ::pinMode(pin, mode);
+}
+
+void Adapter::digitalWrite(const uint8_t pin, const uint8_t high)
+{
+    ::digitalWrite(pin, high);
+}
+
+bool Adapter::begin()
+{
+    return type() == Type::I2C ? ((AdapterI2C*)this)->begin() : false;
+}
+
+bool Adapter::end()
+{
+    return type() == Type::I2C ? ((AdapterI2C*)this)->end() : false;
+}
+
 }  // namespace unit
 }  // namespace m5
