@@ -31,9 +31,7 @@ namespace unit {
 class AdapterGPIO : public AdapterGPIOBase {
 public:
     AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin);
-    virtual Adapter* duplicate(const uint8_t) override;
 };
-
 
 }  // namespace unit
 }  // namespace m5

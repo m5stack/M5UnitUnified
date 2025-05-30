@@ -538,6 +538,7 @@ protected:
         return _periodic;
     }
 
+    // clang-format off
     // Duplicate the adapter for children
     // Returns the appropriate adapter pointer for the child
     // Note that ownership of the return pointer is delegated to the destination
@@ -547,6 +548,7 @@ protected:
     {
         return nullptr;
     }
+    // clang-format on
 
     inline virtual std::shared_ptr<Adapter> ensure_adapter(const uint8_t /*ch*/)
     {

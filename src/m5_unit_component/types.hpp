@@ -35,9 +35,8 @@ using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms)
 namespace attribute {
 ///@name Attribute
 ///@{
-constexpr attr_t AccessI2C   = 0x00000001;  //!< I2C Accessible Unit
-constexpr attr_t AccessGPIO  = 0x00000002;  //!< GPIO Accessible Unit
-//constexpr attr_t AcceptPbHub = 0x00010000;  //!< Units that can be handled via PbHub
+constexpr attr_t AccessI2C  = 0x00000001;  //!< I2C Accessible Unit
+constexpr attr_t AccessGPIO = 0x00000002;  //!< GPIO Accessible Unit
 ///@}
 }  // namespace attribute
 

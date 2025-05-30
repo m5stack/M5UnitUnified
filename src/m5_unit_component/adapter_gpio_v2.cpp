@@ -50,13 +50,13 @@ public:
     bool begin(const gpio::adapter_config_t& cfg)
     {
         // RMT TX
-        if (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX) {
+        if (!_tx_handle && cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX) {
             _tx_config          = to_rmt_tx_config(cfg, esp_clk_apb_freq());
             _tx_config.gpio_num = tx_pin();
 
             auto err = rmt_new_tx_channel(&_tx_config, &_tx_handle);
             if (err != ESP_OK) {
-                M5_LIB_LOGE("Failed to rmt_new_tx_channel");
+                M5_LIB_LOGE("Failed to rmt_new_tx_channel pin:%d", tx_pin());
                 return false;
             }
             err = rmt_enable(_tx_handle);
@@ -66,7 +66,8 @@ public:
             }
         }
         // RMT RX
-        if (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX) {
+        if (!_rx_handle && cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX) {
+            // TODO
         }
 
         if (!copy_encoder) {
@@ -96,20 +97,13 @@ public:
     }
 
 protected:
-    rmt_channel_handle_t _rx_habdle{}, _tx_handle{};
+    rmt_channel_handle_t _rx_handle{}, _tx_handle{};
     rmt_rx_channel_config_t _rx_config{};
     rmt_tx_channel_config_t _tx_config{};
 };
 
 AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplV2(rx_pin, tx_pin))
 {
-}
-
-Adapter* AdapterGPIO::duplicate(const uint8_t) {
-    // 他の情報も!
-    M5_LIB_LOGE("    ===> Dup");
-
-    return new AdapterGPIO(rx_pin(), tx_pin());
 }
 
 }  // namespace unit

@@ -87,8 +87,6 @@ public:
             return true;
         }
 
-        M5_LIB_LOGE("============== BEGIN %p", this);
-
         // RMT TX
         if (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX) {
             rmt_channel_t ch = retrieve_available_rmt_channel();
@@ -158,15 +156,6 @@ protected:
 
 AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplV1(rx_pin, tx_pin))
 {
-}
-
-Adapter* AdapterGPIO::duplicate(const uint8_t)
-{
-    M5_LIB_LOGE("============== DUP");
-
-    auto ptr = new AdapterGPIO(-1, -1);
-    static_cast<GPIOImplV1*>(ptr->_impl.get())->copy_from(static_cast<GPIOImplV1*>(_impl.get()));
-    return ptr;
 }
 
 //
