@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.6 git rev:1fdab41</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.0 git rev:f196fcd</span>
    </div>
   </td>
  </tr>
@@ -109,64 +109,63 @@ $(function(){initNavTree('_m5_unit_unified_8hpp_source.html',''); initResizable(
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &quot;<a class="code" href="_m5_unit_component_8hpp.html">M5UnitComponent.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &lt;M5HAL.hpp&gt;</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">class </span>TwoWire;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacem5.html">m5</a> {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceunit.html">unit</a> {</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">class </span>Component;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="foldopen" id="foldopen00042" data-start="{" data-end="};">
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1_unit_unified.html">   42</a></span><span class="keyword">class </span><a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a> {</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">using </span>container_type = std::vector&lt;Component*&gt;;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>()                       = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>(<span class="keyword">const</span> <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp;)     = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>(<a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp;&amp;) <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp; operator=(<a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp;&amp;) <span class="keyword">noexcept</span> = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="comment">// bool add(Component&amp; u, Port&amp; port);</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">bool</span> add(<a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>&amp; u, m5::hal::bus::Bus* bus);</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="comment">//    [[deprecated(&quot;use add(Component&amp; u, Port&amp; port) or add(Component&amp; u,</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="comment">//    m5::hal::bus::Bus* bus);&quot;)]]</span></div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">bool</span> add(<a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>&amp; u, TwoWire&amp; wire);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">begin</a>();</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a9a60bccbf69eb53aaf3c80584a54447d">update</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> force = <span class="keyword">false</span>);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    std::string <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a31ca727adaed1d1bfd188a326ae2d423">debugInfo</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordtype">bool</span> add_children(<a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>&amp; u);</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">bool</span> add(<a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>&amp; u, <a class="code hl_class" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a>* a);</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    std::string make_unit_info(<span class="keyword">const</span> <a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>* u, <span class="keyword">const</span> uint8_t indent = 0) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    container_type _units{};</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keyword">static</span> uint32_t _registerCount;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>};</div>
-</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;driver/rmt.h&gt;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">class </span>TwoWire;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacem5.html">m5</a> {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceunit.html">unit</a> {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">class </span>Component;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">class </span>UnitUnified {</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keyword">using </span>container_type = std::vector&lt;Component*&gt;;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    UnitUnified()                       = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    UnitUnified(<span class="keyword">const</span> UnitUnified&amp;)     = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    UnitUnified(UnitUnified&amp;&amp;) noexcept = default;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    UnitUnified&amp; operator=(const UnitUnified&amp;) = delete;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    UnitUnified&amp; operator=(UnitUnified&amp;&amp;) noexcept = default;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(Component&amp; u, TwoWire&amp; wire);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(Component&amp; u, const int8_t rx_pin, const int8_t tx_pin);</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(Component&amp; u, <a class="code hl_namespace" href="namespacem5.html">m5</a>::hal::bus::Bus* bus);</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>}  <span class="comment">// namespace unit</span></div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>}  <span class="comment">// namespace m5</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">begin</a>();</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a9a60bccbf69eb53aaf3c80584a54447d">update</a>(const <span class="keywordtype">bool</span> force = false);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    std::<span class="keywordtype">string</span> <a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a31ca727adaed1d1bfd188a326ae2d423">debugInfo</a>() const;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>protected:</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keywordtype">bool</span> add_children(Component&amp; u);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="comment">//    bool add(Component&amp; u, m5::unit::Adapter* a);</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    std::<span class="keywordtype">string</span> make_unit_info(const Component* u, const uint8_t indent = 0) const;</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>protected:</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    container_type _units{};</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keyword">static</span> uint32_t _registerCount;</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>};</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>}  <span class="comment">// namespace unit</span></div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>}  <span class="comment">// namespace m5</span></div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="a_m5_unit_component_8hpp_html"><div class="ttname"><a href="_m5_unit_component_8hpp.html">M5UnitComponent.hpp</a></div><div class="ttdoc">Main header of M5UnitComponent.</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_adapter_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></div><div class="ttdoc">Adapters to treat M5HAL and TwoWire in the same way.</div><div class="ttdef"><b>Definition</b> adapter.hpp:28</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_component_html"><div class="ttname"><a href="classm5_1_1unit_1_1_component.html">m5::unit::Component</a></div><div class="ttdoc">Base class of unit component.</div><div class="ttdef"><b>Definition</b> M5UnitComponent.hpp:38</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html">m5::unit::UnitUnified</a></div><div class="ttdoc">For managing and leading units.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.hpp:42</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a31ca727adaed1d1bfd188a326ae2d423"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a31ca727adaed1d1bfd188a326ae2d423">m5::unit::UnitUnified::debugInfo</a></div><div class="ttdeci">std::string debugInfo() const</div><div class="ttdoc">Output information for debug.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:125</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a61875daf39c247f73bae35d2c73d916e"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">m5::unit::UnitUnified::begin</a></div><div class="ttdeci">bool begin()</div><div class="ttdoc">Begin of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:102</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a9a60bccbf69eb53aaf3c80584a54447d"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a9a60bccbf69eb53aaf3c80584a54447d">m5::unit::UnitUnified::update</a></div><div class="ttdeci">void update(const bool force=false)</div><div class="ttdoc">Update of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:115</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a31ca727adaed1d1bfd188a326ae2d423"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a31ca727adaed1d1bfd188a326ae2d423">m5::unit::UnitUnified::debugInfo</a></div><div class="ttdeci">std::string debugInfo() const</div><div class="ttdoc">Output information for debug.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:165</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a61875daf39c247f73bae35d2c73d916e"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">m5::unit::UnitUnified::begin</a></div><div class="ttdeci">bool begin()</div><div class="ttdoc">Begin of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:143</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a9a60bccbf69eb53aaf3c80584a54447d"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a9a60bccbf69eb53aaf3c80584a54447d">m5::unit::UnitUnified::update</a></div><div class="ttdeci">void update(const bool force=false)</div><div class="ttdoc">Update of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:155</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_afb723f54c355657542dd04f8e3491147"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">m5::unit::UnitUnified::add</a></div><div class="ttdeci">bool add(Component &amp;u, TwoWire &amp;wire)</div><div class="ttdoc">Adding unit to be managed (I2C)</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:41</div></div>
 <div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:18</div></div>
 <div class="ttc" id="anamespaceunit_html"><div class="ttname"><a href="namespaceunit.html">unit</a></div><div class="ttdoc">Unit-related namespace.</div></div>
 </div><!-- fragment --></div><!-- contents -->

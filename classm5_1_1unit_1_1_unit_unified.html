@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.6 git rev:1fdab41</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.0 git rev:f196fcd</span>
    </div>
   </td>
  </tr>
@@ -149,22 +149,22 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>debugInfo</b> 
 <tr class="memitem:a172e4397e278a416222274343a0ea9a1" id="r_a172e4397e278a416222274343a0ea9a1"><td class="memItemLeft" align="right" valign="top"><a id="a172e4397e278a416222274343a0ea9a1" name="a172e4397e278a416222274343a0ea9a1"></a>
 <a class="el" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a> &amp;&amp;) noexcept=default</td></tr>
 <tr class="separator:a172e4397e278a416222274343a0ea9a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">Adding unit to be managed</div></td></tr>
-<tr class="memitem:afa7412b0a654e1274441c501cfc1d7aa" id="r_afa7412b0a654e1274441c501cfc1d7aa"><td class="memItemLeft" align="right" valign="top"><a id="afa7412b0a654e1274441c501cfc1d7aa" name="afa7412b0a654e1274441c501cfc1d7aa"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::hal::bus::Bus *bus)</td></tr>
-<tr class="separator:afa7412b0a654e1274441c501cfc1d7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb723f54c355657542dd04f8e3491147" id="r_afb723f54c355657542dd04f8e3491147"><td class="memItemLeft" align="right" valign="top"><a id="afb723f54c355657542dd04f8e3491147" name="afb723f54c355657542dd04f8e3491147"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, TwoWire &amp;wire)</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Add unit</div></td></tr>
+<tr class="memitem:afb723f54c355657542dd04f8e3491147" id="r_afb723f54c355657542dd04f8e3491147"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afb723f54c355657542dd04f8e3491147">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, TwoWire &amp;wire)</td></tr>
+<tr class="memdesc:afb723f54c355657542dd04f8e3491147"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (I2C)  <br /></td></tr>
 <tr class="separator:afb723f54c355657542dd04f8e3491147"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc8dd860a59342229f5d5fb560bb71d5" id="r_acc8dd860a59342229f5d5fb560bb71d5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc8dd860a59342229f5d5fb560bb71d5">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, const int8_t rx_pin, const int8_t tx_pin)</td></tr>
+<tr class="memdesc:acc8dd860a59342229f5d5fb560bb71d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (GPIO)  <br /></td></tr>
+<tr class="separator:acc8dd860a59342229f5d5fb560bb71d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa7412b0a654e1274441c501cfc1d7aa" id="r_afa7412b0a654e1274441c501cfc1d7aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa7412b0a654e1274441c501cfc1d7aa">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::hal::bus::Bus *bus)</td></tr>
+<tr class="memdesc:afa7412b0a654e1274441c501cfc1d7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (M5HAL)  <br /></td></tr>
+<tr class="separator:afa7412b0a654e1274441c501cfc1d7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:ae63c035ffe2db64004fe05deab36f521" id="r_ae63c035ffe2db64004fe05deab36f521"><td class="memItemLeft" align="right" valign="top"><a id="ae63c035ffe2db64004fe05deab36f521" name="ae63c035ffe2db64004fe05deab36f521"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>add_children</b> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u)</td></tr>
 <tr class="separator:ae63c035ffe2db64004fe05deab36f521"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b4ac01d7f45e4d60644742d38675694" id="r_a3b4ac01d7f45e4d60644742d38675694"><td class="memItemLeft" align="right" valign="top"><a id="a3b4ac01d7f45e4d60644742d38675694" name="a3b4ac01d7f45e4d60644742d38675694"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, <a class="el" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a> *a)</td></tr>
-<tr class="separator:a3b4ac01d7f45e4d60644742d38675694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa31f7eeeac69415580db36b91a8cfa14" id="r_aa31f7eeeac69415580db36b91a8cfa14"><td class="memItemLeft" align="right" valign="top"><a id="aa31f7eeeac69415580db36b91a8cfa14" name="aa31f7eeeac69415580db36b91a8cfa14"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>make_unit_info</b> (const <a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> *u, const uint8_t indent=0) const</td></tr>
 <tr class="separator:aa31f7eeeac69415580db36b91a8cfa14"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,7 +177,107 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For managing and leading units. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="acc8dd860a59342229f5d5fb560bb71d5" name="acc8dd860a59342229f5d5fb560bb71d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::UnitUnified::add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int8_t</td>          <td class="paramname"><span class="paramname"><em>rx_pin</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int8_t</td>          <td class="paramname"><span class="paramname"><em>tx_pin</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adding unit to be managed (GPIO) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
+    <tr><td class="paramname">rx_pin</td><td>Pin number to be used for RX </td></tr>
+    <tr><td class="paramname">tx_pin</td><td>Pin number to be used for TX </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+
+</div>
+</div>
+<a id="afa7412b0a654e1274441c501cfc1d7aa" name="afa7412b0a654e1274441c501cfc1d7aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::UnitUnified::add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">m5::hal::bus::Bus *</td>          <td class="paramname"><span class="paramname"><em>bus</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adding unit to be managed (M5HAL) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
+    <tr><td class="paramname">bus</td><td>Bus to be used </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+
+</div>
+</div>
+<a id="afb723f54c355657542dd04f8e3491147" name="afb723f54c355657542dd04f8e3491147"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::UnitUnified::add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TwoWire &amp;</td>          <td class="paramname"><span class="paramname"><em>wire</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adding unit to be managed (I2C) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
+    <tr><td class="paramname">wire</td><td>TwoWire to be used </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

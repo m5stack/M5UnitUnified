@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.0.6 git rev:1fdab41</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.0 git rev:f196fcd</span>
    </div>
   </td>
  </tr>
@@ -97,8 +97,10 @@ $(function(){initNavTree('types_8hpp.html',''); initResizable(true); });
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle"><div class="title">types.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -106,9 +108,21 @@ $(function(){initNavTree('types_8hpp.html',''); initResizable(true); });
 <p>Type and enumerator definitions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
+<code>#include &quot;<a class="el" href="identify__functions_8hpp_source.html">identify_functions.hpp</a>&quot;</code><br />
+<code>#include &lt;driver/rmt_types.h&gt;</code><br />
+<code>#include &lt;driver/gpio.h&gt;</code><br />
 </div>
 <p><a href="types_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">m5::unit::gpio::adapter_config_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Common pinMode, RMT v1 and v2 settings.  <a href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html">m5::unit::gpio::adapter_config_t::config_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacem5.html">m5</a></td></tr>
@@ -132,6 +146,43 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::types::att
 using&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::types::elapsed_time_t</b> = unsigned long</td></tr>
 <tr class="memdesc:a2186c1c440ded1cd15c39912d90e7a7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Elapsed time unit (ms) <br /></td></tr>
 <tr class="separator:a2186c1c440ded1cd15c39912d90e7a7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97ad5d260283d0223d5075d7e068beee" id="r_a97ad5d260283d0223d5075d7e068beee"><td class="memItemLeft" align="right" valign="top"><a id="a97ad5d260283d0223d5075d7e068beee" name="a97ad5d260283d0223d5075d7e068beee"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::gpio::m5_rmt_item_t</b> = rmt_symbol_word_t</td></tr>
+<tr class="separator:a97ad5d260283d0223d5075d7e068beee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:afa9b8e9030a766f371861f8d4899572a" id="r_afa9b8e9030a766f371861f8d4899572a"><td class="memItemLeft" align="right" valign="top"><a id="afa9b8e9030a766f371861f8d4899572a" name="afa9b8e9030a766f371861f8d4899572a"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa9b8e9030a766f371861f8d4899572a">m5::unit::gpio::Mode</a> : uint8_t { <br />
+&#160;&#160;<b>Input</b>
+, <b>Output</b>
+, <b>Pullup</b>
+, <b>InputPullup</b>
+, <br />
+&#160;&#160;<b>Pulldown</b>
+, <b>InputPulldown</b>
+, <b>OpenDrain</b>
+, <b>OutputOpenDrain</b>
+, <br />
+&#160;&#160;<b>Analog</b>
+, <b>RmtRX</b> = 0x80
+, <b>RmtTX</b>
+, <b>RmtRXTX</b>
+<br />
+ }</td></tr>
+<tr class="memdesc:afa9b8e9030a766f371861f8d4899572a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pin mode. <br /></td></tr>
+<tr class="separator:afa9b8e9030a766f371861f8d4899572a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Attribute</div></td></tr>
+<tr class="memitem:abf00663c896e5c458427688334cac1e4" id="r_abf00663c896e5c458427688334cac1e4"><td class="memItemLeft" align="right" valign="top"><a id="abf00663c896e5c458427688334cac1e4" name="abf00663c896e5c458427688334cac1e4"></a>
+constexpr <a class="el" href="#a83f188a1b8eda604451b89d9714fe947">attr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::types::attribute::AccessI2C</b> = 0x00000001</td></tr>
+<tr class="memdesc:abf00663c896e5c458427688334cac1e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C Accessible Unit. <br /></td></tr>
+<tr class="separator:abf00663c896e5c458427688334cac1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb8c959b7da0c36559abbaf94083e92d" id="r_abb8c959b7da0c36559abbaf94083e92d"><td class="memItemLeft" align="right" valign="top"><a id="abb8c959b7da0c36559abbaf94083e92d" name="abb8c959b7da0c36559abbaf94083e92d"></a>
+constexpr <a class="el" href="#a83f188a1b8eda604451b89d9714fe947">attr_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::types::attribute::AccessGPIO</b> = 0x00000002</td></tr>
+<tr class="memdesc:abb8c959b7da0c36559abbaf94083e92d"><td class="mdescLeft">&#160;</td><td class="mdescRight">GPIO Accessible Unit. <br /></td></tr>
+<tr class="separator:abb8c959b7da0c36559abbaf94083e92d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Type and enumerator definitions. </p>
