@@ -37,6 +37,10 @@ public:
         {
             return _addr;
         }
+        inline void setAddress(const uint8_t addr)
+        {
+            _addr = addr;
+        }
 
         inline uint32_t clock() const
         {
@@ -48,6 +52,7 @@ public:
             _clock = clock;
         }
 
+        //
         virtual int16_t scl() const
         {
             return -1;
@@ -57,6 +62,7 @@ public:
             return -1;
         }
 
+        //
         virtual bool begin()
         {
             return false;
@@ -70,6 +76,7 @@ public:
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
+        //
         virtual I2CImpl* duplicate(const uint8_t addr)
         {
             return new I2CImpl(addr, _clock);
@@ -183,6 +190,10 @@ public:
     inline uint8_t address() const
     {
         return impl()->address();
+    }
+    inline void setAddress(const uint8_t addr)
+    {
+        impl()->setAddress(addr);
     }
 
     inline uint32_t clock() const

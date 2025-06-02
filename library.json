@@ -11,10 +11,10 @@
         "url": "https://github.com/m5stack/M5UnitUnified.git"
     },
     "dependencies": {
-        "M5Utility": "https://github.com/m5stack/M5Utility.git",
-        "M5HAL": "https://github.com/m5stack/M5HAL.git"
+        "m5stack/M5Utility": "*",
+        "m5stack/M5HAL": "*"
     },
-    "version": "0.0.6",
+    "version": "0.1.0",
     "frameworks": [
         "arduino"
     ],

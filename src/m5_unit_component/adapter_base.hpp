@@ -145,11 +145,6 @@ public:
         return new Adapter();
     }
 
-    virtual Adapter* duplicate(const Adapter* /*copyist*/)
-    {
-        return new Adapter();
-    }
-
     // I2C R/W
     inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len)
     {

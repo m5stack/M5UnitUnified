@@ -337,10 +337,13 @@ bool Component::pulseInTX(uint32_t& duration, const int state, const uint32_t ti
 bool Component::changeAddress(const uint8_t addr)
 {
     if (canAccessI2C() && m5::utility::isValidI2CAddress(addr)) {
-        M5_LIB_LOGI("Change to address %x", addr);
-        _addr = addr;
-        _adapter.reset(asAdapter<AdapterI2C>(Adapter::Type::I2C)->duplicate(addr));
-        return true;
+        auto ad = asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        if (ad) {
+            M5_LIB_LOGI("Change to address %x", addr);
+            _addr = addr;
+            ad->setAddress(addr);
+            return true;
+        }
     }
     M5_LIB_LOGE("Failed to change, %u, %x", canAccessI2C(), addr);
     return false;

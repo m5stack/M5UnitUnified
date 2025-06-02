@@ -142,7 +142,7 @@ public:
     {
         return _manager != nullptr;
     }
-    //! @brief Address used to access the device
+    //! @brief Address used to I2C access the device
     inline uint8_t address() const
     {
         return _addr;
@@ -546,7 +546,7 @@ protected:
     [[deprecated("Use ensure_adapter. To be removed in the next minor version increase")]]
     inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/)
     {
-        return nullptr;
+        return new Adapter(); // Empty adapter
     }
     // clang-format on
 
