@@ -28,6 +28,7 @@ pin_backup_t::pin_backup_t(int pin_num) : _pin_num{static_cast<gpio_num_t>(pin_n
 
 void pin_backup_t::backup(void)
 {
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     auto pin_num = (size_t)_pin_num;
     if (pin_num < GPIO_NUM_MAX) {
         _io_mux_gpio_reg   = *reinterpret_cast<uint32_t*>(GPIO_PIN_MUX_REG[pin_num]);
@@ -52,10 +53,14 @@ void pin_backup_t::backup(void)
             }
         }
     }
+#else
+#pragma message "ESP32P4 was not support"
+#endif
 }
 
 void pin_backup_t::restore(void)
 {
+#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     auto pin_num = (size_t)_pin_num;
     if (pin_num < GPIO_NUM_MAX) {
         if ((uint16_t)_in_func_num < 256) {
@@ -91,6 +96,9 @@ void pin_backup_t::restore(void)
         }
         *gpio_enable_reg = val;
     }
+#else
+#pragma message "ESP32P4 was not support"
+#endif
 }
 
 }  // namespace gpio

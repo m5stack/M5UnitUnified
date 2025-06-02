@@ -96,8 +96,9 @@ ESP-IDF は将来対応予定です。
 
 ### サポートされる通信
 - TwoWire による I2C 通信
+- GPIO (現在は各ユニットに必要な機能のみ搭載）
 
-GPIO、UART は将来対応予定です。
+UART は将来対応予定です。
 
 ### サポートされるデバイス,ユニット
 [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)を参照

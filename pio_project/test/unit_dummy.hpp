@@ -18,7 +18,7 @@ class UnitDummy : public m5::unit::Component {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitDummy, 0x00);
 
 public:
-    UnitDummy() : Component(0x00)
+    UnitDummy() : Component(0x01)
     {
     }
     virtual ~UnitDummy()

@@ -98,8 +98,9 @@ Support ESP-IDF with M5HAL in the future.
 
 ### Supported connection
 - I2C with TwoWire
+- GPIO (Currently only functions required for the units are included)
 
-Support GPIO, UART in the future.
+Support UART in the future.
 
 ### Supported devices, units
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)

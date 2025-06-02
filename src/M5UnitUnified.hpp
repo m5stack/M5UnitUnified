@@ -18,6 +18,10 @@
 
 #include "M5UnitComponent.hpp"
 #include <M5HAL.hpp>
+#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
+#else
+#include <driver/rmt.h>
+#endif
 #include <vector>
 #include <string>
 
@@ -36,7 +40,7 @@ namespace unit {
 class Component;
 
 /*!
-  @class UnitUnified
+  @class m5::unit::UnitUnified
   @brief For managing and leading units
  */
 class UnitUnified {
@@ -59,13 +63,30 @@ public:
     UnitUnified& operator=(UnitUnified&&) noexcept = default;
     ///@}
 
-    ///@name Adding unit to be managed
+    ///@name Add unit
     ///@{
-    // bool add(Component& u, Port& port);
-    bool add(Component& u, m5::hal::bus::Bus* bus);
-    //    [[deprecated("use add(Component& u, Port& port) or add(Component& u,
-    //    m5::hal::bus::Bus* bus);")]]
+    /*!
+      @brief Adding unit to be managed (I2C)
+      @param u Unit Component
+      @param wire TwoWire to be used
+      @return True if successful
+    */
     bool add(Component& u, TwoWire& wire);
+    /*!
+      @brief Adding unit to be managed (GPIO)
+      @param u Unit Component
+      @param rx_pin Pin number to be used for RX
+      @param tx_pin Pin number to be used for TX
+      @return True if successful
+     */
+    bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
+    /*!
+      @brief Adding unit to be managed (M5HAL)
+      @param u Unit Component
+      @param bus Bus to be used
+      @return True if successful
+     */
+    bool add(Component& u, m5::hal::bus::Bus* bus);
     ///@}
 
     //! @brief Begin of all units under management
@@ -78,7 +99,7 @@ public:
 
 protected:
     bool add_children(Component& u);
-    bool add(Component& u, m5::unit::Adapter* a);
+    //    bool add(Component& u, m5::unit::Adapter* a);
 
     std::string make_unit_info(const Component* u, const uint8_t indent = 0) const;
 

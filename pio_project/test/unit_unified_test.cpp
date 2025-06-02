@@ -8,8 +8,10 @@
 */
 #include <gtest/gtest.h>
 #include <M5Unified.h>
+
 #include <M5UnitComponent.hpp>
 #include <M5UnitUnified.hpp>
+
 #include <M5UnitUnifiedENV.h>
 #include <M5UnitUnifiedMETER.h>
 #include <M5UnitUnifiedHUB.h>
@@ -25,6 +27,8 @@
 #include <M5UnitUnifiedDISTANCE.h>
 #include <M5UnitUnifiedEXTIO.h>
 #include <M5UnitUnifiedKEYBOARD.h>
+#include <M5UnitUnifiedINFRARED.h>
+#include <M5UnitUnifiedCRYPTO.h>
 
 #include <algorithm>
 #include <utility>
@@ -122,7 +126,9 @@ TEST(UnitUnified, EachUnit)
     // ANADIG
     each_unit_test<m5::unit::UnitMCP4725>();
     each_unit_test<m5::unit::UnitGP8413>();
+    each_unit_test<m5::unit::UnitADS11XX>();
     each_unit_test<m5::unit::UnitADS1110>();
+    each_unit_test<m5::unit::UnitADS1100>();
 
     // COLOR
     each_unit_test<m5::unit::UnitTCS34725>();
@@ -130,6 +136,7 @@ TEST(UnitUnified, EachUnit)
     // THERMO
     each_unit_test<m5::unit::UnitMLX90614>();
     each_unit_test<m5::unit::UnitMLX90614BAA>();
+    each_unit_test<m5::unit::UnitNCIR2>();
 
     // RFID
     each_unit_test<m5::unit::UnitMFRC522>();
@@ -146,6 +153,13 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitKeyboardBitwise>();
     each_unit_test<m5::unit::UnitCardKB>();
     each_unit_test<m5::unit::UnitFacesQWERTY>();
+
+    // INFRARED
+    each_unit_test<m5::unit::UnitSTHS34PF80>();
+
+    // CRYPTO
+    each_unit_test<m5::unit::UnitATECC608B>();
+    each_unit_test<m5::unit::UnitATECC608B_TNGTLS>();
 
     for (auto&& e : vec) {
         delete e;
