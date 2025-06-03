@@ -22,13 +22,13 @@
 #include <M5UnitUnifiedANADIG.h>
 #include <M5UnitUnifiedCOLOR.h>
 #include <M5UnitUnifiedTHERMO.h>
-
-#include <M5UnitUnifiedRFID.h>
 #include <M5UnitUnifiedDISTANCE.h>
 #include <M5UnitUnifiedEXTIO.h>
-#include <M5UnitUnifiedKEYBOARD.h>
 #include <M5UnitUnifiedINFRARED.h>
 #include <M5UnitUnifiedCRYPTO.h>
+
+#include <M5UnitUnifiedRFID.h>
+#include <M5UnitUnifiedKEYBOARD.h>
 
 #include <algorithm>
 #include <utility>
@@ -104,6 +104,7 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitAmeter>();
     each_unit_test<m5::unit::UnitVmeter>();
     each_unit_test<m5::unit::UnitKmeterISO>();
+    each_unit_test<m5::unit::UnitDualKmeter>();
 
     // HUB
     each_unit_test<m5::unit::UnitPCA9548AP>();
@@ -138,21 +139,11 @@ TEST(UnitUnified, EachUnit)
     each_unit_test<m5::unit::UnitMLX90614BAA>();
     each_unit_test<m5::unit::UnitNCIR2>();
 
-    // RFID
-    each_unit_test<m5::unit::UnitMFRC522>();
-    each_unit_test<m5::unit::UnitWS1850S>();
-
     // DISTANCE
     each_unit_test<m5::unit::UnitRCWL9620>();
 
     // EXTIO
     each_unit_test<m5::unit::UnitExtIO2>();
-
-    // KEYBOARD
-    each_unit_test<m5::unit::UnitKeyboard>();
-    each_unit_test<m5::unit::UnitKeyboardBitwise>();
-    each_unit_test<m5::unit::UnitCardKB>();
-    each_unit_test<m5::unit::UnitFacesQWERTY>();
 
     // INFRARED
     each_unit_test<m5::unit::UnitSTHS34PF80>();
@@ -160,6 +151,16 @@ TEST(UnitUnified, EachUnit)
     // CRYPTO
     each_unit_test<m5::unit::UnitATECC608B>();
     each_unit_test<m5::unit::UnitATECC608B_TNGTLS>();
+
+    // RFID
+    each_unit_test<m5::unit::UnitMFRC522>();
+    each_unit_test<m5::unit::UnitWS1850S>();
+
+    // KEYBOARD
+    each_unit_test<m5::unit::UnitKeyboard>();
+    each_unit_test<m5::unit::UnitKeyboardBitwise>();
+    each_unit_test<m5::unit::UnitCardKB>();
+    each_unit_test<m5::unit::UnitFacesQWERTY>();
 
     for (auto&& e : vec) {
         delete e;
