@@ -11,9 +11,27 @@
 #include "adapter_gpio.hpp"
 #include <driver/gpio.h>
 #include <driver/adc.h>
+
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
+#pragma message "DAC supported"
+
+#if __has_include(<driver/dac_common.h>)
 #include <driver/dac_common.h>
+#define USING_RMT_CHANNNE_T
 #endif
+
+#endif
+
+#if !defined(USING_RMT_CHANNNE_T) && defined(ARDUINO)
+#include <esp32-hal-dac.h>
+#endif
+
+#if SOC_ADC_SUPPORTED
+#pragma message "ADC supported"
+#else
+#pragma message "ADC Not supported"
+#endif
+
 #include <esp_timer.h>
 
 namespace {
@@ -244,10 +262,10 @@ constexpr int8_t gpio_to_adc_table[] = {
 int8_t gpio_to_adc_channel(const int8_t pin)
 {
     if (pin < 0 || pin >= m5::stl::size(gpio_to_adc_table)) {
-        return static_cast<adc_channel_t>(-1);
+        return -1;
     }
     auto v = gpio_to_adc_table[pin];
-    return static_cast<adc_channel_t>(v < 10 ? v : v - 10);
+    return (v < 10) ? v : v - 10;
 }
 
 #if 0
@@ -318,17 +336,19 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_digital(const gpio_num_t
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_analog(const gpio_num_t pin, const uint16_t value)
 {
-#if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
     if (pin != 25 && pin != 26) {
         // DAC output can 25 or 26
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
+#if defined(USING_RMT_CHANNNE_T)
     dac_channel_t ch = (pin == 25) ? DAC_CHANNEL_1 : DAC_CHANNEL_2;
     dac_output_enable(ch);
     dac_output_voltage(ch, static_cast<uint8_t>(value & 0xFF));  // 0〜255
     return m5::hal::error::error_t::OK;
 #else
-    return m5::hal::error::error_t::NOT_IMPLEMENTED;
+    analogWrite(pin, value & 0xFF);
+    ;
+    //    return m5::hal::error::error_t::NOT_IMPLEMENTED;
 #endif
 }
 
