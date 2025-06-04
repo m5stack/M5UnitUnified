@@ -221,31 +221,6 @@ public:
         return _impl->pulseInTX(duration, state, timeout_us);
     }
 
-    // clang-format off
-
-    // WARNING
-    // Patches for old units for minor version upgrades (will be removed as soon as no longer needed)
-    // For M5Unit-CRYPTO
-    [[deprecated("Patches for old units")]]
-    uint32_t clock() const;
-    [[deprecated("Patches for old units")]]
-    void setClock(const uint32_t);
-    // For M5Unit-THERMO
-    [[deprecated("Patches for old units")]]
-    int16_t sda() const;
-    [[deprecated("Patches for old units")]]
-    int16_t scl() const;
-    [[deprecated("Patches for old units")]]
-    void pinMode(const uint8_t pin, const uint8_t mode);
-    [[deprecated("Patches for old units")]]
-    void digitalWrite(const uint8_t pin, const uint8_t high);
-    [[deprecated("Patches for old units")]]
-    bool begin();
-    [[deprecated("Patches for old units")]]
-    bool end();
-
-    // clang-format on
-
 private:
     Type _type{Type::Unknown};
 

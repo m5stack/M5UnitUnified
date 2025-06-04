@@ -423,26 +423,6 @@ public:
         return write_register32E(reg, value, stop, false);
     }
 
-    // clang-format off
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    [[deprecated("Use readRegister16BE() or readRegister16LE(). To be removed in the next minor version increase")]]
-    inline bool readRegister16(const Reg reg, uint16_t& result, const uint32_t delayMillis, const bool stop = true)
-    {
-        return read_register16E(reg, result, delayMillis, stop, true);
-    }
-
-    template <typename Reg,
-              typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
-                                      std::nullptr_t>::type = nullptr>
-    [[deprecated("Use writeRegister16BE() or writeRegister16LE(). To be removed in the next minor version increase")]]
-    inline bool writeRegister16(const Reg reg, const uint16_t value, const bool stop = true)
-    {
-        return write_register16E(reg, value, stop, true);
-    }
-    // clang-format on
-
     // GPIO
     bool pinModeRX(const gpio::Mode m);
     bool writeDigitalRX(const bool high);
@@ -522,18 +502,6 @@ protected:
     {
         return _periodic;
     }
-
-    // clang-format off
-    // Duplicate the adapter for children
-    // Returns the appropriate adapter pointer for the child
-    // Note that ownership of the return pointer is delegated to the destination
-    // DEPRECATED!!
-    [[deprecated("Use ensure_adapter. To be removed in the next minor version increase")]]
-    inline virtual Adapter* duplicate_adapter(const uint8_t /*ch*/)
-    {
-        return new Adapter(); // Empty adapter
-    }
-    // clang-format on
 
     inline virtual std::shared_ptr<Adapter> ensure_adapter(const uint8_t /*ch*/)
     {

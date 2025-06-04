@@ -76,31 +76,6 @@ bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
     return false;
 }
 
-#if 0
-bool UnitUnified::add(Component& u, m5::unit::Adapter* ad)
-{
-    if (u.isRegistered()) {
-        M5_LIB_LOGW("Already added");
-        return false;
-    }
-    if (!ad) {
-        M5_LIB_LOGE("Adapter null");
-        return false;
-    }
-
-    M5_LIB_LOGD("Add [%s] by adapter %u", u.deviceName(), u.address());
-
-    u._manager = this;
-    u._adapter.reset(ad);
-    M5_LIB_LOGD("  Shared:%u", u._adapter.use_count());
-
-    u._order = ++_registerCount;
-    _units.emplace_back(&u);
-
-    return add_children(u);
-}
-#endif
-
 // Add children if exists
 bool UnitUnified::add_children(Component& u)
 {
@@ -109,17 +84,6 @@ bool UnitUnified::add_children(Component& u)
         auto ch = it->channel();
 
         M5_LIB_LOGV("%s child:%s channel:%u", u.deviceName(), it->deviceName(), ch);
-#if 0
-        auto ad = u.duplicate_adapter(ch);
-        if (!ad) {
-            M5_LIB_LOGE("Failed to duplicate_adapter() %s:%u", u.deviceName(), ch);
-            return false;
-        }
-        if (!add(*it, ad)) {
-            M5_LIB_LOGE("Failed to add %s to %s", it->deviceName(), u.deviceName());
-            return false;
-        }
-#else
         if (it->isRegistered()) {
             M5_LIB_LOGE("Already registered %s", it->deviceName());
             return false;
@@ -133,8 +97,6 @@ bool UnitUnified::add_children(Component& u)
         if (!add_children(*it)) {
             return false;
         }
-#endif
-
         ++it;
     }
     return true;
