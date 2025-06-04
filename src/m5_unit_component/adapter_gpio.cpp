@@ -347,8 +347,8 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_analog(const gpio_num_t
     return m5::hal::error::error_t::OK;
 #else
     analogWrite(pin, value & 0xFF);
-    ;
-    //    return m5::hal::error::error_t::NOT_IMPLEMENTED;
+    return m5::hal::error::error_t::OK;
+    //      return m5::hal::error::error_t::NOT_IMPLEMENTED;
 #endif
 }
 
