@@ -29,11 +29,13 @@ rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t& cfg, const uint
     return out;
 }
 
+#if 0
 rmt_rx_channel_config_t to_rmt_rx_config(const adapter_config_t& cfg, const uint32_t apb_freq_hz)
 {
     rmt_rx_channel_config_t out{};
     return out;
 }
+#endif
 
 }  // namespace
 
@@ -50,7 +52,7 @@ public:
     bool begin(const gpio::adapter_config_t& cfg)
     {
         // RMT TX
-        if (!_tx_handle && cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX) {
+        if (!_tx_handle && (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX)) {
             _tx_config          = to_rmt_tx_config(cfg, esp_clk_apb_freq());
             _tx_config.gpio_num = tx_pin();
 
@@ -66,7 +68,7 @@ public:
             }
         }
         // RMT RX
-        if (!_rx_handle && cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX) {
+        if (!_rx_handle && (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
             // TODO
         }
 

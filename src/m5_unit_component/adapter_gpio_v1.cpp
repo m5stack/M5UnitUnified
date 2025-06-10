@@ -52,6 +52,7 @@ rmt_config_t to_rmt_config_tx(const adapter_config_t& cfg, const uint32_t apb_fr
     return out;
 }
 
+#if 0
 rmt_config_t to_rmt_config_rx(const adapter_config_t& cfg, const uint32_t apb_freq_hz)
 {
     rmt_config_t out{};
@@ -63,7 +64,7 @@ rmt_config_t to_rmt_config_rx(const adapter_config_t& cfg, const uint32_t apb_fr
     out.rx_config.idle_threshold      = 300;
     return out;
 }
-
+#endif
 }  // namespace
 
 namespace m5 {

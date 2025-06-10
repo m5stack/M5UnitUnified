@@ -20,10 +20,8 @@
 
 // RMT
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-#pragma message "Using RMT v2"
 #define M5_UNIT_UNIFIED_USING_RMT_V2
-#else
-#pragma message "Using RMT v1"
+#define M5_UNIT_UNIFIED_USING_ADC_ONESHOT
 #endif
 
 #endif
