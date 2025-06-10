@@ -410,10 +410,11 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
 
     adc_oneshot_unit_handle_t adc_handle{};
-    adc_oneshot_unit_init_cfg_t init_config = {
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
+    adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
 #else
+    adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
 #endif
 
