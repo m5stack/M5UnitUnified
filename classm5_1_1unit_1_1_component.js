@@ -11,6 +11,7 @@ var classm5_1_1unit_1_1_component =
     [ "assign", "classm5_1_1unit_1_1_component.html#adf86f24753905a792c5ef2782f8ac064", null ],
     [ "attribute", "classm5_1_1unit_1_1_component.html#a0a18533077bbb3b96a023529bd9bf267", null ],
     [ "begin", "classm5_1_1unit_1_1_component.html#ad7196db4b20115e07b5521e1bfa3b37f", null ],
+    [ "category", "classm5_1_1unit_1_1_component.html#afe906f0aaa08f75e42550519001c489a", null ],
     [ "channel", "classm5_1_1unit_1_1_component.html#ad7ad099b50724051993bd146690f7a14", null ],
     [ "child", "classm5_1_1unit_1_1_component.html#a4de1a8c84fa1ba234fc6dbe1ba8b643c", null ],
     [ "childrenSize", "classm5_1_1unit_1_1_component.html#a697b23403c73c8f1309f2fcdde0d66ca", null ],

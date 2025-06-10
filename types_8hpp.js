@@ -5,6 +5,10 @@ var types_8hpp =
     [ "attr_t", "types_8hpp.html#a83f188a1b8eda604451b89d9714fe947", null ],
     [ "elapsed_time_t", "types_8hpp.html#a2186c1c440ded1cd15c39912d90e7a7a", null ],
     [ "uid_t", "types_8hpp.html#aa318127d82066eef622818d81f339fb1", null ],
+    [ "category_t", "types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3a", [
+      [ "None", "types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3aa6adf97f83acf6453d4a6a4b1070f3754", null ],
+      [ "UnitLED", "types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3aab8303a8a985aef6506929ae7b4bfdc78", null ]
+    ] ],
     [ "Mode", "types_8hpp.html#afa9b8e9030a766f371861f8d4899572a", [
       [ "Input", "types_8hpp.html#afa9b8e9030a766f371861f8d4899572aa324118a6721dd6b8a9b9f4e327df2bf5", null ],
       [ "Output", "types_8hpp.html#afa9b8e9030a766f371861f8d4899572aa29c2c02a361c9d7028472e5d92cd4a54", null ],
