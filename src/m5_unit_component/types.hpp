@@ -34,7 +34,7 @@ namespace types {
  */
 enum class category_t {
     None,
-    UnitLED, //!< Derived from UnitLED
+    UnitLED,  //!< Derived from UnitLED
 };
 
 using uid_t          = uint32_t;       //!< @brief Component unique identifier
