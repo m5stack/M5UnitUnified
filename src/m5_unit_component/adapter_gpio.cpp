@@ -10,7 +10,14 @@
 */
 #include "adapter_gpio.hpp"
 #include <driver/gpio.h>
+
+#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
+#pragma message "Using RMT v2,Oneshot"
+#include <esp_adc/adc_oneshot.h>
+#else
+#pragma message "Using RMT v1"
 #include <driver/adc.h>
+#endif
 
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
 #pragma message "DAC supported"
@@ -259,6 +266,8 @@ constexpr int8_t gpio_to_adc_table[] = {
 #error Invalid target
 #endif
 
+// 0-9: ADC1 10-:ADC2 (ESP-IDF 4.x)
+// 0-9, 10- : ADC (ESP-IDF 5.x)
 int8_t gpio_to_adc_channel(const int8_t pin)
 {
     if (pin < 0 || pin >= m5::stl::size(gpio_to_adc_table)) {
@@ -329,7 +338,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_digital(const gpio_num_
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_digital(const gpio_num_t pin, bool& high)
 {
-    high = false;
+    high = true;
     high = gpio_get_level(pin);
     return m5::hal::error::error_t::OK;
 }
@@ -360,9 +369,47 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     if (ch < 0) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
-
+#if !defined(SOC_ADC_PERIPH_NUM) || SOC_ADC_PERIPH_NUM <= 1
     if (ch >= 10) {
-        // ADC2
+        M5_LIB_LOGE("Not support ADC2");
+        return m5::hal::error::error_t::NOT_IMPLEMENTED;
+    }
+#endif
+
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+    // ESP-IDF 5.x
+
+    adc_unit_t unit       = (ch < 10) ? ADC_UNIT_1 : ADC_UNIT_2;
+    adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
+
+    adc_oneshot_unit_handle_t adc_handle{};
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+
+    if (adc_oneshot_new_unit(&init_config, &adc_handle) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+
+    adc_oneshot_chan_cfg_t chan_config = {
+        .atten    = ADC_ATTEN_DB_12,      // 0~3.3V
+        .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
+    };
+
+    auto ret = m5::hal::error::error_t::UNKNOWN_ERROR;
+    if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) == ESP_OK) {
+        int raw{};
+        if (adc_oneshot_read(adc_handle, channel, &raw) == ESP_OK) {
+            value = static_cast<uint16_t>(raw);
+            ret   = m5::hal::error::error_t::OK;
+        }
+    }
+    adc_oneshot_del_unit(adc_handle);
+    return ret;
+
+#else
+    // ESP-IDF 4.x
+    // ADC2
+    if (ch >= 10) {
 #if SOC_ADC_SUPPORTED && SOC_ADC_PERIPH_NUM > 1
         adc2_channel_t channel = static_cast<adc2_channel_t>(ch - 10);
         int v                  = 0;
@@ -371,9 +418,6 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
         }
         value = static_cast<uint16_t>(v);
         return m5::hal::error::error_t::OK;
-#else
-        M5_LIB_LOGE("Not support ADC2");
-        return m5::hal::error::error_t::NOT_IMPLEMENTED;
 #endif
     }
     // ADC1
@@ -382,6 +426,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     adc1_config_channel_atten(channel, ADC_ATTEN_DB_12);
     value = static_cast<uint16_t>(adc1_get_raw(channel));
     return m5::hal::error::error_t::OK;
+#endif
 }
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pulse_in(uint32_t& duration, const gpio_num_t pin, const int state,
