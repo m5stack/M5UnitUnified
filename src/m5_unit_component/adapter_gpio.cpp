@@ -50,6 +50,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // Output
@@ -58,6 +61,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // Pullup
@@ -66,6 +72,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // InputPullup
@@ -74,6 +83,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // Pulldown
@@ -82,6 +94,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_ENABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // InputPulldown
@@ -90,6 +105,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_ENABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // OpenDrain
@@ -98,6 +116,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_ENABLE,  //
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // OutputOpenDrain,
@@ -106,6 +127,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
     {
         // Analog
@@ -114,6 +138,9 @@ constexpr gpio_config_t gpio_cfg_table[] = {
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type    = GPIO_INTR_DISABLE,
+#if defined(CONFIG_IDF_TARGET_ESP32P4)
+        .hys_ctrl_mode = GPIO_HYS_SOFT_ENABLE,
+#endif
     },
 };
 
@@ -384,7 +411,11 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 
     adc_oneshot_unit_handle_t adc_handle{};
     adc_oneshot_unit_init_cfg_t init_config = {
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+#else
         .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+#endif
 
     if (adc_oneshot_new_unit(&init_config, &adc_handle) != ESP_OK) {
         return m5::hal::error::error_t::UNKNOWN_ERROR;

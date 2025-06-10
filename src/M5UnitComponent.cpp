@@ -46,10 +46,7 @@ bool Component::existsChild(const uint8_t ch) const
 
 bool Component::canAccessI2C() const
 {
-    // TODO
-    // Tentative decisions until all units' attributes are corrected
-    // return attribute() & attribute::AccessI2C;
-    return true;
+    return attribute() & attribute::AccessI2C;
 }
 
 bool Component::canAccessGPIO() const
