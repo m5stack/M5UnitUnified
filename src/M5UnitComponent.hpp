@@ -127,6 +127,11 @@ public:
     {
         return unit_attribute();
     }
+    //! @brief Gets the category
+    inline types::category_t category() const
+    {
+        return unit_category();
+    }
     //! @brief Gets the registered order (== 0 means not yet)
     inline uint32_t order() const
     {
@@ -247,6 +252,13 @@ public:
     {
         return _parent;
     }
+#if 0
+    //! @brief Gets the parent unit
+    inline const Component* parent() const
+    {
+        return _parent;
+    }
+#endif
     //! @brief Gets the device connected to the specified channel
     Component* child(const uint8_t chhanle) const;
     //! @brief Connect the unit to the specified channel
@@ -498,6 +510,10 @@ protected:
     virtual const char* unit_device_name() const = 0;
     virtual types::uid_t unit_identifier() const = 0;
     virtual types::attr_t unit_attribute() const = 0;
+    inline virtual types::category_t unit_category() const
+    {
+        return types::category_t::None;
+    }
     inline virtual bool in_periodic() const
     {
         return _periodic;

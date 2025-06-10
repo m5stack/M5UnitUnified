@@ -28,6 +28,15 @@ namespace unit {
  */
 namespace types {
 
+/*!
+  @enum category_t
+  @brief Unit category (used for static class determination)
+ */
+enum class category_t {
+    None,
+    UnitLED, //!< Derived from UnitLED
+};
+
 using uid_t          = uint32_t;       //!< @brief Component unique identifier
 using attr_t         = uint32_t;       //!< @brief Component attribute bits
 using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms)

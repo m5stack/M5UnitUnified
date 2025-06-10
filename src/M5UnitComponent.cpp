@@ -366,8 +366,8 @@ std::string Component::debugInfo() const
             tmp = m5::utility::formatString("%p:%u Type:%d", _adapter.get(), _adapter.use_count(), _adapter->type());
             break;
     }
-    return m5::utility::formatString("[%s]:ID{0X%08x}:%s parent:%u children:%zu/%u", deviceName(), identifier(),
-                                     tmp.c_str(), hasParent(), childrenSize(), _component_cfg.max_children);
+    return m5::utility::formatString("[%s]:ID{0X%08x}:%s CH:%d parent:%u children:%zu/%u", deviceName(), identifier(),
+                                     tmp.c_str(), channel(), hasParent(), childrenSize(), _component_cfg.max_children);
 }
 
 // Explicit template instantiation
