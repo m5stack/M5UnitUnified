@@ -462,7 +462,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 }
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pulse_in(uint32_t& duration, const gpio_num_t pin, const int state,
-                                                            const uint32_t timeout_us = 30000)
+                                                            const uint32_t timeout_us)
 {
     duration   = 0;
     auto start = esp_timer_get_time();

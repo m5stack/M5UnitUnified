@@ -38,6 +38,13 @@ bool declrare_use_rmt_channel(const int ch)
     return false;
 }
 
+void clear_use_rmt_channel(const int ch)
+{
+    if (ch >= 0 && ch < RMT_CHANNEL_MAX) {
+        using_rmt_channel_bits &= ~(1U << ch);
+    }
+}
+
 rmt_config_t to_rmt_config_tx(const adapter_config_t& cfg, const uint32_t apb_freq_hz)
 {
     rmt_config_t out{};
@@ -77,6 +84,16 @@ public:
     }
     GPIOImplV1(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
     {
+    }
+    virtual ~GPIOImplV1()
+    {
+        rmt_tx_stop(_tx_config.channel);
+        rmt_driver_uninstall(_tx_config.channel);
+        clear_use_rmt_channel(_tx_config.channel);
+
+        rmt_rx_stop(_rx_config.channel);
+        rmt_driver_uninstall(_rx_config.channel);
+        clear_use_rmt_channel(_rx_config.channel);
     }
 
     virtual bool begin(const gpio::adapter_config_t& cfg) override
@@ -137,8 +154,8 @@ public:
             }
             return err == ESP_OK ? m5::hal::error::error_t::OK : m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        M5_LIB_LOGE("Failed invalid config");
 
+        M5_LIB_LOGE("Failed invalid config");
         return m5::hal::error::error_t::UNKNOWN_ERROR;
     }
 
