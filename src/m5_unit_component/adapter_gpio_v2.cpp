@@ -48,6 +48,17 @@ public:
     GPIOImplV2(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
     {
     }
+    virtual ~GPIOImplV2()
+    {
+        if (_tx_handle) {
+            rmt_disable(_tx_handle);
+            rmt_del_channel(_tx_handle);
+        }
+        if (_rx_handle) {
+            rmt_disable(_rx_handle);
+            rmt_del_channel(_rx_handle);
+        }
+    }
 
     bool begin(const gpio::adapter_config_t& cfg)
     {
@@ -88,6 +99,9 @@ public:
         rmt_transmit_config_t tx_config = {};
         auto err = rmt_transmit(_tx_handle, copy_encoder, (gpio::m5_rmt_item_t*)data, len * sizeof(gpio::m5_rmt_item_t),
                                 &tx_config);
+        if (err != ESP_OK) {
+            M5_LIB_LOGE("Failed to transmit %d:%s", err, esp_err_to_name(err));
+        }
         if (err == ESP_OK && waitMs) {
             err = rmt_tx_wait_all_done(_tx_handle, waitMs);
             if (err != ESP_OK) {

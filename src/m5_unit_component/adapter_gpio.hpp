@@ -87,7 +87,7 @@ public:
         }
 
         inline virtual m5::hal::error::error_t pulseInRX(uint32_t& duration, const int state,
-                                                         const uint32_t timeout_us) override
+                                                         const uint32_t timeout_us = 30000) override
         {
             return pulse_in(duration, rx_pin(), state, timeout_us);
         }
@@ -114,7 +114,7 @@ public:
             return read_analog(v, tx_pin());
         }
         inline virtual m5::hal::error::error_t pulseInTX(uint32_t& duration, const int state,
-                                                         const uint32_t timeout_us) override
+                                                         const uint32_t timeout_us = 30000) override
         {
             return pulse_in(duration, tx_pin(), state, timeout_us);
         }
