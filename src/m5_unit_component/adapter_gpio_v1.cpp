@@ -79,21 +79,23 @@ namespace unit {
 
 class GPIOImplV1 : public AdapterGPIOBase::GPIOImpl {
 public:
-    GPIOImplV1() : AdapterGPIOBase::GPIOImpl(-1, -1)
+    explicit GPIOImplV1(const int8_t rx_pin = -1, const int8_t tx_pin = -1) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
     {
-    }
-    GPIOImplV1(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
-    {
+        _rx_config.channel = RMT_CHANNEL_MAX;
+        _tx_config.channel = RMT_CHANNEL_MAX;
     }
     virtual ~GPIOImplV1()
     {
-        rmt_tx_stop(_tx_config.channel);
-        rmt_driver_uninstall(_tx_config.channel);
-        clear_use_rmt_channel(_tx_config.channel);
-
-        rmt_rx_stop(_rx_config.channel);
-        rmt_driver_uninstall(_rx_config.channel);
-        clear_use_rmt_channel(_rx_config.channel);
+        if (_tx_config.channel != RMT_CHANNEL_MAX) {
+            rmt_tx_stop(_tx_config.channel);
+            rmt_driver_uninstall(_tx_config.channel);
+            clear_use_rmt_channel(_tx_config.channel);
+        }
+        if (_rx_config.channel != RMT_CHANNEL_MAX) {
+            rmt_rx_stop(_rx_config.channel);
+            rmt_driver_uninstall(_rx_config.channel);
+            clear_use_rmt_channel(_rx_config.channel);
+        }
     }
 
     virtual bool begin(const gpio::adapter_config_t& cfg) override
