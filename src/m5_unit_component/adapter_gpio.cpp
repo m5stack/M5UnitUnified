@@ -405,7 +405,6 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 
 #if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
     // ESP-IDF 5.x
-
     adc_unit_t unit       = (ch < 10) ? ADC_UNIT_1 : ADC_UNIT_2;
     adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
 

@@ -33,6 +33,7 @@ public:
     AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin);
 };
 
+
 }  // namespace unit
 }  // namespace m5
 #endif
