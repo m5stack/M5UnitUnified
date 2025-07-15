@@ -153,15 +153,15 @@ public:
 
             dump_rmt_config(_tx_config, "TX");
 
-            auto err = rmt_driver_install(_tx_config.channel, 0, 0);
+            auto err = rmt_config(&_tx_config);
             if (err != ESP_OK) {
-                M5_LIB_LOGE("Failed to install TX %d:%s", err, esp_err_to_name(err));
+                M5_LIB_LOGE("Failed to config TX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
-            err = rmt_config(&_tx_config);
+            err = rmt_driver_install(_tx_config.channel, 0, 0);
             if (err != ESP_OK) {
-                M5_LIB_LOGE("Failed to config TX %d:%s", err, esp_err_to_name(err));
+                M5_LIB_LOGE("Failed to install TX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
@@ -194,15 +194,15 @@ public:
 
             dump_rmt_config(_rx_config, "RX");
 
-            auto err = rmt_driver_install(_rx_config.channel, cfg.rx.ring_buffer_size, 0);
+            auto err = rmt_config(&_rx_config);
             if (err != ESP_OK) {
-                M5_LIB_LOGE("Failed to install RX %d:%s", err, esp_err_to_name(err));
+                M5_LIB_LOGE("Failed to config RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
-            err = rmt_config(&_rx_config);
+            err = rmt_driver_install(_rx_config.channel, cfg.rx.ring_buffer_size, 0);
             if (err != ESP_OK) {
-                M5_LIB_LOGE("Failed to config RX %d:%s", err, esp_err_to_name(err));
+                M5_LIB_LOGE("Failed to install RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
