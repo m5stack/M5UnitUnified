@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.5 git rev:23e84e7</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.6 git rev:f48ea06</span>
    </div>
   </td>
  </tr>
@@ -97,8 +97,13 @@ $(function(){initNavTree('classm5_1_1unit_1_1_g_p_i_o_impl_v2.html',''); initRes
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classm5_1_1unit_1_1_g_p_i_o_impl_v2-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">m5::unit::GPIOImplV2 Class Reference</div></div>
 </div><!--header-->
@@ -114,6 +119,11 @@ Inheritance diagram for m5::unit::GPIOImplV2:</div>
   </map>
 </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1_g_p_i_o_impl_v2_1_1callback__struct__t.html">callback_struct_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a5167898adcf8e0605e65d8720a26597e" id="r_a5167898adcf8e0605e65d8720a26597e"><td class="memItemLeft" align="right" valign="top"><a id="a5167898adcf8e0605e65d8720a26597e" name="a5167898adcf8e0605e65d8720a26597e"></a>
@@ -123,6 +133,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abc8c26a86088943d759ce6395a1fa7ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2db5b0e026ebe71a9b6aa4dd1075d334" id="r_a2db5b0e026ebe71a9b6aa4dd1075d334"><td class="memItemLeft" align="right" valign="top">m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2db5b0e026ebe71a9b6aa4dd1075d334">writeWithTransaction</a> (const uint8_t *data, const size_t len, const uint32_t waitMs) override</td></tr>
 <tr class="separator:a2db5b0e026ebe71a9b6aa4dd1075d334"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23f221af72debd57f58c20d269f8c3dc" id="r_a23f221af72debd57f58c20d269f8c3dc"><td class="memItemLeft" align="right" valign="top">m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a23f221af72debd57f58c20d269f8c3dc">readWithTransaction</a> (uint8_t *data, const size_t len) override</td></tr>
+<tr class="separator:a23f221af72debd57f58c20d269f8c3dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a></td></tr>
 <tr class="memitem:a52b9947fb00ceda39b3f3e4f1f992e39 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a52b9947fb00ceda39b3f3e4f1f992e39"><td class="memItemLeft" align="right" valign="top">
 &#160;</td><td class="memItemRight" valign="bottom"><b>GPIOImpl</b> (const int8_t rx_pin, const int8_t tx_pin)</td></tr>
@@ -161,9 +173,6 @@ gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>tx_pin</b> () c
 <tr class="memitem:abbc9853813b374ad4da87e9b9ef418c0 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_abbc9853813b374ad4da87e9b9ef418c0"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#abbc9853813b374ad4da87e9b9ef418c0">pulseInTX</a> (uint32_t &amp;duration, const int state, const uint32_t timeout_us=30000) override</td></tr>
 <tr class="separator:abbc9853813b374ad4da87e9b9ef418c0 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">m5::unit::Adapter::Impl</a></td></tr>
-<tr class="memitem:a2ec6eeedf3c9b8bbd126af5a33088119 inherit pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl" id="r_a2ec6eeedf3c9b8bbd126af5a33088119"><td class="memItemLeft" align="right" valign="top">
-virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *, const size_t)</td></tr>
-<tr class="separator:a2ec6eeedf3c9b8bbd126af5a33088119 inherit pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d00af39db957c0aa6061f53afcc6569 inherit pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl" id="r_a7d00af39db957c0aa6061f53afcc6569"><td class="memItemLeft" align="right" valign="top">
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeWithTransaction</b> (const uint8_t, const uint8_t *, const size_t, const uint32_t)</td></tr>
 <tr class="separator:a7d00af39db957c0aa6061f53afcc6569 inherit pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,33 +183,20 @@ virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="botto
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>generalCall</b> (const uint8_t *, const size_t)</td></tr>
 <tr class="separator:a7a446e16b212e142d823f7fe0a89ee80 inherit pub_methods_classm5_1_1unit_1_1_adapter_1_1_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a29af4ea692969caffb68a32d0a0b0b4f" id="r_a29af4ea692969caffb68a32d0a0b0b4f"><td class="memItemLeft" align="right" valign="top"><a id="a29af4ea692969caffb68a32d0a0b0b4f" name="a29af4ea692969caffb68a32d0a0b0b4f"></a>
-rmt_channel_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_handle</b> {}</td></tr>
-<tr class="separator:a29af4ea692969caffb68a32d0a0b0b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbfa7bc6f96c2e84e781b47117f529d3" id="r_acbfa7bc6f96c2e84e781b47117f529d3"><td class="memItemLeft" align="right" valign="top"><a id="acbfa7bc6f96c2e84e781b47117f529d3" name="acbfa7bc6f96c2e84e781b47117f529d3"></a>
-rmt_channel_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_handle</b> {}</td></tr>
-<tr class="separator:acbfa7bc6f96c2e84e781b47117f529d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca5b413863ae9773051687268362572a" id="r_aca5b413863ae9773051687268362572a"><td class="memItemLeft" align="right" valign="top"><a id="aca5b413863ae9773051687268362572a" name="aca5b413863ae9773051687268362572a"></a>
-rmt_rx_channel_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_config</b> {}</td></tr>
-<tr class="separator:aca5b413863ae9773051687268362572a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a355a6c665ebce02f93da00cefbc847cd" id="r_a355a6c665ebce02f93da00cefbc847cd"><td class="memItemLeft" align="right" valign="top"><a id="a355a6c665ebce02f93da00cefbc847cd" name="a355a6c665ebce02f93da00cefbc847cd"></a>
-rmt_tx_channel_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_config</b> {}</td></tr>
-<tr class="separator:a355a6c665ebce02f93da00cefbc847cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a></td></tr>
-<tr class="memitem:ae6a9c2d4b4f15e1ebabc5d539d62958d inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ae6a9c2d4b4f15e1ebabc5d539d62958d"><td class="memItemLeft" align="right" valign="top">
-gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_pin</b> {(gpio_num_t)-1}</td></tr>
-<tr class="separator:ae6a9c2d4b4f15e1ebabc5d539d62958d inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9a45dd6eb0bed2811c4ef4bdf893f59 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ab9a45dd6eb0bed2811c4ef4bdf893f59"><td class="memItemLeft" align="right" valign="top">
-gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_pin</b> {(gpio_num_t)-1}</td></tr>
-<tr class="separator:ab9a45dd6eb0bed2811c4ef4bdf893f59 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a789320f1c3a50a7b2d3bc5f2b8e1d0c1 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a789320f1c3a50a7b2d3bc5f2b8e1d0c1"><td class="memItemLeft" align="right" valign="top">
-<a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">gpio::adapter_config_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_adapter_cfg</b> {}</td></tr>
-<tr class="separator:a789320f1c3a50a7b2d3bc5f2b8e1d0c1 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ae9245405fddec98bf80f153956f98c0c" id="r_ae9245405fddec98bf80f153956f98c0c"><td class="memItemLeft" align="right" valign="top"><a id="ae9245405fddec98bf80f153956f98c0c" name="ae9245405fddec98bf80f153956f98c0c"></a>
+static IRAM_ATTR bool&#160;</td><td class="memItemRight" valign="bottom"><b>callbackReceive</b> (rmt_channel_handle_t handle, const rmt_rx_done_event_data_t *edata, void *user_ctx)</td></tr>
+<tr class="separator:ae9245405fddec98bf80f153956f98c0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:ad08c44e5654c24f861bb4bb486670449" id="r_ad08c44e5654c24f861bb4bb486670449"><td class="memItemLeft" align="right" valign="top"><a id="ad08c44e5654c24f861bb4bb486670449" name="ad08c44e5654c24f861bb4bb486670449"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>createReceiveTask</b> ()</td></tr>
+<tr class="separator:ad08c44e5654c24f861bb4bb486670449"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03ba09107c767affbd3e78f5e2500a28" id="r_a03ba09107c767affbd3e78f5e2500a28"><td class="memItemLeft" align="right" valign="top"><a id="a03ba09107c767affbd3e78f5e2500a28" name="a03ba09107c767affbd3e78f5e2500a28"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>receive_loop</b> (const uint16_t received_len)</td></tr>
+<tr class="separator:a03ba09107c767affbd3e78f5e2500a28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a></td></tr>
 <tr class="memitem:ab02acabe4307a533fcdc8fa08eb8ed06 inherit pro_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ab02acabe4307a533fcdc8fa08eb8ed06"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pin_mode</b> (const gpio_num_t pin, const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m)</td></tr>
@@ -220,6 +216,67 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>re
 <tr class="memitem:a99bbd996e93a721b972d784255ca2e77 inherit pro_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a99bbd996e93a721b972d784255ca2e77"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pulse_in</b> (uint32_t &amp;duration, const gpio_num_t pin, const int state, const uint32_t timeout_us)</td></tr>
 <tr class="separator:a99bbd996e93a721b972d784255ca2e77 inherit pro_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:a1df22612b100e30a79f8d5ccc05d0b6e" id="r_a1df22612b100e30a79f8d5ccc05d0b6e"><td class="memItemLeft" align="right" valign="top"><a id="a1df22612b100e30a79f8d5ccc05d0b6e" name="a1df22612b100e30a79f8d5ccc05d0b6e"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>receive_loop_task</b> (void *)</td></tr>
+<tr class="separator:a1df22612b100e30a79f8d5ccc05d0b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a29af4ea692969caffb68a32d0a0b0b4f" id="r_a29af4ea692969caffb68a32d0a0b0b4f"><td class="memItemLeft" align="right" valign="top"><a id="a29af4ea692969caffb68a32d0a0b0b4f" name="a29af4ea692969caffb68a32d0a0b0b4f"></a>
+rmt_channel_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_handle</b> {}</td></tr>
+<tr class="separator:a29af4ea692969caffb68a32d0a0b0b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbfa7bc6f96c2e84e781b47117f529d3" id="r_acbfa7bc6f96c2e84e781b47117f529d3"><td class="memItemLeft" align="right" valign="top"><a id="acbfa7bc6f96c2e84e781b47117f529d3" name="acbfa7bc6f96c2e84e781b47117f529d3"></a>
+rmt_channel_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_handle</b> {}</td></tr>
+<tr class="separator:acbfa7bc6f96c2e84e781b47117f529d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca5b413863ae9773051687268362572a" id="r_aca5b413863ae9773051687268362572a"><td class="memItemLeft" align="right" valign="top"><a id="aca5b413863ae9773051687268362572a" name="aca5b413863ae9773051687268362572a"></a>
+rmt_rx_channel_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_config</b> {}</td></tr>
+<tr class="separator:aca5b413863ae9773051687268362572a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae74fab834df1e81bf754d43a3fde8f60" id="r_ae74fab834df1e81bf754d43a3fde8f60"><td class="memItemLeft" align="right" valign="top"><a id="ae74fab834df1e81bf754d43a3fde8f60" name="ae74fab834df1e81bf754d43a3fde8f60"></a>
+rmt_receive_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_receive_config</b> {}</td></tr>
+<tr class="separator:ae74fab834df1e81bf754d43a3fde8f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a355a6c665ebce02f93da00cefbc847cd" id="r_a355a6c665ebce02f93da00cefbc847cd"><td class="memItemLeft" align="right" valign="top"><a id="a355a6c665ebce02f93da00cefbc847cd" name="a355a6c665ebce02f93da00cefbc847cd"></a>
+rmt_tx_channel_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_config</b> {}</td></tr>
+<tr class="separator:a355a6c665ebce02f93da00cefbc847cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a567e092b13ac24b31973cf67d66caa9b" id="r_a567e092b13ac24b31973cf67d66caa9b"><td class="memItemLeft" align="right" valign="top"><a id="a567e092b13ac24b31973cf67d66caa9b" name="a567e092b13ac24b31973cf67d66caa9b"></a>
+rmt_transmit_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_transmit_config</b> {}</td></tr>
+<tr class="separator:a567e092b13ac24b31973cf67d66caa9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef05f216c5702108869cd0296173b544" id="r_aef05f216c5702108869cd0296173b544"><td class="memItemLeft" align="right" valign="top"><a id="aef05f216c5702108869cd0296173b544" name="aef05f216c5702108869cd0296173b544"></a>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_buf_len</b></td></tr>
+<tr class="separator:aef05f216c5702108869cd0296173b544"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24a670301c56706b5300cbece36b1d05" id="r_a24a670301c56706b5300cbece36b1d05"><td class="memItemLeft" align="right" valign="top"><a id="a24a670301c56706b5300cbece36b1d05" name="a24a670301c56706b5300cbece36b1d05"></a>
+volatile uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>_receive_len</b> {}</td></tr>
+<tr class="separator:a24a670301c56706b5300cbece36b1d05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af47011cc1c6dc9466262a7f0254fa2e7" id="r_af47011cc1c6dc9466262a7f0254fa2e7"><td class="memItemLeft" align="right" valign="top"><a id="af47011cc1c6dc9466262a7f0254fa2e7" name="af47011cc1c6dc9466262a7f0254fa2e7"></a>
+uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_buf</b> {}</td></tr>
+<tr class="separator:af47011cc1c6dc9466262a7f0254fa2e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a285fc77aae7ebb4d74939de5256d64d1" id="r_a285fc77aae7ebb4d74939de5256d64d1"><td class="memItemLeft" align="right" valign="top"><a id="a285fc77aae7ebb4d74939de5256d64d1" name="a285fc77aae7ebb4d74939de5256d64d1"></a>
+<a class="el" href="structm5_1_1unit_1_1_g_p_i_o_impl_v2_1_1callback__struct__t.html">callback_struct_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_callback_data</b> {}</td></tr>
+<tr class="separator:a285fc77aae7ebb4d74939de5256d64d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a450a6e125dd88114196ce78d84bb4a5f" id="r_a450a6e125dd88114196ce78d84bb4a5f"><td class="memItemLeft" align="right" valign="top"><a id="a450a6e125dd88114196ce78d84bb4a5f" name="a450a6e125dd88114196ce78d84bb4a5f"></a>
+SemaphoreHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_sem</b> {}</td></tr>
+<tr class="separator:a450a6e125dd88114196ce78d84bb4a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a></td></tr>
+<tr class="memitem:ae6a9c2d4b4f15e1ebabc5d539d62958d inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ae6a9c2d4b4f15e1ebabc5d539d62958d"><td class="memItemLeft" align="right" valign="top">
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_pin</b> {(gpio_num_t)-1}</td></tr>
+<tr class="separator:ae6a9c2d4b4f15e1ebabc5d539d62958d inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9a45dd6eb0bed2811c4ef4bdf893f59 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ab9a45dd6eb0bed2811c4ef4bdf893f59"><td class="memItemLeft" align="right" valign="top">
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_tx_pin</b> {(gpio_num_t)-1}</td></tr>
+<tr class="separator:ab9a45dd6eb0bed2811c4ef4bdf893f59 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a789320f1c3a50a7b2d3bc5f2b8e1d0c1 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a789320f1c3a50a7b2d3bc5f2b8e1d0c1"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">gpio::adapter_config_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_adapter_cfg</b> {}</td></tr>
+<tr class="separator:a789320f1c3a50a7b2d3bc5f2b8e1d0c1 inherit pro_attribs_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
+Static Protected Attributes</h2></td></tr>
+<tr class="memitem:aee6b9afac07e3d22d161e349c8563ebb" id="r_aee6b9afac07e3d22d161e349c8563ebb"><td class="memItemLeft" align="right" valign="top"><a id="aee6b9afac07e3d22d161e349c8563ebb" name="aee6b9afac07e3d22d161e349c8563ebb"></a>
+static QueueHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_receive_queue</b> {}</td></tr>
+<tr class="separator:aee6b9afac07e3d22d161e349c8563ebb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2a1e2cc7cc8ea7ebaa29e58de81e254" id="r_ae2a1e2cc7cc8ea7ebaa29e58de81e254"><td class="memItemLeft" align="right" valign="top"><a id="ae2a1e2cc7cc8ea7ebaa29e58de81e254" name="ae2a1e2cc7cc8ea7ebaa29e58de81e254"></a>
+static TaskHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_receive_task_handle</b> {}</td></tr>
+<tr class="separator:ae2a1e2cc7cc8ea7ebaa29e58de81e254"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="abc8c26a86088943d759ce6395a1fa7ad" name="abc8c26a86088943d759ce6395a1fa7ad"></a>
@@ -240,12 +297,43 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pu
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
 <p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a>.</p>
+
+</div>
+</div>
+<a id="a23f221af72debd57f58c20d269f8c3dc" name="a23f221af72debd57f58c20d269f8c3dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23f221af72debd57f58c20d269f8c3dc">&#9670;&#160;</a></span>readWithTransaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">m5::hal::error::error_t m5::unit::GPIOImplV2::readWithTransaction </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t</td>          <td class="paramname"><span class="paramname"><em>len</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">m5::unit::Adapter::Impl</a>.</p>
 
 </div>
 </div>
@@ -276,7 +364,7 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pu
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

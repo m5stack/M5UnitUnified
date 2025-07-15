@@ -1,9 +1,12 @@
 var types_8hpp =
 [
     [ "m5::unit::gpio::adapter_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t" ],
-    [ "m5::unit::gpio::adapter_config_t::config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html", null ],
+    [ "m5::unit::gpio::adapter_config_t::config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t" ],
+    [ "m5::unit::gpio::adapter_config_t::tx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t" ],
+    [ "m5::unit::gpio::adapter_config_t::rx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t" ],
     [ "attr_t", "types_8hpp.html#a83f188a1b8eda604451b89d9714fe947", null ],
     [ "elapsed_time_t", "types_8hpp.html#a2186c1c440ded1cd15c39912d90e7a7a", null ],
+    [ "m5_rmt_item_t", "types_8hpp.html#a97ad5d260283d0223d5075d7e068beee", null ],
     [ "uid_t", "types_8hpp.html#aa318127d82066eef622818d81f339fb1", null ],
     [ "category_t", "types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3a", [
       [ "None", "types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3aa6adf97f83acf6453d4a6a4b1070f3754", null ],

@@ -16,7 +16,7 @@ var annotated_dup =
         [ "AdapterGPIOBase", "classm5_1_1unit_1_1_adapter_g_p_i_o_base.html", "classm5_1_1unit_1_1_adapter_g_p_i_o_base" ],
         [ "AdapterI2C", "classm5_1_1unit_1_1_adapter_i2_c.html", "classm5_1_1unit_1_1_adapter_i2_c" ],
         [ "Component", "classm5_1_1unit_1_1_component.html", "classm5_1_1unit_1_1_component" ],
-        [ "GPIOImplV2", "classm5_1_1unit_1_1_g_p_i_o_impl_v2.html", null ],
+        [ "GPIOImplV2", "classm5_1_1unit_1_1_g_p_i_o_impl_v2.html", "classm5_1_1unit_1_1_g_p_i_o_impl_v2" ],
         [ "PeriodicMeasurementAdapter", "classm5_1_1unit_1_1_periodic_measurement_adapter.html", "classm5_1_1unit_1_1_periodic_measurement_adapter" ],
         [ "UnitUnified", "classm5_1_1unit_1_1_unit_unified.html", "classm5_1_1unit_1_1_unit_unified" ]
       ] ]

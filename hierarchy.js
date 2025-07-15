@@ -7,9 +7,13 @@ var hierarchy =
       [ "m5::unit::AdapterI2C", "classm5_1_1unit_1_1_adapter_i2_c.html", null ]
     ] ],
     [ "m5::unit::gpio::adapter_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t.html", null ],
+    [ "m5::unit::GPIOImplV2::callback_struct_t", "structm5_1_1unit_1_1_g_p_i_o_impl_v2_1_1callback__struct__t.html", null ],
     [ "m5::unit::Component", "classm5_1_1unit_1_1_component.html", null ],
     [ "m5::unit::Component::component_config_t", "structm5_1_1unit_1_1_component_1_1component__config__t.html", null ],
-    [ "m5::unit::gpio::adapter_config_t::config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html", null ],
+    [ "m5::unit::gpio::adapter_config_t::config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html", [
+      [ "m5::unit::gpio::adapter_config_t::rx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html", null ],
+      [ "m5::unit::gpio::adapter_config_t::tx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html", null ]
+    ] ],
     [ "testing::Environment", null, [
       [ "m5::unit::googletest::GlobalFixture< FREQ, WNUM >", "classm5_1_1unit_1_1googletest_1_1_global_fixture.html", null ]
     ] ],

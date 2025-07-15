@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.5 git rev:23e84e7</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.6 git rev:f48ea06</span>
    </div>
   </td>
  </tr>
@@ -102,32 +102,48 @@ $(function(){initNavTree('structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1conf
   <div class="headertitle"><div class="title">m5::unit::gpio::adapter_config_t::config_t Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>common  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="types_8hpp_source.html">types.hpp</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for m5::unit::gpio::adapter_config_t::config_t:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.png" usemap="#m5::unit::gpio::adapter_5Fconfig_5Ft::config_5Ft_map" alt=""/>
+  <map id="m5::unit::gpio::adapter_5Fconfig_5Ft::config_5Ft_map" name="m5::unit::gpio::adapter_5Fconfig_5Ft::config_5Ft_map">
+<area href="structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html" title="For RX." alt="m5::unit::gpio::adapter_config_t::rx_config_t" shape="rect" coords="0,56,254,80"/>
+<area href="structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html" title="For TX." alt="m5::unit::gpio::adapter_config_t::tx_config_t" shape="rect" coords="264,56,518,80"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aec7d50f816afada37f9b5fc2fd500c7b" id="r_aec7d50f816afada37f9b5fc2fd500c7b"><td class="memItemLeft" align="right" valign="top"><a id="aec7d50f816afada37f9b5fc2fd500c7b" name="aec7d50f816afada37f9b5fc2fd500c7b"></a>
-gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_num</b> {}</td></tr>
-<tr class="separator:aec7d50f816afada37f9b5fc2fd500c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58db7938e10f69d7ef6afb885f321705" id="r_a58db7938e10f69d7ef6afb885f321705"><td class="memItemLeft" align="right" valign="top"><a id="a58db7938e10f69d7ef6afb885f321705" name="a58db7938e10f69d7ef6afb885f321705"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>tick_ns</b> {}</td></tr>
+<tr class="memdesc:a58db7938e10f69d7ef6afb885f321705"><td class="mdescLeft">&#160;</td><td class="mdescRight">RMT tick resolution (in nanoseconds) <br /></td></tr>
 <tr class="separator:a58db7938e10f69d7ef6afb885f321705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec7d50f816afada37f9b5fc2fd500c7b" id="r_aec7d50f816afada37f9b5fc2fd500c7b"><td class="memItemLeft" align="right" valign="top"><a id="aec7d50f816afada37f9b5fc2fd500c7b" name="aec7d50f816afada37f9b5fc2fd500c7b"></a>
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_num</b> {}</td></tr>
+<tr class="memdesc:aec7d50f816afada37f9b5fc2fd500c7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">GPIO pin number. <br /></td></tr>
+<tr class="separator:aec7d50f816afada37f9b5fc2fd500c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78b6221a6f26679bad55ff7cea1c9f32" id="r_a78b6221a6f26679bad55ff7cea1c9f32"><td class="memItemLeft" align="right" valign="top"><a id="a78b6221a6f26679bad55ff7cea1c9f32" name="a78b6221a6f26679bad55ff7cea1c9f32"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mem_blocks</b> {}</td></tr>
+<tr class="memdesc:a78b6221a6f26679bad55ff7cea1c9f32"><td class="mdescLeft">&#160;</td><td class="mdescRight">RMT memory block count (v1) or symbol blocks (v2) <br /></td></tr>
 <tr class="separator:a78b6221a6f26679bad55ff7cea1c9f32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a610f7abd7c9fe71fdb75284b1d6be163" id="r_a610f7abd7c9fe71fdb75284b1d6be163"><td class="memItemLeft" align="right" valign="top"><a id="a610f7abd7c9fe71fdb75284b1d6be163" name="a610f7abd7c9fe71fdb75284b1d6be163"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>idle_output</b> {}</td></tr>
-<tr class="separator:a610f7abd7c9fe71fdb75284b1d6be163"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a516211336c0d633232e33403e3b623c5" id="r_a516211336c0d633232e33403e3b623c5"><td class="memItemLeft" align="right" valign="top"><a id="a516211336c0d633232e33403e3b623c5" name="a516211336c0d633232e33403e3b623c5"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>idle_level_high</b> {}</td></tr>
-<tr class="separator:a516211336c0d633232e33403e3b623c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5e3f058a114240317fe1a575d93bf26" id="r_ac5e3f058a114240317fe1a575d93bf26"><td class="memItemLeft" align="right" valign="top"><a id="ac5e3f058a114240317fe1a575d93bf26" name="ac5e3f058a114240317fe1a575d93bf26"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>invert_signal</b> {}</td></tr>
+<tr class="memdesc:ac5e3f058a114240317fe1a575d93bf26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invert input/output logic level. <br /></td></tr>
+<tr class="separator:ac5e3f058a114240317fe1a575d93bf26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71eaa1394d6907b3846a7d0803164fee" id="r_a71eaa1394d6907b3846a7d0803164fee"><td class="memItemLeft" align="right" valign="top"><a id="a71eaa1394d6907b3846a7d0803164fee" name="a71eaa1394d6907b3846a7d0803164fee"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>with_dma</b> {}</td></tr>
+<tr class="memdesc:a71eaa1394d6907b3846a7d0803164fee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use DMA (v2 only) <br /></td></tr>
 <tr class="separator:a71eaa1394d6907b3846a7d0803164fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a146339b51c6f24f2596dcaf828af0e40" id="r_a146339b51c6f24f2596dcaf828af0e40"><td class="memItemLeft" align="right" valign="top"><a id="a146339b51c6f24f2596dcaf828af0e40" name="a146339b51c6f24f2596dcaf828af0e40"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>loop_enabled</b> {}</td></tr>
-<tr class="separator:a146339b51c6f24f2596dcaf828af0e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>common </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
