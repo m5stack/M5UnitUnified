@@ -20,6 +20,7 @@
 #include <memory>
 
 class TwoWire;
+class HardwareSerial;
 
 namespace m5 {
 namespace unit {
@@ -183,6 +184,7 @@ public:
     ///@{
     bool canAccessI2C() const;
     bool canAccessGPIO() const;
+    bool canAccessUART() const;
     ///@}
 
     ///@name Periodic measurement
@@ -223,6 +225,8 @@ public:
     virtual bool assign(TwoWire& wire);
     /*! @brief Assgin GPIO */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
+    /*! @brief Assgin UART */
+    virtual bool assign(HardwareSerial& serial);
     ///@}
 
     ///@note For daisy-chaining units such as hubs

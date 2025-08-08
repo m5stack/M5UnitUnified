@@ -14,7 +14,7 @@
         "m5stack/M5Utility": "*",
         "m5stack/M5HAL": "*"
     },
-    "version": "0.1.6",
+    "version": "0.2.0",
     "frameworks": [
         "arduino"
     ],

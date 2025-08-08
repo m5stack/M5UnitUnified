@@ -54,6 +54,11 @@ bool Component::canAccessGPIO() const
     return attribute() & attribute::AccessGPIO;
 }
 
+bool Component::canAccessUART() const
+{
+    return attribute() & attribute::AccessUART;
+}
+
 bool Component::add(Component& c, const int16_t ch)
 {
     if (childrenSize() >= _component_cfg.max_children) {
@@ -137,6 +142,14 @@ bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
         _adapter = std::make_shared<AdapterGPIO>(rx_pin, tx_pin);
+    }
+    return static_cast<bool>(_adapter);
+}
+
+bool Component::assign(HardwareSerial& serial)
+{
+    if (canAccessUART()) {
+        _adapter = std::make_shared<AdapterUART>(serial);
     }
     return static_cast<bool>(_adapter);
 }

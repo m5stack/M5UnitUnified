@@ -48,9 +48,7 @@ See also examples for each unit repositry too.
 
 ### UnitComponent with UnitUnified (Standard usage)
 
-Simple example of the UnitCO2  
-UnitCO2 is started with default settings in Units.begin(), and loop() print logs measurement data.
-
+#### Unit using Wire
 ```cpp
 // If you use other units, change include files(*1), instances(*2), and get values(*3)
 #include <M5Unified.h>
@@ -66,24 +64,115 @@ void setup() {
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
     auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
+    Wire.end();
     Wire.begin(pin_num_sda, pin_num_scl, 400 * 1000U);
 
-    M5.Display.clear(TFT_DARKGREEN);
     if (!Units.add(unit, Wire)  // Add unit to UnitUnified manager
         || !Units.begin()) {    // Begin each unit
         M5_LOGE("Failed to add/begin");
-        M5.Display.clear(TFT_RED);
     }
 }
 
 void loop() {
-    M5.begin();
+    M5.update();
     Units.update();
     if (unit.updated()) {
         // *3 Obtaining unit-specific measurements
-        M5_LOGI("CO2:%u Temp:%f Hum:%f", unit.co2(), unit.temperature(), unit.humidity());
+        M5.Log.printf("CO2:%u Temp:%f Hum:%f\n", unit.co2(), unit.temperature(), unit.humidity());
     }
 }
+```
+
+#### Unit using GPIO
+
+```cpp
+// If you use other units, change include files(*1), instances(*2), and get values(*3)
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedTUBE.h> // *1 Include the header of the unit to be used
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitTubePressure unit; // *2 Instance of the unit
+
+void setup()
+{
+    M5.begin();
+
+    // PortB if available, PortA if not
+    auto pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_b_in);
+    auto pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_b_out);
+    if (pin_num_gpio_in < 0 || pin_num_gpio_out < 0) {
+        M5_LOGW("PortB is not available");
+        Wire.end();
+        pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_a_pin1);
+        pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_a_pin2);
+    }
+
+    if (!Units.add(unit, pin_num_gpio_in, pin_num_gpio_out) // Add unit to UnitUnified manager
+        || !Units.begin()) { // Begin each unit
+        M5_LOGE("Failed to add/begin");
+    }
+}
+
+void loop()
+{
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 Obtaining unit-specific measurements
+        M5.Log.printf("Pressure:%.2f\n", unit.pressure());
+    }
+}
+```
+
+#### Unit using UART(Serial)
+
+```cpp
+// If you use other units, change include files(*1), instances(*2), and call any API(*3)
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedFINGER.h> // *1 Include the header of the unit to be used
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitFinger unit; // *2 Instance of the unit
+
+void setup()
+{
+    M5.begin();
+
+    // PortC if available, PortA if not
+    auto pin_num_in  = M5.getPin(m5::pin_name_t::port_c_rxd);
+    auto pin_num_out = M5.getPin(m5::pin_name_t::port_c_txd);
+    if (pin_num_in < 0 || pin_num_out < 0) {
+        M5_LOGW("PortC is not available");
+        Wire.end();
+        pin_num_in  = M5.getPin(m5::pin_name_t::port_a_pin1);
+        pin_num_out = M5.getPin(m5::pin_name_t::port_a_pin2);
+    }
+
+#if SOC_UART_NUM > 2
+    auto& s = Serial2;
+#elif SOC_UART_NUM > 1
+    auto& s = Serial1;
+#else
+#error "Not enough Serial"
+#endif
+    s.end();
+    // Note that the argument varies depending on the target unit
+    s.begin(19200, SERIAL_8N1, pin_num_in, pin_num_out);
+
+    if (!Units.add(unit, s) // Add unit to UnitUnified manager
+        || !Units.begin()) { // Begin each unit
+        M5_LOGE("Failed to begin");
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    // *3 Arbitrary API calls to the unit...
+}
+
 ```
 
 - Nonstandard usage
@@ -99,8 +188,7 @@ Support ESP-IDF with M5HAL in the future.
 ### Supported connection
 - I2C with TwoWire
 - GPIO (Currently only functions required for the units are included)
-
-Support UART in the future.
+- UART with HardwareSerial
 
 ### Supported devices, units
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)
