@@ -50,8 +50,8 @@ uint32_t test_periodic_measurement(U* unit, const uint32_t times, const uint32_t
         std::this_thread::yield();
     }
 
-    M5_LOGI("AVG:%u avgCnt:%u", avg, avgCnt);
-    
+    // M5_LOGI("AVG:%u avgCnt:%u", avg, avgCnt);
+
     if (!skip_after_test) {
         EXPECT_EQ(cnt, 0U);
         EXPECT_EQ(avgCnt, times - 1);
