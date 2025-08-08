@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.6 git rev:f48ea06</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.2.0 git rev:9e1ffe1</span>
    </div>
   </td>
  </tr>
@@ -233,7 +233,7 @@ $(function(){initNavTree('test__template_8hpp_source.html',''); initResizable(tr
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>            <span class="comment">// TODO Not yet</span></div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>        }</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>        <span class="comment">// Using TwoWire</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>        <span class="comment">// Using GPIO</span></div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>        <span class="keywordflow">return</span> Units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(*<a class="code hl_namespace" href="namespaceunit.html">unit</a>, pin_num_gpio_in, pin_num_gpio_out) &amp;&amp; Units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">begin</a>();</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>    }</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
@@ -246,13 +246,61 @@ $(function(){initNavTree('test__template_8hpp_source.html',''); initResizable(tr
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>};</div>
 </div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>}  <span class="comment">// namespace googletest</span></div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>}  <span class="comment">// namespace unit</span></div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>}  <span class="comment">// namespace m5</span></div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> U, <span class="keyword">typename</span> TP&gt;</div>
+<div class="foldopen" id="foldopen00180" data-start="{" data-end="};">
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html">  180</a></span><span class="keyword">class </span><a class="code hl_class" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html">UARTComponentTestBase</a> : <span class="keyword">public</span> ::testing::TestWithParam&lt;TP&gt; {</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <span class="keyword">static_assert</span>(std::is_base_of&lt;m5::unit::Component, U&gt;::value, <span class="stringliteral">&quot;U must be derived from Component&quot;</span>);</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span> </div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> SetUp()<span class="keyword"> override</span></div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="keyword">    </span>{</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>        <a class="code hl_namespace" href="namespaceunit.html">unit</a>.reset(<a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a575d24c6810d97c408c3fa94325f373d">get_instance</a>());</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>        <span class="keywordflow">if</span> (!<a class="code hl_namespace" href="namespaceunit.html">unit</a>) {</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>            FAIL() &lt;&lt; <span class="stringliteral">&quot;Failed to get_instance&quot;</span>;</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>            GTEST_SKIP();</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>            <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>        }</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>        ustr = m5::utility::formatString(<span class="stringliteral">&quot;%s:%s&quot;</span>, <a class="code hl_namespace" href="namespaceunit.html">unit</a>-&gt;deviceName(), <a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a38a2c001a767bc1425b452a1417c447d">is_using_hal</a>() ? <span class="stringliteral">&quot;HAL&quot;</span> : <span class="stringliteral">&quot;UART&quot;</span>);</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>        <span class="keywordflow">if</span> (!begin()) {</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>            FAIL() &lt;&lt; <span class="stringliteral">&quot;Failed to begin &quot;</span> &lt;&lt; ustr;</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>            GTEST_SKIP();</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>        }</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    }</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span> </div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> TearDown()<span class="keyword"> override</span></div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span><span class="keyword">    </span>{</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    }</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> begin()</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    {</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>        <span class="keywordflow">if</span> (<a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a38a2c001a767bc1425b452a1417c447d">is_using_hal</a>()) {</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>            <span class="comment">// Using M5HAL</span></div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>            <span class="comment">// TODO Not yet</span></div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>        }</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>        <span class="comment">// Using Serial</span></div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>        serial = <a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a5deced377d81b424bdcbe98b4365a6ef">init_serial</a>();</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>        <span class="keywordflow">return</span> serial &amp;&amp; Units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(*<a class="code hl_namespace" href="namespaceunit.html">unit</a>, *serial) &amp;&amp; Units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">begin</a>();</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    }</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a38a2c001a767bc1425b452a1417c447d">  216</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a38a2c001a767bc1425b452a1417c447d">is_using_hal</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a575d24c6810d97c408c3fa94325f373d">  218</a></span>    <span class="keyword">virtual</span> U* <a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a575d24c6810d97c408c3fa94325f373d">get_instance</a>() = 0;</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a5deced377d81b424bdcbe98b4365a6ef">  220</a></span>    <span class="keyword">virtual</span> HardwareSerial* <a class="code hl_function" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a5deced377d81b424bdcbe98b4365a6ef">init_serial</a>() = 0;</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span> </div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    std::string ustr{};</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>    std::unique_ptr&lt;U&gt; <a class="code hl_namespace" href="namespaceunit.html">unit</a>{};</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    <a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">m5::unit::UnitUnified</a> Units;</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    HardwareSerial* serial{};</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>};</div>
+</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>}  <span class="comment">// namespace googletest</span></div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>}  <span class="comment">// namespace unit</span></div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>}  <span class="comment">// namespace m5</span></div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="a_m5_unit_component_8hpp_html"><div class="ttname"><a href="_m5_unit_component_8hpp.html">M5UnitComponent.hpp</a></div><div class="ttdoc">Main header of M5UnitComponent.</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html">m5::unit::UnitUnified</a></div><div class="ttdoc">For managing and leading units.</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a61875daf39c247f73bae35d2c73d916e"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">m5::unit::UnitUnified::begin</a></div><div class="ttdeci">bool begin()</div><div class="ttdoc">Begin of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:105</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_a61875daf39c247f73bae35d2c73d916e"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#a61875daf39c247f73bae35d2c73d916e">m5::unit::UnitUnified::begin</a></div><div class="ttdeci">bool begin()</div><div class="ttdoc">Begin of all units under management.</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:124</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_afb723f54c355657542dd04f8e3491147"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">m5::unit::UnitUnified::add</a></div><div class="ttdeci">bool add(Component &amp;u, TwoWire &amp;wire)</div><div class="ttdoc">Adding unit to be managed (I2C)</div><div class="ttdef"><b>Definition</b> M5UnitUnified.cpp:41</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_component_test_base_html"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_component_test_base.html">m5::unit::googletest::ComponentTestBase</a></div><div class="ttdoc">UnitComponent Derived class for testing (I2C)</div><div class="ttdef"><b>Definition</b> test_template.hpp:63</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_component_test_base_html_a3526e0c563086056e29b384723ac2fa8"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_component_test_base.html#a3526e0c563086056e29b384723ac2fa8">m5::unit::googletest::ComponentTestBase::get_instance</a></div><div class="ttdeci">virtual U * get_instance()=0</div><div class="ttdoc">return m5::unit::Component-derived class instance (decision based on TP)</div></div>
@@ -261,6 +309,10 @@ $(function(){initNavTree('test__template_8hpp_source.html',''); initResizable(tr
 <div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base_html_a0b888f929ec2865fb0db76d901cf4028"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html#a0b888f929ec2865fb0db76d901cf4028">m5::unit::googletest::GPIOComponentTestBase::get_instance</a></div><div class="ttdeci">virtual U * get_instance()=0</div><div class="ttdoc">return m5::unit::Component-derived class instance (decision based on TP)</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base_html_ac1b4d5c5b31004e54956b5bdee8154d5"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html#ac1b4d5c5b31004e54956b5bdee8154d5">m5::unit::googletest::GPIOComponentTestBase::is_using_hal</a></div><div class="ttdeci">virtual bool is_using_hal() const =0</div><div class="ttdoc">Function returning true if M5HAL is used (decision based on TP)</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_global_fixture_html"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_global_fixture.html">m5::unit::googletest::GlobalFixture</a></div><div class="ttdoc">Overall test environment configuration.</div><div class="ttdef"><b>Definition</b> test_template.hpp:34</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base_html"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html">m5::unit::googletest::UARTComponentTestBase</a></div><div class="ttdoc">UnitComponent Derived class for testing (UART)</div><div class="ttdef"><b>Definition</b> test_template.hpp:180</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base_html_a38a2c001a767bc1425b452a1417c447d"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a38a2c001a767bc1425b452a1417c447d">m5::unit::googletest::UARTComponentTestBase::is_using_hal</a></div><div class="ttdeci">virtual bool is_using_hal() const =0</div><div class="ttdoc">Function returning true if M5HAL is used (decision based on TP)</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base_html_a575d24c6810d97c408c3fa94325f373d"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a575d24c6810d97c408c3fa94325f373d">m5::unit::googletest::UARTComponentTestBase::get_instance</a></div><div class="ttdeci">virtual U * get_instance()=0</div><div class="ttdoc">return m5::unit::Component-derived class instance (decision based on TP)</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base_html_a5deced377d81b424bdcbe98b4365a6ef"><div class="ttname"><a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#a5deced377d81b424bdcbe98b4365a6ef">m5::unit::googletest::UARTComponentTestBase::init_serial</a></div><div class="ttdeci">virtual HardwareSerial * init_serial()=0</div><div class="ttdoc">Initialize the serial to be used.</div></div>
 <div class="ttc" id="anamespacegoogletest_html"><div class="ttname"><a href="namespacegoogletest.html">googletest</a></div><div class="ttdoc">For GoogleTest.</div></div>
 <div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:18</div></div>
 <div class="ttc" id="anamespaceunit_html"><div class="ttname"><a href="namespaceunit.html">unit</a></div><div class="ttdoc">Unit-related namespace.</div></div>

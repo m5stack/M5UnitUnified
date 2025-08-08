@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.6 git rev:f48ea06</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.2.0 git rev:9e1ffe1</span>
    </div>
   </td>
  </tr>
@@ -156,6 +156,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>debugInfo</b> 
 <tr class="memitem:acc8dd860a59342229f5d5fb560bb71d5" id="r_acc8dd860a59342229f5d5fb560bb71d5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc8dd860a59342229f5d5fb560bb71d5">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, const int8_t rx_pin, const int8_t tx_pin)</td></tr>
 <tr class="memdesc:acc8dd860a59342229f5d5fb560bb71d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (GPIO)  <br /></td></tr>
 <tr class="separator:acc8dd860a59342229f5d5fb560bb71d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19bd11ab9e431c74b06392c9991281ef" id="r_a19bd11ab9e431c74b06392c9991281ef"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a19bd11ab9e431c74b06392c9991281ef">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, HardwareSerial &amp;wire)</td></tr>
+<tr class="memdesc:a19bd11ab9e431c74b06392c9991281ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (UART)  <br /></td></tr>
+<tr class="separator:a19bd11ab9e431c74b06392c9991281ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa7412b0a654e1274441c501cfc1d7aa" id="r_afa7412b0a654e1274441c501cfc1d7aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa7412b0a654e1274441c501cfc1d7aa">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::hal::bus::Bus *bus)</td></tr>
 <tr class="memdesc:afa7412b0a654e1274441c501cfc1d7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (M5HAL)  <br /></td></tr>
 <tr class="separator:afa7412b0a654e1274441c501cfc1d7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,7 +182,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 <div class="textblock"><p>For managing and leading units. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="acc8dd860a59342229f5d5fb560bb71d5" name="acc8dd860a59342229f5d5fb560bb71d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -215,8 +218,39 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 
 </div>
 </div>
+<a id="a19bd11ab9e431c74b06392c9991281ef" name="a19bd11ab9e431c74b06392c9991281ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19bd11ab9e431c74b06392c9991281ef">&#9670;&#160;</a></span>add() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::UnitUnified::add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">HardwareSerial &amp;</td>          <td class="paramname"><span class="paramname"><em>wire</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adding unit to be managed (UART) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
+    <tr><td class="paramname">serial</td><td>HardwareSerial to be used </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+
+</div>
+</div>
 <a id="afa7412b0a654e1274441c501cfc1d7aa" name="afa7412b0a654e1274441c501cfc1d7aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -247,7 +281,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="afb723f54c355657542dd04f8e3491147" name="afb723f54c355657542dd04f8e3491147"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[3/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">

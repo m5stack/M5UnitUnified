@@ -10,5 +10,7 @@ var searchData=
   ['adapter_5fgpio_5fv2_2ecpp_7',['adapter_gpio_v2.cpp',['../adapter__gpio__v2_8cpp.html',1,'']]],
   ['adapter_5fgpio_5fv2_2ehpp_8',['adapter_gpio_v2.hpp',['../adapter__gpio__v2_8hpp.html',1,'']]],
   ['adapter_5fi2c_2ecpp_9',['adapter_i2c.cpp',['../adapter__i2c_8cpp.html',1,'']]],
-  ['adapter_5fi2c_2ehpp_10',['adapter_i2c.hpp',['../adapter__i2c_8hpp.html',1,'']]]
+  ['adapter_5fi2c_2ehpp_10',['adapter_i2c.hpp',['../adapter__i2c_8hpp.html',1,'']]],
+  ['adapter_5fuart_2ecpp_11',['adapter_uart.cpp',['../adapter__uart_8cpp.html',1,'']]],
+  ['adapter_5fuart_2ehpp_12',['adapter_uart.hpp',['../adapter__uart_8hpp.html',1,'']]]
 ];
