@@ -156,7 +156,7 @@ protected:
             // TODO Not yet
             return false;
         }
-        // Using TwoWire
+        // Using GPIO
         return Units.add(*unit, pin_num_gpio_in, pin_num_gpio_out) && Units.begin();
     }
 
@@ -168,6 +168,61 @@ protected:
     std::string ustr{};
     std::unique_ptr<U> unit{};
     m5::unit::UnitUnified Units;
+};
+
+/*!
+  @class UARTComponentTestBase
+  @brief UnitComponent Derived class for testing (UART)
+  @tparam U m5::unit::Component-derived classes to be tested
+  @tparam TP parameter type for testing. see also INSTANTIATE_TEST_SUITE_P
+ */
+template <typename U, typename TP>
+class UARTComponentTestBase : public ::testing::TestWithParam<TP> {
+    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
+
+protected:
+    virtual void SetUp() override
+    {
+        unit.reset(get_instance());
+        if (!unit) {
+            FAIL() << "Failed to get_instance";
+            GTEST_SKIP();
+            return;
+        }
+        ustr = m5::utility::formatString("%s:%s", unit->deviceName(), is_using_hal() ? "HAL" : "UART");
+        if (!begin()) {
+            FAIL() << "Failed to begin " << ustr;
+            GTEST_SKIP();
+        }
+    }
+
+    virtual void TearDown() override
+    {
+    }
+
+    virtual bool begin()
+    {
+        if (is_using_hal()) {
+            // Using M5HAL
+            // TODO Not yet
+            return false;
+        }
+        // Using Serial
+        serial = init_serial();
+        return serial && Units.add(*unit, *serial) && Units.begin();
+    }
+
+    //!@brief Function returning true if M5HAL is used (decision based on TP)
+    virtual bool is_using_hal() const = 0;
+    //! @brief return m5::unit::Component-derived class instance (decision based on TP)
+    virtual U* get_instance() = 0;
+    //!@brief Initialize the serial to be used
+    virtual HardwareSerial* init_serial() = 0;
+
+    std::string ustr{};
+    std::unique_ptr<U> unit{};
+    m5::unit::UnitUnified Units;
+    HardwareSerial* serial{};
 };
 
 }  // namespace googletest

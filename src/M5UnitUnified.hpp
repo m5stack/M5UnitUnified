@@ -26,6 +26,7 @@
 #include <string>
 
 class TwoWire;
+class HardwareSerial;
 
 /*!
   @namespace m5
@@ -80,6 +81,13 @@ public:
       @return True if successful
      */
     bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
+    /*!
+      @brief Adding unit to be managed (UART)
+      @param u Unit Component
+      @param serial HardwareSerial to be used
+      @return True if successful
+    */
+    bool add(Component& u, HardwareSerial& wire);
     /*!
       @brief Adding unit to be managed (M5HAL)
       @param u Unit Component

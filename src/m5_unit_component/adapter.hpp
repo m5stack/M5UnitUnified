@@ -10,6 +10,7 @@
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_HPP
+
 #include "adapter_base.hpp"
 #include "adapter_i2c.hpp"
 #include "identify_functions.hpp"
@@ -18,4 +19,6 @@
 #else
 #include "adapter_gpio_v1.hpp"
 #endif
+#include "adapter_uart.hpp"
+
 #endif

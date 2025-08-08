@@ -8,13 +8,15 @@
   @brief Adapter for I2C to treat M5HAL and TwoWire in the same way
   @note  Currently handles TwoWire directly, but will handle via M5HAL in the future
 */
-#include "adapter.hpp"
-#include <cassert>
+#include "adapter_i2c.hpp"
+#if defined(ARDUINO)
 #include <Wire.h>
+#endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
 #include <soc/gpio_struct.h>
 #include <soc/gpio_sig_map.h>
+#include <cassert>
 
 #if defined(ARDUINO)
 

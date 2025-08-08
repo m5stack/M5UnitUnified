@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_gpio_v1.cpp
-  @brief Adapters to treat M5HAL and GPIO in the same way using RNT v1
+  @brief Adapters to treat M5HAL and GPIO in the same way using RMT v1
   @note  Currently handles GPIO directly, but will handle via M5HAL in the future
 */
 #include "adapter_gpio_v1.hpp"
