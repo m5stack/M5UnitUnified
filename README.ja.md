@@ -44,9 +44,11 @@ lib_deps=m5stack/M5Unit-foo ;使用したいユニットのライブラリ
 
 ## 使い方
 
-各ユニットのレポジトリの例も参照のこと。
+各ユニットのリポジトリの例も参照のこと。
 
 ### Unit コンポーネントを UnitUnified とともに使用する (標準的な使用法)
+
+#### Wire 使用のユニット
 
 ```cpp
 // 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、値の取得 (*3) を変更する
@@ -74,13 +76,105 @@ void setup() {
 }
 
 void loop() {
-    M5.begin();
+    M5.update();
     Units.update();
     if (unit.updated()) {
         // *3 ユニット固有の計測値の取得
-        M5_LOGI("CO2:%u Temp:%f Hum:%f", unit.co2(), unit.temperature(), unit.humidity());
+        M5.Log.printf("CO2:%u Temp:%f Hum:%f\n", unit.co2(), unit.temperature(), unit.humidity());
     }
 }
+```
+
+#### GPIO 使用のユニット
+
+```cpp
+// 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、値の取得 (*3) を変更する
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedTUBE.h> // *1 使用するユニットのヘッダ
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitTubePressure unit; // *2 使用するユニットのインスタンス
+
+void setup()
+{
+    M5.begin();
+
+    // PortB if available, PortA if not
+    auto pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_b_in);
+    auto pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_b_out);
+    if (pin_num_gpio_in < 0 || pin_num_gpio_out < 0) {
+        M5_LOGW("PortB is not available");
+        Wire.end();
+        pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_a_pin1);
+        pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_a_pin2);
+    }
+
+    if (!Units.add(unit, pin_num_gpio_in, pin_num_gpio_out) // Add unit to UnitUnified manager
+        || !Units.begin()) { // Begin each unit
+        M5_LOGE("Failed to add/begin");
+    }
+}
+
+void loop()
+{
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 ユニット固有の計測値の取得
+        M5.Log.printf("Pressure:%.2f\n", unit.pressure());
+    }
+}
+```
+
+#### UART(Serial) 使用のユニット
+
+```cpp
+// 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、API呼び出し (*3) を変更する
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedFINGER.h> // *1 使用するユニットのヘッダ
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitFinger unit; // *2 使用するユニットのインスタンス
+
+void setup()
+{
+    M5.begin();
+
+    // PortC if available, PortA if not
+    auto pin_num_in  = M5.getPin(m5::pin_name_t::port_c_rxd);
+    auto pin_num_out = M5.getPin(m5::pin_name_t::port_c_txd);
+    if (pin_num_in < 0 || pin_num_out < 0) {
+        M5_LOGW("PortC is not available");
+        Wire.end();
+        pin_num_in  = M5.getPin(m5::pin_name_t::port_a_pin1);
+        pin_num_out = M5.getPin(m5::pin_name_t::port_a_pin2);
+    }
+
+#if SOC_UART_NUM > 2
+    auto& s = Serial2;
+#elif SOC_UART_NUM > 1
+    auto& s = Serial1;
+#else
+#error "Not enough Serial"
+#endif
+    s.end();
+    // 備考: ユニットによって初期化パラメータは異なる
+    s.begin(19200, SERIAL_8N1, pin_num_in, pin_num_out);
+
+    if (!Units.add(unit, s) // Add unit to UnitUnified manager
+        || !Units.begin()) { // Begin each unit
+        M5_LOGE("Failed to begin");
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    // *3 任意の API 呼び出し...
+}
+
 ```
 
 - 標準外の使い方
