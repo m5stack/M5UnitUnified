@@ -40,7 +40,7 @@ public:
         {
         }
 
-        // I2C R/W
+        // R/W
         virtual m5::hal::error::error_t readWithTransaction(uint8_t*, const size_t)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -63,7 +63,7 @@ public:
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        // GPIO R/W
+        // GPIO
         virtual m5::hal::error::error_t pinModeRX(const gpio::Mode)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -145,6 +145,14 @@ public:
         return new Adapter();
     }
 
+    //
+    inline virtual void beginTransaction()
+    {
+    }
+    inline virtual void endTransaction()
+    {
+    }
+
     // I2C R/W
     inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len)
     {
@@ -170,7 +178,7 @@ public:
         return _impl->generalCall(data, len);
     }
 
-    // GPIO R/W
+    // GPIO
     inline m5::hal::error::error_t pinModeRX(const gpio::Mode m)
     {
         return _impl->pinModeRX(m);
@@ -226,6 +234,18 @@ private:
 
 protected:
     std::unique_ptr<Impl> _impl{};
+};
+
+struct transaction_guard {
+    explicit transaction_guard(Adapter* ad) : _ad{ad}
+    {
+        _ad->beginTransaction();
+    }
+    ~transaction_guard()
+    {
+        _ad->endTransaction();
+    }
+    Adapter* _ad{};
 };
 
 }  // namespace unit

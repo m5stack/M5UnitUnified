@@ -20,5 +20,6 @@
 #include "adapter_gpio_v1.hpp"
 #endif
 #include "adapter_uart.hpp"
+#include "adapter_spi.hpp"
 
 #endif

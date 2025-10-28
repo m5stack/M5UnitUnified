@@ -21,6 +21,8 @@
 
 class TwoWire;
 class HardwareSerial;
+class SPIClass;
+struct SPISettings;
 
 namespace m5 {
 namespace unit {
@@ -185,6 +187,7 @@ public:
     bool canAccessI2C() const;
     bool canAccessGPIO() const;
     bool canAccessUART() const;
+    bool canAccessSPI() const;
     ///@}
 
     ///@name Periodic measurement
@@ -227,6 +230,8 @@ public:
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
     /*! @brief Assgin UART */
     virtual bool assign(HardwareSerial& serial);
+    /*! @brief Assgin SPI */
+    virtual bool assign(SPIClass& spi, const SPISettings& settings);
     ///@}
 
     ///@note For daisy-chaining units such as hubs
@@ -256,13 +261,6 @@ public:
     {
         return _parent;
     }
-#if 0
-    //! @brief Gets the parent unit
-    inline const Component* parent() const
-    {
-        return _parent;
-    }
-#endif
     //! @brief Gets the device connected to the specified channel
     Component* child(const uint8_t chhanle) const;
     //! @brief Connect the unit to the specified channel
@@ -342,6 +340,8 @@ public:
 
     //! @brief Output information for debug
     virtual std::string debugInfo() const;
+
+    ////// TODO : Split interface (I2C, GPIO, UART, SPI)
 
     // I2C R/W
     ///@cond 0

@@ -95,6 +95,25 @@ bool UnitUnified::add(Component& u, HardwareSerial& serial)
     return false;
 }
 
+bool UnitUnified::add(Component& u, SPIClass& spi, const SPISettings& settings)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(spi, settings)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+
 // Add children if exists
 bool UnitUnified::add_children(Component& u)
 {
