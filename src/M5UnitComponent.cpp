@@ -64,12 +64,18 @@ bool Component::canAccessSPI() const
     return attribute() & attribute::AccessSPI;
 }
 
-bool Component::add(Component& c, const int16_t ch)
+bool Component::add(Component& c, const int16_t ch16)
 {
     if (childrenSize() >= _component_cfg.max_children) {
         M5_LIB_LOGE("Can't connect any more");
         return false;
     }
+    if (ch16 < 0 || ch16 > 255) {
+        M5_LIB_LOGE("Invalid channel %d", ch16);
+        return false;
+    }
+
+    const uint8_t ch = static_cast<uint8_t>(ch16);
     if (existsChild(ch)) {
         M5_LIB_LOGE("Already connected an other unit at channel:%u", ch);
         return false;
