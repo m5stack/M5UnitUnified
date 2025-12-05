@@ -1,13 +1,9 @@
-
-# M5UnitUnified(α リリース)
+# M5UnitUnified
 
 [English](README.md)
 
 **M5Stack に色々な M5 ユニットをつないで扱う為の新たなアプローチ**  
 M5Stack シリーズ、 M5Unitシリーズの為のライブラリです。
-
-**注意: 現在αバージョンです**  
-ご意見ご要望などは Issue または PR にてお願いします。
 
 ## 概要
 M5UnitUnified は、様々な M5 ユニット製品を統一的に扱うためのライブラリです。
@@ -25,9 +21,8 @@ M5UnitUnified は、様々な M5 ユニット製品を統一的に扱うため�
 各ユニットの外部ライブラリのライセンスは様々な物が混在しています。  
 すべてのM5UnitUnifiedおよび関連ライブラリは、[MITライセンス](LICENSE)下にあります。
 
-
 ## インストール方法
-アルファ版ですが Arduino/PlatformIO のライブラリマネージャーに登録されています
+Arduino/PlatformIO のライブラリマネージャーに登録されています
 
 ### ArduinoIDE
 1. ライブリマネージャから使用したいユニットのライブラリ (M5Unit-Foo) を選択してください
@@ -177,6 +172,48 @@ void loop() {
 
 ```
 
+#### SPI 使用のユニット
+
+```cpp
+// 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、API呼び出し (*3) を変更する
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedFoo.h> // *1 Include the header of the unit to be used
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitFoo unit; // *2 使用するユニットのインスタンス
+
+void setup()
+{
+    M5.begin();
+
+    if (!SPI.bus()) {
+        auto spi_sclk = M5.getPin(m5::pin_name_t::sd_spi_sclk);
+        auto spi_mosi = M5.getPin(m5::pin_name_t::sd_spi_mosi);
+        auto spi_miso = M5.getPin(m5::pin_name_t::sd_spi_miso);
+        M5_LOGI("getPin: %d,%d,%d", spi_sclk, spi_mosi, spi_miso);
+        SPI.begin(spi_sclk, spi_miso, spi_mosi);
+    }
+
+    // 備考: ユニットによって初期化パラメータは異なる
+    SPISettings settings = {10000000, MSBFIRST, SPI_MODE1};
+    if (!Units.add(cap, SPI, settings) || !Units.begin()) {
+        M5_LOGE("Failed to begin");
+        lcd.fillScreen(TFT_RED);
+        while (true) {
+            m5::utility::delay(10000);
+        }
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    // *3 任意の API 呼び出し...
+}
+```
+
+
 - 標準外の使い方
   - [自分でユニットの更新を行う例](examples/Basic/SelfUpdate)
   - [UnitUnified マネージャを使用せず、コンポーネントのみでの例](examples/Basic/ComponentOnly)
@@ -189,10 +226,10 @@ void loop() {
 ESP-IDF は将来対応予定です。
 
 ### サポートされる通信
-- TwoWire による I2C 通信
+- Wire TwoWire class による
 - GPIO (現在は各ユニットに必要な機能のみ搭載）
-
-UART は将来対応予定です。
+- UART HardwareSerial class による
+- SPI SPI class による
 
 ### サポートされるデバイス,ユニット
 [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)を参照
@@ -215,7 +252,7 @@ docs/html の下に出力されます。
 Git コミットのハッシュを html に出力したい場合は、 git クローンしたフォルダに対して実行してください。
 
 ### 必要な物
-- [Doxyegn](https://www.doxygen.nl/)
+- [Doxygen](https://www.doxygen.nl/)
 - [pcregrep](https://formulae.brew.sh/formula/pcre2)
 - [Git](https://git-scm.com/)
 
