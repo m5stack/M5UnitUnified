@@ -59,12 +59,23 @@ bool Component::canAccessUART() const
     return attribute() & attribute::AccessUART;
 }
 
-bool Component::add(Component& c, const int16_t ch)
+bool Component::canAccessSPI() const
+{
+    return attribute() & attribute::AccessSPI;
+}
+
+bool Component::add(Component& c, const int16_t ch16)
 {
     if (childrenSize() >= _component_cfg.max_children) {
         M5_LIB_LOGE("Can't connect any more");
         return false;
     }
+    if (ch16 < 0 || ch16 > 255) {
+        M5_LIB_LOGE("Invalid channel %d", ch16);
+        return false;
+    }
+
+    const uint8_t ch = static_cast<uint8_t>(ch16);
     if (existsChild(ch)) {
         M5_LIB_LOGE("Already connected an other unit at channel:%u", ch);
         return false;
@@ -134,24 +145,36 @@ bool Component::assign(TwoWire& wire)
 {
     if (canAccessI2C() && _addr) {
         _adapter = std::make_shared<AdapterI2C>(wire, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
     }
-    return static_cast<bool>(_adapter);
+    return false;
 }
 
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
         _adapter = std::make_shared<AdapterGPIO>(rx_pin, tx_pin);
+        return static_cast<bool>(_adapter);
     }
-    return static_cast<bool>(_adapter);
+    return false;
 }
 
 bool Component::assign(HardwareSerial& serial)
 {
     if (canAccessUART()) {
         _adapter = std::make_shared<AdapterUART>(serial);
+        return static_cast<bool>(_adapter);
     }
-    return static_cast<bool>(_adapter);
+    return false;
+}
+
+bool Component::assign(SPIClass& spi, const SPISettings& settings)
+{
+    if (canAccessSPI()) {
+        _adapter = std::make_shared<AdapterSPI>(spi, settings, address() /* CS */);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
 }
 
 bool Component::selectChannel(const uint8_t ch)

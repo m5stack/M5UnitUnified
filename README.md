@@ -5,9 +5,6 @@
 **A new approach to connect and handle various M5 units in the M5Stack**  
 Library for M5Stack Series and M5Unit Series
 
-**Notice: Now α version**  
-Please send your comments and requests to Issue or PR.
-
 ## Overview
 M5UnitUnified is a library for unified handling of various M5 units products.
 
@@ -26,7 +23,7 @@ All M5UnitUnified and related libraries are under the [MIT license](LICENSE).
 
 
 ## How to install
-Alpha version, but registered in the Library Manager
+The library is registered with the library manager.
 
 ### Arduino IDE
 
@@ -175,6 +172,47 @@ void loop() {
 
 ```
 
+#### Unit using SPI
+
+```cpp
+// If you use other units, change include files(*1), instances(*2), and call any API(*3)
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedFoo.h> // *1 Include the header of the unit to be used
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitFoo unit; // *2 Instance of the unit
+
+void setup()
+{
+    M5.begin();
+
+    if (!SPI.bus()) {
+        auto spi_sclk = M5.getPin(m5::pin_name_t::sd_spi_sclk);
+        auto spi_mosi = M5.getPin(m5::pin_name_t::sd_spi_mosi);
+        auto spi_miso = M5.getPin(m5::pin_name_t::sd_spi_miso);
+        M5_LOGI("getPin: %d,%d,%d", spi_sclk, spi_mosi, spi_miso);
+        SPI.begin(spi_sclk, spi_miso, spi_mosi);
+    }
+
+    // Note that the depending on the target unit
+    SPISettings settings = {10000000, MSBFIRST, SPI_MODE1};
+    if (!Units.add(cap, SPI, settings) || !Units.begin()) {
+        M5_LOGE("Failed to begin");
+        lcd.fillScreen(TFT_RED);
+        while (true) {
+            m5::utility::delay(10000);
+        }
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    // *3 Arbitrary API calls to the unit...
+}
+```
+
 - Nonstandard usage
   - [To update the unit yourself usage example](examples/Basic/SelfUpdate)
   - [Using only unit component without UnitUnified manager](examples/Basic/ComponentOnly)
@@ -186,9 +224,10 @@ void loop() {
 Support ESP-IDF with M5HAL in the future.
 
 ### Supported connection
-- I2C with TwoWire
+- I2C with TwoWire class
 - GPIO (Currently only functions required for the units are included)
-- UART with HardwareSerial
+- UART with HardwareSerial class
+- SPI with SPI class
 
 ### Supported devices, units
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)

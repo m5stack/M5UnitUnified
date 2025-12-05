@@ -47,6 +47,7 @@ namespace attribute {
 constexpr attr_t AccessI2C  = 0x00000001;  //!< I2C Accessible Unit
 constexpr attr_t AccessGPIO = 0x00000002;  //!< GPIO Accessible Unit
 constexpr attr_t AccessUART = 0x00000004;  //!< UART Accessible Unit
+constexpr attr_t AccessSPI  = 0x00000008;  //!< SPI Accessible Unit
 ///@}
 }  // namespace attribute
 

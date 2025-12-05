@@ -27,6 +27,8 @@
 
 class TwoWire;
 class HardwareSerial;
+class SPIClass;
+struct SPISettings;
 
 /*!
   @namespace m5
@@ -87,7 +89,14 @@ public:
       @param serial HardwareSerial to be used
       @return True if successful
     */
-    bool add(Component& u, HardwareSerial& wire);
+    bool add(Component& u, HardwareSerial& serial);
+    /*!
+      @brief Adding unit to be managed (SPI)
+      @param u Unit Component
+      @param spi SPI to be used
+      @return True if successful
+    */
+    bool add(Component& u, SPIClass& spi, const SPISettings& settings);
     /*!
       @brief Adding unit to be managed (M5HAL)
       @param u Unit Component
