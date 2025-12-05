@@ -1,4 +1,4 @@
-# M5UnitUnified(α release)
+# M5UnitUnified
 
 [日本語](README.ja.md)
 
