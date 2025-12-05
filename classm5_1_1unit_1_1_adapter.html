@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.2.0 git rev:9e1ffe1</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.0 git rev:6b3818b</span>
    </div>
   </td>
  </tr>
@@ -119,7 +119,8 @@ Inheritance diagram for m5::unit::Adapter:</div>
   <map id="m5::unit::Adapter_map" name="m5::unit::Adapter_map">
 <area href="classm5_1_1unit_1_1_adapter_g_p_i_o_base.html" alt="m5::unit::AdapterGPIOBase" shape="rect" coords="0,56,163,80"/>
 <area href="classm5_1_1unit_1_1_adapter_i2_c.html" title="I2C access adapter." alt="m5::unit::AdapterI2C" shape="rect" coords="173,56,336,80"/>
-<area href="classm5_1_1unit_1_1_adapter_u_a_r_t.html" title="UART access adapter." alt="m5::unit::AdapterUART" shape="rect" coords="346,56,509,80"/>
+<area href="classm5_1_1unit_1_1_adapter_s_p_i.html" title="SPI access adapter." alt="m5::unit::AdapterSPI" shape="rect" coords="346,56,509,80"/>
+<area href="classm5_1_1unit_1_1_adapter_u_a_r_t.html" title="UART access adapter." alt="m5::unit::AdapterUART" shape="rect" coords="519,56,682,80"/>
 <area href="classm5_1_1unit_1_1_adapter_g_p_i_o.html" title="GPIO access adapter." alt="m5::unit::AdapterGPIO" shape="rect" coords="0,112,163,136"/>
   </map>
 </div></div>
@@ -162,6 +163,12 @@ Type&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> () const</td
 <tr class="memitem:abd0e300cbe4b9aa7d9788d3015eae42c" id="r_abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memItemLeft" align="right" valign="top"><a id="abd0e300cbe4b9aa7d9788d3015eae42c" name="abd0e300cbe4b9aa7d9788d3015eae42c"></a>
 virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>duplicate</b> (const uint8_t)</td></tr>
 <tr class="separator:abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94a03e8015a2130db46325c3f7923787" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top"><a id="a94a03e8015a2130db46325c3f7923787" name="a94a03e8015a2130db46325c3f7923787"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beginTransaction</b> ()</td></tr>
+<tr class="separator:a94a03e8015a2130db46325c3f7923787"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b42754a6936551054435507443b2e5f" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top"><a id="a8b42754a6936551054435507443b2e5f" name="a8b42754a6936551054435507443b2e5f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>endTransaction</b> ()</td></tr>
+<tr class="separator:a8b42754a6936551054435507443b2e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa70c6328189e26683081aea2663d9438" id="r_aa70c6328189e26683081aea2663d9438"><td class="memItemLeft" align="right" valign="top"><a id="aa70c6328189e26683081aea2663d9438" name="aa70c6328189e26683081aea2663d9438"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *data, const size_t len)</td></tr>
 <tr class="separator:aa70c6328189e26683081aea2663d9438"><td class="memSeparator" colspan="2">&#160;</td></tr>
