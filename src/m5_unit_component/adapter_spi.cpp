@@ -30,6 +30,8 @@ void AdapterSPI::SPIClassImpl::beginTransaction()
         //                        M5_LIB_LOGE(">>>> SPI Transaction");
         _spi->beginTransaction(_settings);
         digitalWrite(cs_pin(), LOW);
+    } else {
+        M5_LIB_LOGE("Don't nest!");
     }
 }
 
@@ -39,6 +41,8 @@ void AdapterSPI::SPIClassImpl::endTransaction()
         //                   M5_LIB_LOGE("<<<< SPI Transaction");
         digitalWrite(cs_pin(), HIGH);
         _spi->endTransaction();
+    } else {
+        M5_LIB_LOGE("Don't nest!");
     }
 }
 
