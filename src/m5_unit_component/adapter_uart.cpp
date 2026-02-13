@@ -34,7 +34,7 @@ void AdapterUART::SerialImpl::flush()
 void AdapterUART::SerialImpl::flushRX()
 {
     while (_serial->available()) {
-        _serial->read();  // Discard
+        (void)_serial->read();  // Discard
     }
 }
 

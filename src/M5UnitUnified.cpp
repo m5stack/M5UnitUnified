@@ -114,28 +114,35 @@ bool UnitUnified::add(Component& u, SPIClass& spi, const SPISettings& settings)
     return false;
 }
 
-// Add children if exists
+// Add children if exists (iterative to avoid stack overflow)
 bool UnitUnified::add_children(Component& u)
 {
-    auto it = u.childBegin();
-    while (it != u.childEnd()) {
-        auto ch = it->channel();
+    std::vector<Component*> stack;
+    stack.reserve(8);
+    stack.push_back(&u);
 
-        M5_LIB_LOGV("%s child:%s channel:%u", u.deviceName(), it->deviceName(), ch);
-        if (it->isRegistered()) {
-            M5_LIB_LOGE("Already registered %s", it->deviceName());
-            return false;
-        }
-        it->_manager = this;
-        it->_adapter = u.ensure_adapter(ch);
-        M5_LIB_LOGD("  Shared:%u %u", u._adapter.use_count(), it->_adapter.use_count());
-        it->_order = ++_registerCount;
-        _units.emplace_back(&*it);
+    while (!stack.empty()) {
+        Component* parent = stack.back();
+        stack.pop_back();
 
-        if (!add_children(*it)) {
-            return false;
+        for (auto it = parent->childBegin(); it != parent->childEnd(); ++it) {
+            auto ch = it->channel();
+
+            M5_LIB_LOGV("%s child:%s channel:%u", parent->deviceName(), it->deviceName(), ch);
+            if (it->isRegistered()) {
+                M5_LIB_LOGE("Already registered %s", it->deviceName());
+                return false;
+            }
+            it->_manager = this;
+            it->_adapter = parent->ensure_adapter(ch);
+            M5_LIB_LOGD("  Shared:%u %u", parent->_adapter.use_count(), it->_adapter.use_count());
+            it->_order = ++_registerCount;
+            _units.emplace_back(&*it);
+
+            if (it->hasChildren()) {
+                stack.push_back(&*it);
+            }
         }
-        ++it;
     }
     return true;
 }
@@ -175,13 +182,33 @@ std::string UnitUnified::debugInfo() const
 
 std::string UnitUnified::make_unit_info(const Component* u, const uint8_t indent) const
 {
-    std::string s = m5::utility::formatString("%*c%s\n", indent * 4, ' ', u->debugInfo().c_str());
+    std::string s;
+    s.reserve(256);
 
-    if (u->hasChildren()) {
-        s += make_unit_info(u->_child, indent + 1);
+    struct StackEntry {
+        const Component* node;
+        uint8_t indent;
+    };
+    std::vector<StackEntry> stack;
+    stack.reserve(16);
+    stack.push_back({u, indent});
+
+    while (!stack.empty()) {
+        auto entry = stack.back();
+        stack.pop_back();
+
+        s += m5::utility::formatString("%*c%s\n", entry.indent * 4, ' ', entry.node->debugInfo().c_str());
+
+        // Push sibling first (processed later = output later)
+        if (entry.node->_next) {
+            stack.push_back({entry.node->_next, entry.indent});
+        }
+        // Push child second (processed first = output first)
+        if (entry.node->hasChildren()) {
+            stack.push_back({entry.node->_child, static_cast<uint8_t>(entry.indent + 1)});
+        }
     }
-    u = u->_next;
-    return u ? s += make_unit_info(u, indent) : s;
+    return s;
 }
 
 }  // namespace unit
