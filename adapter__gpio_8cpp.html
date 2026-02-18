@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.0 git rev:6b3818b</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.1 git rev:88768e6</span>
    </div>
   </td>
  </tr>
@@ -98,7 +98,8 @@ $(function(){initNavTree('adapter__gpio_8cpp.html',''); initResizable(true); });
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">adapter_gpio.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -107,6 +108,7 @@ $(function(){initNavTree('adapter__gpio_8cpp.html',''); initResizable(true); });
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="adapter__gpio_8hpp_source.html">adapter_gpio.hpp</a>&quot;</code><br />
 <code>#include &lt;driver/gpio.h&gt;</code><br />
+<code>#include &lt;esp_idf_version.h&gt;</code><br />
 <code>#include &lt;esp_adc/adc_oneshot.h&gt;</code><br />
 <code>#include &lt;esp_timer.h&gt;</code><br />
 </div><table class="memberdecls">
@@ -124,6 +126,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a57170955382e4d9e3e5c54b55cea2ec1" id="r_a57170955382e4d9e3e5c54b55cea2ec1"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57170955382e4d9e3e5c54b55cea2ec1">m5::unit::gpio::calculate_rmt_resolution_hz</a> (const uint32_t apb_freq_hz, const uint32_t tick_ns)</td></tr>
 <tr class="memdesc:a57170955382e4d9e3e5c54b55cea2ec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate resolution from desired tick time.  <br /></td></tr>
 <tr class="separator:a57170955382e4d9e3e5c54b55cea2ec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a4b7aa3b97bed94e82819d5f4ffefef78" id="r_a4b7aa3b97bed94e82819d5f4ffefef78"><td class="memItemLeft" align="right" valign="top"><a id="a4b7aa3b97bed94e82819d5f4ffefef78" name="a4b7aa3b97bed94e82819d5f4ffefef78"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>M5_ADC_ATTEN_DB</b> = ADC_ATTEN_DB_12</td></tr>
+<tr class="separator:a4b7aa3b97bed94e82819d5f4ffefef78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Adapters to treat M5HAL and RMT in the same way. </p>
