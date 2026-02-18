@@ -192,7 +192,7 @@ m5::hal::error::error_t AdapterI2C::BusImpl::readWithTransaction(uint8_t* data, 
         if (acc) {
             auto trans  = acc.value();
             auto result = trans->startRead().and_then([&trans, &data, &len]() {
-                return trans->read(data, len).and_then([&trans](size_t&&) { return trans->stop(); });
+                return trans->readLastNack(data, len).and_then([&trans](size_t&&) { return trans->stop(); });
             });
             // Clean-up must be called
             auto eresult = this->_bus->endAccess(std::move(trans));

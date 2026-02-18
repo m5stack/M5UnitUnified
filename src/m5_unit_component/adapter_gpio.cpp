@@ -10,6 +10,7 @@
 */
 #include "adapter_gpio.hpp"
 #include <driver/gpio.h>
+#include <esp_idf_version.h>
 
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #pragma message "Using RMT v2,Oneshot"
@@ -17,6 +18,16 @@
 #else
 #pragma message "Using RMT v1"
 #include <driver/adc.h>
+#endif
+
+// ADC_ATTEN_DB_12 was introduced in ESP-IDF v4.4.7 / v5.1.3
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 3) \
+ || (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 7) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0))
+#pragma message "Exists ADC_ATTEN_DB_12"
+constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_12;
+#else
+#pragma message "Not exists ADC_ATTEN_DB_12"
+constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_11;
 #endif
 
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
@@ -422,7 +433,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     }
 
     adc_oneshot_chan_cfg_t chan_config = {
-        .atten    = ADC_ATTEN_DB_12,      // 0~3.3V
+        .atten    = M5_ADC_ATTEN_DB,      // 0~3.3V
         .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
     };
 
@@ -454,7 +465,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     // ADC1
     adc1_channel_t channel = static_cast<adc1_channel_t>(ch);
     adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(channel, ADC_ATTEN_DB_12);
+    adc1_config_channel_atten(channel, M5_ADC_ATTEN_DB);
     value = static_cast<uint16_t>(adc1_get_raw(channel));
     return m5::hal::error::error_t::OK;
 #endif
