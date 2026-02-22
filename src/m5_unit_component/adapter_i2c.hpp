@@ -143,11 +143,27 @@ public:
         {
             return _bus;
         }
+        inline virtual int16_t scl() const override
+        {
+            return _scl;
+        }
+        inline virtual int16_t sda() const override
+        {
+            return _sda;
+        }
 
         inline virtual void setClock(const uint32_t clock) override
         {
             I2CImpl::setClock(clock);
             _access_cfg.freq = clock;
+        }
+        virtual bool begin() override
+        {
+            return true;
+        }
+        virtual bool end() override
+        {
+            return true;
         }
         virtual I2CImpl* duplicate(const uint8_t addr) override;
         virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
@@ -168,6 +184,7 @@ public:
     private:
         m5::hal::bus::Bus* _bus{};
         m5::hal::bus::I2CMasterAccessConfig _access_cfg{};
+        int16_t _sda{-1}, _scl{-1};
     };
 
 #if defined(ARDUINO)
