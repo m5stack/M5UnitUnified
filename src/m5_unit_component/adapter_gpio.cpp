@@ -21,13 +21,13 @@
 #endif
 
 // ADC_ATTEN_DB_12 was introduced in ESP-IDF v4.4.7 / v5.1.3
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 3) \
- || (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 7) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0))
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 3) || \
+    (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 7) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0))
 #pragma message "Exists ADC_ATTEN_DB_12"
 constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_12;
 #else
 #pragma message "Not exists ADC_ATTEN_DB_12"
-constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_11;
+constexpr auto M5_ADC_ATTEN_DB       = ADC_ATTEN_DB_11;
 #endif
 
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED

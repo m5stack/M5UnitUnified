@@ -31,7 +31,9 @@ int16_t search_pin_number(const int peripheral_sig)
              : -1;
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
     // P4
-#pragma message "ESP32P4 was not support"
+    no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
+             ? GPIO.func_in_sel_cfg[peripheral_sig].in_sel
+             : -1;
 #else
     // Others
     no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
@@ -51,9 +53,8 @@ int8_t idx_table[][2] = {
     {I2CEXT0_SDA_IN_IDX, I2CEXT0_SCL_IN_IDX},  // Same as Wire
 #endif
 #else
-    // ESP32-P4 Not support yet
-    {-1, -1},
-    {-1, -1},
+    {I2C0_SDA_PAD_IN_IDX, I2C0_SCL_PAD_IN_IDX},  // Wire
+    {I2C1_SDA_PAD_IN_IDX, I2C1_SCL_PAD_IN_IDX},  // Wire1
 #endif
 };
 }  // namespace
@@ -178,6 +179,12 @@ AdapterI2C::BusImpl::BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr, const u
 {
     _access_cfg.i2c_addr = addr;
     _access_cfg.freq     = clock;
+    if (_bus && _bus->getBusType() == m5::hal::types::bus_type_t::I2C) {
+        auto& cfg = static_cast<const m5::hal::bus::I2CBusConfig&>(_bus->getConfig());
+        _sda      = cfg.pin_sda ? cfg.pin_sda->getGpioNumber() : -1;
+        _scl      = cfg.pin_scl ? cfg.pin_scl->getGpioNumber() : -1;
+    }
+    M5_LIB_LOGI("I2C SDA:%d, SCL:%d", _sda, _scl);
 }
 
 AdapterI2C::I2CImpl* AdapterI2C::BusImpl::duplicate(const uint8_t addr)
