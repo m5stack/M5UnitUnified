@@ -27,7 +27,7 @@
 constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_12;
 #else
 #pragma message "Not exists ADC_ATTEN_DB_12"
-constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_11;
+constexpr auto M5_ADC_ATTEN_DB       = ADC_ATTEN_DB_11;
 #endif
 
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
