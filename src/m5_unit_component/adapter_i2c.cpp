@@ -17,6 +17,10 @@
 #include <soc/gpio_struct.h>
 #include <soc/gpio_sig_map.h>
 #include <cassert>
+#if __has_include(<utility/I2C_Class.hpp>)
+#include <utility/I2C_Class.hpp>
+#define M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS
+#endif
 
 #if defined(ARDUINO)
 
@@ -325,6 +329,193 @@ m5::hal::error::error_t AdapterI2C::BusImpl::write_with_transaction(const m5::ha
     return m5::hal::error::error_t::INVALID_ARGUMENT;
 }
 
+// Impl for I2C_Class
+#if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
+
+AdapterI2C::I2CClassImpl::I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
+    : AdapterI2C::I2CImpl(addr, clock), _i2c(&i2c)
+{
+    _sda = _i2c->getSDA();
+    _scl = _i2c->getSCL();
+    M5_LIB_LOGI("I2C_Class SDA:%d, SCL:%d", _sda, _scl);
+}
+
+bool AdapterI2C::I2CClassImpl::begin()
+{
+    return true;  // Already initialized by M5Unified
+}
+
+bool AdapterI2C::I2CClassImpl::end()
+{
+    return true;  // Managed by M5Unified
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::readWithTransaction(uint8_t* data, const size_t len)
+{
+    assert(_addr);
+    if (!data) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    bool started = _in_transaction ? _i2c->restart(_addr, true, _clock) : _i2c->start(_addr, true, _clock);
+    if (!started) {
+        _in_transaction = false;
+        return m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+    bool ok = _i2c->read(data, len, true);
+    _i2c->stop();
+    _in_transaction = false;
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint8_t* data, const size_t len,
+                                                                       const uint32_t stop)
+{
+    assert(_addr);
+    bool started = _in_transaction ? _i2c->restart(_addr, false, _clock) : _i2c->start(_addr, false, _clock);
+    if (!started) {
+        _in_transaction = false;
+        return m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+    bool ok = true;
+    if (data && len) {
+        ok = _i2c->write(data, len);
+    }
+    if (stop || !ok) {
+        _i2c->stop();
+        _in_transaction = false;
+    } else {
+        _in_transaction = true;
+    }
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint8_t reg, const uint8_t* data,
+                                                                       const size_t len, const uint32_t stop)
+{
+    assert(_addr);
+    bool started = _in_transaction ? _i2c->restart(_addr, false, _clock) : _i2c->start(_addr, false, _clock);
+    if (!started) {
+        _in_transaction = false;
+        return m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+    bool ok = _i2c->write(reg);
+    if (ok && data && len) {
+        ok = _i2c->write(data, len);
+    }
+    if (stop || !ok) {
+        _i2c->stop();
+        _in_transaction = false;
+    } else {
+        _in_transaction = true;
+    }
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint16_t reg, const uint8_t* data,
+                                                                       const size_t len, const uint32_t stop)
+{
+    assert(_addr);
+    m5::types::big_uint16_t r(reg);
+    bool started = _in_transaction ? _i2c->restart(_addr, false, _clock) : _i2c->start(_addr, false, _clock);
+    if (!started) {
+        _in_transaction = false;
+        return m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+    bool ok = _i2c->write(r.data(), r.size());
+    if (ok && data && len) {
+        ok = _i2c->write(data, len);
+    }
+    if (stop || !ok) {
+        _i2c->stop();
+        _in_transaction = false;
+    } else {
+        _in_transaction = true;
+    }
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+AdapterI2C::I2CImpl* AdapterI2C::I2CClassImpl::duplicate(const uint8_t addr)
+{
+    return new I2CClassImpl(*_i2c, addr, _clock);
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::generalCall(const uint8_t* data, const size_t len)
+{
+    bool ok = _i2c->start(0x00, false, _clock);
+    if (ok && data && len) {
+        ok = _i2c->write(data, len);
+    }
+    _i2c->stop();
+    _in_transaction = false;
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::wakeup()
+{
+    bool ok = _i2c->start(_addr, false, _clock);
+    _i2c->stop();
+    _in_transaction = false;
+    return ok ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+#else
+// Stub when I2C_Class is not available
+AdapterI2C::I2CClassImpl::I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
+    : AdapterI2C::I2CImpl(addr, clock)
+{
+    (void)i2c;
+    M5_LIB_LOGE("I2C_Class not available");
+}
+
+bool AdapterI2C::I2CClassImpl::begin()
+{
+    return false;
+}
+
+bool AdapterI2C::I2CClassImpl::end()
+{
+    return false;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::readWithTransaction(uint8_t*, const size_t)
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint8_t*, const size_t, const uint32_t)
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint8_t, const uint8_t*, const size_t,
+                                                                       const uint32_t)
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::writeWithTransaction(const uint16_t, const uint8_t*, const size_t,
+                                                                       const uint32_t)
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+AdapterI2C::I2CImpl* AdapterI2C::I2CClassImpl::duplicate(const uint8_t addr)
+{
+    return new I2CImpl(addr, _clock);
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::generalCall(const uint8_t*, const size_t)
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::I2CClassImpl::wakeup()
+{
+    return m5::hal::error::error_t::UNKNOWN_ERROR;
+}
+
+#endif
+
 // Adapter
 #if defined(ARDUINO)
 AdapterI2C::AdapterI2C(TwoWire& wire, const uint8_t addr, const uint32_t clock)
@@ -350,6 +541,24 @@ AdapterI2C::AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_
 {
     assert(_impl);
 }
+
+#if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
+AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
+    : Adapter(Adapter::Type::I2C, new AdapterI2C::I2CClassImpl(i2c, addr, clock))
+{
+    assert(_impl);
+}
+#else
+#pragma message "Not support I2C_Class"
+AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock) : Adapter()
+{
+    (void)i2c;
+    (void)addr;
+    (void)clock;
+    assert(_impl);
+    M5_LIB_LOGE("Not support I2C_Class");
+}
+#endif
 
 Adapter* AdapterI2C::duplicate(const uint8_t addr)
 {

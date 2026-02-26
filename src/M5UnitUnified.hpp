@@ -35,6 +35,7 @@ struct SPISettings;
   @brief Top level namespace of M5stack
  */
 namespace m5 {
+class I2C_Class;
 /*!
   @namespace unit
   @brief Unit-related namespace
@@ -104,6 +105,13 @@ public:
       @return True if successful
      */
     bool add(Component& u, m5::hal::bus::Bus* bus);
+    /*!
+      @brief Adding unit to be managed (I2C_Class)
+      @param u Unit Component
+      @param i2c I2C_Class to be used (e.g. M5.In_I2C)
+      @return True if successful
+     */
+    bool add(Component& u, m5::I2C_Class& i2c);
     ///@}
 
     //! @brief Begin of all units under management

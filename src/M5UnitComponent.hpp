@@ -25,6 +25,7 @@ class SPIClass;
 struct SPISettings;
 
 namespace m5 {
+class I2C_Class;
 namespace unit {
 
 class UnitUnified;
@@ -226,6 +227,8 @@ public:
     virtual bool assign(m5::hal::bus::Bus* bus);
     /*! @brief Assgin TwoWire */
     virtual bool assign(TwoWire& wire);
+    /*! @brief Assign I2C_Class */
+    virtual bool assign(m5::I2C_Class& i2c);
     /*! @brief Assgin GPIO */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
     /*! @brief Assgin UART */

@@ -16,6 +16,7 @@
 class TwoWire;
 
 namespace m5 {
+class I2C_Class;
 namespace unit {
 
 /*!
@@ -187,10 +188,41 @@ public:
         int16_t _sda{-1}, _scl{-1};
     };
 
+    class I2CClassImpl : public I2CImpl {
+    public:
+        I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
+        inline virtual int16_t scl() const override
+        {
+            return _scl;
+        }
+        inline virtual int16_t sda() const override
+        {
+            return _sda;
+        }
+        virtual bool begin() override;
+        virtual bool end() override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual I2CImpl* duplicate(const uint8_t addr) override;
+        virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t wakeup() override;
+
+    private:
+        m5::I2C_Class* _i2c{};
+        int16_t _sda{-1}, _scl{-1};
+        bool _in_transaction{false};
+    };
+
 #if defined(ARDUINO)
     AdapterI2C(TwoWire& wire, uint8_t addr, const uint32_t clock);
 #endif
     AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_t clock);
+    AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
     AdapterI2C(m5::hal::bus::Bus& bus, const uint8_t addr, const uint32_t clock) : AdapterI2C(&bus, addr, clock)
     {
     }

@@ -57,6 +57,25 @@ bool UnitUnified::add(Component& u, TwoWire& wire)
     return false;
 }
 
+bool UnitUnified::add(Component& u, m5::I2C_Class& i2c)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(i2c)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+
 bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
 {
     if (u.isRegistered()) {
