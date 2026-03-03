@@ -80,6 +80,75 @@ void loop() {
 }
 ```
 
+#### Unit using I2C_Class (M5Unified internal I2C)
+```cpp
+// Example: Reading the SHT30 sensor built into M5Paper via M5Unified's In_I2C
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedENV.h>  // *1 Include the header of the unit to be used
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitSHT30 unit;  // *2 Instance of the unit
+
+void setup() {
+    M5.begin();
+
+    // Use M5Unified's In_I2C (internal I2C bus)
+    // No manual pin/frequency configuration needed
+    if (!Units.add(unit, M5.In_I2C)  // Add unit using I2C_Class
+        || !Units.begin()) {
+        M5_LOGE("Failed to add/begin");
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 Obtaining unit-specific measurements
+        M5.Log.printf("Temp:%f Hum:%f\n", unit.temperature(), unit.humidity());
+    }
+}
+```
+
+#### Unit using M5HAL Bus (SoftwareI2C)
+```cpp
+// If you use other units, change include files(*1), instances(*2), and get values(*3)
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedENV.h>  // *1 Include the header of the unit to be used
+#include <M5HAL.hpp>
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitCO2 unit;  // *2 Instance of the unit
+
+void setup() {
+    M5.begin();
+
+    auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+    auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+
+    m5::hal::bus::I2CBusConfig i2c_cfg;
+    i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
+    i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
+    auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
+
+    if (!Units.add(unit, i2c_bus ? i2c_bus.value() : nullptr)  // Add unit using M5HAL Bus
+        || !Units.begin()) {
+        M5_LOGE("Failed to add/begin");
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 Obtaining unit-specific measurements
+        M5.Log.printf("CO2:%u Temp:%f Hum:%f\n", unit.co2(), unit.temperature(), unit.humidity());
+    }
+}
+```
+
 #### Unit using GPIO
 
 ```cpp
@@ -225,6 +294,8 @@ Support ESP-IDF with M5HAL in the future.
 
 ### Supported connection
 - I2C with TwoWire class
+- I2C with I2C_Class (M5Unified In_I2C/Ex_I2C)
+- I2C with M5HAL Bus (including SoftwareI2C)
 - GPIO (Currently only functions required for the units are included)
 - UART with HardwareSerial class
 - SPI with SPI class

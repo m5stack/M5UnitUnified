@@ -5,81 +5,120 @@
  */
 /*!
   @file test_helper.hpp
-  @brief Helper for testing UnitComponent
+  @brief Helper for testing UnitComponent periodic measurements
   @note Depends on GoogleTest
 */
 #ifndef M5_UNIT_COMPONENT_GOOGLETEST_HELPER_HPP
 #define M5_UNIT_COMPONENT_GOOGLETEST_HELPER_HPP
 
 #include <M5Utility.hpp>
-#include <thread>
-#include <cassert>
+#include <algorithm>
+#include <cstdint>
+#include <numeric>
+#include <vector>
 
 namespace m5 {
 namespace unit {
 namespace googletest {
 
+/*!
+  @struct PeriodicMeasurementResult
+  @brief Result of periodic measurement data collection with statistical analysis
+ */
+struct PeriodicMeasurementResult {
+    std::vector<uint32_t> intervals;  //!< All inter-update intervals (ms)
+    uint32_t update_count{};          //!< Number of successful updates
+    uint32_t expected_interval{};     //!< Expected interval from unit->interval()
+    bool timed_out{};                 //!< True if timeout before collecting all samples
+
+    //! @brief Average of intervals (ms)
+    uint32_t average() const
+    {
+        if (intervals.empty()) {
+            return 0;
+        }
+        uint64_t sum = std::accumulate(intervals.begin(), intervals.end(), uint64_t{0});
+        return static_cast<uint32_t>(sum / intervals.size());
+    }
+
+    //! @brief Median of intervals (ms), robust to outliers
+    uint32_t median() const
+    {
+        if (intervals.empty()) {
+            return 0;
+        }
+        auto sorted = intervals;
+        std::sort(sorted.begin(), sorted.end());
+        auto n = sorted.size();
+        return (n % 2) ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+    }
+
+    //! @brief Minimum interval (ms)
+    uint32_t min_interval() const
+    {
+        if (intervals.empty()) {
+            return 0;
+        }
+        return *std::min_element(intervals.begin(), intervals.end());
+    }
+
+    //! @brief Maximum interval (ms)
+    uint32_t max_interval() const
+    {
+        if (intervals.empty()) {
+            return 0;
+        }
+        return *std::max_element(intervals.begin(), intervals.end());
+    }
+};
+
+/*!
+  @brief Collect periodic measurement data from a unit
+  @tparam U m5::unit::Component-derived class
+  @param unit Unit instance to collect measurements from
+  @param times Number of update cycles to collect
+  @param timeout_duration Timeout in ms (0 = auto-calculate as interval * (times + 1))
+  @param callback Optional callback invoked after each successful update
+  @return PeriodicMeasurementResult containing collected intervals and statistics
+ */
 template <class U>
-uint32_t test_periodic_measurement(U* unit, const uint32_t times, const uint32_t tolerance,
-                                   const uint32_t timeout_duration, void (*callback)(U*), const bool skip_after_test)
+PeriodicMeasurementResult collect_periodic_measurements(U* unit, const uint32_t times = 8,
+                                                        const uint32_t timeout_duration = 0,
+                                                        void (*callback)(U*)            = nullptr)
 {
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
-    auto interval = unit->interval();
-    decltype(interval) avg{}, avgCnt{};
-    uint32_t cnt{times};
-    auto prev       = unit->updatedMillis();
-    auto timeout_at = m5::utility::millis() + timeout_duration;
-    while (cnt && m5::utility::millis() <= timeout_at) {
+    PeriodicMeasurementResult result;
+    result.expected_interval = unit->interval();
+    if (times > 1) {
+        result.intervals.reserve(times - 1);
+    }
+
+    auto actual_timeout = timeout_duration ? timeout_duration : result.expected_interval * (times + 1);
+    auto timeout_at     = m5::utility::millis() + actual_timeout;
+    uint32_t remaining  = times;
+    decltype(unit->updatedMillis()) prev{};
+    bool first_update = true;
+
+    while (remaining && m5::utility::millis() <= timeout_at) {
         unit->update();
         if (unit->updated()) {
-            --cnt;
+            ++result.update_count;
+            --remaining;
             auto um = unit->updatedMillis();
-            if (prev) {
-                auto duration = um - prev;
-                ++avgCnt;
-                avg += duration;
-                // M5_LOGI("dur:%ld", duration);
-                //  EXPECT_LE(duration, interval + 1);
+            if (!first_update) {
+                result.intervals.push_back(um - prev);
             }
-            prev = um;
+            first_update = false;
+            prev         = um;
             if (callback) {
                 callback(unit);
             }
         }
-        std::this_thread::yield();
     }
 
-    // M5_LOGI("AVG:%u avgCnt:%u", avg, avgCnt);
-
-    if (!skip_after_test) {
-        EXPECT_EQ(cnt, 0U);
-        EXPECT_EQ(avgCnt, times - 1);
-        if (avgCnt) {
-            avg /= avgCnt;
-            EXPECT_LE(avg, decltype(interval)(interval + tolerance));
-        }
-        return avg;
-    }
-    return 0U;
-}
-
-template <class U>
-uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, const uint32_t tolerance = 1,
-                                   void (*callback)(U*) = nullptr, const bool skip_after_test = false)
-{
-    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
-    auto timeout_duration = (unit->interval() * 2) * times;
-    return test_periodic_measurement(unit, times, tolerance, timeout_duration, callback, skip_after_test);
-}
-
-template <class U>
-uint32_t test_periodic_measurement(U* unit, const uint32_t times = 8, void (*callback)(U*) = nullptr,
-                                   const bool skip_after_test = false)
-{
-    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
-    auto timeout_duration = (unit->interval() * 2) * times;
-    return test_periodic_measurement(unit, times, 1, timeout_duration, callback, skip_after_test);
+    result.timed_out = (remaining > 0);
+    return result;
 }
 
 }  // namespace googletest

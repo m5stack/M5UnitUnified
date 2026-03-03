@@ -60,13 +60,81 @@ void setup() {
     auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
     auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
     M5_LOGI("getPin: SDA:%u SCL:%u", pin_num_sda, pin_num_scl);
+    Wire.end();
     Wire.begin(pin_num_sda, pin_num_scl, 400 * 1000U);
 
-    M5.Display.clear(TFT_DARKGREEN);
     if (!Units.add(unit, Wire)  // unit を UnitUnified マネージャへ追加
         || !Units.begin()) {    // ユニットの始動
         M5_LOGE("Failed to add/begin");
-        M5.Display.clear(TFT_RED);
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 ユニット固有の計測値の取得
+        M5.Log.printf("CO2:%u Temp:%f Hum:%f\n", unit.co2(), unit.temperature(), unit.humidity());
+    }
+}
+```
+
+#### I2C_Class (M5Unified 内部 I2C) 使用のユニット
+```cpp
+// M5Paper 内蔵 SHT30 センサを M5Unified の In_I2C 経由で読み取る例
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedENV.h>  // *1 使用するユニットのヘッダ
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitSHT30 unit;  // *2 使用するユニットのインスタンス
+
+void setup() {
+    M5.begin();
+
+    // M5Unified の In_I2C（内部 I2C バス）を使用
+    // ピンや周波数の手動設定は不要
+    if (!Units.add(unit, M5.In_I2C)  // I2C_Class を使用してユニットを追加
+        || !Units.begin()) {
+        M5_LOGE("Failed to add/begin");
+    }
+}
+
+void loop() {
+    M5.update();
+    Units.update();
+    if (unit.updated()) {
+        // *3 ユニット固有の計測値の取得
+        M5.Log.printf("Temp:%f Hum:%f\n", unit.temperature(), unit.humidity());
+    }
+}
+```
+
+#### M5HAL Bus (SoftwareI2C) 使用のユニット
+```cpp
+// 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、値の取得 (*3) を変更する
+#include <M5Unified.h>
+#include <M5UnitUnified.h>
+#include <M5UnitUnifiedENV.h>  // *1 使用するユニットのヘッダ
+#include <M5HAL.hpp>
+
+m5::unit::UnitUnified Units;
+m5::unit::UnitCO2 unit;  // *2 使用するユニットのインスタンス
+
+void setup() {
+    M5.begin();
+
+    auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+    auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+
+    m5::hal::bus::I2CBusConfig i2c_cfg;
+    i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
+    i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
+    auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
+
+    if (!Units.add(unit, i2c_bus ? i2c_bus.value() : nullptr)  // M5HAL Bus を使用してユニットを追加
+        || !Units.begin()) {
+        M5_LOGE("Failed to add/begin");
     }
 }
 
@@ -178,7 +246,7 @@ void loop() {
 // 他のユニットを使用する場合、インクルードファイル (*1)、インスタンス (*2)、API呼び出し (*3) を変更する
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
-#include <M5UnitUnifiedFoo.h> // *1 Include the header of the unit to be used
+#include <M5UnitUnifiedFoo.h> // *1 使用するユニットのヘッダ
 
 m5::unit::UnitUnified Units;
 m5::unit::UnitFoo unit; // *2 使用するユニットのインスタンス
@@ -226,7 +294,9 @@ void loop() {
 ESP-IDF は将来対応予定です。
 
 ### サポートされる通信
-- Wire TwoWire class による
+- I2C TwoWire class による
+- I2C I2C_Class (M5Unified In_I2C/Ex_I2C) による
+- I2C M5HAL Bus (SoftwareI2C を含む) による
 - GPIO (現在は各ユニットに必要な機能のみ搭載）
 - UART HardwareSerial class による
 - SPI SPI class による

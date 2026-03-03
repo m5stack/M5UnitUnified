@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_i2c.hpp
-  @brief Adapter for I2C to treat M5HAL and TwoWire in the same way
+  @brief Adapter for I2C to treat M5HAL, TwoWire, and I2C_Class in the same way
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_I2C_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_I2C_HPP
@@ -16,6 +16,7 @@
 class TwoWire;
 
 namespace m5 {
+class I2C_Class;
 namespace unit {
 
 /*!
@@ -24,6 +25,14 @@ namespace unit {
  */
 class AdapterI2C : public Adapter {
 public:
+    //! @brief I2C implementation type
+    enum class ImplType : uint8_t {
+        Unknown,   //!< Unknown
+        TwoWire,   //!< Arduino TwoWire
+        Bus,       //!< M5HAL Bus (including SoftwareI2C)
+        I2CClass,  //!< m5::I2C_Class (m5gfx::i2c)
+    };
+
     class I2CImpl : public Adapter::Impl {
     public:
         I2CImpl() = default;
@@ -82,6 +91,12 @@ public:
             return new I2CImpl(addr, _clock);
         }
 
+        //! @brief Gets the implementation type
+        virtual ImplType implType() const
+        {
+            return ImplType::Unknown;
+        }
+
         virtual TwoWire* getWire()
         {
             return nullptr;
@@ -101,6 +116,10 @@ public:
     class WireImpl : public I2CImpl {
     public:
         WireImpl(TwoWire& wire, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::TwoWire;
+        }
         inline virtual TwoWire* getWire() override
         {
             return _wire;
@@ -139,6 +158,10 @@ public:
     class BusImpl : public I2CImpl {
     public:
         BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::Bus;
+        }
         inline virtual m5::hal::bus::Bus* getBus() override
         {
             return _bus;
@@ -187,10 +210,45 @@ public:
         int16_t _sda{-1}, _scl{-1};
     };
 
+    class I2CClassImpl : public I2CImpl {
+    public:
+        I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::I2CClass;
+        }
+        inline virtual int16_t scl() const override
+        {
+            return _scl;
+        }
+        inline virtual int16_t sda() const override
+        {
+            return _sda;
+        }
+        virtual bool begin() override;
+        virtual bool end() override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual I2CImpl* duplicate(const uint8_t addr) override;
+        virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t wakeup() override;
+
+    private:
+        m5::I2C_Class* _i2c{};
+        int16_t _sda{-1}, _scl{-1};
+        bool _in_transaction{false};
+    };
+
 #if defined(ARDUINO)
     AdapterI2C(TwoWire& wire, uint8_t addr, const uint32_t clock);
 #endif
     AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_t clock);
+    AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
     AdapterI2C(m5::hal::bus::Bus& bus, const uint8_t addr, const uint32_t clock) : AdapterI2C(&bus, addr, clock)
     {
     }
@@ -221,6 +279,12 @@ public:
     inline void setClock(const uint32_t clock)
     {
         impl()->setClock(clock);
+    }
+
+    //! @brief Gets the I2C implementation type
+    inline ImplType implType() const
+    {
+        return impl()->implType();
     }
 
     inline int16_t scl() const

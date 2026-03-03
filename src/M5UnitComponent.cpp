@@ -150,6 +150,15 @@ bool Component::assign(TwoWire& wire)
     return false;
 }
 
+bool Component::assign(m5::I2C_Class& i2c)
+{
+    if (canAccessI2C() && _addr) {
+        _adapter = std::make_shared<AdapterI2C>(i2c, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
