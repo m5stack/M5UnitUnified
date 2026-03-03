@@ -14,7 +14,9 @@
 #include "../M5UnitComponent.hpp"
 #include <type_traits>
 #include <Wire.h>
+#include <SPI.h>
 #include <esp32-hal-i2c.h>
+#include <M5Unified.h>
 
 namespace m5 {
 namespace unit {
@@ -25,42 +27,16 @@ namespace unit {
 namespace googletest {
 
 /*!
-  @class GlobalFixture
-  @brief Overall test environment configuration
-  @tparam FREQ TwoWire operating frequency
-  @tparam WNUM TwoWire number to be used (0 as default)
- */
-template <uint32_t FREQ, uint32_t WNUM = 0>
-class GlobalFixture : public ::testing::Environment {
-    static_assert(WNUM < 2, "Wire number must be lesser than 2");
-
-public:
-    void SetUp() override
-    {
-        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-        TwoWire* w[1] = {&Wire};
-#else
-        TwoWire* w[2] = {&Wire, &Wire1};
-#endif
-        if (WNUM < m5::stl::size(w) && i2cIsInit(WNUM)) {
-            M5_LOGW("Already inititlized Wire %d. Terminate and restart FREQ %u", WNUM, FREQ);
-            w[WNUM]->end();
-        }
-        w[WNUM]->begin(pin_num_sda, pin_num_scl, FREQ);
-    }
-};
-
-/*!
-  @class ComponentTestBase
-  @brief UnitComponent Derived class for testing (I2C)
+  @class I2CComponentTestBase
+  @brief UnitComponent derived class for testing (I2C)
   @tparam U m5::unit::Component-derived classes to be tested
-  @tparam TP parameter type for testing. see also INSTANTIATE_TEST_SUITE_P
+  @details Provides board-aware begin() with 3-branch logic:
+  - NessoN1: SoftwareI2C via M5HAL (GROVE on port_b GPIO 5/4)
+  - NanoC6: M5.Ex_I2C (avoids Wire/Ex_I2C dual-driver conflict)
+  - Others: Wire (initialized internally via begin_with_wire())
  */
-template <typename U, typename TP>
-class ComponentTestBase : public ::testing::TestWithParam<TP> {
+template <typename U>
+class I2CComponentTestBase : public ::testing::Test {
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
 protected:
@@ -69,13 +45,11 @@ protected:
         unit.reset(get_instance());
         if (!unit) {
             FAIL() << "Failed to get_instance";
-            GTEST_SKIP();
             return;
         }
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(), is_using_hal() ? "HAL" : "Wire");
+        ustr = m5::utility::formatString("%s", unit->deviceName());
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
         }
     }
 
@@ -85,23 +59,52 @@ protected:
 
     virtual bool begin()
     {
-        if (is_using_hal()) {
-            // Using M5HAL
-            auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-            auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-            m5::hal::bus::I2CBusConfig i2c_cfg;
-            i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-            i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-            auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-            return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) && Units.begin();
+        auto board = M5.getBoard();
+        if (board == m5::board_t::board_ArduinoNessoN1) {
+            // NessoN1: GROVE is port_b (GPIO 5/4). SoftwareI2C via M5HAL
+            auto sda = M5.getPin(m5::pin_name_t::port_b_out);
+            auto scl = M5.getPin(m5::pin_name_t::port_b_in);
+            return begin_with_software_i2c(sda, scl);
         }
-        // Using TwoWire
-        return Units.add(*unit, Wire) && Units.begin();
+        if (board == m5::board_t::board_M5NanoC6) {
+            // NanoC6: Use Ex_I2C (avoids Wire/Ex_I2C dual-driver conflict)
+            return begin_with_ex_i2c();
+        }
+        // Standard boards: Wire (initialized here with unit's clock)
+        return begin_with_wire(Wire);
     }
 
-    //!@brief Function returning true if M5HAL is used (decision based on TP)
-    virtual bool is_using_hal() const = 0;
-    //! @brief return m5::unit::Component-derived class instance (decision based on TP)
+    bool begin_with_wire(TwoWire& wire, uint32_t wnum = 0)
+    {
+        auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
+        auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
+        auto freq        = unit->component_config().clock;
+        if (i2cIsInit(wnum)) {
+            M5_LOGD("Already initialized Wire%u. Terminate and restart FREQ %u", wnum, freq);
+            wire.end();
+        }
+        M5_LOGI("Wire begin SDA:%u SCL:%u FREQ:%u", pin_num_sda, pin_num_scl, freq);
+        wire.begin(pin_num_sda, pin_num_scl, freq);
+        return Units.add(*unit, wire) && Units.begin();
+    }
+
+    bool begin_with_ex_i2c()
+    {
+        M5_LOGI("Using Ex_I2C");
+        return Units.add(*unit, M5.Ex_I2C) && Units.begin();
+    }
+
+    bool begin_with_software_i2c(int8_t sda, int8_t scl)
+    {
+        m5::hal::bus::I2CBusConfig i2c_cfg;
+        i2c_cfg.pin_sda = m5::hal::gpio::getPin(sda);
+        i2c_cfg.pin_scl = m5::hal::gpio::getPin(scl);
+        auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
+        M5_LOGI("Using M5HAL SDA:%u SCL:%u", sda, scl);
+        return Units.add(*unit, i2c_bus ? i2c_bus.value() : nullptr) && Units.begin();
+    }
+
+    //! @brief return m5::unit::Component-derived class instance
     virtual U* get_instance() = 0;
 
     std::string ustr{};
@@ -111,12 +114,11 @@ protected:
 
 /*!
   @class GPIOComponentTestBase
-  @brief UnitComponent Derived class for testing (GPIO)
+  @brief UnitComponent derived class for testing (GPIO)
   @tparam U m5::unit::Component-derived classes to be tested
-  @tparam TP parameter type for testing. see also INSTANTIATE_TEST_SUITE_P
  */
-template <typename U, typename TP>
-class GPIOComponentTestBase : public ::testing::TestWithParam<TP> {
+template <typename U>
+class GPIOComponentTestBase : public ::testing::Test {
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
 protected:
@@ -125,13 +127,11 @@ protected:
         unit.reset(get_instance());
         if (!unit) {
             FAIL() << "Failed to get_instance";
-            GTEST_SKIP();
             return;
         }
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(), is_using_hal() ? "HAL" : "GPIO");
+        ustr = m5::utility::formatString("%s:GPIO", unit->deviceName());
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
         }
     }
 
@@ -150,19 +150,10 @@ protected:
             pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_a_pin2);
         }
         M5_LOGI("getPin: %d,%d", pin_num_gpio_in, pin_num_gpio_out);
-
-        if (is_using_hal()) {
-            // Using M5HAL
-            // TODO Not yet
-            return false;
-        }
-        // Using GPIO
         return Units.add(*unit, pin_num_gpio_in, pin_num_gpio_out) && Units.begin();
     }
 
-    //!@brief Function returning true if M5HAL is used (decision based on TP)
-    virtual bool is_using_hal() const = 0;
-    //! @brief return m5::unit::Component-derived class instance (decision based on TP)
+    //! @brief return m5::unit::Component-derived class instance
     virtual U* get_instance() = 0;
 
     std::string ustr{};
@@ -172,12 +163,11 @@ protected:
 
 /*!
   @class UARTComponentTestBase
-  @brief UnitComponent Derived class for testing (UART)
+  @brief UnitComponent derived class for testing (UART)
   @tparam U m5::unit::Component-derived classes to be tested
-  @tparam TP parameter type for testing. see also INSTANTIATE_TEST_SUITE_P
  */
-template <typename U, typename TP>
-class UARTComponentTestBase : public ::testing::TestWithParam<TP> {
+template <typename U>
+class UARTComponentTestBase : public ::testing::Test {
     static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
 
 protected:
@@ -186,13 +176,11 @@ protected:
         unit.reset(get_instance());
         if (!unit) {
             FAIL() << "Failed to get_instance";
-            GTEST_SKIP();
             return;
         }
-        ustr = m5::utility::formatString("%s:%s", unit->deviceName(), is_using_hal() ? "HAL" : "UART");
+        ustr = m5::utility::formatString("%s:UART", unit->deviceName());
         if (!begin()) {
             FAIL() << "Failed to begin " << ustr;
-            GTEST_SKIP();
         }
     }
 
@@ -202,27 +190,66 @@ protected:
 
     virtual bool begin()
     {
-        if (is_using_hal()) {
-            // Using M5HAL
-            // TODO Not yet
-            return false;
-        }
-        // Using Serial
         serial = init_serial();
         return serial && Units.add(*unit, *serial) && Units.begin();
     }
 
-    //!@brief Function returning true if M5HAL is used (decision based on TP)
-    virtual bool is_using_hal() const = 0;
-    //! @brief return m5::unit::Component-derived class instance (decision based on TP)
+    //! @brief return m5::unit::Component-derived class instance
     virtual U* get_instance() = 0;
-    //!@brief Initialize the serial to be used
+    //! @brief Initialize the serial to be used
     virtual HardwareSerial* init_serial() = 0;
 
     std::string ustr{};
     std::unique_ptr<U> unit{};
     m5::unit::UnitUnified Units;
     HardwareSerial* serial{};
+};
+
+/*!
+  @class SPIComponentTestBase
+  @brief UnitComponent derived class for testing (SPI)
+  @tparam U m5::unit::Component-derived classes to be tested
+ */
+template <typename U>
+class SPIComponentTestBase : public ::testing::Test {
+    static_assert(std::is_base_of<m5::unit::Component, U>::value, "U must be derived from Component");
+
+protected:
+    virtual void SetUp() override
+    {
+        unit.reset(get_instance());
+        if (!unit) {
+            FAIL() << "Failed to get_instance";
+            return;
+        }
+        ustr = m5::utility::formatString("%s:SPI", unit->deviceName());
+        if (!begin()) {
+            FAIL() << "Failed to begin " << ustr;
+        }
+    }
+
+    virtual void TearDown() override
+    {
+    }
+
+    virtual bool begin()
+    {
+        return Units.add(*unit, get_spi(), get_spi_settings()) && Units.begin();
+    }
+
+    //! @brief return m5::unit::Component-derived class instance
+    virtual U* get_instance() = 0;
+    //! @brief return SPISettings for the unit under test
+    virtual SPISettings get_spi_settings() = 0;
+    //! @brief return SPIClass to be used (default: SPI)
+    virtual SPIClass& get_spi()
+    {
+        return SPI;
+    }
+
+    std::string ustr{};
+    std::unique_ptr<U> unit{};
+    m5::unit::UnitUnified Units;
 };
 
 }  // namespace googletest
