@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_i2c.hpp
-  @brief Adapter for I2C to treat M5HAL and TwoWire in the same way
+  @brief Adapter for I2C to treat M5HAL, TwoWire, and I2C_Class in the same way
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_I2C_HPP
 #define M5_UNIT_COMPONENT_ADAPTER_I2C_HPP
@@ -25,6 +25,14 @@ namespace unit {
  */
 class AdapterI2C : public Adapter {
 public:
+    //! @brief I2C implementation type
+    enum class ImplType : uint8_t {
+        Unknown,   //!< Unknown
+        TwoWire,   //!< Arduino TwoWire
+        Bus,       //!< M5HAL Bus (including SoftwareI2C)
+        I2CClass,  //!< m5::I2C_Class (m5gfx::i2c)
+    };
+
     class I2CImpl : public Adapter::Impl {
     public:
         I2CImpl() = default;
@@ -83,6 +91,12 @@ public:
             return new I2CImpl(addr, _clock);
         }
 
+        //! @brief Gets the implementation type
+        virtual ImplType implType() const
+        {
+            return ImplType::Unknown;
+        }
+
         virtual TwoWire* getWire()
         {
             return nullptr;
@@ -102,6 +116,10 @@ public:
     class WireImpl : public I2CImpl {
     public:
         WireImpl(TwoWire& wire, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::TwoWire;
+        }
         inline virtual TwoWire* getWire() override
         {
             return _wire;
@@ -140,6 +158,10 @@ public:
     class BusImpl : public I2CImpl {
     public:
         BusImpl(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::Bus;
+        }
         inline virtual m5::hal::bus::Bus* getBus() override
         {
             return _bus;
@@ -191,6 +213,10 @@ public:
     class I2CClassImpl : public I2CImpl {
     public:
         I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::I2CClass;
+        }
         inline virtual int16_t scl() const override
         {
             return _scl;
@@ -253,6 +279,12 @@ public:
     inline void setClock(const uint32_t clock)
     {
         impl()->setClock(clock);
+    }
+
+    //! @brief Gets the I2C implementation type
+    inline ImplType implType() const
+    {
+        return impl()->implType();
     }
 
     inline int16_t scl() const

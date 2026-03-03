@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_i2c.cpp
-  @brief Adapter for I2C to treat M5HAL and TwoWire in the same way
+  @brief Adapter for I2C to treat M5HAL, TwoWire, and I2C_Class in the same way
   @note  Currently handles TwoWire directly, but will handle via M5HAL in the future
 */
 #include "adapter_i2c.hpp"
