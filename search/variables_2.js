@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['filter_5fenabled_0',['filter_enabled',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#a52d2f181decaec2e0eb4de7f63c336e0',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]],
-  ['filter_5fticks_5fthreshold_1',['filter_ticks_threshold',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#ad5fa5de2f2b46c35a9f2d81645598ae1',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]]
+  ['expected_5finterval_0',['expected_interval',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a2ef30d5d0fb08b6392c3e23c9b6101f6',1,'m5::unit::googletest::PeriodicMeasurementResult']]]
 ];

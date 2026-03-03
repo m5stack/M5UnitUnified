@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['update_0',['update',['../classm5_1_1unit_1_1_component.html#a030631a2cdedfb2a41913a58104e261d',1,'m5::unit::Component::update()'],['../classm5_1_1unit_1_1_unit_unified.html#a9a60bccbf69eb53aaf3c80584a54447d',1,'m5::unit::UnitUnified::update()']]],
-  ['updated_1',['updated',['../classm5_1_1unit_1_1_component.html#a83425f058d73a536fa5dfdb513b78d53',1,'m5::unit::Component']]],
-  ['updatedmillis_2',['updatedMillis',['../classm5_1_1unit_1_1_component.html#a8370f94e52cdeb21ab3ce7f771d7bc2b',1,'m5::unit::Component']]]
+  ['selectchannel_0',['selectChannel',['../classm5_1_1unit_1_1_component.html#a2c4741ece432fdfbfd4ef2ae5afc70fb',1,'m5::unit::Component']]],
+  ['startperiodicmeasurement_1',['startPeriodicMeasurement',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#a41fd64f96029d49a8b29a44de071e56b',1,'m5::unit::PeriodicMeasurementAdapter']]],
+  ['stopperiodicmeasurement_2',['stopPeriodicMeasurement',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#ac36fa57687aa67bb0c9275f33b19f9f1',1,'m5::unit::PeriodicMeasurementAdapter']]]
 ];

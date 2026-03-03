@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -109,8 +109,9 @@ Inheritance diagram for m5::unit::AdapterI2C::I2CImpl:</div>
  <div class="center">
   <img src="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.png" usemap="#m5::unit::AdapterI2C::I2CImpl_map" alt=""/>
   <map id="m5::unit::AdapterI2C::I2CImpl_map" name="m5::unit::AdapterI2C::I2CImpl_map">
-<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" alt="m5::unit::Adapter::Impl" shape="rect" coords="0,0,173,24"/>
-<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html" alt="m5::unit::AdapterI2C::BusImpl" shape="rect" coords="0,112,173,136"/>
+<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" alt="m5::unit::Adapter::Impl" shape="rect" coords="106,0,308,24"/>
+<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html" alt="m5::unit::AdapterI2C::BusImpl" shape="rect" coords="0,112,202,136"/>
+<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html" alt="m5::unit::AdapterI2C::I2CClassImpl" shape="rect" coords="212,112,414,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -149,8 +150,11 @@ virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="botto
 <tr class="memitem:a122f3bea27e792c1ead211dbddc32ac8" id="r_a122f3bea27e792c1ead211dbddc32ac8"><td class="memItemLeft" align="right" valign="top"><a id="a122f3bea27e792c1ead211dbddc32ac8" name="a122f3bea27e792c1ead211dbddc32ac8"></a>
 virtual <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html">I2CImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>duplicate</b> (const uint8_t addr)</td></tr>
 <tr class="separator:a122f3bea27e792c1ead211dbddc32ac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5053d593e11d940fd8282ce8ac2aea0" id="r_ab5053d593e11d940fd8282ce8ac2aea0"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704">ImplType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5053d593e11d940fd8282ce8ac2aea0">implType</a> () const</td></tr>
+<tr class="memdesc:ab5053d593e11d940fd8282ce8ac2aea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the implementation type.  <br /></td></tr>
+<tr class="separator:ab5053d593e11d940fd8282ce8ac2aea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a398da1a81c68893888358e5f1ff3f2f5" id="r_a398da1a81c68893888358e5f1ff3f2f5"><td class="memItemLeft" align="right" valign="top"><a id="a398da1a81c68893888358e5f1ff3f2f5" name="a398da1a81c68893888358e5f1ff3f2f5"></a>
-virtual TwoWire *&#160;</td><td class="memItemRight" valign="bottom"><b>getWire</b> ()</td></tr>
+virtual <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a">TwoWire</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getWire</b> ()</td></tr>
 <tr class="separator:a398da1a81c68893888358e5f1ff3f2f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40587ebc1942383f84f2b415db22ccf4" id="r_a40587ebc1942383f84f2b415db22ccf4"><td class="memItemLeft" align="right" valign="top"><a id="a40587ebc1942383f84f2b415db22ccf4" name="a40587ebc1942383f84f2b415db22ccf4"></a>
 virtual m5::hal::bus::Bus *&#160;</td><td class="memItemRight" valign="bottom"><b>getBus</b> ()</td></tr>
@@ -217,6 +221,36 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_addr</b> {}</td><
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>_clock</b> {100 * 1000U}</td></tr>
 <tr class="separator:a520fcf6b2e9128da8be7e8e01d48e4d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ab5053d593e11d940fd8282ce8ac2aea0" name="ab5053d593e11d940fd8282ce8ac2aea0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5053d593e11d940fd8282ce8ac2aea0">&#9670;&#160;</a></span>implType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704">ImplType</a> m5::unit::AdapterI2C::I2CImpl::implType </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the implementation type. </p>
+
+<p>Reimplemented in <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html#a40a1e65c4c41c5fed59ae4d572d1fe6d">m5::unit::AdapterI2C::BusImpl</a>, and <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html#a02792d7a83975cc137fb7f641f75b6c1">m5::unit::AdapterI2C::I2CClassImpl</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

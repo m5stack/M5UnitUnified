@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -165,6 +165,9 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>debugInfo</b> 
 <tr class="memitem:afa7412b0a654e1274441c501cfc1d7aa" id="r_afa7412b0a654e1274441c501cfc1d7aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa7412b0a654e1274441c501cfc1d7aa">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::hal::bus::Bus *bus)</td></tr>
 <tr class="memdesc:afa7412b0a654e1274441c501cfc1d7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (M5HAL)  <br /></td></tr>
 <tr class="separator:afa7412b0a654e1274441c501cfc1d7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2a494bd63c30170267ab123a32eba6a" id="r_ae2a494bd63c30170267ab123a32eba6a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae2a494bd63c30170267ab123a32eba6a">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::I2C_Class &amp;i2c)</td></tr>
+<tr class="memdesc:ae2a494bd63c30170267ab123a32eba6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (I2C_Class)  <br /></td></tr>
+<tr class="separator:ae2a494bd63c30170267ab123a32eba6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -185,7 +188,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 <div class="textblock"><p>For managing and leading units. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="acc8dd860a59342229f5d5fb560bb71d5" name="acc8dd860a59342229f5d5fb560bb71d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -222,7 +225,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="a67163d219c4b919ebf003530c9d938ce" name="a67163d219c4b919ebf003530c9d938ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67163d219c4b919ebf003530c9d938ce">&#9670;&#160;</a></span>add() <span class="overload">[2/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a67163d219c4b919ebf003530c9d938ce">&#9670;&#160;</a></span>add() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -253,7 +256,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="afa7412b0a654e1274441c501cfc1d7aa" name="afa7412b0a654e1274441c501cfc1d7aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[3/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[3/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -283,8 +286,39 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 
 </div>
 </div>
+<a id="ae2a494bd63c30170267ab123a32eba6a" name="ae2a494bd63c30170267ab123a32eba6a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2a494bd63c30170267ab123a32eba6a">&#9670;&#160;</a></span>add() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::UnitUnified::add </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">m5::I2C_Class &amp;</td>          <td class="paramname"><span class="paramname"><em>i2c</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adding unit to be managed (I2C_Class) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
+    <tr><td class="paramname">i2c</td><td>I2C_Class to be used (e.g. M5.In_I2C) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+
+</div>
+</div>
 <a id="a50ca997b7e43e9b6cb11dac3d58555c7" name="a50ca997b7e43e9b6cb11dac3d58555c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50ca997b7e43e9b6cb11dac3d58555c7">&#9670;&#160;</a></span>add() <span class="overload">[4/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a50ca997b7e43e9b6cb11dac3d58555c7">&#9670;&#160;</a></span>add() <span class="overload">[5/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -320,7 +354,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="afb723f54c355657542dd04f8e3491147" name="afb723f54c355657542dd04f8e3491147"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[5/5]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[6/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">

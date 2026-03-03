@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -108,23 +108,25 @@ $(function(){initNavTree('test__template_8hpp.html',''); initResizable(true); })
 <div class="textblock"><code>#include &quot;<a class="el" href="_m5_unit_component_8hpp_source.html">../M5UnitComponent.hpp</a>&quot;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;Wire.h&gt;</code><br />
+<code>#include &lt;SPI.h&gt;</code><br />
 <code>#include &lt;esp32-hal-i2c.h&gt;</code><br />
+<code>#include &lt;M5Unified.h&gt;</code><br />
 </div>
 <p><a href="test__template_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_global_fixture.html">m5::unit::googletest::GlobalFixture&lt; FREQ, WNUM &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overall test environment configuration.  <a href="classm5_1_1unit_1_1googletest_1_1_global_fixture.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html">m5::unit::googletest::I2CComponentTestBase&lt; U &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent derived class for testing (I2C)  <a href="classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_component_test_base.html">m5::unit::googletest::ComponentTestBase&lt; U, TP &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent Derived class for testing (I2C)  <a href="classm5_1_1unit_1_1googletest_1_1_component_test_base.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html">m5::unit::googletest::GPIOComponentTestBase&lt; U &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent derived class for testing (GPIO)  <a href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html">m5::unit::googletest::GPIOComponentTestBase&lt; U, TP &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent Derived class for testing (GPIO)  <a href="classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html">m5::unit::googletest::UARTComponentTestBase&lt; U &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent derived class for testing (UART)  <a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html">m5::unit::googletest::UARTComponentTestBase&lt; U, TP &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent Derived class for testing (UART)  <a href="classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html">m5::unit::googletest::SPIComponentTestBase&lt; U &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">UnitComponent derived class for testing (SPI)  <a href="classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -97,20 +97,29 @@ $(function(){initNavTree('test__helper_8hpp.html',''); initResizable(true); });
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">test_helper.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Helper for testing UnitComponent.  
+<p>Helper for testing UnitComponent periodic measurements.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;M5Utility.hpp&gt;</code><br />
-<code>#include &lt;thread&gt;</code><br />
-<code>#include &lt;cassert&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;numeric&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div>
 <p><a href="test__helper_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html">m5::unit::googletest::PeriodicMeasurementResult</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result of periodic measurement data collection with statistical analysis.  <a href="structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacem5.html">m5</a></td></tr>
@@ -119,23 +128,67 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ac2a0eab0e21d2e953ffa9786ca5b6da2" id="r_ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memTemplParams" colspan="2"><a id="ac2a0eab0e21d2e953ffa9786ca5b6da2" name="ac2a0eab0e21d2e953ffa9786ca5b6da2"></a>
-template&lt;class U &gt; </td></tr>
-<tr class="memitem:ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times, const uint32_t tolerance, const uint32_t timeout_duration, void(*callback)(U *), const bool skip_after_test)</td></tr>
-<tr class="separator:ac2a0eab0e21d2e953ffa9786ca5b6da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fd7c8acf3a5274db85dd5a904ec32e1" id="r_a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memTemplParams" colspan="2"><a id="a1fd7c8acf3a5274db85dd5a904ec32e1" name="a1fd7c8acf3a5274db85dd5a904ec32e1"></a>
-template&lt;class U &gt; </td></tr>
-<tr class="memitem:a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times=8, const uint32_t tolerance=1, void(*callback)(U *)=nullptr, const bool skip_after_test=false)</td></tr>
-<tr class="separator:a1fd7c8acf3a5274db85dd5a904ec32e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4" id="r_a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplParams" colspan="2"><a id="a55854c9cd65bcc392a387f81cdc082f4" name="a55854c9cd65bcc392a387f81cdc082f4"></a>
-template&lt;class U &gt; </td></tr>
-<tr class="memitem:a55854c9cd65bcc392a387f81cdc082f4"><td class="memTemplItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>m5::unit::googletest::test_periodic_measurement</b> (U *unit, const uint32_t times=8, void(*callback)(U *)=nullptr, const bool skip_after_test=false)</td></tr>
-<tr class="separator:a55854c9cd65bcc392a387f81cdc082f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac78ba57e2e4421084ab7cb9f16ed9b5d" id="r_ac78ba57e2e4421084ab7cb9f16ed9b5d"><td class="memTemplParams" colspan="2">template&lt;class U &gt; </td></tr>
+<tr class="memitem:ac78ba57e2e4421084ab7cb9f16ed9b5d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html">PeriodicMeasurementResult</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ac78ba57e2e4421084ab7cb9f16ed9b5d">m5::unit::googletest::collect_periodic_measurements</a> (U *unit, const uint32_t times=8, const uint32_t timeout_duration=0, void(*callback)(U *)=nullptr)</td></tr>
+<tr class="memdesc:ac78ba57e2e4421084ab7cb9f16ed9b5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collect periodic measurement data from a unit.  <br /></td></tr>
+<tr class="separator:ac78ba57e2e4421084ab7cb9f16ed9b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Helper for testing UnitComponent. </p>
+<div class="textblock"><p>Helper for testing UnitComponent periodic measurements. </p>
 <dl class="section note"><dt>Note</dt><dd>Depends on GoogleTest </dd></dl>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="ac78ba57e2e4421084ab7cb9f16ed9b5d" name="ac78ba57e2e4421084ab7cb9f16ed9b5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac78ba57e2e4421084ab7cb9f16ed9b5d">&#9670;&#160;</a></span>collect_periodic_measurements()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class U &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">PeriodicMeasurementResult m5::unit::googletest::collect_periodic_measurements </td>
+          <td>(</td>
+          <td class="paramtype">U *</td>          <td class="paramname"><span class="paramname"><em>unit</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>times</em></span><span class="paramdefsep"> = </span><span class="paramdefval">8</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>timeout_duration</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(*</td>          <td class="paramname"><span class="paramname"><em>callback&#160;</em></span>)(U *)<span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Collect periodic measurement data from a unit. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">U</td><td><a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived class </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">unit</td><td>Unit instance to collect measurements from </td></tr>
+    <tr><td class="paramname">times</td><td>Number of update cycles to collect </td></tr>
+    <tr><td class="paramname">timeout_duration</td><td>Timeout in ms (0 = auto-calculate as interval * (times + 1)) </td></tr>
+    <tr><td class="paramname">callback</td><td>Optional callback invoked after each successful update </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PeriodicMeasurementResult containing collected intervals and statistics </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

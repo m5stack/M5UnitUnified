@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mode_0',['Mode',['../types_8hpp.html#afa9b8e9030a766f371861f8d4899572a',1,'m5::unit::gpio']]]
+  ['impltype_0',['ImplType',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704',1,'m5::unit::AdapterI2C']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.11.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>M5UnitUnified: m5::unit::googletest::ComponentTestBase&lt; U, TP &gt; Class Template Reference</title>
+<title>M5UnitUnified: m5::unit::googletest::SPIComponentTestBase&lt; U &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -70,7 +70,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(function(){initNavTree('classm5_1_1unit_1_1googletest_1_1_component_test_base.html',''); initResizable(true); });
+$(function(){initNavTree('classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html',''); initResizable(true); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -99,61 +99,64 @@ $(function(){initNavTree('classm5_1_1unit_1_1googletest_1_1_component_test_base.
   <div class="summary">
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
-<a href="classm5_1_1unit_1_1googletest_1_1_component_test_base-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">m5::unit::googletest::ComponentTestBase&lt; U, TP &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
+<a href="classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">m5::unit::googletest::SPIComponentTestBase&lt; U &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>UnitComponent Derived class for testing (I2C)  
+<p>UnitComponent derived class for testing (SPI)  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="test__template_8hpp_source.html">test_template.hpp</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for m5::unit::googletest::ComponentTestBase&lt; U, TP &gt;:</div>
+Inheritance diagram for m5::unit::googletest::SPIComponentTestBase&lt; U &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="classm5_1_1unit_1_1googletest_1_1_component_test_base.png" alt=""/>
+  <img src="classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.png" alt=""/>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a286703e631fa015bb8b7fe4cb535a29b" id="r_a286703e631fa015bb8b7fe4cb535a29b"><td class="memItemLeft" align="right" valign="top"><a id="a286703e631fa015bb8b7fe4cb535a29b" name="a286703e631fa015bb8b7fe4cb535a29b"></a>
+<tr class="memitem:afe6382ee9ab99bc6f2f784d9ac56bfef" id="r_afe6382ee9ab99bc6f2f784d9ac56bfef"><td class="memItemLeft" align="right" valign="top"><a id="afe6382ee9ab99bc6f2f784d9ac56bfef" name="afe6382ee9ab99bc6f2f784d9ac56bfef"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SetUp</b> () override</td></tr>
-<tr class="separator:a286703e631fa015bb8b7fe4cb535a29b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad760354176404c7787343e1362270bba" id="r_ad760354176404c7787343e1362270bba"><td class="memItemLeft" align="right" valign="top"><a id="ad760354176404c7787343e1362270bba" name="ad760354176404c7787343e1362270bba"></a>
+<tr class="separator:afe6382ee9ab99bc6f2f784d9ac56bfef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9951b434b7d085819942e75ab3318d42" id="r_a9951b434b7d085819942e75ab3318d42"><td class="memItemLeft" align="right" valign="top"><a id="a9951b434b7d085819942e75ab3318d42" name="a9951b434b7d085819942e75ab3318d42"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>TearDown</b> () override</td></tr>
-<tr class="separator:ad760354176404c7787343e1362270bba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97ce6f48b62a85ecc27e940e262bb44d" id="r_a97ce6f48b62a85ecc27e940e262bb44d"><td class="memItemLeft" align="right" valign="top"><a id="a97ce6f48b62a85ecc27e940e262bb44d" name="a97ce6f48b62a85ecc27e940e262bb44d"></a>
+<tr class="separator:a9951b434b7d085819942e75ab3318d42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66ab3d070c26be26aad045510a5747ee" id="r_a66ab3d070c26be26aad045510a5747ee"><td class="memItemLeft" align="right" valign="top"><a id="a66ab3d070c26be26aad045510a5747ee" name="a66ab3d070c26be26aad045510a5747ee"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> ()</td></tr>
-<tr class="separator:a97ce6f48b62a85ecc27e940e262bb44d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aece2cc57bfb1d9ddce02750e27af793d" id="r_aece2cc57bfb1d9ddce02750e27af793d"><td class="memItemLeft" align="right" valign="top"><a id="aece2cc57bfb1d9ddce02750e27af793d" name="aece2cc57bfb1d9ddce02750e27af793d"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_using_hal</b> () const =0</td></tr>
-<tr class="memdesc:aece2cc57bfb1d9ddce02750e27af793d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function returning true if M5HAL is used (decision based on TP) <br /></td></tr>
-<tr class="separator:aece2cc57bfb1d9ddce02750e27af793d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3526e0c563086056e29b384723ac2fa8" id="r_a3526e0c563086056e29b384723ac2fa8"><td class="memItemLeft" align="right" valign="top"><a id="a3526e0c563086056e29b384723ac2fa8" name="a3526e0c563086056e29b384723ac2fa8"></a>
+<tr class="separator:a66ab3d070c26be26aad045510a5747ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95db151897980078ee89c9c4905e0ab3" id="r_a95db151897980078ee89c9c4905e0ab3"><td class="memItemLeft" align="right" valign="top"><a id="a95db151897980078ee89c9c4905e0ab3" name="a95db151897980078ee89c9c4905e0ab3"></a>
 virtual U *&#160;</td><td class="memItemRight" valign="bottom"><b>get_instance</b> ()=0</td></tr>
-<tr class="memdesc:a3526e0c563086056e29b384723ac2fa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">return <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived class instance (decision based on TP) <br /></td></tr>
-<tr class="separator:a3526e0c563086056e29b384723ac2fa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memdesc:a95db151897980078ee89c9c4905e0ab3"><td class="mdescLeft">&#160;</td><td class="mdescRight">return <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived class instance <br /></td></tr>
+<tr class="separator:a95db151897980078ee89c9c4905e0ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1e5b62f168b11d59ecd405ce2019b17" id="r_ad1e5b62f168b11d59ecd405ce2019b17"><td class="memItemLeft" align="right" valign="top"><a id="ad1e5b62f168b11d59ecd405ce2019b17" name="ad1e5b62f168b11d59ecd405ce2019b17"></a>
+virtual SPISettings&#160;</td><td class="memItemRight" valign="bottom"><b>get_spi_settings</b> ()=0</td></tr>
+<tr class="memdesc:ad1e5b62f168b11d59ecd405ce2019b17"><td class="mdescLeft">&#160;</td><td class="mdescRight">return SPISettings for the unit under test <br /></td></tr>
+<tr class="separator:ad1e5b62f168b11d59ecd405ce2019b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae4d33e1379a4727bd13841177ca57e7" id="r_aae4d33e1379a4727bd13841177ca57e7"><td class="memItemLeft" align="right" valign="top"><a id="aae4d33e1379a4727bd13841177ca57e7" name="aae4d33e1379a4727bd13841177ca57e7"></a>
+virtual SPIClass &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_spi</b> ()</td></tr>
+<tr class="memdesc:aae4d33e1379a4727bd13841177ca57e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">return SPIClass to be used (default: SPI) <br /></td></tr>
+<tr class="separator:aae4d33e1379a4727bd13841177ca57e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a9789041ae003a9feaf09e5c94fdec474" id="r_a9789041ae003a9feaf09e5c94fdec474"><td class="memItemLeft" align="right" valign="top"><a id="a9789041ae003a9feaf09e5c94fdec474" name="a9789041ae003a9feaf09e5c94fdec474"></a>
+<tr class="memitem:a53bbc0f294f97b1292126350bbed8808" id="r_a53bbc0f294f97b1292126350bbed8808"><td class="memItemLeft" align="right" valign="top"><a id="a53bbc0f294f97b1292126350bbed8808" name="a53bbc0f294f97b1292126350bbed8808"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ustr</b> {}</td></tr>
-<tr class="separator:a9789041ae003a9feaf09e5c94fdec474"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08566a57b8f9ffe7236a7278b5c3907d" id="r_a08566a57b8f9ffe7236a7278b5c3907d"><td class="memItemLeft" align="right" valign="top"><a id="a08566a57b8f9ffe7236a7278b5c3907d" name="a08566a57b8f9ffe7236a7278b5c3907d"></a>
+<tr class="separator:a53bbc0f294f97b1292126350bbed8808"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a6aa7f83140cc7112e65e802a1b6ada" id="r_a9a6aa7f83140cc7112e65e802a1b6ada"><td class="memItemLeft" align="right" valign="top"><a id="a9a6aa7f83140cc7112e65e802a1b6ada" name="a9a6aa7f83140cc7112e65e802a1b6ada"></a>
 std::unique_ptr&lt; U &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>unit</b> {}</td></tr>
-<tr class="separator:a08566a57b8f9ffe7236a7278b5c3907d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0dfbbe6ef4b7c87e0cdd693f99652737" id="r_a0dfbbe6ef4b7c87e0cdd693f99652737"><td class="memItemLeft" align="right" valign="top"><a id="a0dfbbe6ef4b7c87e0cdd693f99652737" name="a0dfbbe6ef4b7c87e0cdd693f99652737"></a>
+<tr class="separator:a9a6aa7f83140cc7112e65e802a1b6ada"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a603836ec7fbd752a1df1add5ef1a26f8" id="r_a603836ec7fbd752a1df1add5ef1a26f8"><td class="memItemLeft" align="right" valign="top"><a id="a603836ec7fbd752a1df1add5ef1a26f8" name="a603836ec7fbd752a1df1add5ef1a26f8"></a>
 <a class="el" href="classm5_1_1unit_1_1_unit_unified.html">m5::unit::UnitUnified</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Units</b></td></tr>
-<tr class="separator:a0dfbbe6ef4b7c87e0cdd693f99652737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a603836ec7fbd752a1df1add5ef1a26f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;typename U, typename TP&gt;<br />
-class m5::unit::googletest::ComponentTestBase&lt; U, TP &gt;</div><p>UnitComponent Derived class for testing (I2C) </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename U&gt;<br />
+class m5::unit::googletest::SPIComponentTestBase&lt; U &gt;</div><p>UnitComponent derived class for testing (SPI) </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">U</td><td><a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">m5::unit::Component</a>-derived classes to be tested </td></tr>
-    <tr><td class="paramname">TP</td><td>parameter type for testing. see also INSTANTIATE_TEST_SUITE_P </td></tr>
   </table>
   </dd>
 </dl>
@@ -162,7 +165,7 @@ class m5::unit::googletest::ComponentTestBase&lt; U, TP &gt;</div><p>UnitCompone
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="namespacem5.html">m5</a></li><li class="navelem"><b>unit</b></li><li class="navelem"><b>googletest</b></li><li class="navelem"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_component_test_base.html">ComponentTestBase</a></li>
+    <li class="navelem"><a class="el" href="namespacem5.html">m5</a></li><li class="navelem"><b>unit</b></li><li class="navelem"><b>googletest</b></li><li class="navelem"><a class="el" href="classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html">SPIComponentTestBase</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.11.0 </li>
   </ul>
 </div>

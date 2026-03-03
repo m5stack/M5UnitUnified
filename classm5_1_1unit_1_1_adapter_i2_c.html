@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.3.2 git rev:5172084</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -98,6 +98,7 @@ $(function(){initNavTree('classm5_1_1unit_1_1_adapter_i2_c.html',''); initResiza
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classm5_1_1unit_1_1_adapter_i2_c-members.html">List of all members</a>  </div>
@@ -123,14 +124,40 @@ Inheritance diagram for m5::unit::AdapterI2C:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html">BusImpl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html">I2CClassImpl</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html">I2CImpl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a8d18994dbe5d6f786c355fc9ba12b704" id="r_a8d18994dbe5d6f786c355fc9ba12b704"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704">ImplType</a> : uint8_t { <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704a88183b946cc5f0e8c96b2e66e1c74a7e">Unknown</a>
+, <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a">TwoWire</a>
+, <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704a6e4b38bfd57741ac1597c440a1c98074">Bus</a>
+, <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704a3223fe82a0ceaf3c26a5b4ad65298237">I2CClass</a>
+ }</td></tr>
+<tr class="memdesc:a8d18994dbe5d6f786c355fc9ba12b704"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C implementation type.  <a href="#a8d18994dbe5d6f786c355fc9ba12b704">More...</a><br /></td></tr>
+<tr class="separator:a8d18994dbe5d6f786c355fc9ba12b704"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classm5_1_1unit_1_1_adapter"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_types_classm5_1_1unit_1_1_adapter')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></td></tr>
+<tr class="memitem:a6d3797f5be198a03cd4699e63dbbafce inherit pub_types_classm5_1_1unit_1_1_adapter" id="r_a6d3797f5be198a03cd4699e63dbbafce"><td class="memItemLeft" align="right" valign="top"><a id="a6d3797f5be198a03cd4699e63dbbafce" name="a6d3797f5be198a03cd4699e63dbbafce"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><b>Type</b> : uint8_t { <br />
+&#160;&#160;<b>Unknown</b>
+, <b>I2C</b>
+, <b>GPIO</b>
+, <b>UART</b>
+, <br />
+&#160;&#160;<b>SPI</b>
+<br />
+ }</td></tr>
+<tr class="separator:a6d3797f5be198a03cd4699e63dbbafce inherit pub_types_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:adb04395a7987a9dfbc9fa86f927e3f8e" id="r_adb04395a7987a9dfbc9fa86f927e3f8e"><td class="memItemLeft" align="right" valign="top"><a id="adb04395a7987a9dfbc9fa86f927e3f8e" name="adb04395a7987a9dfbc9fa86f927e3f8e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AdapterI2C</b> (m5::hal::bus::Bus *bus, const uint8_t addr, const uint32_t clock)</td></tr>
 <tr class="separator:adb04395a7987a9dfbc9fa86f927e3f8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f8c44dc3aa581d5d59900aa4ea42232" id="r_a3f8c44dc3aa581d5d59900aa4ea42232"><td class="memItemLeft" align="right" valign="top"><a id="a3f8c44dc3aa581d5d59900aa4ea42232" name="a3f8c44dc3aa581d5d59900aa4ea42232"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AdapterI2C</b> (m5::I2C_Class &amp;i2c, const uint8_t addr, const uint32_t clock)</td></tr>
+<tr class="separator:a3f8c44dc3aa581d5d59900aa4ea42232"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1d50c82543d4a8bc14369a1f9671674" id="r_ad1d50c82543d4a8bc14369a1f9671674"><td class="memItemLeft" align="right" valign="top"><a id="ad1d50c82543d4a8bc14369a1f9671674" name="ad1d50c82543d4a8bc14369a1f9671674"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AdapterI2C</b> (m5::hal::bus::Bus &amp;bus, const uint8_t addr, const uint32_t clock)</td></tr>
 <tr class="separator:ad1d50c82543d4a8bc14369a1f9671674"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,6 +179,10 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>clock</b> () cons
 <tr class="memitem:a5155f873afa94a63de7b4bab067e44d9" id="r_a5155f873afa94a63de7b4bab067e44d9"><td class="memItemLeft" align="right" valign="top"><a id="a5155f873afa94a63de7b4bab067e44d9" name="a5155f873afa94a63de7b4bab067e44d9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setClock</b> (const uint32_t clock)</td></tr>
 <tr class="separator:a5155f873afa94a63de7b4bab067e44d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af902f23ebec43f21e047f89e7bd4cb0f" id="r_af902f23ebec43f21e047f89e7bd4cb0f"><td class="memItemLeft" align="right" valign="top"><a id="af902f23ebec43f21e047f89e7bd4cb0f" name="af902f23ebec43f21e047f89e7bd4cb0f"></a>
+<a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704">ImplType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>implType</b> () const</td></tr>
+<tr class="memdesc:af902f23ebec43f21e047f89e7bd4cb0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C implementation type. <br /></td></tr>
+<tr class="separator:af902f23ebec43f21e047f89e7bd4cb0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4357f844a0e6ea1558320624139480f3" id="r_a4357f844a0e6ea1558320624139480f3"><td class="memItemLeft" align="right" valign="top"><a id="a4357f844a0e6ea1558320624139480f3" name="a4357f844a0e6ea1558320624139480f3"></a>
 int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>scl</b> () const</td></tr>
 <tr class="separator:a4357f844a0e6ea1558320624139480f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -266,17 +297,6 @@ std::unique_ptr&lt; <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.htm
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pub_types_classm5_1_1unit_1_1_adapter"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_types_classm5_1_1unit_1_1_adapter')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></td></tr>
-<tr class="memitem:a6d3797f5be198a03cd4699e63dbbafce inherit pub_types_classm5_1_1unit_1_1_adapter" id="r_a6d3797f5be198a03cd4699e63dbbafce"><td class="memItemLeft" align="right" valign="top"><a id="a6d3797f5be198a03cd4699e63dbbafce" name="a6d3797f5be198a03cd4699e63dbbafce"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><b>Type</b> : uint8_t { <br />
-&#160;&#160;<b>Unknown</b>
-, <b>I2C</b>
-, <b>GPIO</b>
-, <b>UART</b>
-, <br />
-&#160;&#160;<b>SPI</b>
-<br />
- }</td></tr>
-<tr class="separator:a6d3797f5be198a03cd4699e63dbbafce inherit pub_types_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classm5_1_1unit_1_1_adapter"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_methods_classm5_1_1unit_1_1_adapter')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></td></tr>
 <tr class="memitem:abd7cacd7e89598d790f98edb89897d24 inherit pro_methods_classm5_1_1unit_1_1_adapter" id="r_abd7cacd7e89598d790f98edb89897d24"><td class="memItemLeft" align="right" valign="top">
 &#160;</td><td class="memItemRight" valign="bottom"><b>Adapter</b> (const Type t, <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">Impl</a> *impl)</td></tr>
@@ -284,7 +304,42 @@ Additional Inherited Members</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>I2C access adapter. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="a8d18994dbe5d6f786c355fc9ba12b704" name="a8d18994dbe5d6f786c355fc9ba12b704"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d18994dbe5d6f786c355fc9ba12b704">&#9670;&#160;</a></span>ImplType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704">m5::unit::AdapterI2C::ImplType</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>I2C implementation type. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8d18994dbe5d6f786c355fc9ba12b704a88183b946cc5f0e8c96b2e66e1c74a7e" name="a8d18994dbe5d6f786c355fc9ba12b704a88183b946cc5f0e8c96b2e66e1c74a7e"></a>Unknown&#160;</td><td class="fielddoc"><p>Unknown. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a" name="a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a"></a>TwoWire&#160;</td><td class="fielddoc"><p>Arduino TwoWire. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8d18994dbe5d6f786c355fc9ba12b704a6e4b38bfd57741ac1597c440a1c98074" name="a8d18994dbe5d6f786c355fc9ba12b704a6e4b38bfd57741ac1597c440a1c98074"></a>Bus&#160;</td><td class="fielddoc"><p>M5HAL Bus (including SoftwareI2C) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8d18994dbe5d6f786c355fc9ba12b704a3223fe82a0ceaf3c26a5b4ad65298237" name="a8d18994dbe5d6f786c355fc9ba12b704a3223fe82a0ceaf3c26a5b4ad65298237"></a>I2CClass&#160;</td><td class="fielddoc"><p>m5::I2C_Class (m5gfx::i2c) </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="aed51edd13ae67dda41283cc52efacc12" name="aed51edd13ae67dda41283cc52efacc12"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aed51edd13ae67dda41283cc52efacc12">&#9670;&#160;</a></span>duplicate()</h2>
 

@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['oldest_0',['oldest',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#a00a4415133c5c90cb68877cb3ceee52f',1,'m5::unit::PeriodicMeasurementAdapter']]],
-  ['order_1',['order',['../classm5_1_1unit_1_1_component.html#af8bb0b30d7d7fb0bad020d14e38b4568',1,'m5::unit::Component']]]
+  ['max_5finterval_0',['max_interval',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a2aead5fc901923af45eaca39550cc446',1,'m5::unit::googletest::PeriodicMeasurementResult']]],
+  ['median_1',['median',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a0b395edf0bcfef851efeb0d7d96d0fd2',1,'m5::unit::googletest::PeriodicMeasurementResult']]],
+  ['min_5finterval_2',['min_interval',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a701d9bda5c6d76ca2d8b7ab7663392cc',1,'m5::unit::googletest::PeriodicMeasurementResult']]]
 ];
