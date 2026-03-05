@@ -46,7 +46,7 @@ public:
         {
             return _addr;
         }
-        inline void setAddress(const uint8_t addr)
+        inline virtual void setAddress(const uint8_t addr)
         {
             _addr = addr;
         }
@@ -175,6 +175,11 @@ public:
             return _sda;
         }
 
+        inline virtual void setAddress(const uint8_t addr) override
+        {
+            I2CImpl::setAddress(addr);
+            _access_cfg.i2c_addr = addr;
+        }
         inline virtual void setClock(const uint32_t clock) override
         {
             I2CImpl::setClock(clock);
