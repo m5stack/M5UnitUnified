@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.1 git rev:2d36f7d</span>
    </div>
   </td>
  </tr>
@@ -128,6 +128,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a87e21465b7ef0109e579261dcc220866"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf7c0f0dfa2915e0133182597b5ebabb" id="r_acf7c0f0dfa2915e0133182597b5ebabb"><td class="memItemLeft" align="right" valign="top">virtual int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf7c0f0dfa2915e0133182597b5ebabb">sda</a> () const override</td></tr>
 <tr class="separator:acf7c0f0dfa2915e0133182597b5ebabb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dc4ec77c5ce997e8eecf2fb3f15f7f5" id="r_a5dc4ec77c5ce997e8eecf2fb3f15f7f5"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dc4ec77c5ce997e8eecf2fb3f15f7f5">setAddress</a> (const uint8_t addr) override</td></tr>
+<tr class="separator:a5dc4ec77c5ce997e8eecf2fb3f15f7f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e3be9defd8ad4bf97f7d13860ce291c" id="r_a9e3be9defd8ad4bf97f7d13860ce291c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e3be9defd8ad4bf97f7d13860ce291c">setClock</a> (const uint32_t clock) override</td></tr>
 <tr class="separator:a9e3be9defd8ad4bf97f7d13860ce291c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2c15090ac6832a6004a82db478e3876" id="r_ab2c15090ac6832a6004a82db478e3876"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2c15090ac6832a6004a82db478e3876">begin</a> () override</td></tr>
@@ -155,9 +157,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a158323a6c39844f935243c8d661c4b6c inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl" id="r_a158323a6c39844f935243c8d661c4b6c"><td class="memItemLeft" align="right" valign="top">
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>address</b> () const</td></tr>
 <tr class="separator:a158323a6c39844f935243c8d661c4b6c inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6abfeeb9d9c1ed119b14606a9ee69993 inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl" id="r_a6abfeeb9d9c1ed119b14606a9ee69993"><td class="memItemLeft" align="right" valign="top">
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setAddress</b> (const uint8_t addr)</td></tr>
-<tr class="separator:a6abfeeb9d9c1ed119b14606a9ee69993 inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa29cc997a8841528c412274a46dbd7ea inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl" id="r_aa29cc997a8841528c412274a46dbd7ea"><td class="memItemLeft" align="right" valign="top">
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>clock</b> () const</td></tr>
 <tr class="separator:aa29cc997a8841528c412274a46dbd7ea inherit pub_methods_classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -459,6 +458,33 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>_clock</b> {100 *
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html">m5::unit::AdapterI2C::I2CImpl</a>.</p>
+
+</div>
+</div>
+<a id="a5dc4ec77c5ce997e8eecf2fb3f15f7f5" name="a5dc4ec77c5ce997e8eecf2fb3f15f7f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dc4ec77c5ce997e8eecf2fb3f15f7f5">&#9670;&#160;</a></span>setAddress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void m5::unit::AdapterI2C::BusImpl::setAddress </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>addr</em></span></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
