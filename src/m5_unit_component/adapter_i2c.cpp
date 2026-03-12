@@ -342,12 +342,12 @@ AdapterI2C::I2CClassImpl::I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, c
 
 bool AdapterI2C::I2CClassImpl::begin()
 {
-    return true;  // Already initialized by M5Unified
+    return _i2c->begin();
 }
 
 bool AdapterI2C::I2CClassImpl::end()
 {
-    return true;  // Managed by M5Unified
+    return _i2c->release();
 }
 
 m5::hal::error::error_t AdapterI2C::I2CClassImpl::readWithTransaction(uint8_t* data, const size_t len)
