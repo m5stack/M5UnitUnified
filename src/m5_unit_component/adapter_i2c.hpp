@@ -105,6 +105,10 @@ public:
         {
             return nullptr;
         }
+        virtual m5::I2C_Class* getI2CClass()
+        {
+            return nullptr;
+        }
 
     protected:
         uint8_t _addr{};
@@ -221,6 +225,10 @@ public:
         inline virtual ImplType implType() const override
         {
             return ImplType::I2CClass;
+        }
+        inline virtual m5::I2C_Class* getI2CClass() override
+        {
+            return _i2c;
         }
         inline virtual int16_t scl() const override
         {
