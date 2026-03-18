@@ -46,6 +46,8 @@ public:
         GPIOImpl(const int8_t rx_pin, const int8_t tx_pin) : _rx_pin{(gpio_num_t)rx_pin}, _tx_pin{(gpio_num_t)tx_pin}
         {
         }
+        virtual ~GPIOImpl() override;
+
         inline gpio_num_t rx_pin() const
         {
             return _rx_pin;
@@ -85,6 +87,10 @@ public:
         {
             return read_analog(v, rx_pin());
         }
+        inline virtual m5::hal::error::error_t readAnalogMilliVoltsRX(uint32_t& mv) override
+        {
+            return read_analog_millivolts(mv, rx_pin());
+        }
 
         inline virtual m5::hal::error::error_t pulseInRX(uint32_t& duration, const int state,
                                                          const uint32_t timeout_us = 30000) override
@@ -113,6 +119,10 @@ public:
         {
             return read_analog(v, tx_pin());
         }
+        inline virtual m5::hal::error::error_t readAnalogMilliVoltsTX(uint32_t& mv) override
+        {
+            return read_analog_millivolts(mv, tx_pin());
+        }
         inline virtual m5::hal::error::error_t pulseInTX(uint32_t& duration, const int state,
                                                          const uint32_t timeout_us = 30000) override
         {
@@ -125,12 +135,23 @@ public:
         m5::hal::error::error_t read_digital(const gpio_num_t pin, bool& high);
         m5::hal::error::error_t write_analog(const gpio_num_t pin, const uint16_t value);
         m5::hal::error::error_t read_analog(uint16_t& value, const gpio_num_t pin);
+        m5::hal::error::error_t read_analog_millivolts(uint32_t& millivolts, const gpio_num_t pin);
         m5::hal::error::error_t pulse_in(uint32_t& duration, const gpio_num_t pin, const int state,
                                          const uint32_t timeout_us);
 
     protected:
+        m5::hal::error::error_t ensure_adc_handle(const gpio_num_t pin);
+        void release_adc_resources();
+
         gpio_num_t _rx_pin{(gpio_num_t)-1}, _tx_pin{(gpio_num_t)-1};
         gpio::adapter_config_t _adapter_cfg{};
+
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+        void* _adc_handle{};              // adc_oneshot_unit_handle_t
+        void* _cali_handle{};             // adc_cali_handle_t
+        int8_t _cached_adc_unit{-1};      // 0=ADC1, 1=ADC2, -1=uninitialized
+        int8_t _cached_cali_channel{-1};  // cached calibration channel, -1=uninitialized
+#endif
     };
     //
     explicit AdapterGPIOBase(GPIOImpl* impl);
