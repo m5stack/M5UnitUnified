@@ -159,6 +159,7 @@ constexpr gpio_config_t gpio_cfg_table[] = {
 };
 
 #if CONFIG_IDF_TARGET_ESP32
+#pragma message "ADC table: ESP32"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 11,  // ADC2_CHANNEL_1
     /*  1 */ -1,
@@ -202,6 +203,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 39 */ 3   // ADC1_CHANNEL_3
 };
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#pragma message "ADC table: ESP32-S2/S3"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ 0,   // ADC1_CHANNEL_0
@@ -226,6 +228,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 20 */ 19,  // ADC2_CHANNEL_9
 };
 #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#pragma message "ADC table: ESP32-C3/C2"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,   // ADC1_CHANNEL_0
     /*  1 */ 1,   // ADC1_CHANNEL_1
@@ -234,8 +237,8 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  4 */ 4,   // ADC1_CHANNEL_4
     /*  5 */ 10,  // ADC2_CHANNEL_0
 };
-#elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32P4 || \
-    CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
+#elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
+#pragma message "ADC table: ESP32-C6/H2/C5/C61"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,  // ADC1_CHANNEL_0
     /*  1 */ 1,  // ADC1_CHANNEL_1
@@ -246,6 +249,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  6 */ 6,  // ADC1_CHANNEL_6
 };
 #elif CONFIG_IDF_TARGET_ESP32P4
+#pragma message "ADC table: ESP32-P4"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ -1,
