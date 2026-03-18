@@ -84,6 +84,10 @@ public:
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
+        virtual m5::hal::error::error_t readAnalogMilliVoltsRX(uint32_t&)
+        {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
         virtual m5::hal::error::error_t pulseInRX(uint32_t&, const int, const uint32_t)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -106,6 +110,10 @@ public:
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
         virtual m5::hal::error::error_t readAnalogTX(uint16_t&)
+        {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+        virtual m5::hal::error::error_t readAnalogMilliVoltsTX(uint32_t&)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
@@ -199,6 +207,10 @@ public:
     {
         return _impl->readAnalogRX(v);
     }
+    inline m5::hal::error::error_t readAnalogMilliVoltsRX(uint32_t& mv)
+    {
+        return _impl->readAnalogMilliVoltsRX(mv);
+    }
     inline m5::hal::error::error_t pulseInRX(uint32_t& duration, const int state, const uint32_t timeout_us)
     {
         return _impl->pulseInRX(duration, state, timeout_us);
@@ -223,6 +235,10 @@ public:
     inline m5::hal::error::error_t readAnalogTX(uint16_t& v)
     {
         return _impl->readAnalogTX(v);
+    }
+    inline m5::hal::error::error_t readAnalogMilliVoltsTX(uint32_t& mv)
+    {
+        return _impl->readAnalogMilliVoltsTX(mv);
     }
     inline m5::hal::error::error_t pulseInTX(uint32_t& duration, const int state, const uint32_t timeout_us)
     {

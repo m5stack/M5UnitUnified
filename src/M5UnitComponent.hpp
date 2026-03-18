@@ -448,6 +448,7 @@ public:
     bool readDigitalRX(bool& high);
     bool writeAnalogRX(const uint16_t v);
     bool readAnalogRX(uint16_t& v);
+    bool readAnalogMilliVoltsRX(uint32_t& mv);
     bool pulseInRX(uint32_t& duration, const int state, const uint32_t timeout_us = 1000000);
 
     bool pinModeTX(const gpio::Mode m);
@@ -455,6 +456,7 @@ public:
     bool readDigitalTX(bool& high);
     bool writeAnalogTX(const uint16_t v);
     bool readAnalogTX(uint16_t& v);
+    bool readAnalogMilliVoltsTX(uint32_t& mv);
     bool pulseInTX(uint32_t& duration, const int state, const uint32_t timeout_us = 1000000);
     ///@endcond
 

@@ -15,9 +15,12 @@
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #pragma message "Using RMT v2,Oneshot"
 #include <esp_adc/adc_oneshot.h>
+#include <esp_adc/adc_cali.h>
+#include <esp_adc/adc_cali_scheme.h>
 #else
 #pragma message "Using RMT v1"
 #include <driver/adc.h>
+#include <esp_adc_cal.h>
 #endif
 
 // ADC_ATTEN_DB_12 was introduced in ESP-IDF v4.4.7 / v5.1.3
@@ -156,6 +159,7 @@ constexpr gpio_config_t gpio_cfg_table[] = {
 };
 
 #if CONFIG_IDF_TARGET_ESP32
+#pragma message "ADC table: ESP32"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 11,  // ADC2_CHANNEL_1
     /*  1 */ -1,
@@ -199,6 +203,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 39 */ 3   // ADC1_CHANNEL_3
 };
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#pragma message "ADC table: ESP32-S2/S3"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ 0,   // ADC1_CHANNEL_0
@@ -223,6 +228,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 20 */ 19,  // ADC2_CHANNEL_9
 };
 #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#pragma message "ADC table: ESP32-C3/C2"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,   // ADC1_CHANNEL_0
     /*  1 */ 1,   // ADC1_CHANNEL_1
@@ -231,8 +237,8 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  4 */ 4,   // ADC1_CHANNEL_4
     /*  5 */ 10,  // ADC2_CHANNEL_0
 };
-#elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32P4 || \
-    CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
+#elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
+#pragma message "ADC table: ESP32-C6/H2/C5/C61"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,  // ADC1_CHANNEL_0
     /*  1 */ 1,  // ADC1_CHANNEL_1
@@ -243,6 +249,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  6 */ 6,  // ADC1_CHANNEL_6
 };
 #elif CONFIG_IDF_TARGET_ESP32P4
+#pragma message "ADC table: ESP32-P4"
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ -1,
@@ -330,6 +337,70 @@ int gpio_to_adc12(const int8_t pin)
 namespace m5 {
 namespace unit {
 
+AdapterGPIOBase::GPIOImpl::~GPIOImpl()
+{
+    release_adc_resources();
+}
+
+void AdapterGPIOBase::GPIOImpl::release_adc_resources()
+{
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+    if (_cali_handle) {
+        auto cali = static_cast<adc_cali_handle_t>(_cali_handle);
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+        adc_cali_delete_scheme_curve_fitting(cali);
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+        adc_cali_delete_scheme_line_fitting(cali);
+#endif
+        _cali_handle         = nullptr;
+        _cached_cali_channel = -1;
+    }
+    if (_adc_handle) {
+        adc_oneshot_del_unit(static_cast<adc_oneshot_unit_handle_t>(_adc_handle));
+        _adc_handle      = nullptr;
+        _cached_adc_unit = -1;
+    }
+#endif
+}
+
+m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::ensure_adc_handle(const gpio_num_t pin)
+{
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+    const auto ch = gpio_to_adc_channel(pin);
+    if (ch < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    int8_t needed_unit = (ch < 10) ? 0 : 1;
+
+    if (_adc_handle && _cached_adc_unit == needed_unit) {
+        return m5::hal::error::error_t::OK;
+    }
+
+    // ADC unit changed — release everything and recreate
+    release_adc_resources();
+
+    adc_unit_t unit = (needed_unit == 0) ? ADC_UNIT_1 : ADC_UNIT_2;
+    adc_oneshot_unit_handle_t handle{};
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+#else
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+#endif
+
+    if (adc_oneshot_new_unit(&init_config, &handle) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+
+    _adc_handle      = handle;
+    _cached_adc_unit = needed_unit;
+    return m5::hal::error::error_t::OK;
+#else
+    return m5::hal::error::error_t::OK;
+#endif
+}
+
 namespace gpio {
 
 uint8_t calculate_rmt_clk_div(uint32_t apb_freq_hz, uint32_t tick_ns)
@@ -416,37 +487,28 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 
 #if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
     // ESP-IDF 5.x
-    adc_unit_t unit       = (ch < 10) ? ADC_UNIT_1 : ADC_UNIT_2;
-    adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
-
-    adc_oneshot_unit_handle_t adc_handle{};
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    adc_oneshot_unit_init_cfg_t init_config = {
-        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
-#else
-    adc_oneshot_unit_init_cfg_t init_config = {
-        .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
-#endif
-
-    if (adc_oneshot_new_unit(&init_config, &adc_handle) != ESP_OK) {
-        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    auto err = ensure_adc_handle(pin);
+    if (err != m5::hal::error::error_t::OK) {
+        return err;
     }
+
+    auto adc_handle       = static_cast<adc_oneshot_unit_handle_t>(_adc_handle);
+    adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
 
     adc_oneshot_chan_cfg_t chan_config = {
         .atten    = M5_ADC_ATTEN_DB,      // 0~3.3V
         .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
     };
 
-    auto ret = m5::hal::error::error_t::UNKNOWN_ERROR;
-    if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) == ESP_OK) {
-        int raw{};
-        if (adc_oneshot_read(adc_handle, channel, &raw) == ESP_OK) {
-            value = static_cast<uint16_t>(raw);
-            ret   = m5::hal::error::error_t::OK;
-        }
+    if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
     }
-    adc_oneshot_del_unit(adc_handle);
-    return ret;
+    int raw{};
+    if (adc_oneshot_read(adc_handle, channel, &raw) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+    value = static_cast<uint16_t>(raw);
+    return m5::hal::error::error_t::OK;
 
 #else
     // ESP-IDF 4.x
@@ -467,6 +529,113 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(channel, M5_ADC_ATTEN_DB);
     value = static_cast<uint16_t>(adc1_get_raw(channel));
+    return m5::hal::error::error_t::OK;
+#endif
+}
+
+m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32_t& millivolts, const gpio_num_t pin)
+{
+    millivolts = 0;
+
+    const auto ch = gpio_to_adc_channel(pin);
+    if (ch < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+#if !defined(SOC_ADC_PERIPH_NUM) || SOC_ADC_PERIPH_NUM <= 1
+    if (ch >= 10) {
+        M5_LIB_LOGE("Not support ADC2");
+        return m5::hal::error::error_t::NOT_IMPLEMENTED;
+    }
+#endif
+
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+    // ESP-IDF 5.x: Use adc_cali for calibrated millivolt reading
+    auto err = ensure_adc_handle(pin);
+    if (err != m5::hal::error::error_t::OK) {
+        return err;
+    }
+
+    auto adc_handle       = static_cast<adc_oneshot_unit_handle_t>(_adc_handle);
+    adc_channel_t channel = static_cast<adc_channel_t>((ch < 10) ? ch : (ch - 10));
+
+    adc_oneshot_chan_cfg_t chan_config = {
+        .atten    = M5_ADC_ATTEN_DB,      // 0~3.3V
+        .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
+    };
+
+    if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+
+    // Ensure calibration handle for this channel
+    if (_cached_cali_channel != ch) {
+        // Release old cali handle if any
+        if (_cali_handle) {
+            auto old_cali = static_cast<adc_cali_handle_t>(_cali_handle);
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+            adc_cali_delete_scheme_curve_fitting(old_cali);
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+            adc_cali_delete_scheme_line_fitting(old_cali);
+#endif
+            _cali_handle = nullptr;
+        }
+
+        adc_unit_t unit = (_cached_adc_unit == 0) ? ADC_UNIT_1 : ADC_UNIT_2;
+        adc_cali_handle_t cali_handle{};
+        bool cali_ok{};
+
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+        adc_cali_curve_fitting_config_t cali_config = {
+            .unit_id  = unit,
+            .chan     = channel,
+            .atten    = M5_ADC_ATTEN_DB,
+            .bitwidth = ADC_BITWIDTH_DEFAULT,
+        };
+        cali_ok = (adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle) == ESP_OK);
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+        adc_cali_line_fitting_config_t cali_config = {
+            .unit_id = unit,
+            .atten = M5_ADC_ATTEN_DB,
+            .bitwidth = ADC_BITWIDTH_DEFAULT,
+        };
+        cali_ok = (adc_cali_create_scheme_line_fitting(&cali_config, &cali_handle) == ESP_OK);
+#endif
+
+        if (cali_ok) {
+            _cali_handle         = cali_handle;
+            _cached_cali_channel = ch;
+        }
+    }
+
+    int raw{};
+    if (adc_oneshot_read(adc_handle, channel, &raw) != ESP_OK) {
+        return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+
+    if (_cali_handle) {
+        int mv{};
+        if (adc_cali_raw_to_voltage(static_cast<adc_cali_handle_t>(_cali_handle), raw, &mv) == ESP_OK) {
+            millivolts = static_cast<uint32_t>(mv);
+            return m5::hal::error::error_t::OK;
+        }
+    }
+
+    // Fallback: uncalibrated estimate
+    millivolts = static_cast<uint32_t>(raw * 3100 / 4095);
+    return m5::hal::error::error_t::OK;
+
+#else
+    // ESP-IDF 4.x: Use esp_adc_cal for calibrated millivolt reading
+    uint16_t raw{};
+    auto err = read_analog(raw, pin);
+    if (err != m5::hal::error::error_t::OK) {
+        return err;
+    }
+
+    adc_unit_t unit = (ch < 10) ? ADC_UNIT_1 : ADC_UNIT_2;
+    esp_adc_cal_characteristics_t chars{};
+    esp_adc_cal_characterize(unit, M5_ADC_ATTEN_DB, ADC_WIDTH_BIT_12, 1100, &chars);
+    millivolts = esp_adc_cal_raw_to_voltage(raw, &chars);
     return m5::hal::error::error_t::OK;
 #endif
 }
