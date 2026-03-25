@@ -30,7 +30,7 @@ rmt_channel_t retrieve_available_rmt_channel(const int8_t first = 0)
     return RMT_CHANNEL_MAX;
 }
 
-bool declrare_use_rmt_channel(const int ch)
+bool declare_use_rmt_channel(const int ch)
 {
     if (ch >= 0 && ch < RMT_CHANNEL_MAX && ((1U << ch) & using_rmt_channel_bits) == 0) {
         using_rmt_channel_bits |= (1U << ch);
@@ -169,8 +169,8 @@ public:
                 gpio_matrix_out(_tx_config.gpio_num, _tx_config.channel + RMT_SIG_OUT0_IDX, true, false);
             }
 
-            declrare_use_rmt_channel(ch);
-            M5_LIB_LOGI("Retrive RMT(v1) TX %d/%u", tx_pin(), ch);
+            declare_use_rmt_channel(ch);
+            M5_LIB_LOGI("Retrieve RMT(v1) TX %d/%u", tx_pin(), ch);
         }
         // RMT RX
         if (_rx_config.channel == RMT_CHANNEL_MAX &&
@@ -210,7 +210,7 @@ public:
                 gpio_matrix_in(_rx_config.gpio_num, _rx_config.channel + RMT_SIG_IN0_IDX, true);
             }
 
-            declrare_use_rmt_channel(ch);
+            declare_use_rmt_channel(ch);
             M5_LIB_LOGI("Retrieve RMT(v1) RX %d/%u", rx_pin(), ch);
 
             if (rmt_rx_start(_rx_config.channel, true) != ESP_OK) {
@@ -223,7 +223,8 @@ public:
             RingbufHandle_t rb{};
             rmt_get_ringbuf_handle(_rx_config.channel, &rb);
             if (rb) {
-                rmt_item32_t* items = (rmt_item32_t*)xRingbufferReceive(rb, &rx_size, 10 / portTICK_PERIOD_MS);
+                rmt_item32_t* items =
+                    static_cast<rmt_item32_t*>(xRingbufferReceive(rb, &rx_size, 10 / portTICK_PERIOD_MS));
                 if (items) {
                     vRingbufferReturnItem(rb, items);
                 }
@@ -242,12 +243,13 @@ public:
         // m5::utility::log::dump(data, len, false);
         // dump_items((rmt_item32_t*)data, len / sizeof(rmt_item32_t));
 
-        auto err = rmt_write_items(_tx_config.channel, (gpio::m5_rmt_item_t*)data, len / sizeof(rmt_item32_t), false);
+        auto err = rmt_write_items(_tx_config.channel, reinterpret_cast<const gpio::m5_rmt_item_t*>(data),
+                                   len / sizeof(rmt_item32_t), false);
         if (err != ESP_OK) {
             M5_LIB_LOGE("Failed to write %d:%s", err, esp_err_to_name(err));
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        if (err == ESP_OK && waitMs) {
+        if (waitMs) {
             // M5_LIB_LOGE(">>> wait_tx_done %d,%u", _tx_config.channel, waitMs);
             err = rmt_wait_tx_done(_tx_config.channel, waitMs);
             if (err != ESP_OK) {
@@ -277,13 +279,13 @@ public:
 
         size_t max_len = len - 2;  // Top of 2bytes is receive length
         size_t rx_size{};
-        rmt_item32_t* items = (rmt_item32_t*)xRingbufferReceive(rb, &rx_size, pdMS_TO_TICKS(50));
+        rmt_item32_t* items = static_cast<rmt_item32_t*>(xRingbufferReceive(rb, &rx_size, pdMS_TO_TICKS(50)));
 
         // dump_items(items, rx_size / sizeof(rmt_item32_t));
-        *(uint16_t*)data = 0;
+        memcpy(data, "\0\0", 2);
         if (items && rx_size) {
-            uint16_t rlen    = std::min<uint16_t>(rx_size, max_len);
-            *(uint16_t*)data = rlen;
+            uint16_t rlen = std::min<uint16_t>(rx_size, max_len);
+            memcpy(data, &rlen, sizeof(rlen));
             memcpy(data + 2, items, rlen);
         }
         if (items) {

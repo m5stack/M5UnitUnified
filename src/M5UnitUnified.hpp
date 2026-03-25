@@ -32,7 +32,7 @@ struct SPISettings;
 
 /*!
   @namespace m5
-  @brief Top level namespace of M5stack
+  @brief Top level namespace of M5Stack
  */
 namespace m5 {
 class I2C_Class;

@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_uart.cpp
-  @brief Adapters to treat M5HAL and UART in the same way using Searial
+  @brief Adapters to treat M5HAL and UART in the same way using Serial
   @note  Currently handles Serial directly, but will handle via M5HAL in the future
 */
 #include "adapter_uart.hpp"
@@ -50,7 +50,7 @@ m5::hal::error::error_t AdapterUART::SerialImpl::readWithTransaction(uint8_t* da
 }
 
 m5::hal::error::error_t AdapterUART::SerialImpl::writeWithTransaction(const uint8_t* data, const size_t len,
-                                                                      const uint32_t /* unuse */)
+                                                                      const uint32_t /* unused */)
 {
     return (_serial->write(data, len) == len) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::TIMEOUT_ERROR;
 }

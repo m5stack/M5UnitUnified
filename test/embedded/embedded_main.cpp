@@ -30,8 +30,6 @@ void test()
 
 void setup()
 {
-    delay(1500);
-
     M5.begin();
 
     M5_LOGI("CPP %ld", __cplusplus);

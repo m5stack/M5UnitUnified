@@ -1,10 +1,10 @@
 {
     "name": "M5UnitUnified",
-    "description": "M5UnitUnified is a library for unified handling of various M5 units products.(Alpha version)",
-    "keywords": "M5UnitUnified",
+    "description": "M5UnitUnified is a library for unified handling of various M5 units products.",
+    "keywords": "m5stack, m5unitunified, unit, i2c, gpio, uart, spi, sensor, hal",
     "authors": {
         "name": "M5Stack",
-        "url": "http://www.m5stack.com"
+        "url": "https://www.m5stack.com"
     },
     "repository": {
         "type": "git",

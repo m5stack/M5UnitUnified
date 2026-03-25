@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  UnitTest for M5UnitComponet
+  UnitTest for M5UnitComponent
 */
 #include <gtest/gtest.h>
 #include <M5UnitComponent.hpp>
@@ -69,12 +69,50 @@ TEST(Component, Children)
     EXPECT_FALSE(u0.add(u3, 2));  // max = 2 (failed)
     EXPECT_LT(u3.channel(), 0);
 
+    // parent
+    EXPECT_EQ(u1.parent(), &u0);
+    EXPECT_EQ(u2.parent(), &u0);
+    EXPECT_EQ(u0.parent(), nullptr);
+
+    // existsChild / child
+    EXPECT_TRUE(u0.existsChild(0));
+    EXPECT_TRUE(u0.existsChild(3));
+    EXPECT_FALSE(u0.existsChild(1));
+    EXPECT_FALSE(u0.existsChild(2));
+    EXPECT_EQ(u0.child(0), &u1);
+    EXPECT_EQ(u0.child(3), &u2);
+    EXPECT_EQ(u0.child(1), nullptr);
+
     // iteration
     m5::unit::UnitDummy* ptr[] = {&u1, &u2};
     size_t i                   = 0;
     for (auto it = u0.childBegin(); it != u0.childEnd(); ++it) {
         EXPECT_EQ(&(*it), ptr[i++]);
-        //        printf("[%u]:%s\n", it->port(), (*it).deviceName());
     }
     EXPECT_EQ(i, u0.childrenSize());
+}
+
+TEST(Component, DefaultProperties)
+{
+    m5::unit::UnitDummy u;
+
+    // category defaults to None
+    EXPECT_EQ(u.category(), m5::unit::types::category_t::None);
+
+    // not in periodic measurement by default
+    EXPECT_FALSE(u.inPeriodic());
+    EXPECT_FALSE(u.updated());
+
+    // order is 0 before registration
+    EXPECT_EQ(u.order(), 0U);
+
+    // adapter exists but Type::Unknown before assignment
+    EXPECT_NE(u.adapter(), nullptr);
+    EXPECT_EQ(u.adapter()->type(), m5::unit::Adapter::Type::Unknown);
+
+    // address
+    EXPECT_EQ(u.address(), m5::unit::DUMMY_I2C_ADDR);
+
+    // deviceName
+    EXPECT_STREQ(u.deviceName(), "UnitDummy");
 }

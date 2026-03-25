@@ -17,7 +17,7 @@ on:
       - '**.h'
       - '**.c'
       - '**.inl'
-      - '**clang-format-check.yml'
+      - '.github/workflows/clang-format-check.yml'
       - '**.clang-format'
   pull_request:
     paths:
@@ -27,7 +27,7 @@ on:
       - '**.h'
       - '**.c'
       - '**.inl'
-      - '**clang-format-check.yml'
+      - '.github/workflows/clang-format-check.yml'
       - '**.clang-format'
   workflow_dispatch:
 
@@ -43,21 +43,19 @@ jobs:
   formatting-check:
     name: Formatting Check
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     strategy:
+      max-parallel: 20
       matrix:
         path:
           - check: 'src'
             exclude: ''
-          - check: 'pio_project/test'
-            exclude: ''
-          - check: 'examples/Basic'
+          - check: 'test'
             exclude: ''
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Run clang-format style check for C/C++/Protobuf programs.
         uses: jidicula/clang-format-action@v4.16.0 # Using include-regex 10.x or later
@@ -66,4 +64,3 @@ jobs:
           check-path: ${{ matrix.path['check'] }}
           exclude-regex: ${{ matrix.path['exclude'] }}
           include-regex: ${{ env.INCLUDE_REGEX }}
-

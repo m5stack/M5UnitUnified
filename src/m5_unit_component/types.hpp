@@ -105,7 +105,7 @@ struct adapter_config_t {
         //        bool eof_flag{};                    ///< Use RX EOF detection via timeout (v2 feature)
     };
 
-    Mode mode{};       ///< Operating mode (RmtRX.RmtTx,RmtRXTX)
+    Mode mode{};       ///< Operating mode (RmtRX, RmtTX, RmtRXTX)
     rx_config_t rx{};  ///< For RX
     tx_config_t tx{};  ///< For TX
 };

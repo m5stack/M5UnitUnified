@@ -31,7 +31,7 @@ uint8_t calculate_rmt_clk_div(const uint32_t apb_freq_hz, const uint32_t tick_ns
    @brief Calculate resolution from desired tick time
   @param apb_freq_hz Current APB clock (Hz)
   @param tick_ns Desired tick time (ns)
-  @return resoution for RMT v2
+  @return resolution for RMT v2
 */
 uint32_t calculate_rmt_resolution_hz(const uint32_t apb_freq_hz, const uint32_t tick_ns);
 
@@ -83,7 +83,7 @@ public:
         {
             return write_analog(rx_pin(), v);
         }
-        inline virtual m5::hal::error::error_t readAnalogRX(uint16_t& v)
+        inline virtual m5::hal::error::error_t readAnalogRX(uint16_t& v) override
         {
             return read_analog(v, rx_pin());
         }
@@ -115,7 +115,7 @@ public:
         {
             return write_analog(tx_pin(), v);
         }
-        inline virtual m5::hal::error::error_t readAnalogTX(uint16_t& v)
+        inline virtual m5::hal::error::error_t readAnalogTX(uint16_t& v) override
         {
             return read_analog(v, tx_pin());
         }

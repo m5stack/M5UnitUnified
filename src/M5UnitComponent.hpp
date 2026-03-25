@@ -83,7 +83,7 @@ public:
     ///@name Component settings
     ///@{
     /*! @brief Gets the common configurations in each unit */
-    inline component_config_t component_config()
+    inline component_config_t component_config() const
     {
         return _component_cfg;
     }
@@ -223,17 +223,17 @@ public:
 
     ///@name Bus assignment
     ///@{
-    /*! @brief Assgin m5::hal::bus */
+    /*! @brief Assign m5::hal::bus */
     virtual bool assign(m5::hal::bus::Bus* bus);
-    /*! @brief Assgin TwoWire */
+    /*! @brief Assign TwoWire */
     virtual bool assign(TwoWire& wire);
     /*! @brief Assign I2C_Class */
     virtual bool assign(m5::I2C_Class& i2c);
-    /*! @brief Assgin GPIO */
+    /*! @brief Assign GPIO */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
-    /*! @brief Assgin UART */
+    /*! @brief Assign UART */
     virtual bool assign(HardwareSerial& serial);
-    /*! @brief Assgin SPI */
+    /*! @brief Assign SPI */
     virtual bool assign(SPIClass& spi, const SPISettings& settings);
     ///@}
 
@@ -265,7 +265,7 @@ public:
         return _parent;
     }
     //! @brief Gets the device connected to the specified channel
-    Component* child(const uint8_t chhanle) const;
+    Component* child(const uint8_t channel) const;
     //! @brief Connect the unit to the specified channel
     bool add(Component& c, const int16_t channel);
     //! @brief Select valid channel if exists
@@ -338,7 +338,12 @@ public:
     }
     ///@endcond
 
-    /*! @brief General call for I2C*/
+    /*!
+      @brief General call for I2C
+      @param data Pointer to data to send
+      @param len Length of data
+      @return True if successful
+    */
     bool generalCall(const uint8_t* data, const size_t len);
 
     //! @brief Output information for debug
@@ -462,7 +467,7 @@ public:
 
 #if defined(DOXYGEN_PROCESS)
     // There is a problem with the Doxygen output of templates containing std::enable_if,
-    // so we need a section for Dxygen output
+    // so we need a section for Doxygen output
     ///@name Read/Write
     ///@{
     //! @brief Read any data with transaction
@@ -499,16 +504,16 @@ public:
     //! @brief Write byte with transaction to register
     template <typename Reg>
     bool writeRegister8(const Reg reg, const uint8_t value, const bool stop = true);
-    //! @brief Write word in big-endian order with transaction from register
+    //! @brief Write word in big-endian order with transaction to register
     template <typename Reg>
     bool writeRegister16BE(const Reg reg, const uint16_t value, const bool stop = true);
-    //! @brief Write word in little-endian order with transaction from register
+    //! @brief Write word in little-endian order with transaction to register
     template <typename Reg>
     bool writeRegister16LE(const Reg reg, const uint16_t value, const bool stop = true);
-    //! @brief Write dword in big-endian order with transaction from register
+    //! @brief Write dword in big-endian order with transaction to register
     template <typename Reg>
     bool writeRegister32BE(const Reg reg, const uint32_t value, const bool stop = true);
-    //! @brief Write dword in little-endian order with transaction from register
+    //! @brief Write dword in little-endian order with transaction to register
     template <typename Reg>
     bool writeRegister32LE(const Reg reg, const uint32_t value, const bool stop = true);
     ///@}
@@ -556,7 +561,7 @@ protected:
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool write_register16E(const Reg reg, const uint16_t value, const bool stop, const bool endifan);
+    bool write_register16E(const Reg reg, const uint16_t value, const bool stop, const bool endian);
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
@@ -565,7 +570,7 @@ protected:
     template <typename Reg,
               typename std::enable_if<std::is_integral<Reg>::value && std::is_unsigned<Reg>::value && sizeof(Reg) <= 2,
                                       std::nullptr_t>::type = nullptr>
-    bool write_register32E(const Reg reg, const uint32_t value, const bool stop, const bool endifan);
+    bool write_register32E(const Reg reg, const uint32_t value, const bool stop, const bool endian);
 
 protected:
     // For periodic measurement
@@ -599,9 +604,9 @@ private:
   @details Provide a common interface for periodic measurements for each unit
   @tparam Derived Derived class
   @tparam MD Type of the measurement data group
-  @warning MUST IMPLEMENT some functions (NOT VERTUAL)
+  @warning MUST IMPLEMENT some functions (NOT VIRTUAL)
   - MD Derived::oldest_periodic_data() const;
-  - MD Derived::latestt_periodic_data() const;
+  - MD Derived::latest_periodic_data() const;
   - bool Derived::start_periodic_measurement(any arguments);
   - bool Derived::stop_periodic_measurement():
   @warning  MUST ADD std::unique_ptr<m5::container::CircularBuffer<MD>> _data{}
@@ -667,7 +672,7 @@ public:
     {
         return static_cast<const Derived*>(this)->latest_periodic_data();
     }
-    //! @brief Discard  the oldest data accumulated
+    //! @brief Discard the oldest data accumulated
     inline void discard()
     {
         discard_periodic_measurement_data();

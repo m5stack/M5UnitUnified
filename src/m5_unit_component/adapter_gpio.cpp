@@ -323,7 +323,7 @@ int8_t gpio_to_adc_channel(const int8_t pin)
 }
 
 #if 0
-// -1:ivalid 0:ADC1 1:ADC2
+// -1:invalid 0:ADC1 1:ADC2
 int gpio_to_adc12(const int8_t pin)
 {
     return (pin >= 0 && pin < m5::stl::size(gpio_to_adc_table))
@@ -447,7 +447,6 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_digital(const gpio_num_
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_digital(const gpio_num_t pin, bool& high)
 {
-    high = true;
     high = gpio_get_level(pin);
     return m5::hal::error::error_t::OK;
 }
