@@ -1,0 +1,83 @@
+name: Build(platformio)
+
+on:
+  push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'test/**.cpp'
+      - 'test/**.hpp'
+      - 'test/**.h'
+      - 'test/**.c'
+      - '.github/workflows/platformio-build-check.yml'
+      - 'platformio.ini'
+  pull_request:
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'test/**.cpp'
+      - 'test/**.hpp'
+      - 'test/**.h'
+      - 'test/**.c'
+      - '.github/workflows/platformio-build-check.yml'
+      - 'platformio.ini'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.board }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+
+      matrix:
+        board:
+          - Core
+          - Core2
+          - CoreS3
+          - Fire
+          - StampS3
+          - Dial
+          - Atom
+          - AtomS3
+          - AtomS3R
+          - NanoC6
+          - NessoN1
+          - StickCPlus
+          - StickCPlus2
+          - StickS3
+          - Cardputer
+          - Paper
+          - CoreInk
+          - Tab5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build tests
+        uses: m5stack/M5Utility/.github/actions/pio_test_build@develop
+        with:
+          environments: test_readme_${{ matrix.board }}
+          project-dir: "./"
+          project-conf: "./platformio.ini"

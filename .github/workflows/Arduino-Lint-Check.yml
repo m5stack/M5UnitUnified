@@ -18,6 +18,12 @@ jobs:
   lint:
     name: Lint Check
     runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      max-parallel: 20
+      matrix:
+        include:
+          - shard: 1
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/arduino-lint-action@v2

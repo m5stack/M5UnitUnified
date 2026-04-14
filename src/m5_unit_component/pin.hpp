@@ -16,19 +16,28 @@ namespace m5 {
 namespace unit {
 namespace gpio {
 
-// From M5GFX
+/*!
+  @class pin_backup_t
+  @brief Save and restore GPIO pin configuration
+  @note Ported from M5GFX
+*/
 class pin_backup_t {
 public:
+    //! @brief Constructor
     explicit pin_backup_t(int pin_num = 1);
+    //! @brief Set the target pin number
     inline void setPin(int pin_num)
     {
         _pin_num = pin_num;
     }
+    //! @brief Get the target pin number
     inline int8_t getPin(void) const
     {
         return _pin_num;
     }
+    //! @brief Save current pin configuration
     void backup(void);
+    //! @brief Restore saved pin configuration
     void restore(void);
 
 private:

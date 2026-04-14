@@ -31,9 +31,26 @@
 *.out
 *.app
 
-#
+# Doxygen
+docs/html/
+
+# PlatformIO
+.pio/
+
+# IDE
+.vscode/
+
+# macOS
 .DS_Store
-/.pio/
-/.vscode/
-/docs/html/
+
+# Temporary
+tmp/
+
+# Emacs
 .\#*
+
+# Secrets
+.env*
+*.pem
+*.key
+*.cert

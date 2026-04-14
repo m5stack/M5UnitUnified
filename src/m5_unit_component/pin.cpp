@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*!
-  @file pin.hpp
+  @file pin.cpp
   @brief PIN settings save/restore
   @todo Will be transferred to M5HAL in the future
 */
@@ -39,7 +39,7 @@ void pin_backup_t::backup(void)
         _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(((pin_num & 32) ? GPIO_ENABLE1_REG : GPIO_ENABLE_REG)) &
                                (1U << (pin_num & 31))) != 0);
 #else
-        _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1U << (pin_num & 31)) != 0);
+        _gpio_enable         = (bool)((*reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1U << (pin_num & 31))) != 0);
 #endif
 
         _in_func_num = -1;
@@ -54,7 +54,7 @@ void pin_backup_t::backup(void)
         }
     }
 #else
-#pragma message "ESP32P4 was not support"
+#pragma message "ESP32-P4 is not supported"
 #endif
 }
 
@@ -97,7 +97,7 @@ void pin_backup_t::restore(void)
         *gpio_enable_reg = val;
     }
 #else
-#pragma message "ESP32P4 was not support"
+#pragma message "ESP32-P4 is not supported"
 #endif
 }
 

@@ -15,7 +15,7 @@ Unify basic APIs so that all units can be handled in the same way.
 ### Unified connections and communications
 Each unit's external library requires its own communication functions and assumptions.  
 Unify prerequisites and communication methods.  
-In the future, we plan to work with [M5HAL (Hardware Abstraction Layer)](https://github.com/m5stack/M5HAL) to unified communicatation  with each unit.
+In the future, we plan to work with [M5HAL (Hardware Abstraction Layer)](https://github.com/m5stack/M5HAL) to unified communication with each unit.
 
 ### Unified Licensing
 External library licenses for each unit are mixed.  
@@ -29,19 +29,19 @@ The library is registered with the library manager.
 
 1. Using library manager and select the library of the unit you want to use (e.g. M5Unit-GESTURE)
 
-Dependent M5UnitUnfied related libraries will be downloaded automatically.
+Dependent M5UnitUnified related libraries will be downloaded automatically.
 
 ### PlatformIO
 1. Write lib\_deps settings to platformio.ini
 ```ini
 lib_deps= m5stack/M5Unit-foo ; Unit to be used
 ```
-Dependent M5UnitUnfied related libraries will be downloaded automatically.
+Dependent M5UnitUnified related libraries will be downloaded automatically.
 
 
 ## How to use
 
-See also examples for each unit repositry too.
+See also examples for each unit repository too.
 
 ### UnitComponent with UnitUnified (Standard usage)
 
@@ -282,15 +282,12 @@ void loop() {
 }
 ```
 
-- Nonstandard usage
-  - [To update the unit yourself usage example](examples/Basic/SelfUpdate)
-  - [Using only unit component without UnitUnified manager](examples/Basic/ComponentOnly)
 
 ## Supported things
 ### Supported frameworks
 - Arduino
 
-Support ESP-IDF with M5HAL in the future.
+In the future, all connections will be made through M5HAL, eliminating the need to use Wire class etc. directly.
 
 ### Supported connection
 - I2C with TwoWire class
@@ -304,8 +301,7 @@ Support ESP-IDF with M5HAL in the future.
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)
 
 ## Examples
-For exampless of each unit, please refer to the respective unit's repository.  
-[The examples in this repository](examples/Basic) are for M5UnitUnified in general
+For examples, please refer to each unit's repository (e.g. M5Unit-ENV, M5Unit-HEART, etc.).
 
 ## Doxygen document
 

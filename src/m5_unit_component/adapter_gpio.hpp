@@ -31,7 +31,7 @@ uint8_t calculate_rmt_clk_div(const uint32_t apb_freq_hz, const uint32_t tick_ns
    @brief Calculate resolution from desired tick time
   @param apb_freq_hz Current APB clock (Hz)
   @param tick_ns Desired tick time (ns)
-  @return resoution for RMT v2
+  @return resolution for RMT v2
 */
 uint32_t calculate_rmt_resolution_hz(const uint32_t apb_freq_hz, const uint32_t tick_ns);
 
@@ -66,6 +66,27 @@ public:
             return false;
         }
 
+        //! @brief Get the RMT TX channel (V1: rmt_channel_t, V2: -1)
+        virtual int rmtTxChannel() const
+        {
+            return -1;
+        }
+        //! @brief Get the RMT RX channel (V1: rmt_channel_t, V2: -1)
+        virtual int rmtRxChannel() const
+        {
+            return -1;
+        }
+        //! @brief Get the RMT TX handle (V2: rmt_channel_handle_t, V1: nullptr)
+        virtual void* rmtTxHandle() const
+        {
+            return nullptr;
+        }
+        //! @brief Get the RMT RX handle (V2: rmt_channel_handle_t, V1: nullptr)
+        virtual void* rmtRxHandle() const
+        {
+            return nullptr;
+        }
+
         //
         inline virtual m5::hal::error::error_t pinModeRX(const gpio::Mode m) override
         {
@@ -83,7 +104,7 @@ public:
         {
             return write_analog(rx_pin(), v);
         }
-        inline virtual m5::hal::error::error_t readAnalogRX(uint16_t& v)
+        inline virtual m5::hal::error::error_t readAnalogRX(uint16_t& v) override
         {
             return read_analog(v, rx_pin());
         }
@@ -115,7 +136,7 @@ public:
         {
             return write_analog(tx_pin(), v);
         }
-        inline virtual m5::hal::error::error_t readAnalogTX(uint16_t& v)
+        inline virtual m5::hal::error::error_t readAnalogTX(uint16_t& v) override
         {
             return read_analog(v, tx_pin());
         }

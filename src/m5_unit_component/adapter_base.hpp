@@ -24,14 +24,16 @@ namespace unit {
  */
 class Adapter {
 public:
+    //! @brief Adapter type
     enum class Type : uint8_t {
-        Unknown,
-        I2C,
-        GPIO,
-        UART,
-        SPI,
+        Unknown,  //!< Not yet assigned
+        I2C,      //!< I2C bus
+        GPIO,     //!< GPIO pins
+        UART,     //!< UART serial
+        SPI,      //!< SPI bus
     };
 
+    //! @brief Implementation base class (Pimpl pattern)
     class Impl {
     public:
         Impl() = default;
@@ -40,7 +42,8 @@ public:
         {
         }
 
-        // R/W
+        ///@name I2C R/W
+        ///@{
         virtual m5::hal::error::error_t readWithTransaction(uint8_t*, const size_t)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -63,7 +66,9 @@ public:
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
-        // GPIO
+        ///@}
+        ///@name GPIO
+        ///@{
         virtual m5::hal::error::error_t pinModeRX(const gpio::Mode)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -121,8 +126,10 @@ public:
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
+        ///@}
     };
 
+    //! @brief Default constructor (creates Unknown type adapter)
     explicit Adapter() : _impl{new Impl()}
     {
     }
@@ -143,25 +150,33 @@ public:
 
     virtual ~Adapter() = default;
 
+    //! @brief Gets the adapter type
     inline Type type() const
     {
         return _type;
     }
 
+    //! @brief Create a duplicate adapter with a different address
     virtual Adapter* duplicate(const uint8_t /*addr*/)
     {
         return new Adapter();
     }
 
-    //
+    ///@name Transaction control
+    ///@{
+    //! @brief Begin a bus transaction
     inline virtual void beginTransaction()
     {
     }
+    //! @brief End a bus transaction
     inline virtual void endTransaction()
     {
     }
+    ///@}
 
-    // I2C R/W
+    ///@name I2C read/write
+    ///@{
+    //! @brief Read data within a transaction
     inline m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len)
     {
         return _impl->readWithTransaction(data, len);
@@ -181,12 +196,15 @@ public:
     {
         return _impl->writeWithTransaction(reg, data, len, exparam);
     }
+    //! @brief Send a general call on the I2C bus
     inline m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len)
     {
         return _impl->generalCall(data, len);
     }
+    ///@}
 
-    // GPIO
+    ///@name GPIO RX pin operations
+    ///@{
     inline m5::hal::error::error_t pinModeRX(const gpio::Mode m)
     {
         return _impl->pinModeRX(m);
@@ -216,6 +234,9 @@ public:
         return _impl->pulseInRX(duration, state, timeout_us);
     }
 
+    ///@}
+    ///@name GPIO TX pin operations
+    ///@{
     inline m5::hal::error::error_t pinModeTX(const gpio::Mode m)
     {
         return _impl->pinModeTX(m);
@@ -245,6 +266,8 @@ public:
         return _impl->pulseInTX(duration, state, timeout_us);
     }
 
+    ///@}
+
 private:
     Type _type{Type::Unknown};
 
@@ -252,6 +275,7 @@ protected:
     std::unique_ptr<Impl> _impl{};
 };
 
+//! @brief RAII guard for adapter transactions
 struct transaction_guard {
     explicit transaction_guard(Adapter* ad) : _ad{ad}
     {

@@ -110,7 +110,7 @@ bool UnitUnified::add(Component& u, HardwareSerial& serial)
         _units.emplace_back(&u);
         return add_children(u);
     }
-    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessUART());
     return false;
 }
 
@@ -129,7 +129,7 @@ bool UnitUnified::add(Component& u, SPIClass& spi, const SPISettings& settings)
         _units.emplace_back(&u);
         return add_children(u);
     }
-    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessSPI());
     return false;
 }
 

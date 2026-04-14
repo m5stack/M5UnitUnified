@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_spi.hpp
-  @brief Adapters to treat M5HAL and SPI in the same way using Searial
+  @brief Adapters to treat M5HAL and SPI in the same way using SPI
   @note  Currently handles SPI directly, but will handle via M5HAL in the future
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_SPI_HPP

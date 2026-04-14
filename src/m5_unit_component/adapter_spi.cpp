@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_spi.cpp
-  @brief Adapters to treat M5HAL and SPI in the same way using Searial
+  @brief Adapters to treat M5HAL and SPI in the same way using SPI
   @note  Currently handles SPI directly, but will handle via M5HAL in the future
 */
 #include "adapter_spi.hpp"
@@ -60,7 +60,7 @@ m5::hal::error::error_t AdapterSPI::SPIClassImpl::readWithTransaction(uint8_t* d
 }
 
 m5::hal::error::error_t AdapterSPI::SPIClassImpl::writeWithTransaction(const uint8_t* data, const size_t len,
-                                                                       const uint32_t /* unuse */)
+                                                                       const uint32_t /* unused */)
 {
 #if 0
     for (size_t i = 0; i < len; ++i) {

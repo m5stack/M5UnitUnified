@@ -139,10 +139,19 @@ namespace unit {
 //
 class GPIOImplV2 : public AdapterGPIO::GPIOImpl {
 public:
-    GPIOImplV2(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
+    GPIOImplV2(const int8_t rx_pin, const int8_t tx_pin)
+        : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin), _sem(xSemaphoreCreateMutex())
     {
-        _sem = xSemaphoreCreateMutex();
     }
+    void *rmtTxHandle() const override
+    {
+        return _tx_handle;
+    }
+    void *rmtRxHandle() const override
+    {
+        return _rx_handle;
+    }
+
     virtual ~GPIOImplV2()
     {
         if (_tx_handle) {
@@ -183,7 +192,7 @@ protected:
     rmt_tx_channel_config_t _tx_config{};
     rmt_transmit_config_t _transmit_config{};
 
-    uint16_t _rx_buf_len;
+    uint16_t _rx_buf_len{};
 
     volatile uint16_t _receive_len{};
     uint8_t *_rx_buf{};
@@ -218,7 +227,7 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
         dump_rmt_config(_tx_config);
         dump_rmt_config(_transmit_config);
 
-        M5_LIB_LOGI("Retrive RMT(v2) TX %d", tx_pin());
+        M5_LIB_LOGI("Retrieve RMT(v2) TX %d", tx_pin());
     }
 
     // RMT RX
@@ -231,7 +240,7 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
         _rx_buf = (uint8_t *)heap_caps_malloc(cfg.rx.ring_buffer_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
 
         if (!_rx_buf) {
-            M5_LIB_LOGE("Failed to allocate mempry %u", cfg.rx.ring_buffer_size);
+            M5_LIB_LOGE("Failed to allocate memory %u", cfg.rx.ring_buffer_size);
             return false;
         }
         _rx_buf_len = cfg.rx.ring_buffer_size;
@@ -282,7 +291,7 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             M5_LIB_LOGE("Failed to rmt_receive %x", err);
             return false;
         }
-        M5_LIB_LOGI("Retrive RMT(v2) RX %d", rx_pin());
+        M5_LIB_LOGI("Retrieve RMT(v2) RX %d", rx_pin());
     }
 
     if (!copy_encoder) {
@@ -338,7 +347,7 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
         if (rlen > len - 2) {
             rlen = len - 2;
         }
-        *(uint16_t *)data = rlen;
+        memcpy(data, &rlen, sizeof(rlen));
 
         memcpy(data + 2, _rx_buf, rlen);
         xSemaphoreGive(_sem);
@@ -381,7 +390,7 @@ bool GPIOImplV2::createReceiveTask()
     }
 
     if (!_receive_queue) {
-        _receive_queue = xQueueCreate(16, sizeof(rmt_rx_done_event_data_t));
+        _receive_queue = xQueueCreate(16, sizeof(callback_struct_t));
         if (!_receive_queue) {
             M5_LIB_LOGE("Failed to create queue");
             return false;

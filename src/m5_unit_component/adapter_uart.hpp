@@ -5,7 +5,7 @@
  */
 /*!
   @file adapter_uart.hpp
-  @brief Adapters to treat M5HAL and UART in the same way using Searial
+  @brief Adapters to treat M5HAL and UART in the same way using Serial
   @note  Currently handles Serial directly, but will handle via M5HAL in the future
 */
 #ifndef M5_UNIT_COMPONENT_ADAPTER_UART_HPP
@@ -65,7 +65,7 @@ public:
 #endif
 
 #if defined(ARDUINO)
-    AdapterUART(HardwareSerial& serial);
+    explicit AdapterUART(HardwareSerial& serial);
 #endif
 
     inline void flush()
