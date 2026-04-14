@@ -66,6 +66,27 @@ public:
             return false;
         }
 
+        //! @brief Get the RMT TX channel (V1: rmt_channel_t, V2: -1)
+        virtual int rmtTxChannel() const
+        {
+            return -1;
+        }
+        //! @brief Get the RMT RX channel (V1: rmt_channel_t, V2: -1)
+        virtual int rmtRxChannel() const
+        {
+            return -1;
+        }
+        //! @brief Get the RMT TX handle (V2: rmt_channel_handle_t, V1: nullptr)
+        virtual void* rmtTxHandle() const
+        {
+            return nullptr;
+        }
+        //! @brief Get the RMT RX handle (V2: rmt_channel_handle_t, V1: nullptr)
+        virtual void* rmtRxHandle() const
+        {
+            return nullptr;
+        }
+
         //
         inline virtual m5::hal::error::error_t pinModeRX(const gpio::Mode m) override
         {

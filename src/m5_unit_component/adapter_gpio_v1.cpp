@@ -121,6 +121,15 @@ public:
         _rx_config.channel = RMT_CHANNEL_MAX;
         _tx_config.channel = RMT_CHANNEL_MAX;
     }
+    int rmtTxChannel() const override
+    {
+        return _tx_config.channel;
+    }
+    int rmtRxChannel() const override
+    {
+        return _rx_config.channel;
+    }
+
     virtual ~GPIOImplV1()
     {
         if (_tx_config.channel != RMT_CHANNEL_MAX) {

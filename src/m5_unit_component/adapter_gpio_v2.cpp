@@ -143,6 +143,15 @@ public:
         : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin), _sem(xSemaphoreCreateMutex())
     {
     }
+    void *rmtTxHandle() const override
+    {
+        return _tx_handle;
+    }
+    void *rmtRxHandle() const override
+    {
+        return _rx_handle;
+    }
+
     virtual ~GPIOImplV2()
     {
         if (_tx_handle) {
