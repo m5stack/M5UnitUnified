@@ -4,7 +4,7 @@ var searchData=
   ['accessi2c_1',['AccessI2C',['../types_8hpp.html#abf00663c896e5c458427688334cac1e4',1,'m5::unit::types::attribute']]],
   ['accessspi_2',['AccessSPI',['../types_8hpp.html#a21adcfd382b75f822386924460945965',1,'m5::unit::types::attribute']]],
   ['accessuart_3',['AccessUART',['../types_8hpp.html#aaafee3dd3328f345232d1109d90c10b1',1,'m5::unit::types::attribute']]],
-  ['adapter_4',['Adapter',['../classm5_1_1unit_1_1_adapter.html',1,'m5::unit']]],
+  ['adapter_4',['Adapter',['../classm5_1_1unit_1_1_adapter.html',1,'m5::unit::Adapter'],['../classm5_1_1unit_1_1_adapter.html#a3ef68d3ebd48c5d8fb37c9b3ff603e94',1,'m5::unit::Adapter::Adapter()']]],
   ['adapter_5',['adapter',['../classm5_1_1unit_1_1_component.html#a56810b7bc188376dbee87453c44bc332',1,'m5::unit::Component']]],
   ['adapter_2ecpp_6',['adapter.cpp',['../adapter_8cpp.html',1,'']]],
   ['adapter_2ehpp_7',['adapter.hpp',['../adapter_8hpp.html',1,'']]],
