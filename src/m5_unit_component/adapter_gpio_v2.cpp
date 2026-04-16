@@ -11,6 +11,7 @@
 #include "adapter_gpio_v2.hpp"
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 
+#include <freertos/ringbuf.h>
 #include <esp_private/esp_clk.h>
 #include <soc/soc_caps.h>  // SOC_RMT_MEM_WORDS_PER_CHANNEL
 
@@ -162,6 +163,9 @@ public:
             rmt_disable(_rx_handle);
             rmt_del_channel(_rx_handle);
         }
+        if (_ring_buf) {
+            vRingbufferDelete(_ring_buf);
+        }
         if (_rx_buf) {
             heap_caps_free(_rx_buf);
         }
@@ -194,8 +198,8 @@ protected:
 
     uint16_t _rx_buf_len{};
 
-    volatile uint16_t _receive_len{};
     uint8_t *_rx_buf{};
+    RingbufHandle_t _ring_buf{};
 
     callback_struct_t _callback_data{};
     SemaphoreHandle_t _sem{};
@@ -238,9 +242,14 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
         }
 
         _rx_buf = (uint8_t *)heap_caps_malloc(cfg.rx.ring_buffer_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
-
         if (!_rx_buf) {
             M5_LIB_LOGE("Failed to allocate memory %u", cfg.rx.ring_buffer_size);
+            return false;
+        }
+
+        _ring_buf = xRingbufferCreate(cfg.rx.ring_buffer_size, RINGBUF_TYPE_NOSPLIT);
+        if (!_ring_buf) {
+            M5_LIB_LOGE("Failed to create ringbuffer");
             return false;
         }
         _rx_buf_len = cfg.rx.ring_buffer_size;
@@ -331,8 +340,7 @@ m5::hal::error::error_t GPIOImplV2::writeWithTransaction(const uint8_t *data, co
 
 m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const size_t len)
 {
-    if (!_rx_handle) {
-        M5_LIB_LOGE("Invalid handle");
+    if (!_rx_handle || !_ring_buf) {
         return m5::hal::error::error_t::UNKNOWN_ERROR;
     }
     if (!data || len < 4) {
@@ -340,23 +348,20 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
-    if (_rx_buf && _rx_buf_len) {
-        xSemaphoreTake(_sem, portMAX_DELAY);
-        // Top of 2 bytes is receive length
-        uint16_t rlen = _receive_len;
-        if (rlen > len - 2) {
-            rlen = len - 2;
-        }
+    size_t max_len = len - 2;  // Top of 2 bytes is receive length
+    size_t rx_size{};
+    auto *items = static_cast<uint8_t *>(xRingbufferReceive(_ring_buf, &rx_size, pdMS_TO_TICKS(50)));
+
+    memcpy(data, "\0\0", 2);
+    if (items && rx_size) {
+        uint16_t rlen = (rx_size > max_len) ? static_cast<uint16_t>(max_len) : static_cast<uint16_t>(rx_size);
         memcpy(data, &rlen, sizeof(rlen));
-
-        memcpy(data + 2, _rx_buf, rlen);
-        xSemaphoreGive(_sem);
-
-        //        dump_symbols((rmt_symbol_word_t *)(data + 2), rlen / sizeof(rmt_symbol_word_t));
-
-        return rlen ? m5::hal::error::error_t::OK : m5::hal::error::error_t::UNKNOWN_ERROR;
+        memcpy(data + 2, items, rlen);
     }
-    return m5::hal::error::error_t::UNKNOWN_ERROR;
+    if (items) {
+        vRingbufferReturnItem(_ring_buf, items);
+    }
+    return rx_size ? m5::hal::error::error_t::OK : m5::hal::error::error_t::TIMEOUT_ERROR;
 }
 
 void GPIOImplV2::receive_loop_task(void *)
@@ -373,8 +378,13 @@ void GPIOImplV2::receive_loop(const uint16_t received_len)
 {
     xSemaphoreTake(_sem, portMAX_DELAY);
 
-    _receive_len = received_len;
-    auto err     = rmt_receive(_rx_handle, _rx_buf, _rx_buf_len, &_receive_config);
+    // Push received data to ringbuffer before restarting rmt_receive
+    if (_ring_buf && received_len > 0) {
+        if (xRingbufferSend(_ring_buf, _rx_buf, received_len, 0) != pdTRUE) {
+            M5_LIB_LOGW("Ringbuffer full, dropped %u bytes", received_len);
+        }
+    }
+    auto err = rmt_receive(_rx_handle, _rx_buf, _rx_buf_len, &_receive_config);
 
     xSemaphoreGive(_sem);
 
