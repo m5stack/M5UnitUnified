@@ -14,6 +14,8 @@
 #include "adapter_base.hpp"
 #if defined(ARDUINO)
 #include <SPI.h>
+#else
+class SPIClass;
 #endif
 
 namespace m5 {

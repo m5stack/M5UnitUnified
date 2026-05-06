@@ -201,7 +201,6 @@ protected:
     uint8_t *_rx_buf{};
     RingbufHandle_t _ring_buf{};
 
-    callback_struct_t _callback_data{};
     SemaphoreHandle_t _sem{};
 
     static QueueHandle_t _receive_queue;
@@ -236,7 +235,6 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
 
     // RMT RX
     if (!_rx_handle && (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
-        _callback_data.me = this;
         if (!createReceiveTask()) {
             return false;
         }
@@ -407,7 +405,7 @@ bool GPIOImplV2::createReceiveTask()
         }
     }
     auto err =
-        xTaskCreateUniversal(receive_loop_task, "UnitRF433R", 8192, nullptr, 2, &_receive_task_handle, PRO_CPU_NUM);
+        xTaskCreatePinnedToCore(receive_loop_task, "M5UnitRmtRX", 8192, nullptr, 2, &_receive_task_handle, PRO_CPU_NUM);
     return (err == pdPASS) && _receive_task_handle;
 }
 
@@ -415,10 +413,12 @@ IRAM_ATTR bool GPIOImplV2::callbackReceive(rmt_channel_handle_t handle, const rm
                                            void *user_ctx)
 {
     BaseType_t high_task_wakeup{pdFALSE};
-    GPIOImplV2 *me         = static_cast<GPIOImplV2 *>(user_ctx);
-    me->_callback_data.len = edata->num_symbols * sizeof(rmt_symbol_word_t);
+    callback_struct_t cs{
+        static_cast<GPIOImplV2 *>(user_ctx),
+        static_cast<uint16_t>(edata->num_symbols * sizeof(rmt_symbol_word_t)),
+    };
     //    esp_rom_printf("ISR %u\n", (uint32_t)edata->num_symbols);
-    xQueueSendFromISR(_receive_queue, &me->_callback_data, &high_task_wakeup);
+    xQueueSendFromISR(_receive_queue, &cs, &high_task_wakeup);
     return (high_task_wakeup == pdTRUE);
 }
 

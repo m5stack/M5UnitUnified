@@ -12,6 +12,12 @@
 
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
+#if defined(ESP_PLATFORM)
+#include <driver/uart.h>  // for uart_port_t
+#endif
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+#include <driver/i2c_master.h>  // for i2c_master_bus_handle_t
+#endif
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -19,10 +25,12 @@
 #include <type_traits>
 #include <memory>
 
+#if defined(ARDUINO)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
 struct SPISettings;
+#endif
 
 namespace m5 {
 class I2C_Class;
@@ -287,12 +295,18 @@ public:
 
     ///@name Assign(I2C)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Assign TwoWire as the communication bus
       @param wire TwoWire to be used
       @return True if successful
     */
     virtual bool assign(TwoWire& wire);
+#endif
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+    /*! @brief Assign I2C master bus (ESP-IDF native driver) */
+    virtual bool assign(i2c_master_bus_handle_t bus);
+#endif
     /*!
       @brief Assign I2C_Class as the communication bus
       @param i2c I2C_Class to be used (e.g. M5.In_I2C)
@@ -314,16 +328,23 @@ public:
 
     ///@name Assign(UART)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Assign HardwareSerial as the communication bus
       @param serial HardwareSerial to be used
       @return True if successful
     */
     virtual bool assign(HardwareSerial& serial);
+#endif
+#if defined(ESP_PLATFORM)
+    /*! @brief Assign UART (ESP-IDF native driver) */
+    virtual bool assign(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+#endif
     ///@}
 
     ///@name Assign(SPI)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Assign SPIClass as the communication bus
       @param spi SPIClass to be used
@@ -331,6 +352,7 @@ public:
       @return True if successful
     */
     virtual bool assign(SPIClass& spi, const SPISettings& settings);
+#endif
     ///@}
 
     ///@name Assign(M5HAL)

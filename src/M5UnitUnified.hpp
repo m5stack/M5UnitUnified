@@ -25,10 +25,12 @@
 #include <vector>
 #include <string>
 
+#if defined(ARDUINO)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
 struct SPISettings;
+#endif
 
 /*!
   @namespace m5
@@ -69,6 +71,7 @@ public:
 
     ///@name Add unit(I2C)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Add unit to be managed (I2C via TwoWire)
       @param u Unit Component
@@ -76,6 +79,16 @@ public:
       @return True if successful
     */
     bool add(Component& u, TwoWire& wire);
+#endif
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF native driver)
+      @param u Unit Component
+      @param bus ESP-IDF I2C master bus handle
+      @return True if successful
+     */
+    bool add(Component& u, i2c_master_bus_handle_t bus);
+#endif
     /*!
       @brief Add unit to be managed (I2C via I2C_Class)
       @param u Unit Component
@@ -99,6 +112,7 @@ public:
 
     ///@name Add unit(UART)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Add unit to be managed (UART)
       @param u Unit Component
@@ -106,10 +120,25 @@ public:
       @return True if successful
     */
     bool add(Component& u, HardwareSerial& serial);
+#endif
+#if defined(ESP_PLATFORM)
+    /*!
+      @brief Adding unit to be managed (UART, ESP-IDF native driver)
+      @param u Unit Component
+      @param uart_num UART port number
+      @param baud_rate Baud rate
+      @param rx_pin RX pin (-1 to keep)
+      @param tx_pin TX pin (-1 to keep)
+      @param buf_size RX/TX ring buffer size
+      @return True if successful
+    */
+    bool add(Component& u, uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+#endif
     ///@}
 
     ///@name Add unit(SPI)
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Add unit to be managed (SPI)
       @param u Unit Component
@@ -118,6 +147,7 @@ public:
       @return True if successful
     */
     bool add(Component& u, SPIClass& spi, const SPISettings& settings);
+#endif
     ///@}
 
     ///@name Add unit(M5HAL)
