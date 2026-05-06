@@ -12,6 +12,12 @@
 
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
+#if defined(ESP_PLATFORM)
+#include <driver/uart.h>  // for uart_port_t
+#endif
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+#include <driver/i2c_master.h>  // for i2c_master_bus_handle_t
+#endif
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -19,10 +25,12 @@
 #include <type_traits>
 #include <memory>
 
+#if defined(ARDUINO)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
 struct SPISettings;
+#endif
 
 namespace m5 {
 class I2C_Class;
@@ -225,16 +233,28 @@ public:
     ///@{
     /*! @brief Assign m5::hal::bus */
     virtual bool assign(m5::hal::bus::Bus* bus);
+#if defined(ARDUINO)
     /*! @brief Assign TwoWire */
     virtual bool assign(TwoWire& wire);
+#endif
     /*! @brief Assign I2C_Class */
     virtual bool assign(m5::I2C_Class& i2c);
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+    /*! @brief Assign I2C master bus (ESP-IDF native driver) */
+    virtual bool assign(i2c_master_bus_handle_t bus);
+#endif
     /*! @brief Assign GPIO */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
+#if defined(ARDUINO)
     /*! @brief Assign UART */
     virtual bool assign(HardwareSerial& serial);
     /*! @brief Assign SPI */
     virtual bool assign(SPIClass& spi, const SPISettings& settings);
+#endif
+#if defined(ESP_PLATFORM)
+    /*! @brief Assign UART (ESP-IDF native driver) */
+    virtual bool assign(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+#endif
     ///@}
 
     ///@note For daisy-chaining units such as hubs

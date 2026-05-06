@@ -25,10 +25,12 @@
 #include <vector>
 #include <string>
 
+#if defined(ARDUINO)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
 struct SPISettings;
+#endif
 
 /*!
   @namespace m5
@@ -69,6 +71,7 @@ public:
 
     ///@name Add unit
     ///@{
+#if defined(ARDUINO)
     /*!
       @brief Adding unit to be managed (I2C)
       @param u Unit Component
@@ -76,6 +79,7 @@ public:
       @return True if successful
     */
     bool add(Component& u, TwoWire& wire);
+#endif
     /*!
       @brief Adding unit to be managed (GPIO)
       @param u Unit Component
@@ -84,6 +88,7 @@ public:
       @return True if successful
      */
     bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
+#if defined(ARDUINO)
     /*!
       @brief Adding unit to be managed (UART)
       @param u Unit Component
@@ -98,6 +103,20 @@ public:
       @return True if successful
     */
     bool add(Component& u, SPIClass& spi, const SPISettings& settings);
+#endif
+#if defined(ESP_PLATFORM)
+    /*!
+      @brief Adding unit to be managed (UART, ESP-IDF native driver)
+      @param u Unit Component
+      @param uart_num UART port number
+      @param baud_rate Baud rate
+      @param rx_pin RX pin (-1 to keep)
+      @param tx_pin TX pin (-1 to keep)
+      @param buf_size RX/TX ring buffer size
+      @return True if successful
+    */
+    bool add(Component& u, uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+#endif
     /*!
       @brief Adding unit to be managed (M5HAL)
       @param u Unit Component
@@ -112,6 +131,15 @@ public:
       @return True if successful
      */
     bool add(Component& u, m5::I2C_Class& i2c);
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF native driver)
+      @param u Unit Component
+      @param bus ESP-IDF I2C master bus handle
+      @return True if successful
+     */
+    bool add(Component& u, i2c_master_bus_handle_t bus);
+#endif
     ///@}
 
     //! @brief Begin of all units under management

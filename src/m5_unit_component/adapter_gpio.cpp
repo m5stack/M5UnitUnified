@@ -43,8 +43,8 @@ constexpr auto M5_ADC_ATTEN_DB       = ADC_ATTEN_DB_11;
 
 #endif
 
-#if !defined(USING_RMT_CHANNNE_T) && defined(ARDUINO)
-#include <esp32-hal-dac.h>
+#if !defined(USING_RMT_CHANNNE_T)
+#include <driver/ledc.h>
 #endif
 
 #if SOC_ADC_SUPPORTED
@@ -463,9 +463,42 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_analog(const gpio_num_t
     dac_output_voltage(ch, static_cast<uint8_t>(value & 0xFF));  // 0〜255
     return m5::hal::error::error_t::OK;
 #else
-    analogWrite(pin, value & 0xFF);
+    static bool ledc_timer_initialized = false;
+    if (!ledc_timer_initialized) {
+        ledc_timer_config_t timer_cfg = {};
+        timer_cfg.speed_mode          = LEDC_LOW_SPEED_MODE;
+        timer_cfg.duty_resolution     = LEDC_TIMER_8_BIT;
+        timer_cfg.timer_num           = LEDC_TIMER_0;
+        timer_cfg.freq_hz             = 5000;
+        timer_cfg.clk_cfg             = LEDC_AUTO_CLK;
+        if (ledc_timer_config(&timer_cfg) != ESP_OK) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+        ledc_timer_initialized = true;
+    }
+    const ledc_channel_t channel       = (pin == 25) ? LEDC_CHANNEL_0 : LEDC_CHANNEL_1;
+    const int idx                      = (pin == 25) ? 0 : 1;
+    static bool channel_initialized[2] = {false, false};
+    if (!channel_initialized[idx]) {
+        ledc_channel_config_t ch_cfg = {};
+        ch_cfg.gpio_num              = static_cast<int>(pin);
+        ch_cfg.speed_mode            = LEDC_LOW_SPEED_MODE;
+        ch_cfg.channel               = channel;
+        ch_cfg.intr_type             = LEDC_INTR_DISABLE;
+        ch_cfg.timer_sel             = LEDC_TIMER_0;
+        ch_cfg.duty                  = value & 0xFFu;
+        ch_cfg.hpoint                = 0;
+        if (ledc_channel_config(&ch_cfg) != ESP_OK) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+        channel_initialized[idx] = true;
+    } else {
+        if (ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, value & 0xFFu) != ESP_OK ||
+            ledc_update_duty(LEDC_LOW_SPEED_MODE, channel) != ESP_OK) {
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+        }
+    }
     return m5::hal::error::error_t::OK;
-    //      return m5::hal::error::error_t::NOT_IMPLEMENTED;
 #endif
 }
 

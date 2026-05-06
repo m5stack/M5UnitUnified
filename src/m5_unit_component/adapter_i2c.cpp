@@ -22,6 +22,9 @@
 #define M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS
 #endif
 
+namespace m5 {
+namespace unit {
+
 #if defined(ARDUINO)
 
 namespace {
@@ -62,9 +65,6 @@ int8_t idx_table[][2] = {
 #endif
 };
 }  // namespace
-
-namespace m5 {
-namespace unit {
 
 // Impl for TwoWire
 AdapterI2C::WireImpl::WireImpl(TwoWire& wire, const uint8_t addr, const uint32_t clock)
@@ -329,6 +329,197 @@ m5::hal::error::error_t AdapterI2C::BusImpl::write_with_transaction(const m5::ha
     return m5::hal::error::error_t::INVALID_ARGUMENT;
 }
 
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+namespace {
+constexpr int default_i2c_timeout_ms = 1000;
+
+m5::hal::error::error_t to_i2c_error(const esp_err_t err)
+{
+    switch (err) {
+        case ESP_OK:
+            return m5::hal::error::error_t::OK;
+        case ESP_ERR_INVALID_ARG:
+        case ESP_ERR_INVALID_STATE:
+            return m5::hal::error::error_t::INVALID_ARGUMENT;
+        default:
+            return m5::hal::error::error_t::I2C_BUS_ERROR;
+    }
+}
+}  // namespace
+
+AdapterI2C::ESPIDFMasterBusImpl::ESPIDFMasterBusImpl(i2c_master_bus_handle_t bus, const uint8_t addr,
+                                                     const uint32_t clock)
+    : AdapterI2C::I2CImpl(addr, clock), _bus(bus)
+{
+}
+
+bool AdapterI2C::ESPIDFMasterBusImpl::begin()
+{
+    return ensure_device() == m5::hal::error::error_t::OK;
+}
+
+bool AdapterI2C::ESPIDFMasterBusImpl::end()
+{
+    _pending_write.clear();
+    if (!_dev) {
+        return true;
+    }
+
+    auto err = i2c_master_bus_rm_device(_dev);
+    if (err == ESP_OK) {
+        _dev = nullptr;
+    }
+    return err == ESP_OK;
+}
+
+AdapterI2C::I2CImpl* AdapterI2C::ESPIDFMasterBusImpl::duplicate(const uint8_t addr)
+{
+    return new ESPIDFMasterBusImpl(_bus, addr, _clock);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::ensure_device()
+{
+    if (!_bus || !_addr) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    if (_dev) {
+        return m5::hal::error::error_t::OK;
+    }
+
+    i2c_device_config_t dev_cfg{};
+    dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_cfg.device_address  = _addr;
+    dev_cfg.scl_speed_hz    = _clock;
+    return to_i2c_error(i2c_master_bus_add_device(_bus, &dev_cfg, &_dev));
+}
+
+void AdapterI2C::ESPIDFMasterBusImpl::set_pending_write(const uint8_t* data, const size_t len)
+{
+    _pending_write.clear();
+    if (data && len) {
+        _pending_write.assign(data, data + len);
+    }
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::transmit(const uint8_t* data, const size_t len)
+{
+    auto err = ensure_device();
+    if (err != m5::hal::error::error_t::OK) {
+        return err;
+    }
+    if (!data && len) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    if (!len) {
+        return m5::hal::error::error_t::OK;
+    }
+    return to_i2c_error(i2c_master_transmit(_dev, data, len, default_i2c_timeout_ms));
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::readWithTransaction(uint8_t* data, const size_t len)
+{
+    auto err = ensure_device();
+    if (err != m5::hal::error::error_t::OK) {
+        _pending_write.clear();
+        return err;
+    }
+    if (!data && len) {
+        _pending_write.clear();
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    if (!len) {
+        _pending_write.clear();
+        return m5::hal::error::error_t::OK;
+    }
+
+    esp_err_t ret{};
+    if (_pending_write.empty()) {
+        ret = i2c_master_receive(_dev, data, len, default_i2c_timeout_ms);
+    } else {
+        ret = i2c_master_transmit_receive(_dev, _pending_write.data(), _pending_write.size(), data, len,
+                                          default_i2c_timeout_ms);
+        _pending_write.clear();
+    }
+    return to_i2c_error(ret);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::writeWithTransaction(const uint8_t* data, const size_t len,
+                                                                              const uint32_t stop)
+{
+    if (!stop) {
+        set_pending_write(data, len);
+        return m5::hal::error::error_t::OK;
+    }
+    _pending_write.clear();
+    return transmit(data, len);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::writeWithTransaction(const uint8_t reg, const uint8_t* data,
+                                                                              const size_t len, const uint32_t stop)
+{
+    std::vector<uint8_t> tx;
+    tx.reserve(1 + len);
+    tx.push_back(reg);
+    if (data && len) {
+        tx.insert(tx.end(), data, data + len);
+    }
+    if (!stop) {
+        _pending_write.swap(tx);
+        return m5::hal::error::error_t::OK;
+    }
+    _pending_write.clear();
+    return transmit(tx.data(), tx.size());
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::writeWithTransaction(const uint16_t reg, const uint8_t* data,
+                                                                              const size_t len, const uint32_t stop)
+{
+    m5::types::big_uint16_t r(reg);
+    std::vector<uint8_t> tx;
+    tx.reserve(r.size() + len);
+    tx.insert(tx.end(), r.data(), r.data() + r.size());
+    if (data && len) {
+        tx.insert(tx.end(), data, data + len);
+    }
+    if (!stop) {
+        _pending_write.swap(tx);
+        return m5::hal::error::error_t::OK;
+    }
+    _pending_write.clear();
+    return transmit(tx.data(), tx.size());
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::generalCall(const uint8_t* data, const size_t len)
+{
+    if (!_bus || (!data && len)) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    if (!len) {
+        return m5::hal::error::error_t::OK;
+    }
+
+    i2c_master_dev_handle_t dev{};
+    i2c_device_config_t dev_cfg{};
+    dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_cfg.device_address  = 0x00;
+    dev_cfg.scl_speed_hz    = _clock;
+    auto err                = i2c_master_bus_add_device(_bus, &dev_cfg, &dev);
+    if (err == ESP_OK) {
+        err = i2c_master_transmit(dev, data, len, default_i2c_timeout_ms);
+        i2c_master_bus_rm_device(dev);
+    }
+    return to_i2c_error(err);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::wakeup()
+{
+    if (!_bus || !_addr) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    return to_i2c_error(i2c_master_probe(_bus, _addr, default_i2c_timeout_ms));
+}
+#endif
+
 // Impl for I2C_Class
 #if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
 
@@ -523,17 +714,6 @@ AdapterI2C::AdapterI2C(TwoWire& wire, const uint8_t addr, const uint32_t clock)
 {
     assert(_impl);
 }
-
-#else
-#pragma message "Not support TwoWire"
-AdapterI2C::AdapterI2C(TwoWire& wire, const uint8_t addr, const uint32_t clock) : Adapter()
-{
-    (void)wire;
-    (void)addr;
-    (void)clock;
-    assert(_impl);
-    M5_LIB_LOGE("Not support TwoWire");
-}
 #endif
 
 AdapterI2C::AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_t clock)
@@ -541,6 +721,14 @@ AdapterI2C::AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_
 {
     assert(_impl);
 }
+
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+AdapterI2C::AdapterI2C(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock)
+    : Adapter(Adapter::Type::I2C, new AdapterI2C::ESPIDFMasterBusImpl(bus, addr, clock))
+{
+    assert(_impl);
+}
+#endif
 
 #if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
 AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)

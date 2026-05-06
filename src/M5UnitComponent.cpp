@@ -141,6 +141,7 @@ bool Component::assign(m5::hal::bus::Bus* bus)
     return static_cast<bool>(_adapter);
 }
 
+#if defined(ARDUINO)
 bool Component::assign(TwoWire& wire)
 {
     if (canAccessI2C() && _addr) {
@@ -149,6 +150,7 @@ bool Component::assign(TwoWire& wire)
     }
     return false;
 }
+#endif
 
 bool Component::assign(m5::I2C_Class& i2c)
 {
@@ -159,6 +161,17 @@ bool Component::assign(m5::I2C_Class& i2c)
     return false;
 }
 
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+bool Component::assign(i2c_master_bus_handle_t bus)
+{
+    if (canAccessI2C() && _addr && bus) {
+        _adapter = std::make_shared<AdapterI2C>(bus, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+#endif
+
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
@@ -168,6 +181,7 @@ bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
     return false;
 }
 
+#if defined(ARDUINO)
 bool Component::assign(HardwareSerial& serial)
 {
     if (canAccessUART()) {
@@ -185,6 +199,22 @@ bool Component::assign(SPIClass& spi, const SPISettings& settings)
     }
     return false;
 }
+#endif
+
+#if defined(ESP_PLATFORM)
+bool Component::assign(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size)
+{
+    if (canAccessUART()) {
+        auto adapter = std::make_shared<AdapterUART>(uart_num, baud_rate, rx_pin, tx_pin, buf_size);
+        if (!adapter || !adapter->espidfInstalled()) {
+            return false;
+        }
+        _adapter = adapter;
+        return true;
+    }
+    return false;
+}
+#endif
 
 bool Component::selectChannel(const uint8_t ch)
 {
