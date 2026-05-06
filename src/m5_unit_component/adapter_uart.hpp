@@ -12,6 +12,9 @@
 #define M5_UNIT_COMPONENT_ADAPTER_UART_HPP
 
 #include "adapter_base.hpp"
+#if defined(ESP_PLATFORM)
+#include <driver/uart.h>
+#endif
 
 class HardwareSerial;
 
@@ -64,8 +67,57 @@ public:
     };
 #endif
 
+#if defined(ESP_PLATFORM)
+    class ESPIDFImpl : public UARTImpl {
+    public:
+        struct Config {
+            uart_port_t uart_num{UART_NUM_1};
+            int baud_rate{115200};
+            int rx_pin{-1};
+            int tx_pin{-1};
+            int buf_size{1024};
+            uart_word_length_t data_bits{UART_DATA_8_BITS};
+            uart_parity_t parity{UART_PARITY_DISABLE};
+            uart_stop_bits_t stop_bits{UART_STOP_BITS_1};
+            uart_hw_flowcontrol_t flow_ctrl{UART_HW_FLOWCTRL_DISABLE};
+        };
+        explicit ESPIDFImpl(const Config& cfg);
+        virtual ~ESPIDFImpl();
+        virtual void flush() override;
+        virtual void flushRX() override;
+        virtual void setTimeout(const uint32_t ms) override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        inline uart_port_t uartPort() const
+        {
+            return _cfg.uart_num;
+        }
+        inline bool installed() const
+        {
+            return _installed;
+        }
+
+    protected:
+        Config _cfg{};
+        bool _installed{false};
+        uint32_t _timeout_ms{1000};
+    };
+#endif
+
 #if defined(ARDUINO)
     explicit AdapterUART(HardwareSerial& serial);
+#endif
+
+#if defined(ESP_PLATFORM)
+    explicit AdapterUART(const ESPIDFImpl::Config& cfg);
+    AdapterUART(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+
+    inline bool espidfInstalled() const
+    {
+        auto* p = dynamic_cast<ESPIDFImpl*>(_impl.get());
+        return p ? p->installed() : false;
+    }
 #endif
 
     inline void flush()
