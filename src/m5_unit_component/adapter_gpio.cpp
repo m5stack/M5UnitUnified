@@ -381,12 +381,14 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::ensure_adc_handle(const gpio_
 
     adc_unit_t unit = (needed_unit == 0) ? ADC_UNIT_1 : ADC_UNIT_2;
     adc_oneshot_unit_handle_t handle{};
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    adc_oneshot_unit_init_cfg_t init_config = {
-        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
-#else
+#if SOC_ADC_RTC_CTRL_SUPPORTED
+#pragma message "ADC oneshot clk_src: RTC (ADC_RTC_CLK_SRC_DEFAULT)"
     adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+#else
+#pragma message "ADC oneshot clk_src: DIGI (ADC_DIGI_CLK_SRC_DEFAULT)"
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
 #endif
 
     if (adc_oneshot_new_unit(&init_config, &handle) != ESP_OK) {
@@ -596,6 +598,9 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
             .unit_id = unit,
             .atten = M5_ADC_ATTEN_DB,
             .bitwidth = ADC_BITWIDTH_DEFAULT,
+#if CONFIG_IDF_TARGET_ESP32
+            .default_vref = 1100,  // Fallback Vref (mV); used only when eFuse has no calibration
+#endif
         };
         cali_ok = (adc_cali_create_scheme_line_fitting(&cali_config, &cali_handle) == ESP_OK);
 #endif
