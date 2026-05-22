@@ -19,6 +19,7 @@ targets:
   - esp32c3
   - esp32c6
   - esp32p4
+  - esp32h2
 
 files:
   exclude:
