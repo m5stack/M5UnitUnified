@@ -10,8 +10,12 @@
 #   <M5Unified.h> for test scaffolding only and are not needed at runtime.
 file(GLOB_RECURSE SRCS "src/*.cpp")
 list(FILTER SRCS EXCLUDE REGEX "/googletest/")
+# REQUIRES = public deps (exposed through src/ public headers); PRIV_REQUIRES = used only in .cpp.
+# Use the `driver` meta-component (exists in all IDF 5.x and publicly aggregates esp_driver_*),
+# NOT the split esp_driver_* components which only exist from IDF 5.3 and would break >=5.0.
 idf_component_register(
     SRCS ${SRCS}
     INCLUDE_DIRS "src"
-    REQUIRES driver esp_driver_uart esp_driver_gpio esp_driver_spi esp_hw_support esp_adc esp_timer M5HAL M5Utility freertos
+    REQUIRES driver esp_adc M5HAL
+    PRIV_REQUIRES esp_timer M5Utility
 )
