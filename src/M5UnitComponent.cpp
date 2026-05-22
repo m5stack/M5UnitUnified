@@ -202,15 +202,11 @@ bool Component::assign(SPIClass& spi, const SPISettings& settings)
 #endif
 
 #if defined(ESP_PLATFORM)
-bool Component::assign(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size)
+bool Component::assign(const uart_port_t uart_num)
 {
-    if (canAccessUART()) {
-        auto adapter = std::make_shared<AdapterUART>(uart_num, baud_rate, rx_pin, tx_pin, buf_size);
-        if (!adapter || !adapter->espidfInstalled()) {
-            return false;
-        }
-        _adapter = adapter;
-        return true;
+    if (canAccessUART() && uart_is_driver_installed(uart_num)) {
+        _adapter = std::make_shared<AdapterUART>(uart_num);
+        return static_cast<bool>(_adapter);
     }
     return false;
 }
