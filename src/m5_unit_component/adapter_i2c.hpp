@@ -14,6 +14,8 @@
 #include "pin.hpp"
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
 #include <driver/i2c_master.h>
+#elif defined(ESP_PLATFORM)
+#include <driver/i2c.h>
 #endif
 #include <vector>
 
@@ -37,6 +39,8 @@ public:
         I2CClass,  //!< m5::I2C_Class (m5gfx::i2c)
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
         ESPIDFMasterBus,  //!< ESP-IDF native i2c_master_bus_handle_t
+#elif defined(ESP_PLATFORM)
+        ESPIDFLegacyBus,  //!< ESP-IDF legacy driver/i2c.h (pre-installed port)
 #endif
     };
 
@@ -166,6 +170,53 @@ public:
         i2c_master_bus_handle_t _bus{};
         i2c_master_dev_handle_t _dev{};
         std::vector<uint8_t> _pending_write{};
+    };
+#elif defined(ESP_PLATFORM)
+    class ESPIDFLegacyBusImpl : public I2CImpl {
+    public:
+        ESPIDFLegacyBusImpl(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint8_t addr,
+                            const uint32_t clock);
+        inline virtual ImplType implType() const override
+        {
+            return ImplType::ESPIDFLegacyBus;
+        }
+        inline virtual int16_t scl() const override
+        {
+            return _scl;
+        }
+        inline virtual int16_t sda() const override
+        {
+            return _sda;
+        }
+        inline virtual void setClock(const uint32_t clock) override
+        {
+            if (_clock != clock) {
+                I2CImpl::setClock(clock);
+                apply_clock();
+            }
+        }
+        virtual bool begin() override;
+        virtual bool end() override;
+        virtual I2CImpl* duplicate(const uint8_t addr) override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t generalCall(const uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t wakeup() override;
+
+    protected:
+        void apply_clock();
+        m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
+                                                       const uint32_t stop);
+
+    private:
+        i2c_port_t _port{I2C_NUM_0};
+        int16_t _sda{-1}, _scl{-1};
+        int _high{0}, _low{0};
     };
 #endif
 
@@ -318,6 +369,9 @@ public:
     AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
     AdapterI2C(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock);
+#elif defined(ESP_PLATFORM)
+    AdapterI2C(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint8_t addr,
+               const uint32_t clock);
 #endif
     AdapterI2C(m5::hal::bus::Bus& bus, const uint8_t addr, const uint32_t clock) : AdapterI2C(&bus, addr, clock)
     {

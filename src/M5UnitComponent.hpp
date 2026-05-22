@@ -17,6 +17,8 @@
 #endif
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
 #include <driver/i2c_master.h>  // for i2c_master_bus_handle_t
+#elif defined(ESP_PLATFORM)
+#include <driver/i2c.h>  // for i2c_port_t / gpio_num_t
 #endif
 #include <cstdint>
 #include <vector>
@@ -306,6 +308,9 @@ public:
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
     /*! @brief Assign I2C master bus (ESP-IDF native driver) */
     virtual bool assign(i2c_master_bus_handle_t bus);
+#elif defined(ESP_PLATFORM)
+    /*! @brief Assign I2C (ESP-IDF legacy driver, pre-installed port) */
+    virtual bool assign(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl);
 #endif
     /*!
       @brief Assign I2C_Class as the communication bus

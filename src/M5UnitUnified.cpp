@@ -101,6 +101,25 @@ bool UnitUnified::add(Component& u, i2c_master_bus_handle_t bus)
     M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
     return false;
 }
+#elif defined(ESP_PLATFORM)
+bool UnitUnified::add(Component& u, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(port, sda, scl)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
 #endif
 
 bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
