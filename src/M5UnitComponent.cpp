@@ -195,6 +195,15 @@ bool Component::assign(i2c_master_bus_handle_t bus)
     }
     return false;
 }
+#elif defined(ESP_PLATFORM)
+bool Component::assign(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)
+{
+    if (canAccessI2C() && _addr) {
+        _adapter = std::make_shared<AdapterI2C>(port, sda, scl, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
 #endif
 
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)

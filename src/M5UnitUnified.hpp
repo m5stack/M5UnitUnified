@@ -88,6 +88,16 @@ public:
       @return True if successful
      */
     bool add(Component& u, i2c_master_bus_handle_t bus);
+#elif defined(ESP_PLATFORM)
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF legacy driver)
+      @param u Unit Component
+      @param port I2C port (driver must be installed beforehand via i2c_param_config / i2c_driver_install)
+      @param sda SDA GPIO
+      @param scl SCL GPIO
+      @return True if successful
+     */
+    bool add(Component& u, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl);
 #endif
     /*!
       @brief Add unit to be managed (I2C via I2C_Class)

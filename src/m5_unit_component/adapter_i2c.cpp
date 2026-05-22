@@ -333,6 +333,7 @@ m5::hal::error::error_t AdapterI2C::BusImpl::write_with_transaction(const m5::ha
 }
 
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+#pragma message "ESP-IDF I2C backend: i2c_master (new driver)"
 namespace {
 constexpr int default_i2c_timeout_ms = 1000;
 
@@ -521,6 +522,142 @@ m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::wakeup()
     }
     return to_i2c_error(i2c_master_probe(_bus, _addr, default_i2c_timeout_ms));
 }
+#elif defined(ESP_PLATFORM)
+#pragma message "ESP-IDF I2C backend: legacy driver/i2c.h"
+
+AdapterI2C::ESPIDFLegacyBusImpl::ESPIDFLegacyBusImpl(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
+                                                     const uint8_t addr, const uint32_t clock)
+    : AdapterI2C::I2CImpl(addr, clock), _port(port), _sda(static_cast<int16_t>(sda)), _scl(static_cast<int16_t>(scl))
+{
+}
+
+void AdapterI2C::ESPIDFLegacyBusImpl::apply_clock()
+{
+    i2c_config_t conf{};
+    conf.mode             = I2C_MODE_MASTER;
+    conf.sda_io_num       = _sda;
+    conf.scl_io_num       = _scl;
+    conf.sda_pullup_en    = GPIO_PULLUP_ENABLE;
+    conf.scl_pullup_en    = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = _clock;
+    if (i2c_param_config(_port, &conf) == ESP_OK) {
+        i2c_get_period(_port, &_high, &_low);
+    }
+}
+
+bool AdapterI2C::ESPIDFLegacyBusImpl::begin()
+{
+    apply_clock();
+    return true;
+}
+
+bool AdapterI2C::ESPIDFLegacyBusImpl::end()
+{
+    // Borrowed driver: do not uninstall (owned by the user)
+    return true;
+}
+
+AdapterI2C::I2CImpl* AdapterI2C::ESPIDFLegacyBusImpl::duplicate(const uint8_t addr)
+{
+    auto* p =
+        new ESPIDFLegacyBusImpl(_port, static_cast<gpio_num_t>(_sda), static_cast<gpio_num_t>(_scl), addr, _clock);
+    p->_high = _high;
+    p->_low  = _low;
+    return p;
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::readWithTransaction(uint8_t* data, const size_t len)
+{
+    if (!data || !len) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    i2c_set_period(_port, _high, _low);
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_READ), true);
+    if (len > 1) {
+        i2c_master_read(cmd, data, len - 1, I2C_MASTER_ACK);
+    }
+    i2c_master_read_byte(cmd, data + len - 1, I2C_MASTER_NACK);
+    i2c_master_stop(cmd);
+    esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
+    i2c_cmd_link_delete(cmd);
+    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::write_with_transaction(const uint8_t addr, const uint8_t* data,
+                                                                                const size_t len, const uint32_t stop)
+{
+    i2c_set_period(_port, _high, _low);
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, static_cast<uint8_t>((addr << 1) | I2C_MASTER_WRITE), true);
+    if (data && len) {
+        i2c_master_write(cmd, data, len, true);
+    }
+    if (stop) {
+        i2c_master_stop(cmd);
+    }
+    esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
+    i2c_cmd_link_delete(cmd);
+    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint8_t* data, const size_t len,
+                                                                              const uint32_t stop)
+{
+    return write_with_transaction(_addr, data, len, stop);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint8_t reg, const uint8_t* data,
+                                                                              const size_t len, const uint32_t stop)
+{
+    i2c_set_period(_port, _high, _low);
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_WRITE), true);
+    i2c_master_write_byte(cmd, reg, true);
+    if (data && len) {
+        i2c_master_write(cmd, data, len, true);
+    }
+    if (stop) {
+        i2c_master_stop(cmd);
+    }
+    esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
+    i2c_cmd_link_delete(cmd);
+    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint16_t reg, const uint8_t* data,
+                                                                              const size_t len, const uint32_t stop)
+{
+    m5::types::big_uint16_t r(reg);
+    i2c_set_period(_port, _high, _low);
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_WRITE), true);
+    i2c_master_write(cmd, r.data(), r.size(), true);
+    if (data && len) {
+        i2c_master_write(cmd, data, len, true);
+    }
+    if (stop) {
+        i2c_master_stop(cmd);
+    }
+    esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
+    i2c_cmd_link_delete(cmd);
+    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::generalCall(const uint8_t* data, const size_t len)
+{
+    return write_with_transaction(0x00, data, len, true);
+}
+
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::wakeup()
+{
+    return write_with_transaction(_addr, nullptr, 0, true);
+}
+
 #endif
 
 // Impl for I2C_Class
@@ -728,6 +865,13 @@ AdapterI2C::AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
 AdapterI2C::AdapterI2C(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock)
     : Adapter(Adapter::Type::I2C, new AdapterI2C::ESPIDFMasterBusImpl(bus, addr, clock))
+{
+    assert(_impl);
+}
+#elif defined(ESP_PLATFORM)
+AdapterI2C::AdapterI2C(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint8_t addr,
+                       const uint32_t clock)
+    : Adapter(Adapter::Type::I2C, new AdapterI2C::ESPIDFLegacyBusImpl(port, sda, scl, addr, clock))
 {
     assert(_impl);
 }
