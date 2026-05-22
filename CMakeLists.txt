@@ -13,5 +13,5 @@ list(FILTER SRCS EXCLUDE REGEX "/googletest/")
 idf_component_register(
     SRCS ${SRCS}
     INCLUDE_DIRS "src"
-    REQUIRES driver esp_driver_uart esp_driver_gpio esp_driver_spi esp_hw_support esp_adc M5HAL M5Utility freertos
+    REQUIRES driver esp_driver_uart esp_driver_gpio esp_driver_spi esp_hw_support esp_adc esp_timer M5HAL M5Utility freertos
 )
