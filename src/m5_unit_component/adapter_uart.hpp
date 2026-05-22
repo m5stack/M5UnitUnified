@@ -70,19 +70,9 @@ public:
 #if defined(ESP_PLATFORM)
     class ESPIDFImpl : public UARTImpl {
     public:
-        struct Config {
-            uart_port_t uart_num{UART_NUM_1};
-            int baud_rate{115200};
-            int rx_pin{-1};
-            int tx_pin{-1};
-            int buf_size{1024};
-            uart_word_length_t data_bits{UART_DATA_8_BITS};
-            uart_parity_t parity{UART_PARITY_DISABLE};
-            uart_stop_bits_t stop_bits{UART_STOP_BITS_1};
-            uart_hw_flowcontrol_t flow_ctrl{UART_HW_FLOWCTRL_DISABLE};
-        };
-        explicit ESPIDFImpl(const Config& cfg);
-        virtual ~ESPIDFImpl();
+        explicit ESPIDFImpl(const uart_port_t uart_num) : AdapterUART::UARTImpl(), _uart_num(uart_num)
+        {
+        }
         virtual void flush() override;
         virtual void flushRX() override;
         virtual void setTimeout(const uint32_t ms) override;
@@ -91,16 +81,11 @@ public:
                                                              const uint32_t stop) override;
         inline uart_port_t uartPort() const
         {
-            return _cfg.uart_num;
-        }
-        inline bool installed() const
-        {
-            return _installed;
+            return _uart_num;
         }
 
     protected:
-        Config _cfg{};
-        bool _installed{false};
+        uart_port_t _uart_num{UART_NUM_1};
         uint32_t _timeout_ms{1000};
     };
 #endif
@@ -110,14 +95,7 @@ public:
 #endif
 
 #if defined(ESP_PLATFORM)
-    explicit AdapterUART(const ESPIDFImpl::Config& cfg);
-    AdapterUART(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
-
-    inline bool espidfInstalled() const
-    {
-        auto* p = dynamic_cast<ESPIDFImpl*>(_impl.get());
-        return p ? p->installed() : false;
-    }
+    explicit AdapterUART(const uart_port_t uart_num);
 #endif
 
     inline void flush()

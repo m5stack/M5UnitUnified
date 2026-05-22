@@ -125,14 +125,11 @@ public:
     /*!
       @brief Adding unit to be managed (UART, ESP-IDF native driver)
       @param u Unit Component
-      @param uart_num UART port number
-      @param baud_rate Baud rate
-      @param rx_pin RX pin (-1 to keep)
-      @param tx_pin TX pin (-1 to keep)
-      @param buf_size RX/TX ring buffer size
+      @param uart_num UART port number (the driver must be installed beforehand via
+                      uart_driver_install / uart_param_config / uart_set_pin)
       @return True if successful
     */
-    bool add(Component& u, uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+    bool add(Component& u, const uart_port_t uart_num);
 #endif
     ///@}
 

@@ -163,7 +163,7 @@ bool UnitUnified::add(Component& u, SPIClass& spi, const SPISettings& settings)
 #endif
 
 #if defined(ESP_PLATFORM)
-bool UnitUnified::add(Component& u, uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size)
+bool UnitUnified::add(Component& u, const uart_port_t uart_num)
 {
     if (u.isRegistered()) {
         M5_LIB_LOGW("Already added");
@@ -173,7 +173,7 @@ bool UnitUnified::add(Component& u, uart_port_t uart_num, int baud_rate, int rx_
     M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
 
     u._manager = this;
-    if (u.assign(uart_num, baud_rate, rx_pin, tx_pin, buf_size)) {
+    if (u.assign(uart_num)) {
         u._order = ++_registerCount;
         _units.emplace_back(&u);
         return add_children(u);

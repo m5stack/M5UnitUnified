@@ -337,8 +337,8 @@ public:
     virtual bool assign(HardwareSerial& serial);
 #endif
 #if defined(ESP_PLATFORM)
-    /*! @brief Assign UART (ESP-IDF native driver) */
-    virtual bool assign(uart_port_t uart_num, int baud_rate, int rx_pin, int tx_pin, int buf_size = 1024);
+    /*! @brief Assign UART (ESP-IDF native driver, pre-installed port) */
+    virtual bool assign(const uart_port_t uart_num);
 #endif
     ///@}
 
