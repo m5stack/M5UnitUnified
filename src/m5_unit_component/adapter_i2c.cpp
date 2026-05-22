@@ -25,26 +25,29 @@
 #if defined(ARDUINO)
 
 namespace {
+
+// The input-signal selection field of gpio_func_in_sel_cfg_reg_t differs by chip generation
+// (independent of the ESP-IDF version):
+//   Older chips (ESP32/S2/S3/C3):     func_sel
+//   Newer chips (C6/H2/P4 and later): in_sel
+// Detect which member exists at compile time and read whichever is present (no chip defines needed).
+template <class T>
+auto read_func_in_sel(const volatile T& reg, int) -> decltype(+reg.in_sel)
+{
+    return reg.in_sel;
+}
+template <class T>
+auto read_func_in_sel(const volatile T& reg, long) -> decltype(+reg.func_sel)
+{
+    return reg.func_sel;
+}
+
 int16_t search_pin_number(const int peripheral_sig)
 {
     int16_t no{-1};
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    // C6
     no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
-             ? GPIO.func_in_sel_cfg[peripheral_sig].in_sel
+             ? static_cast<int16_t>(read_func_in_sel(GPIO.func_in_sel_cfg[peripheral_sig], 0))
              : -1;
-#elif defined(CONFIG_IDF_TARGET_ESP32P4)
-    // P4
-    no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
-             ? GPIO.func_in_sel_cfg[peripheral_sig].in_sel
-             : -1;
-#else
-    // Others
-    no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
-             ? GPIO.func_in_sel_cfg[peripheral_sig].func_sel
-             : -1;
-#endif
-
     return (no < GPIO_NUM_MAX) ? no : -1;
 }
 
