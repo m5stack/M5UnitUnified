@@ -19,3 +19,10 @@ idf_component_register(
     REQUIRES driver M5HAL
     PRIV_REQUIRES esp_adc esp_timer M5Utility
 )
+
+# Optionally link M5Unified only when it is already part of the build (e.g. a M5Unified-based
+# app or example). This puts M5GFX's <utility/I2C_Class.hpp> on adapter_i2c.cpp's include path,
+# so the real m5::I2C_Class adapter is compiled instead of the stub. Pure ESP-IDF builds without
+# M5Unified are unaffected (the component is simply skipped). Available since IDF v5.0.
+# Both names are listed: m5stack__M5Unified (registry/git) and M5Unified (local components/).
+idf_component_optional_requires(PRIVATE m5stack__M5Unified M5Unified)
