@@ -67,46 +67,17 @@ public:
     UnitUnified& operator=(UnitUnified&&) noexcept = default;
     ///@}
 
-    ///@name Add unit
+    ///@name Add unit(I2C)
     ///@{
     /*!
-      @brief Adding unit to be managed (I2C)
+      @brief Add unit to be managed (I2C via TwoWire)
       @param u Unit Component
       @param wire TwoWire to be used
       @return True if successful
     */
     bool add(Component& u, TwoWire& wire);
     /*!
-      @brief Adding unit to be managed (GPIO)
-      @param u Unit Component
-      @param rx_pin Pin number to be used for RX
-      @param tx_pin Pin number to be used for TX
-      @return True if successful
-     */
-    bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
-    /*!
-      @brief Adding unit to be managed (UART)
-      @param u Unit Component
-      @param serial HardwareSerial to be used
-      @return True if successful
-    */
-    bool add(Component& u, HardwareSerial& serial);
-    /*!
-      @brief Adding unit to be managed (SPI)
-      @param u Unit Component
-      @param spi SPI to be used
-      @return True if successful
-    */
-    bool add(Component& u, SPIClass& spi, const SPISettings& settings);
-    /*!
-      @brief Adding unit to be managed (M5HAL)
-      @param u Unit Component
-      @param bus Bus to be used
-      @return True if successful
-     */
-    bool add(Component& u, m5::hal::bus::Bus* bus);
-    /*!
-      @brief Adding unit to be managed (I2C_Class)
+      @brief Add unit to be managed (I2C via I2C_Class)
       @param u Unit Component
       @param i2c I2C_Class to be used (e.g. M5.In_I2C)
       @return True if successful
@@ -114,12 +85,67 @@ public:
     bool add(Component& u, m5::I2C_Class& i2c);
     ///@}
 
-    //! @brief Begin of all units under management
+    ///@name Add unit(GPIO)
+    ///@{
+    /*!
+      @brief Add unit to be managed (GPIO)
+      @param u Unit Component
+      @param rx_pin Pin number to be used for RX
+      @param tx_pin Pin number to be used for TX
+      @return True if successful
+     */
+    bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
+    ///@}
+
+    ///@name Add unit(UART)
+    ///@{
+    /*!
+      @brief Add unit to be managed (UART)
+      @param u Unit Component
+      @param serial HardwareSerial to be used
+      @return True if successful
+    */
+    bool add(Component& u, HardwareSerial& serial);
+    ///@}
+
+    ///@name Add unit(SPI)
+    ///@{
+    /*!
+      @brief Add unit to be managed (SPI)
+      @param u Unit Component
+      @param spi SPIClass to be used
+      @param settings SPI settings to be applied
+      @return True if successful
+    */
+    bool add(Component& u, SPIClass& spi, const SPISettings& settings);
+    ///@}
+
+    ///@name Add unit(M5HAL)
+    ///@{
+    /*!
+      @brief Add unit to be managed (M5HAL bus)
+      @param u Unit Component
+      @param bus Bus to be used
+      @return True if successful
+     */
+    bool add(Component& u, m5::hal::bus::Bus* bus);
+    ///@}
+
+    /*!
+      @brief Begin all units under management
+      @return True if all units began successfully
+    */
     bool begin();
-    //! @brief Update of all units under management
+    /*!
+      @brief Update all units under management
+      @param force Forced communication for updates if true
+    */
     void update(const bool force = false);
 
-    //! @brief Output information for debug
+    /*!
+      @brief Output information for debug
+      @return String containing debug information
+    */
     std::string debugInfo() const;
 
 protected:

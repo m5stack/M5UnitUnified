@@ -82,12 +82,18 @@ public:
 
     ///@name Component settings
     ///@{
-    /*! @brief Gets the common configurations in each unit */
+    /*!
+      @brief Gets the common configurations in each unit
+      @return Current component configuration
+    */
     inline component_config_t component_config() const
     {
         return _component_cfg;
     }
-    //! @brief Set the common configurations in each unit
+    /*!
+      @brief Set the common configurations in each unit
+      @param cfg Configuration to apply
+    */
     inline void component_config(const component_config_t& cfg)
     {
         _component_cfg = cfg;
@@ -116,55 +122,85 @@ public:
 
     ///@name Properties
     ///@{
-    /*!  @brief Gets the device name */
+    /*!
+      @brief Gets the device name
+      @return Pointer to the null-terminated device name string
+    */
     inline const char* deviceName() const
     {
         return unit_device_name();
     }
-    //! @brief Gets the identifier
+    /*!
+      @brief Gets the identifier
+      @return Unique identifier of the unit
+    */
     inline types::uid_t identifier() const
     {
         return unit_identifier();
     }
-    //! @brief Gets the attributes
+    /*!
+      @brief Gets the attributes
+      @return Attribute flags of the unit
+    */
     inline types::attr_t attribute() const
     {
         return unit_attribute();
     }
-    //! @brief Gets the category
+    /*!
+      @brief Gets the category
+      @return Category of the unit
+    */
     inline types::category_t category() const
     {
         return unit_category();
     }
-    //! @brief Gets the registered order (== 0 means not yet)
+    /*!
+      @brief Gets the registered order (== 0 means not yet)
+      @return Registration order; 0 if not yet registered
+    */
     inline uint32_t order() const
     {
         return _order;
     }
-    //! @brief Gets the channel if connected to another unit
+    /*!
+      @brief Gets the channel if connected to another unit
+      @return Channel number; negative if not connected to a parent
+    */
     inline int16_t channel() const
     {
         return _channel;
     }
-    //! @brief Is the unit registered with the manager?
+    /*!
+      @brief Is the unit registered with the manager?
+      @return True if registered with a UnitUnified manager
+    */
     inline bool isRegistered() const
     {
         return _manager != nullptr;
     }
-    //! @brief Address used to I2C access the device
+    /*!
+      @brief Address used to I2C access the device
+      @return I2C address of the device
+    */
     inline uint8_t address() const
     {
         return _addr;
     }
     /*!
       @brief Gets the access adapter
+      @return Pointer to the adapter; ownership is retained by the unit
       @warning Ownership is retained by the unit and should not be released
      */
     inline Adapter* adapter() const
     {
         return _adapter.get();
     }
-    //! @brief Gets the access adapter
+    /*!
+      @brief Gets the access adapter cast to the specified type
+      @tparam T Adapter-derived pointer type to cast to
+      @param t Expected adapter type
+      @return Pointer to the adapter cast to T, or nullptr if type does not match
+    */
     template <class T>
     inline auto asAdapter(const Adapter::Type t) ->
         typename std::remove_cv<typename std::remove_pointer<T>::type>::type*
@@ -173,6 +209,12 @@ public:
         static_assert(std::is_base_of<Adapter, U>::value, "T must be derived from Adapter");
         return (_adapter->type() == t) ? static_cast<U*>(_adapter.get()) : nullptr;
     }
+    /*!
+      @brief Gets the access adapter cast to the specified type (const overload)
+      @tparam T Adapter-derived pointer type to cast to
+      @param t Expected adapter type
+      @return Const pointer to the adapter cast to T, or nullptr if type does not match
+    */
     template <class T>
     inline auto asAdapter(const Adapter::Type t) const -> const
         typename std::remove_cv<typename std::remove_pointer<T>::type>::type*
@@ -185,20 +227,42 @@ public:
 
     ///@name Attributes
     ///@{
+    /*!
+      @brief Can the unit access via I2C?
+      @return True if the current adapter supports I2C access
+    */
     bool canAccessI2C() const;
+    /*!
+      @brief Can the unit access via GPIO?
+      @return True if the current adapter supports GPIO access
+    */
     bool canAccessGPIO() const;
+    /*!
+      @brief Can the unit access via UART?
+      @return True if the current adapter supports UART access
+    */
     bool canAccessUART() const;
+    /*!
+      @brief Can the unit access via SPI?
+      @return True if the current adapter supports SPI access
+    */
     bool canAccessSPI() const;
     ///@}
 
     ///@name Periodic measurement
     ///@{
-    /*! @brief In periodic measurement? */
+    /*!
+      @brief In periodic measurement?
+      @return True if the unit is currently in periodic measurement mode
+    */
     inline bool inPeriodic() const
     {
         return in_periodic();
     }
-    //! @brief Periodic measurement data updated?
+    /*!
+      @brief Periodic measurement data updated?
+      @return True if measurement data was updated in the last update() call
+    */
     inline bool updated() const
     {
         return _updated;
@@ -221,54 +285,128 @@ public:
     }
     ///@}
 
-    ///@name Bus assignment
+    ///@name Assign(I2C)
     ///@{
-    /*! @brief Assign m5::hal::bus */
-    virtual bool assign(m5::hal::bus::Bus* bus);
-    /*! @brief Assign TwoWire */
+    /*!
+      @brief Assign TwoWire as the communication bus
+      @param wire TwoWire to be used
+      @return True if successful
+    */
     virtual bool assign(TwoWire& wire);
-    /*! @brief Assign I2C_Class */
+    /*!
+      @brief Assign I2C_Class as the communication bus
+      @param i2c I2C_Class to be used (e.g. M5.In_I2C)
+      @return True if successful
+    */
     virtual bool assign(m5::I2C_Class& i2c);
-    /*! @brief Assign GPIO */
+    ///@}
+
+    ///@name Assign(GPIO)
+    ///@{
+    /*!
+      @brief Assign GPIO pins as the communication bus
+      @param rx_pin Pin number to be used for RX
+      @param tx_pin Pin number to be used for TX
+      @return True if successful
+    */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
-    /*! @brief Assign UART */
+    ///@}
+
+    ///@name Assign(UART)
+    ///@{
+    /*!
+      @brief Assign HardwareSerial as the communication bus
+      @param serial HardwareSerial to be used
+      @return True if successful
+    */
     virtual bool assign(HardwareSerial& serial);
-    /*! @brief Assign SPI */
+    ///@}
+
+    ///@name Assign(SPI)
+    ///@{
+    /*!
+      @brief Assign SPIClass as the communication bus
+      @param spi SPIClass to be used
+      @param settings SPI settings to be applied
+      @return True if successful
+    */
     virtual bool assign(SPIClass& spi, const SPISettings& settings);
+    ///@}
+
+    ///@name Assign(M5HAL)
+    ///@{
+    /*!
+      @brief Assign m5::hal::bus as the communication bus
+      @param bus Bus to be used
+      @return True if successful
+    */
+    virtual bool assign(m5::hal::bus::Bus* bus);
     ///@}
 
     ///@note For daisy-chaining units such as hubs
     ///@name Parent-children relationship
     ///@{
-    /*! @brief Has parent unit? */
+    /*!
+      @brief Has parent unit?
+      @return True if this unit is connected to a parent unit
+    */
     inline bool hasParent() const
     {
         return _parent != nullptr;
     }
-    //! @brief Are there any other devices connected to the same parent unit besides yourself?
+    /*!
+      @brief Are there any other devices connected to the same parent unit besides yourself?
+      @return True if sibling units exist on the same parent
+    */
     inline bool hasSiblings() const
     {
         return (_prev != nullptr) || (_next != nullptr);
     }
-    //! @brief Are there other devices connected to me?
+    /*!
+      @brief Are there other devices connected to me?
+      @return True if at least one child unit is connected
+    */
     inline bool hasChildren() const
     {
         return _child;
     }
-    //! @brief Number of units connected to me
+    /*!
+      @brief Number of units connected to me
+      @return Number of child units connected to this unit
+    */
     size_t childrenSize() const;
-    //! @brief Is there an other unit connected to the specified channel?
+    /*!
+      @brief Is there another unit connected to the specified channel?
+      @param ch Channel number to check
+      @return True if a child unit is connected on the specified channel
+    */
     bool existsChild(const uint8_t ch) const;
-    //! @brief Gets the parent unit
+    /*!
+      @brief Gets the parent unit
+      @return Pointer to the parent unit, or nullptr if there is no parent
+    */
     inline Component* parent()
     {
         return _parent;
     }
-    //! @brief Gets the device connected to the specified channel
+    /*!
+      @brief Gets the device connected to the specified channel
+      @param channel Channel number to query
+      @return Pointer to the child unit on that channel, or nullptr if none
+    */
     Component* child(const uint8_t channel) const;
-    //! @brief Connect the unit to the specified channel
+    /*!
+      @brief Connect the unit to the specified channel
+      @param c Child component to connect
+      @param channel Channel number to connect on
+      @return True if successful
+    */
     bool add(Component& c, const int16_t channel);
-    //! @brief Select valid channel if exists
+    /*!
+      @brief Select valid channel if exists
+      @param ch Channel number to select
+      @return True if the channel was selected successfully
+    */
     bool selectChannel(const uint8_t ch = 8);
     ///@}
 
@@ -346,7 +484,10 @@ public:
     */
     bool generalCall(const uint8_t* data, const size_t len);
 
-    //! @brief Output information for debug
+    /*!
+      @brief Output information for debug
+      @return String containing debug information about this unit
+    */
     virtual std::string debugInfo() const;
 
     ////// TODO : Split interface (I2C, GPIO, UART, SPI)
