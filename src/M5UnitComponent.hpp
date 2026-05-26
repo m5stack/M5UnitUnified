@@ -13,7 +13,8 @@
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
 #if defined(ESP_PLATFORM)
-#include <driver/uart.h>  // for uart_port_t
+#include <driver/uart.h>        // for uart_port_t
+#include <driver/spi_master.h>  // for spi_device_handle_t
 #endif
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
 #include <driver/i2c_master.h>  // for i2c_master_bus_handle_t
@@ -344,6 +345,8 @@ public:
 #if defined(ESP_PLATFORM)
     /*! @brief Assign UART (ESP-IDF native driver, pre-installed port) */
     virtual bool assign(const uart_port_t uart_num);
+    //! @brief Assign SPI device handle (ESP-IDF native, borrowed; cs controlled manually)
+    virtual bool assign(spi_device_handle_t handle, const gpio_num_t cs);
 #endif
     ///@}
 

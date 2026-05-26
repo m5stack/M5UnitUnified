@@ -219,6 +219,15 @@ bool Component::assign(const uart_port_t uart_num)
     }
     return false;
 }
+
+bool Component::assign(spi_device_handle_t handle, const gpio_num_t cs)
+{
+    if (canAccessSPI()) {
+        _adapter = std::make_shared<AdapterSPI>(handle, cs);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
 #endif
 
 bool Component::selectChannel(const uint8_t ch)

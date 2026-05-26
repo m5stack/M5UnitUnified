@@ -17,6 +17,9 @@
 #else
 class SPIClass;
 #endif
+#if defined(ESP_PLATFORM)
+#include <driver/spi_master.h>
+#endif
 
 namespace m5 {
 namespace unit {
@@ -79,8 +82,35 @@ public:
     };
 #endif
 
+#if defined(ESP_PLATFORM)
+    class ESPIDFImpl : public SPIImpl {
+    public:
+        ESPIDFImpl(spi_device_handle_t handle, const gpio_num_t cs);
+        virtual void beginTransaction() override;
+        virtual void endTransaction() override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+
+    protected:
+        m5::hal::error::error_t do_transmit(const uint8_t* tx, uint8_t* rx, const size_t len);
+
+    private:
+        spi_device_handle_t _handle{};
+        gpio_num_t _cs{GPIO_NUM_NC};
+        bool _in_transaction{false};
+    };
+#endif
+
 #if defined(ARDUINO)
     AdapterSPI(SPIClass& spi, const SPISettings& settings, const uint8_t cs);
+#endif
+#if defined(ESP_PLATFORM)
+    AdapterSPI(spi_device_handle_t handle, const gpio_num_t cs);
 #endif
 
     inline SPIImpl* impl()

@@ -202,6 +202,31 @@ bool UnitUnified::add(Component& u, const uart_port_t uart_num)
 }
 #endif
 
+#if defined(ESP_PLATFORM)
+bool UnitUnified::add(Component& u, spi_device_handle_t handle, const gpio_num_t cs)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+    if (!handle) {
+        M5_LIB_LOGE("SPI handle null");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] children:%zu", u.deviceName(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(handle, cs)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessSPI());
+    return false;
+}
+#endif
+
 // Add children if exists (iterative to avoid stack overflow)
 bool UnitUnified::add_children(Component& u)
 {

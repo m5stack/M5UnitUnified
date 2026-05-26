@@ -9,6 +9,9 @@
   @note  Currently handles SPI directly, but will handle via M5HAL in the future
 */
 #include "adapter_spi.hpp"
+#if defined(ESP_PLATFORM)
+#include <driver/gpio.h>
+#endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
 #include <cassert>
@@ -96,6 +99,141 @@ m5::hal::error::error_t AdapterSPI::SPIClassImpl::writeWithTransaction(const uin
 
 AdapterSPI::AdapterSPI(SPIClass& spi, const SPISettings& settings, const uint8_t cs)
     : Adapter(Adapter::Type::SPI, new AdapterSPI::SPIClassImpl(spi, settings, cs))
+{
+    assert(_impl);
+}
+#endif
+
+#if defined(ESP_PLATFORM)
+namespace {
+m5::hal::error::error_t to_spi_error(const esp_err_t err)
+{
+    switch (err) {
+        case ESP_OK:
+            return m5::hal::error::error_t::OK;
+        case ESP_ERR_INVALID_ARG:
+        case ESP_ERR_INVALID_STATE:
+            return m5::hal::error::error_t::INVALID_ARGUMENT;
+        case ESP_ERR_TIMEOUT:
+            return m5::hal::error::error_t::TIMEOUT_ERROR;
+        default:
+            return m5::hal::error::error_t::UNKNOWN_ERROR;
+    }
+}
+}  // namespace
+
+AdapterSPI::ESPIDFImpl::ESPIDFImpl(spi_device_handle_t handle, const gpio_num_t cs)
+    : AdapterSPI::SPIImpl(), _handle(handle), _cs(cs)
+{
+    if (_cs != GPIO_NUM_NC) {
+        gpio_set_direction(_cs, GPIO_MODE_OUTPUT);
+        gpio_set_level(_cs, 1);  // Idle high
+    }
+}
+
+void AdapterSPI::ESPIDFImpl::beginTransaction()
+{
+    if (_in_transaction) {
+        M5_LIB_LOGE("Don't nest!");
+        return;
+    }
+    _in_transaction = true;
+    spi_device_acquire_bus(_handle, portMAX_DELAY);
+    if (_cs != GPIO_NUM_NC) {
+        gpio_set_level(_cs, 0);
+    }
+}
+
+void AdapterSPI::ESPIDFImpl::endTransaction()
+{
+    if (!_in_transaction) {
+        M5_LIB_LOGE("Don't nest!");
+        return;
+    }
+    if (_cs != GPIO_NUM_NC) {
+        gpio_set_level(_cs, 1);
+    }
+    spi_device_release_bus(_handle);
+    _in_transaction = false;
+}
+
+m5::hal::error::error_t AdapterSPI::ESPIDFImpl::do_transmit(const uint8_t* tx, uint8_t* rx, const size_t len)
+{
+    const uint8_t* tp = tx;
+    uint8_t* rp       = rx;
+    size_t remain     = len;
+    while (remain) {
+        const size_t n = (remain > 64) ? 64 : remain;
+        spi_transaction_t t{};
+        t.length = n * 8;  // In bits
+        if (n <= 4) {
+            // Inline 4-byte path: no DMA buffer required (always safe)
+            t.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_USE_RXDATA;
+            for (size_t i = 0; i < n; ++i) {
+                t.tx_data[i] = tp ? tp[i] : 0xFF;  // Send 0xFF dummy on read (matches Arduino)
+            }
+        } else {
+            // 4 < n <= 64: FIFO via DMA-disabled bus accepts stack buffers
+            t.tx_buffer = tp;  // nullptr -> driver sends zeros
+            t.rx_buffer = rp;
+        }
+        const esp_err_t err = spi_device_polling_transmit(_handle, &t);
+        if (err != ESP_OK) {
+            return to_spi_error(err);
+        }
+        if (n <= 4 && rp) {
+            for (size_t i = 0; i < n; ++i) {
+                rp[i] = t.rx_data[i];
+            }
+        }
+        if (tp) {
+            tp += n;
+        }
+        if (rp) {
+            rp += n;
+        }
+        remain -= n;
+    }
+    return m5::hal::error::error_t::OK;
+}
+
+m5::hal::error::error_t AdapterSPI::ESPIDFImpl::readWithTransaction(uint8_t* data, const size_t len)
+{
+    if (!data) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
+    return do_transmit(nullptr, data, len);
+}
+
+m5::hal::error::error_t AdapterSPI::ESPIDFImpl::writeWithTransaction(const uint8_t* data, const size_t len,
+                                                                     const uint32_t /* unused */)
+{
+    return do_transmit(data, nullptr, len);
+}
+
+m5::hal::error::error_t AdapterSPI::ESPIDFImpl::writeWithTransaction(const uint8_t reg, const uint8_t* data,
+                                                                     const size_t len, const uint32_t /* unused */)
+{
+    auto ret = do_transmit(&reg, nullptr, 1);
+    if (data && len && ret == m5::hal::error::error_t::OK) {
+        ret = do_transmit(data, nullptr, len);
+    }
+    return ret;
+}
+
+m5::hal::error::error_t AdapterSPI::ESPIDFImpl::writeWithTransaction(const uint16_t reg, const uint8_t* data,
+                                                                     const size_t len, const uint32_t /* unused */)
+{
+    m5::types::big_uint16_t r(reg);
+    auto ret = do_transmit(r.data(), nullptr, r.size());
+    if (data && len && ret == m5::hal::error::error_t::OK) {
+        ret = do_transmit(data, nullptr, len);
+    }
+    return ret;
+}
+
+AdapterSPI::AdapterSPI(spi_device_handle_t handle, const gpio_num_t cs)
+    : Adapter(Adapter::Type::SPI, new AdapterSPI::ESPIDFImpl(handle, cs))
 {
     assert(_impl);
 }
