@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <memory>
 
-#if defined(ARDUINO)
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
@@ -298,7 +298,7 @@ public:
 
     ///@name Assign(I2C)
     ///@{
-#if defined(ARDUINO)
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Assign TwoWire as the communication bus
       @param wire TwoWire to be used
@@ -306,11 +306,22 @@ public:
     */
     virtual bool assign(TwoWire& wire);
 #endif
-#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
-    /*! @brief Assign I2C master bus (ESP-IDF native driver) */
+#if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>))
+    /*!
+      @brief Assign I2C master bus (ESP-IDF native driver)
+      @param bus ESP-IDF I2C master bus handle
+      @return True if successful
+     */
     virtual bool assign(i2c_master_bus_handle_t bus);
-#elif defined(ESP_PLATFORM)
-    /*! @brief Assign I2C (ESP-IDF legacy driver, pre-installed port) */
+#endif
+#if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && !__has_include(<driver/i2c_master.h>))
+    /*!
+      @brief Assign I2C (ESP-IDF legacy driver, pre-installed port)
+      @param port I2C port (the driver must be installed beforehand via i2c_param_config / i2c_driver_install)
+      @param sda SDA GPIO
+      @param scl SCL GPIO
+      @return True if successful
+     */
     virtual bool assign(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl);
 #endif
     /*!
@@ -334,7 +345,7 @@ public:
 
     ///@name Assign(UART)
     ///@{
-#if defined(ARDUINO)
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Assign HardwareSerial as the communication bus
       @param serial HardwareSerial to be used
@@ -342,17 +353,20 @@ public:
     */
     virtual bool assign(HardwareSerial& serial);
 #endif
-#if defined(ESP_PLATFORM)
-    /*! @brief Assign UART (ESP-IDF native driver, pre-installed port) */
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
+    /*!
+      @brief Assign UART (ESP-IDF native driver, pre-installed port)
+      @param uart_num UART port number (the driver must be installed beforehand via
+                      uart_driver_install / uart_param_config / uart_set_pin)
+      @return True if successful
+     */
     virtual bool assign(const uart_port_t uart_num);
-    //! @brief Assign SPI device handle (ESP-IDF native, borrowed; cs controlled manually)
-    virtual bool assign(spi_device_handle_t handle, const gpio_num_t cs);
 #endif
     ///@}
 
     ///@name Assign(SPI)
     ///@{
-#if defined(ARDUINO)
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Assign SPIClass as the communication bus
       @param spi SPIClass to be used
@@ -360,6 +374,15 @@ public:
       @return True if successful
     */
     virtual bool assign(SPIClass& spi, const SPISettings& settings);
+#endif
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
+    /*!
+      @brief Assign SPI device handle (ESP-IDF native driver, borrowed)
+      @param handle ESP-IDF SPI device handle (create with spics_io_num = -1; init bus with SPI_DMA_DISABLED)
+      @param cs CS GPIO controlled manually by this library
+      @return True if successful
+     */
+    virtual bool assign(spi_device_handle_t handle, const gpio_num_t cs);
 #endif
     ///@}
 
