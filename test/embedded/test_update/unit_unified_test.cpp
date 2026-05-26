@@ -113,6 +113,14 @@
 #include <M5UnitUnifiedRTC.h>
 #define HAS_UNIT_RTC
 #endif
+#if __has_include(<M5UnitUnifiedLIGHT.h>)
+#include <M5UnitUnifiedLIGHT.h>
+#define HAS_UNIT_LIGHT
+#endif
+#if __has_include(<M5UnitUnifiedFLASHLIGHT.h>)
+#include <M5UnitUnifiedFLASHLIGHT.h>
+#define HAS_UNIT_FLASHLIGHT
+#endif
 
 #include <algorithm>
 #include <utility>
@@ -328,6 +336,15 @@ TEST(UnitUnified, EachUnit)
 
 #ifdef HAS_UNIT_RTC
     each_unit_test<m5::unit::UnitPCF8563>();
+#endif
+
+#ifdef HAS_UNIT_LIGHT
+    each_unit_test<m5::unit::UnitBH1750FVI>();
+    each_unit_test<m5::unit::UnitLight>();
+#endif
+
+#ifdef HAS_UNIT_FLASHLIGHT
+    each_unit_test<m5::unit::UnitAW3641E>();
 #endif
 
     for (auto&& e : vec) {
