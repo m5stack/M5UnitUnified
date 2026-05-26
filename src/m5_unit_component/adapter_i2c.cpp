@@ -878,6 +878,7 @@ AdapterI2C::AdapterI2C(const i2c_port_t port, const gpio_num_t sda, const gpio_n
 #endif
 
 #if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
+#pragma message "Support I2C_Class"
 AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
     : Adapter(Adapter::Type::I2C, new AdapterI2C::I2CClassImpl(i2c, addr, clock))
 {
