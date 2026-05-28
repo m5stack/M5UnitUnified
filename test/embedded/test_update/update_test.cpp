@@ -15,69 +15,33 @@
 #include <SPI.h>
 #include <M5Unified.h>
 #include <M5HAL.hpp>
-#include <esp32-hal-i2c.h>
+#include <wiring/m5_unit_unified_wiring.hpp>  // include last; uses M5Unified/M5HAL detected above
 
 using namespace m5::unit;
 
 constexpr uint32_t I2C_FREQ{400000U};
 
-// Board-aware I2C add: same 3-branch logic as I2CComponentTestBase
+// Board-aware connection helpers delegate to the m5::unit::wiring helper. Dogfooding it here also
+// compile-checks the header and exercises it on real hardware.
 static bool add_with_i2c(UnitUnified& units, Component& u)
 {
-    auto board = M5.getBoard();
-    if (board == m5::board_t::board_ArduinoNessoN1) {
-        auto sda = M5.getPin(m5::pin_name_t::port_b_out);
-        auto scl = M5.getPin(m5::pin_name_t::port_b_in);
-        m5::hal::bus::I2CBusConfig i2c_cfg;
-        i2c_cfg.pin_sda = m5::hal::gpio::getPin(sda);
-        i2c_cfg.pin_scl = m5::hal::gpio::getPin(scl);
-        auto i2c_bus    = m5::hal::bus::i2c::getBus(i2c_cfg);
-        return units.add(u, i2c_bus ? i2c_bus.value() : nullptr);
-    }
-    if (board == m5::board_t::board_M5NanoC6) {
-        return units.add(u, M5.Ex_I2C);
-    }
-    // Standard boards: Wire
-    auto pin_num_sda = M5.getPin(m5::pin_name_t::port_a_sda);
-    auto pin_num_scl = M5.getPin(m5::pin_name_t::port_a_scl);
-    if (i2cIsInit(0)) {
-        Wire.end();
-    }
-    Wire.begin(pin_num_sda, pin_num_scl, I2C_FREQ);
-    return units.add(u, Wire);
+    return m5::unit::wiring::addI2C(units, u, I2C_FREQ);  // default PortB = SoftwareI2C on NessoN1
 }
 
-// GPIO add helper
 static bool add_with_gpio(UnitUnified& units, Component& u)
 {
-    auto rx = M5.getPin(m5::pin_name_t::port_b_in);
-    auto tx = M5.getPin(m5::pin_name_t::port_b_out);
-    if (rx < 0 || tx < 0) {
-        // Fallback to port_a if port_b unavailable
-        rx = M5.getPin(m5::pin_name_t::port_a_pin1);
-        tx = M5.getPin(m5::pin_name_t::port_a_pin2);
-    }
-    return units.add(u, rx, tx);
+    return m5::unit::wiring::addGPIO(units, u);
 }
 
-// UART add helper
 static bool add_with_uart(UnitUnified& units, Component& u)
 {
-#if SOC_UART_NUM > 2
-    auto& s = Serial2;
-#elif SOC_UART_NUM > 1
-    auto& s = Serial1;
-#else
-#error "Not enough Serial"
-#endif
-    return units.add(u, s);
+    return m5::unit::wiring::addUART(units, u, m5::unit::wiring::defaultUartSerial());
 }
 
-// SPI add helper
 static bool add_with_spi(UnitUnified& units, Component& u)
 {
     SPISettings settings{1000000, MSBFIRST, SPI_MODE0};
-    return units.add(u, SPI, settings);
+    return m5::unit::wiring::spiBus(units, u, SPI, settings);
 }
 
 // Test: I2C unit add/begin/update lifecycle (success path)
