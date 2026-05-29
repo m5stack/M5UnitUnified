@@ -30,6 +30,8 @@ idf_component_register(
     PRIV_REQUIRES ${private_requires}
 )
 
+idf_build_set_property(CXX_COMPILE_OPTIONS "-std=gnu++17" APPEND)
+
 # Optionally link M5Unified only when it is already part of the build (e.g. a M5Unified-based
 # app or example). This puts M5GFX's <utility/I2C_Class.hpp> on adapter_i2c.cpp's include path,
 # so the real m5::I2C_Class adapter is compiled instead of the stub. Pure ESP-IDF builds without
