@@ -104,8 +104,7 @@ inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
     if (board == m5::board_t::board_ArduinoNessoN1) {
         if (nesso == NessoPort::PortB) {
             return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_b_out)),
-                    static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_b_in)),
-                    I2CPins::Backend::SoftwareI2C};
+                    static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_b_in)), I2CPins::Backend::SoftwareI2C};
         }
         return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_sda)),
                 static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_scl)), I2CPins::Backend::Wire};
@@ -127,8 +126,8 @@ inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
 */
 inline GpioPinPair gpioPins(const GpioRole role = GpioRole::Both)
 {
-    int rx = (role == GpioRole::OutOnly) ? -1 : M5.getPin(m5::pin_name_t::port_b_in);
-    int tx = (role == GpioRole::InOnly) ? -1 : M5.getPin(m5::pin_name_t::port_b_out);
+    int rx                = (role == GpioRole::OutOnly) ? -1 : M5.getPin(m5::pin_name_t::port_b_in);
+    int tx                = (role == GpioRole::InOnly) ? -1 : M5.getPin(m5::pin_name_t::port_b_out);
     const bool need_rx_fb = (role != GpioRole::OutOnly && rx < 0);
     const bool need_tx_fb = (role != GpioRole::InOnly && tx < 0);
     bool fb               = false;
@@ -148,9 +147,9 @@ inline GpioPinPair gpioPins(const GpioRole role = GpioRole::Both)
 */
 inline UartPinPair uartPins()
 {
-    int rx    = M5.getPin(m5::pin_name_t::port_c_rxd);
-    int tx    = M5.getPin(m5::pin_name_t::port_c_txd);
-    bool fb   = false;
+    int rx  = M5.getPin(m5::pin_name_t::port_c_rxd);
+    int tx  = M5.getPin(m5::pin_name_t::port_c_txd);
+    bool fb = false;
     if (rx < 0 || tx < 0) {
         fb = true;
         rx = M5.getPin(m5::pin_name_t::port_a_pin1);
@@ -314,8 +313,7 @@ inline bool addGPIO(UnitUnified& units, Component& unit, const GpioRole role = G
     if (p.fallback_a) {
         Wire.end();
     }
-    M5_LIB_LOGI("wiring: GPIO rx=%d tx=%d role=%d fallback_a=%d", (int)p.rx, (int)p.tx, (int)role,
-                (int)p.fallback_a);
+    M5_LIB_LOGI("wiring: GPIO rx=%d tx=%d role=%d fallback_a=%d", (int)p.rx, (int)p.tx, (int)role, (int)p.fallback_a);
     return units.add(unit, p.rx, p.tx);
 }
 
