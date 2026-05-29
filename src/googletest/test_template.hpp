@@ -17,6 +17,7 @@
 #include <SPI.h>
 #include <esp32-hal-i2c.h>
 #include <M5Unified.h>
+#include "../wiring/m5_unit_unified_wiring.hpp"  // board-aware connection helpers (after M5Unified.h)
 
 namespace m5 {
 namespace unit {
@@ -59,19 +60,10 @@ protected:
 
     virtual bool begin()
     {
-        auto board = M5.getBoard();
-        if (board == m5::board_t::board_ArduinoNessoN1) {
-            // NessoN1: GROVE is port_b (GPIO 5/4). SoftwareI2C via M5HAL
-            auto sda = M5.getPin(m5::pin_name_t::port_b_out);
-            auto scl = M5.getPin(m5::pin_name_t::port_b_in);
-            return begin_with_software_i2c(sda, scl);
-        }
-        if (board == m5::board_t::board_M5NanoC6) {
-            // NanoC6: Use Ex_I2C (avoids Wire/Ex_I2C dual-driver conflict)
-            return begin_with_ex_i2c();
-        }
-        // Standard boards: Wire (initialized here with unit's clock)
-        return begin_with_wire(Wire);
+        // Board-aware: NessoN1 -> SoftwareI2C (M5HAL), NanoC6 / NanoH2 -> Ex_I2C, others -> Wire.
+        // Delegates to the shared wiring helper (adds NanoH2 over the previous hand-written 3-branch).
+        // The begin_with_* helpers below remain for tests that override begin() (e.g. DualSensor on Wire1).
+        return m5::unit::wiring::addI2C(Units, *unit, unit->component_config().clock) && Units.begin();
     }
 
     bool begin_with_wire(TwoWire& wire, uint32_t wnum = 0)
@@ -141,16 +133,8 @@ protected:
 
     virtual bool begin()
     {
-        auto pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_b_in);
-        auto pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_b_out);
-        if (pin_num_gpio_in < 0 || pin_num_gpio_out < 0) {
-            M5_LOGW("PortB is not available");
-            Wire.end();
-            pin_num_gpio_in  = M5.getPin(m5::pin_name_t::port_a_pin1);
-            pin_num_gpio_out = M5.getPin(m5::pin_name_t::port_a_pin2);
-        }
-        M5_LOGI("getPin: %d,%d", pin_num_gpio_in, pin_num_gpio_out);
-        return Units.add(*unit, pin_num_gpio_in, pin_num_gpio_out) && Units.begin();
+        // PortB preferred, fallback to PortA. Both pins added (matches the previous default).
+        return m5::unit::wiring::addGPIO(Units, *unit) && Units.begin();
     }
 
     //! @brief return m5::unit::Component-derived class instance
