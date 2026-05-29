@@ -11,6 +11,7 @@
 #include "adapter_spi.hpp"
 #if defined(ESP_PLATFORM)
 #include <driver/gpio.h>
+#include <freertos/FreeRTOS.h>
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
