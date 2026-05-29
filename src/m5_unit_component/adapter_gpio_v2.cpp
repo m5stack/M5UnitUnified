@@ -27,11 +27,13 @@ rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint
     out.clk_src = RMT_CLK_SRC_DEFAULT;
     out.mem_block_symbols =
         std::max<uint32_t>(SOC_RMT_MEM_WORDS_PER_CHANNEL, cfg.tx.mem_blocks * SOC_RMT_MEM_WORDS_PER_CHANNEL);
-    out.resolution_hz      = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
-    out.trans_queue_depth  = 4;
-    out.flags.with_dma     = cfg.tx.with_dma;
+    out.resolution_hz     = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
+    out.trans_queue_depth = 4;
+    out.flags.with_dma    = cfg.tx.with_dma;
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
     out.flags.io_loop_back = cfg.tx.loop_enabled;
-    out.flags.invert_out   = cfg.tx.invert_signal;
+#endif
+    out.flags.invert_out = cfg.tx.invert_signal;
     return out;
 }
 
