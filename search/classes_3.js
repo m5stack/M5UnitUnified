@@ -2,5 +2,6 @@ var searchData=
 [
   ['gpiocomponenttestbase_0',['GPIOComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html',1,'m5::unit::googletest']]],
   ['gpioimpl_1',['GPIOImpl',['../classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html',1,'m5::unit::AdapterGPIOBase']]],
-  ['gpioimplv2_2',['GPIOImplV2',['../classm5_1_1unit_1_1_g_p_i_o_impl_v2.html',1,'m5::unit']]]
+  ['gpioimplv2_2',['GPIOImplV2',['../classm5_1_1unit_1_1_g_p_i_o_impl_v2.html',1,'m5::unit']]],
+  ['gpiopinpair_3',['GpioPinPair',['../structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html',1,'m5::unit::wiring']]]
 ];

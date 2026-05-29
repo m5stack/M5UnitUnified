@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['i2cclassimpl_0',['I2CClassImpl',['../classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html',1,'m5::unit::AdapterI2C']]],
-  ['i2ccomponenttestbase_1',['I2CComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html',1,'m5::unit::googletest']]],
-  ['i2cimpl_2',['I2CImpl',['../classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html',1,'m5::unit::AdapterI2C']]],
-  ['impl_3',['Impl',['../classm5_1_1unit_1_1_adapter_1_1_impl.html',1,'m5::unit::Adapter']]]
+  ['hati2cpins_0',['HatI2CPins',['../structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html',1,'m5::unit::wiring']]],
+  ['hatpinpair_1',['HatPinPair',['../structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html',1,'m5::unit::wiring']]]
 ];
