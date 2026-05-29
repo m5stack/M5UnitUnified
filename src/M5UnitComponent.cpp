@@ -135,10 +135,35 @@ Component* Component::child(const uint8_t ch) const
 
 bool Component::assign(m5::hal::bus::Bus* bus)
 {
-    if (_addr) {
-        _adapter = std::make_shared<AdapterI2C>(bus, _addr, _component_cfg.clock);
+    if (!bus) {
+        return false;
     }
-    return static_cast<bool>(_adapter);
+
+    // Bus type and unit access capability must agree
+    switch (bus->getBusType()) {
+        case m5::hal::types::BusType::I2C:
+            if (!canAccessI2C() || !_addr) return false;
+            _adapter = std::make_shared<AdapterI2C>(bus, _addr, _component_cfg.clock);
+            return static_cast<bool>(_adapter);
+
+        case m5::hal::types::BusType::SPI:
+            if (!canAccessSPI()) return false;
+            M5_LIB_LOGE("M5HAL SPI bus assign is not yet implemented");
+            return false;
+
+        case m5::hal::types::BusType::UART:
+            if (!canAccessUART()) return false;
+            M5_LIB_LOGE("M5HAL UART bus assign is not yet implemented");
+            return false;
+
+        case m5::hal::types::BusType::GPIO:
+            if (!canAccessGPIO()) return false;
+            M5_LIB_LOGE("M5HAL GPIO bus assign is not yet implemented");
+            return false;
+
+        default:
+            return false;
+    }
 }
 
 bool Component::assign(TwoWire& wire)
