@@ -1,0 +1,34 @@
+{
+    "build": {
+        "core": "esp32",
+        "extra_flags": [
+            "-DARDUINO_M5STACK_NANO_H2"
+        ],
+        "f_cpu": "96000000L",
+        "f_flash": "16000000L",
+        "flash_mode": "qio",
+        "mcu": "esp32h2",
+        "variant": "esp32h2"
+    },
+    "connectivity": [
+        "bluetooth",
+        "zigbee"
+    ],
+    "debug": {
+        "openocd_target": "esp32h2.cfg"
+    },
+    "frameworks": [
+        "arduino",
+        "espidf"
+    ],
+    "name": "M5Stack NanoH2",
+    "upload": {
+        "flash_size": "4MB",
+        "maximum_ram_size": 327680,
+        "maximum_size": 4194304,
+        "require_upload_port": true,
+        "speed": 460800
+    },
+    "url": "https://docs.m5stack.com/en/core/NanoH2",
+    "vendor": "M5Stack"
+}
