@@ -30,6 +30,14 @@ rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint
     out.resolution_hz     = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
     out.trans_queue_depth = 4;
     out.flags.with_dma    = cfg.tx.with_dma;
+    // NOTE: cfg.tx.loop_enabled drives two independent features:
+    //   (1) Hardware loopback (io_loop_back flag) - connects TX pin to RX side
+    //       internally for single-wire use cases. The field is removed in IDF
+    //       v6, so hardware loopback is silently disabled there. No current
+    //       unit uses this path.
+    //   (2) Software loop transmission (loop_count in to_rmt_transmit_config)
+    //       - repeats the same symbol N times. Still works on IDF v6.
+    // TODO: split into independent config fields once a single-wire user appears.
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
     out.flags.io_loop_back = cfg.tx.loop_enabled;
 #endif
