@@ -35,7 +35,7 @@ static bool add_with_gpio(UnitUnified& units, Component& u)
 
 static bool add_with_uart(UnitUnified& units, Component& u)
 {
-    return m5::unit::wiring::addUART(units, u, m5::unit::wiring::defaultUartSerial());
+    return m5::unit::wiring::addUART(units, u);
 }
 
 static bool add_with_spi(UnitUnified& units, Component& u)
