@@ -228,7 +228,8 @@ bool Component::assign(HardwareSerial& serial)
 bool Component::assign(SPIClass& spi, const SPISettings& settings)
 {
     if (canAccessSPI()) {
-        _adapter = std::make_shared<AdapterSPI>(spi, settings, address() /* CS */);
+        // address() is reused as the CS GPIO number on SPI units (see CapST25R3916 etc.)
+        _adapter = std::make_shared<AdapterSPI>(spi, settings, static_cast<gpio_num_t>(address()) /* CS */);
         return static_cast<bool>(_adapter);
     }
     return false;
@@ -248,7 +249,9 @@ bool Component::assign(const uart_port_t uart_num)
 bool Component::assign(spi_device_handle_t handle, const gpio_num_t cs)
 {
     if (canAccessSPI()) {
-        _adapter = std::make_shared<AdapterSPI>(handle, cs);
+        // If cs is omitted (GPIO_NUM_NC), use address() as the CS pin (same convention as Arduino SPI).
+        const gpio_num_t actual_cs = (cs == GPIO_NUM_NC) ? static_cast<gpio_num_t>(address()) : cs;
+        _adapter                   = std::make_shared<AdapterSPI>(handle, actual_cs);
         return static_cast<bool>(_adapter);
     }
     return false;

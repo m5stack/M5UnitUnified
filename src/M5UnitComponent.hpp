@@ -379,10 +379,11 @@ public:
     /*!
       @brief Assign SPI device handle (ESP-IDF native driver, borrowed)
       @param handle ESP-IDF SPI device handle (create with spics_io_num = -1; init bus with SPI_DMA_DISABLED)
-      @param cs CS GPIO controlled manually by this library
+      @param cs CS GPIO controlled manually by this library. If `GPIO_NUM_NC` (default), uses `address()` as the CS pin
+      (same convention as Arduino SPI)
       @return True if successful
      */
-    virtual bool assign(spi_device_handle_t handle, const gpio_num_t cs);
+    virtual bool assign(spi_device_handle_t handle, const gpio_num_t cs = GPIO_NUM_NC);
 #endif
     ///@}
 

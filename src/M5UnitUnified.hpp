@@ -161,10 +161,11 @@ public:
       @brief Adding unit to be managed (SPI, ESP-IDF native driver)
       @param u Unit Component
       @param handle ESP-IDF SPI device handle (create with spics_io_num = -1; init bus with SPI_DMA_DISABLED)
-      @param cs CS GPIO controlled manually by this library
+      @param cs CS GPIO controlled manually by this library. If `GPIO_NUM_NC` (default), uses `Component::address()` as
+      the CS pin (same convention as Arduino SPI)
       @return True if successful
      */
-    bool add(Component& u, spi_device_handle_t handle, const gpio_num_t cs);
+    bool add(Component& u, spi_device_handle_t handle, const gpio_num_t cs = GPIO_NUM_NC);
 #endif
     ///@}
 

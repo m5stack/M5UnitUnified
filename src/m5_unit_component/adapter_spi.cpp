@@ -23,17 +23,22 @@ namespace unit {
 #if defined(ARDUINO)
 uint32_t AdapterSPI::SPIClassImpl::transaction_count{};
 
-AdapterSPI::SPIClassImpl::SPIClassImpl(SPIClass& spi, const SPISettings& settings, const uint8_t cs)
+AdapterSPI::SPIClassImpl::SPIClassImpl(SPIClass& spi, const SPISettings& settings, const gpio_num_t cs)
     : AdapterSPI::SPIImpl(cs), _spi(&spi), _settings{settings}
 {
+    if (_cs != GPIO_NUM_NC) {
+        gpio_set_direction(_cs, GPIO_MODE_OUTPUT);
+        gpio_set_level(_cs, 1);  // Idle high
+    }
 }
 
 void AdapterSPI::SPIClassImpl::beginTransaction()
 {
     if (transaction_count++ == 0) {
-        //                        M5_LIB_LOGE(">>>> SPI Transaction");
         _spi->beginTransaction(_settings);
-        digitalWrite(cs_pin(), LOW);
+        if (cs_pin() != GPIO_NUM_NC) {
+            gpio_set_level(cs_pin(), 0);
+        }
     } else {
         M5_LIB_LOGE("Don't nest!");
     }
@@ -42,8 +47,9 @@ void AdapterSPI::SPIClassImpl::beginTransaction()
 void AdapterSPI::SPIClassImpl::endTransaction()
 {
     if (transaction_count && --transaction_count == 0) {
-        //                   M5_LIB_LOGE("<<<< SPI Transaction");
-        digitalWrite(cs_pin(), HIGH);
+        if (cs_pin() != GPIO_NUM_NC) {
+            gpio_set_level(cs_pin(), 1);
+        }
         _spi->endTransaction();
     } else {
         M5_LIB_LOGE("Don't nest!");
@@ -98,7 +104,7 @@ m5::hal::error::error_t AdapterSPI::SPIClassImpl::writeWithTransaction(const uin
     return ret;
 }
 
-AdapterSPI::AdapterSPI(SPIClass& spi, const SPISettings& settings, const uint8_t cs)
+AdapterSPI::AdapterSPI(SPIClass& spi, const SPISettings& settings, const gpio_num_t cs)
     : Adapter(Adapter::Type::SPI, new AdapterSPI::SPIClassImpl(spi, settings, cs))
 {
     assert(_impl);
