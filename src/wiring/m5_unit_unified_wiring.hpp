@@ -6,6 +6,17 @@
 /*!
   @file m5_unit_unified_wiring.hpp
   @brief Opt-in, header-only board-aware connection helpers for M5UnitUnified examples
+
+  @details
+  This header exists solely to keep the example code in M5UnitUnified and M5Unit-* repositories
+  short and readable. Each helper resolves board-specific pins / backends through M5Unified,
+  opens the bus, and calls UnitUnified::add().
+
+  Users SHOULD treat these helpers as reference implementations, not as the only supported way
+  to wire a unit. In real applications, prefer to call UnitUnified::add() directly with a bus
+  or handle that fits the application's lifecycle (shared bus management, custom pins,
+  alternative backends, etc.).
+
   @note REQUIRES <M5Unified.h> (or <M5Unified.hpp>) to be included BEFORE this header.
         Pin-acquisition helpers (i2cPins / gpioPins / uartPins / spiPins / hatI2CPins / hatGPIOPins /
         hatUARTPins) work on both Arduino and ESP-IDF (any platform where M5Unified is available).
@@ -332,14 +343,18 @@ inline HardwareSerial& defaultUartSerial()
 }
 
 /*!
-  @brief Add a unit on UART, preferring PortC and falling back to PortA
-  @note On NanoC6 / NanoH2 fallback, M5.Ex_I2C.begin() + release() is called to flip the m5gfx
+  @brief Add a unit on the board's default UART, preferring PortC and falling back to PortA
+  @param baud Baud rate (default 115200)
+  @param config UART config (0 = SERIAL_8N1, otherwise passed through)
+  @note Selects HardwareSerial via defaultUartSerial() based on board.
+        On NanoC6 / NanoH2 fallback, M5.Ex_I2C.begin() + release() is called to flip the m5gfx
         I2C `initialized` flag so release() actually detaches the bus + restores pins.
 */
-inline bool addUART(UnitUnified& units, Component& unit, HardwareSerial& serial, const uint32_t baud = 115200,
-                    const uint32_t config = SERIAL_8N1)
+inline bool addUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200, const uint32_t config = 0)
 {
-    const auto p = uartPins();
+    HardwareSerial& serial = defaultUartSerial();
+    const uint32_t cfg     = (config == 0) ? static_cast<uint32_t>(SERIAL_8N1) : config;
+    const auto p           = uartPins();
     if (p.fallback_a) {
         const auto b = M5.getBoard();
         if (b == m5::board_t::board_M5NanoC6 || b == m5::board_t::board_M5NanoH2) {
@@ -350,10 +365,10 @@ inline bool addUART(UnitUnified& units, Component& unit, HardwareSerial& serial,
             M5.Ex_I2C.release();
         }
     }
-    M5_LIB_LOGI("wiring: UART rx=%d tx=%d baud=%lu fallback_a=%d", (int)p.rx, (int)p.tx, (unsigned long)baud,
-                (int)p.fallback_a);
+    M5_LIB_LOGI("wiring: UART rx=%d tx=%d baud=%lu config=0x%lx fallback_a=%d", (int)p.rx, (int)p.tx,
+                (unsigned long)baud, (unsigned long)cfg, (int)p.fallback_a);
     serial.end();
-    serial.begin(baud, config, p.rx, p.tx);
+    serial.begin(baud, cfg, p.rx, p.tx);
     return units.add(unit, serial);
 }
 
@@ -366,12 +381,18 @@ inline bool spiBus(UnitUnified& units, Component& unit, SPIClass& spi, const SPI
 
 /*!
   @brief Add a unit on the board's shared SD/SPI bus, beginning it on demand
+  @param clock_hz SPI clock in Hz
+  @param mode SPI mode 0/1/2/3 (default 0)
+  @param bit_order Bit order: 0 = MSBFIRST (default), 1 = LSBFIRST
   @note Resolves the sd_spi_* pins. SPI.begin() is called only if the bus is not already begun.
 */
-inline bool addSPI(UnitUnified& units, Component& unit, const SPISettings& settings)
+inline bool addSPI(UnitUnified& units, Component& unit, const uint32_t clock_hz, const uint8_t mode = 0,
+                   const uint8_t bit_order = 0)
 {
+    SPISettings settings{clock_hz, static_cast<uint8_t>((bit_order == 0) ? MSBFIRST : LSBFIRST), mode};
     const auto p = spiPins();
-    M5_LIB_LOGI("wiring: addSPI sclk=%d miso=%d mosi=%d", (int)p.sclk, (int)p.miso, (int)p.mosi);
+    M5_LIB_LOGI("wiring: addSPI sclk=%d miso=%d mosi=%d clock=%lu mode=%u bit_order=%u", (int)p.sclk, (int)p.miso,
+                (int)p.mosi, (unsigned long)clock_hz, (unsigned)mode, (unsigned)bit_order);
     if (!SPI.bus()) {
         SPI.begin(p.sclk, p.miso, p.mosi);
     }
@@ -427,19 +448,23 @@ inline bool addHatGPIO(UnitUnified& units, Component& unit, const GpioRole role 
 
 /*!
   @brief Add a unit on the board's Hat UART header
+  @param baud Baud rate (default 115200)
+  @param config UART config (0 = SERIAL_8N1, otherwise passed through)
+  @note Selects HardwareSerial via defaultUartSerial() based on board.
 */
-inline bool addHatUART(UnitUnified& units, Component& unit, HardwareSerial& serial, const uint32_t baud = 115200,
-                       const uint32_t config = SERIAL_8N1)
+inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200, const uint32_t config = 0)
 {
-    const auto p = hatUARTPins();
+    HardwareSerial& serial = defaultUartSerial();
+    const uint32_t cfg     = (config == 0) ? static_cast<uint32_t>(SERIAL_8N1) : config;
+    const auto p           = hatUARTPins();
     if (p.rx < 0 || p.tx < 0) {
         M5_LIB_LOGE("wiring: Hat UART unsupported board=0x%02x", (int)M5.getBoard());
         return false;
     }
-    M5_LIB_LOGI("wiring: addHatUART board=0x%02x rx=%d tx=%d baud=%lu", (int)M5.getBoard(), (int)p.rx, (int)p.tx,
-                (unsigned long)baud);
+    M5_LIB_LOGI("wiring: addHatUART board=0x%02x rx=%d tx=%d baud=%lu config=0x%lx", (int)M5.getBoard(), (int)p.rx,
+                (int)p.tx, (unsigned long)baud, (unsigned long)cfg);
     serial.end();
-    serial.begin(baud, config, p.rx, p.tx);
+    serial.begin(baud, cfg, p.rx, p.tx);
     return units.add(unit, serial);
 }
 #endif  // ARDUINO
