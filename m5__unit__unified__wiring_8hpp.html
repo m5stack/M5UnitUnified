@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.7 git rev:3043f2d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.8 git rev:aa04668</span>
    </div>
   </td>
  </tr>
@@ -153,6 +153,8 @@ Enumerations</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Opt-in, header-only board-aware connection helpers for M5UnitUnified examples. </p>
+<p>This header exists solely to keep the example code in M5UnitUnified and M5Unit-* repositories short and readable. Each helper resolves board-specific pins / backends through M5Unified, opens the bus, and calls UnitUnified::add().</p>
+<p>Users SHOULD treat these helpers as reference implementations, not as the only supported way to wire a unit. In real applications, prefer to call UnitUnified::add() directly with a bus or handle that fits the application's lifecycle (shared bus management, custom pins, alternative backends, etc.).</p>
 <dl class="section note"><dt>Note</dt><dd>REQUIRES &lt;M5Unified.h&gt; (or &lt;M5Unified.hpp&gt;) to be included BEFORE this header. Pin-acquisition helpers (i2cPins / gpioPins / uartPins / spiPins / hatI2CPins / hatGPIOPins / hatUARTPins) work on both Arduino and ESP-IDF (any platform where M5Unified is available). High-level addX helpers that drive Wire/SPI/HardwareSerial are guarded by ARDUINO since the underlying APIs are Arduino-only. </dd></dl>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a5ef72887835235a6726c6825654b9794" name="a5ef72887835235a6726c6825654b9794"></a>
