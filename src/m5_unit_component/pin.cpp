@@ -14,6 +14,7 @@
 #include <driver/i2c.h>
 #include <soc/gpio_struct.h>
 #include <soc/gpio_periph.h>
+#include <soc/gpio_reg.h>
 
 namespace m5 {
 namespace unit {
