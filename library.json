@@ -11,8 +11,8 @@
         "url": "https://github.com/m5stack/M5UnitUnified.git"
     },
     "dependencies": {
-        "m5stack/M5Utility": ">=0.0.10",
-        "m5stack/M5HAL": "*"
+        "m5stack/M5Utility": ">=0.0.13",
+        "m5stack/M5HAL": ">=0.0.4"
     },
     "version": "0.4.7",
     "frameworks": [
