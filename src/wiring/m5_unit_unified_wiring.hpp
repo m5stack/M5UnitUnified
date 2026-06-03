@@ -814,7 +814,17 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
         M5_LIB_LOGE("wiring: Hat I2C unsupported board=0x%02x", (int)M5.getBoard());
         return false;
     }
+#if SOC_HP_I2C_NUM >= 2
     const i2c_port_t port = p.useWire1 ? I2C_NUM_1 : I2C_NUM_0;
+#else
+    // SOC_HP_I2C_NUM == 1 (ESP32-C3/C6): I2C_NUM_1 is undefined; NessoN1 Hat path is unsupported.
+    // (SOC_I2C_NUM may be 2 on C6 because of LP_I2C, but I2C_NUM_1 itself is gated by SOC_HP_I2C_NUM.)
+    if (p.useWire1) {
+        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs I2C_NUM_1, but SOC_HP_I2C_NUM<2");
+        return false;
+    }
+    const i2c_port_t port = I2C_NUM_0;
+#endif
     M5_LIB_LOGI("wiring(ESP-IDF): addHatI2C port=%d sda=%d scl=%d clock=%u", (int)port, (int)p.sda, (int)p.scl,
                 (unsigned)clock);
     auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock);
