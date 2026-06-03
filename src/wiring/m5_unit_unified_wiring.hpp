@@ -297,9 +297,7 @@ inline bool i2cClass(UnitUnified& units, Component& unit, m5::I2C_Class& i2c)
 }
 #endif
 
-// m5::hal::gpio::getPin() free function is currently provided only by the M5HAL
-// Arduino framework impl; ESP-IDF native builds would fail to link otherwise.
-#if defined(M5_HAL_HPP) && defined(ARDUINO)
+#if defined(M5_HAL_HPP)
 //! @brief Add a unit on a software (bit-bang) I2C bus via M5HAL on explicit pins
 inline bool i2cSoftware(UnitUnified& units, Component& unit, const int sda, const int scl)
 {
@@ -610,10 +608,18 @@ inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_nu
         return nullptr;
     }
     i2c_master_bus_config_t cfg{};
-    cfg.i2c_port                     = port;
-    cfg.sda_io_num                   = sda;
-    cfg.scl_io_num                   = scl;
-    cfg.clk_source                   = I2C_CLK_SRC_DEFAULT;
+    cfg.i2c_port   = port;
+    cfg.sda_io_num = sda;
+    cfg.scl_io_num = scl;
+#if SOC_LP_I2C_SUPPORTED
+    if (port == LP_I2C_NUM_0) {
+        // LP I2C uses RTC_FAST clock (union with clk_source, mutually exclusive).
+        cfg.lp_source_clk = LP_I2C_SCLK_DEFAULT;
+    } else
+#endif
+    {
+        cfg.clk_source = I2C_CLK_SRC_DEFAULT;
+    }
     cfg.glitch_ignore_cnt            = 7;
     cfg.flags.enable_internal_pullup = true;
     if (i2c_new_master_bus(&cfg, &cache[count].handle) != ESP_OK) {
@@ -759,15 +765,43 @@ inline spi_device_handle_t spiDeviceHandle(const spi_host_device_t host, const g
 
 #if defined(__M5UNIFIED_HPP__)
 //! @brief Add a unit on the board's default I2C, picking the right backend automatically (ESP-IDF native)
+//! @note  Dispatch matrix (mirrors Arduino addI2C's intent on each backend / board):
+//!          - SoftwareI2C (NessoN1 PortB)   -> i2cSoftware() via M5HAL bit-bang
+//!          - Wire on NessoN1 (PortA QWIIC) -> borrow M5.Ex_I2C (M5Unified holds I2C_NUM_0)
+//!          - Wire on other boards (Core/Stick/S3 etc) -> install a new bus via i2c_new_master_bus
+//!            (M5Unified does NOT call Wire.begin() on these boards, so I2C_NUM_0 is free)
+//!          - ExI2C (NanoC6/NanoH2)         -> borrow M5.Ex_I2C
 inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 100000,
                    const NessoPort nesso = NessoPort::PortB)
 {
-    const auto pins = i2cPins(nesso);
-    M5_LIB_LOGI("wiring(ESP-IDF): addI2C nesso=%d sda=%d scl=%d clock=%u", (int)nesso, (int)pins.sda, (int)pins.scl,
-                (unsigned)clock);
-    auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock);
-    if (!bus) return false;
-    return units.add(unit, bus);
+    const auto pins  = i2cPins(nesso);
+    const auto board = M5.getBoard();
+    M5_LIB_LOGI("wiring(ESP-IDF): addI2C board=0x%02x nesso=%d sda=%d scl=%d clock=%u backend=%d", (int)board,
+                (int)nesso, (int)pins.sda, (int)pins.scl, (unsigned)clock, (int)pins.backend);
+    switch (pins.backend) {
+        case I2CPins::Backend::SoftwareI2C:
+#if defined(M5_HAL_HPP)
+            return i2cSoftware(units, unit, pins.sda, pins.scl);
+#else
+            M5_LIB_LOGE("wiring: SoftwareI2C backend requires M5HAL");
+            return false;
+#endif
+        case I2CPins::Backend::Wire:
+            if (board == m5::board_t::board_ArduinoNessoN1) {
+                // NessoN1 PortA (QWIIC) -> Wire == M5.In_I2C (NessoN1 maps Wire to In_I2C).
+                // M5Unified already holds I2C_NUM_0 here, so borrow instead of installing.
+                return i2cClass(units, unit, M5.In_I2C);
+            } else {
+                // Core / Stick / S3 etc: M5Unified does not call Wire.begin(), so install ourselves
+                auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock);
+                if (!bus) return false;
+                return units.add(unit, bus);
+            }
+        case I2CPins::Backend::ExI2C:
+            // NanoC6 / NanoH2: M5Unified manages Ex_I2C -> borrow
+            return i2cClass(units, unit, M5.Ex_I2C);
+    }
+    return false;
 }
 
 //! @brief Add a unit on GPIO, preferring PortB and falling back to PortA (ESP-IDF native)
@@ -814,17 +848,19 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
         M5_LIB_LOGE("wiring: Hat I2C unsupported board=0x%02x", (int)M5.getBoard());
         return false;
     }
-#if SOC_HP_I2C_NUM >= 2
-    const i2c_port_t port = p.useWire1 ? I2C_NUM_1 : I2C_NUM_0;
-#else
-    // SOC_HP_I2C_NUM == 1 (ESP32-C3/C6): I2C_NUM_1 is undefined; NessoN1 Hat path is unsupported.
-    // (SOC_I2C_NUM may be 2 on C6 because of LP_I2C, but I2C_NUM_1 itself is gated by SOC_HP_I2C_NUM.)
+    i2c_port_t port;
     if (p.useWire1) {
-        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs I2C_NUM_1, but SOC_HP_I2C_NUM<2");
+#if SOC_HP_I2C_NUM >= 2
+        port = I2C_NUM_1;  // HP I2C #1 (ESP32 / S2 / S3 / P4 / H2 etc.)
+#elif SOC_LP_I2C_SUPPORTED
+        port = LP_I2C_NUM_0;  // C6: 2nd I2C is LP (= Arduino Wire1)
+#else
+        M5_LIB_LOGE("wiring: addHatI2C needs a 2nd I2C port, none available board=0x%02x", (int)M5.getBoard());
         return false;
-    }
-    const i2c_port_t port = I2C_NUM_0;
 #endif
+    } else {
+        port = I2C_NUM_0;
+    }
     M5_LIB_LOGI("wiring(ESP-IDF): addHatI2C port=%d sda=%d scl=%d clock=%u", (int)port, (int)p.sda, (int)p.scl,
                 (unsigned)clock);
     auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock);
