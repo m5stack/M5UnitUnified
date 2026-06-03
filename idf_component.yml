@@ -6,12 +6,8 @@ version: "0.4.6"
 
 dependencies:
   idf: ">=5.0"
-  m5stack/M5HAL:
-    git: https://github.com/m5stack/M5HAL.git
-    version: feature/esp-idf-native-support
-  m5stack/M5Utility:
-    git: https://github.com/m5stack/M5Utility.git
-    version: feature/esp-idf-native-support
+  m5stack/M5HAL: ">=0.1.0"
+  m5stack/M5Utility: ">=0.1.0"
 
 targets:
   - esp32
