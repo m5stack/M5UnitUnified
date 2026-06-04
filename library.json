@@ -14,7 +14,7 @@
         "m5stack/M5Utility": ">=0.1.0",
         "m5stack/M5HAL": ">=0.1.0"
     },
-    "version": "0.4.8",
+    "version": "0.5.0",
     "frameworks": [
         "arduino",
         "espidf"
