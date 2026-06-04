@@ -14,6 +14,11 @@
 #include "adapter_base.hpp"
 #if defined(ARDUINO)
 #include <SPI.h>
+#else
+class SPIClass;
+#endif
+#if defined(ESP_PLATFORM)
+#include <driver/spi_master.h>
 #endif
 
 namespace m5 {
@@ -27,7 +32,7 @@ class AdapterSPI : public Adapter {
 public:
     class SPIImpl : public Adapter::Impl {
     public:
-        explicit SPIImpl(const uint8_t cs = 0xFF) : _cs{cs}
+        explicit SPIImpl(const gpio_num_t cs = GPIO_NUM_NC) : _cs{cs}
         {
         }
         virtual ~SPIImpl() = default;
@@ -36,7 +41,7 @@ public:
         {
             return nullptr;
         }
-        inline uint8_t cs_pin() const
+        inline gpio_num_t cs_pin() const
         {
             return _cs;
         }
@@ -49,13 +54,13 @@ public:
         }
 
     protected:
-        uint8_t _cs{};
+        gpio_num_t _cs{GPIO_NUM_NC};
     };
 
 #if defined(ARDUINO)
     class SPIClassImpl : public SPIImpl {
     public:
-        SPIClassImpl(SPIClass& serial, const SPISettings& settings, const uint8_t cs);
+        SPIClassImpl(SPIClass& serial, const SPISettings& settings, const gpio_num_t cs);
         inline virtual SPIClass* getSPI() override
         {
             return _spi;
@@ -77,8 +82,35 @@ public:
     };
 #endif
 
+#if defined(ESP_PLATFORM)
+    class ESPIDFImpl : public SPIImpl {
+    public:
+        ESPIDFImpl(spi_device_handle_t handle, const gpio_num_t cs);
+        virtual void beginTransaction() override;
+        virtual void endTransaction() override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint16_t reg, const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+
+    protected:
+        m5::hal::error::error_t do_transmit(const uint8_t* tx, uint8_t* rx, const size_t len);
+
+    private:
+        spi_device_handle_t _handle{};
+        gpio_num_t _cs{GPIO_NUM_NC};
+        bool _in_transaction{false};
+    };
+#endif
+
 #if defined(ARDUINO)
-    AdapterSPI(SPIClass& spi, const SPISettings& settings, const uint8_t cs);
+    AdapterSPI(SPIClass& spi, const SPISettings& settings, const gpio_num_t cs);
+#endif
+#if defined(ESP_PLATFORM)
+    AdapterSPI(spi_device_handle_t handle, const gpio_num_t cs);
 #endif
 
     inline SPIImpl* impl()
@@ -90,7 +122,7 @@ public:
         return static_cast<SPIImpl*>(_impl.get());
     }
 
-    inline uint8_t cs_pin() const
+    inline gpio_num_t cs_pin() const
     {
         return impl()->cs_pin();
     }
@@ -110,7 +142,7 @@ protected:
     }
 
 protected:
-    uint8_t _cs{};
+    gpio_num_t _cs{GPIO_NUM_NC};
 };
 
 }  // namespace unit

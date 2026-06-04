@@ -27,11 +27,21 @@ rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint
     out.clk_src = RMT_CLK_SRC_DEFAULT;
     out.mem_block_symbols =
         std::max<uint32_t>(SOC_RMT_MEM_WORDS_PER_CHANNEL, cfg.tx.mem_blocks * SOC_RMT_MEM_WORDS_PER_CHANNEL);
-    out.resolution_hz      = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
-    out.trans_queue_depth  = 4;
-    out.flags.with_dma     = cfg.tx.with_dma;
+    out.resolution_hz     = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
+    out.trans_queue_depth = 4;
+    out.flags.with_dma    = cfg.tx.with_dma;
+    // NOTE: cfg.tx.loop_enabled drives two independent features:
+    //   (1) Hardware loopback (io_loop_back flag) - connects TX pin to RX side
+    //       internally for single-wire use cases. The field is removed in IDF
+    //       v6, so hardware loopback is silently disabled there. No current
+    //       unit uses this path.
+    //   (2) Software loop transmission (loop_count in to_rmt_transmit_config)
+    //       - repeats the same symbol N times. Still works on IDF v6.
+    // TODO: split into independent config fields once a single-wire user appears.
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(6, 0, 0)
     out.flags.io_loop_back = cfg.tx.loop_enabled;
-    out.flags.invert_out   = cfg.tx.invert_signal;
+#endif
+    out.flags.invert_out = cfg.tx.invert_signal;
     return out;
 }
 
@@ -201,7 +211,6 @@ protected:
     uint8_t *_rx_buf{};
     RingbufHandle_t _ring_buf{};
 
-    callback_struct_t _callback_data{};
     SemaphoreHandle_t _sem{};
 
     static QueueHandle_t _receive_queue;
@@ -236,7 +245,6 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
 
     // RMT RX
     if (!_rx_handle && (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
-        _callback_data.me = this;
         if (!createReceiveTask()) {
             return false;
         }
@@ -407,7 +415,7 @@ bool GPIOImplV2::createReceiveTask()
         }
     }
     auto err =
-        xTaskCreateUniversal(receive_loop_task, "UnitRF433R", 8192, nullptr, 2, &_receive_task_handle, PRO_CPU_NUM);
+        xTaskCreatePinnedToCore(receive_loop_task, "M5UnitRmtRX", 8192, nullptr, 2, &_receive_task_handle, PRO_CPU_NUM);
     return (err == pdPASS) && _receive_task_handle;
 }
 
@@ -415,10 +423,12 @@ IRAM_ATTR bool GPIOImplV2::callbackReceive(rmt_channel_handle_t handle, const rm
                                            void *user_ctx)
 {
     BaseType_t high_task_wakeup{pdFALSE};
-    GPIOImplV2 *me         = static_cast<GPIOImplV2 *>(user_ctx);
-    me->_callback_data.len = edata->num_symbols * sizeof(rmt_symbol_word_t);
+    callback_struct_t cs{
+        static_cast<GPIOImplV2 *>(user_ctx),
+        static_cast<uint16_t>(edata->num_symbols * sizeof(rmt_symbol_word_t)),
+    };
     //    esp_rom_printf("ISR %u\n", (uint32_t)edata->num_symbols);
-    xQueueSendFromISR(_receive_queue, &me->_callback_data, &high_task_wakeup);
+    xQueueSendFromISR(_receive_queue, &cs, &high_task_wakeup);
     return (high_task_wakeup == pdTRUE);
 }
 

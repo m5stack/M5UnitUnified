@@ -38,6 +38,7 @@ bool UnitUnified::add(Component& u, m5::hal::bus::Bus* bus)
     return false;
 }
 
+#if defined(ARDUINO)
 bool UnitUnified::add(Component& u, TwoWire& wire)
 {
     if (u.isRegistered()) {
@@ -56,6 +57,7 @@ bool UnitUnified::add(Component& u, TwoWire& wire)
     M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
     return false;
 }
+#endif
 
 bool UnitUnified::add(Component& u, m5::I2C_Class& i2c)
 {
@@ -76,6 +78,50 @@ bool UnitUnified::add(Component& u, m5::I2C_Class& i2c)
     return false;
 }
 
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+bool UnitUnified::add(Component& u, i2c_master_bus_handle_t bus)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+    if (!bus) {
+        M5_LIB_LOGE("I2C bus null");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(bus)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+#elif defined(ESP_PLATFORM)
+bool UnitUnified::add(Component& u, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(port, sda, scl)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+#endif
+
 bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
 {
     if (u.isRegistered()) {
@@ -95,6 +141,7 @@ bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
     return false;
 }
 
+#if defined(ARDUINO)
 bool UnitUnified::add(Component& u, HardwareSerial& serial)
 {
     if (u.isRegistered()) {
@@ -132,6 +179,53 @@ bool UnitUnified::add(Component& u, SPIClass& spi, const SPISettings& settings)
     M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessSPI());
     return false;
 }
+#endif
+
+#if defined(ESP_PLATFORM)
+bool UnitUnified::add(Component& u, const uart_port_t uart_num)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(uart_num)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessUART());
+    return false;
+}
+#endif
+
+#if defined(ESP_PLATFORM)
+bool UnitUnified::add(Component& u, spi_device_handle_t handle, const gpio_num_t cs)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+    if (!handle) {
+        M5_LIB_LOGE("SPI handle null");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] children:%zu", u.deviceName(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(handle, cs)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessSPI());
+    return false;
+}
+#endif
 
 // Add children if exists (iterative to avoid stack overflow)
 bool UnitUnified::add_children(Component& u)

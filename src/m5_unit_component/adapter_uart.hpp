@@ -12,6 +12,9 @@
 #define M5_UNIT_COMPONENT_ADAPTER_UART_HPP
 
 #include "adapter_base.hpp"
+#if defined(ESP_PLATFORM)
+#include <driver/uart.h>
+#endif
 
 class HardwareSerial;
 
@@ -64,8 +67,35 @@ public:
     };
 #endif
 
+#if defined(ESP_PLATFORM)
+    class ESPIDFImpl : public UARTImpl {
+    public:
+        explicit ESPIDFImpl(const uart_port_t uart_num) : AdapterUART::UARTImpl(), _uart_num(uart_num)
+        {
+        }
+        virtual void flush() override;
+        virtual void flushRX() override;
+        virtual void setTimeout(const uint32_t ms) override;
+        virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
+        virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
+                                                             const uint32_t stop) override;
+        inline uart_port_t uartPort() const
+        {
+            return _uart_num;
+        }
+
+    protected:
+        uart_port_t _uart_num{UART_NUM_1};
+        uint32_t _timeout_ms{1000};
+    };
+#endif
+
 #if defined(ARDUINO)
     explicit AdapterUART(HardwareSerial& serial);
+#endif
+
+#if defined(ESP_PLATFORM)
+    explicit AdapterUART(const uart_port_t uart_num);
 #endif
 
     inline void flush()

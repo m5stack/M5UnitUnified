@@ -284,7 +284,8 @@ void loop() {
 
 ## サポートされているもの
 ### サポートされるフレームワーク
-- Arduino
+- Arduino (Arduino-ESP32)
+- ESP-IDF (>=5.0)
 
 将来的には Wire クラス等を直接使わず、全て M5HAL 経由で接続を行えるようになる予定です。
 

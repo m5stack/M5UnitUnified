@@ -285,7 +285,8 @@ void loop() {
 
 ## Supported things
 ### Supported frameworks
-- Arduino
+- Arduino (Arduino-ESP32)
+- ESP-IDF (>=5.0)
 
 In the future, all connections will be made through M5HAL, eliminating the need to use Wire class etc. directly.
 

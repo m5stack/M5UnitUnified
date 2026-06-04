@@ -166,6 +166,7 @@ bool Component::assign(m5::hal::bus::Bus* bus)
     }
 }
 
+#if defined(ARDUINO)
 bool Component::assign(TwoWire& wire)
 {
     if (canAccessI2C() && _addr) {
@@ -174,6 +175,7 @@ bool Component::assign(TwoWire& wire)
     }
     return false;
 }
+#endif
 
 bool Component::assign(m5::I2C_Class& i2c)
 {
@@ -184,6 +186,26 @@ bool Component::assign(m5::I2C_Class& i2c)
     return false;
 }
 
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+bool Component::assign(i2c_master_bus_handle_t bus)
+{
+    if (canAccessI2C() && _addr && bus) {
+        _adapter = std::make_shared<AdapterI2C>(bus, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+#elif defined(ESP_PLATFORM)
+bool Component::assign(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)
+{
+    if (canAccessI2C() && _addr) {
+        _adapter = std::make_shared<AdapterI2C>(port, sda, scl, _addr, _component_cfg.clock);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+#endif
+
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
@@ -193,6 +215,7 @@ bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
     return false;
 }
 
+#if defined(ARDUINO)
 bool Component::assign(HardwareSerial& serial)
 {
     if (canAccessUART()) {
@@ -205,11 +228,35 @@ bool Component::assign(HardwareSerial& serial)
 bool Component::assign(SPIClass& spi, const SPISettings& settings)
 {
     if (canAccessSPI()) {
-        _adapter = std::make_shared<AdapterSPI>(spi, settings, address() /* CS */);
+        // address() is reused as the CS GPIO number on SPI units (see CapST25R3916 etc.)
+        _adapter = std::make_shared<AdapterSPI>(spi, settings, static_cast<gpio_num_t>(address()) /* CS */);
         return static_cast<bool>(_adapter);
     }
     return false;
 }
+#endif
+
+#if defined(ESP_PLATFORM)
+bool Component::assign(const uart_port_t uart_num)
+{
+    if (canAccessUART() && uart_is_driver_installed(uart_num)) {
+        _adapter = std::make_shared<AdapterUART>(uart_num);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+
+bool Component::assign(spi_device_handle_t handle, const gpio_num_t cs)
+{
+    if (canAccessSPI()) {
+        // If cs is omitted (GPIO_NUM_NC), use address() as the CS pin (same convention as Arduino SPI).
+        const gpio_num_t actual_cs = (cs == GPIO_NUM_NC) ? static_cast<gpio_num_t>(address()) : cs;
+        _adapter                   = std::make_shared<AdapterSPI>(handle, actual_cs);
+        return static_cast<bool>(_adapter);
+    }
+    return false;
+}
+#endif
 
 bool Component::selectChannel(const uint8_t ch)
 {
