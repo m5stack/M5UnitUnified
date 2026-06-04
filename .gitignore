@@ -54,3 +54,10 @@ tmp/
 *.pem
 *.key
 *.cert
+
+# ESP-IDF artifacts (local idf.py runs)
+managed_components/
+build/
+dependencies.lock
+sdkconfig
+sdkconfig.old

@@ -25,10 +25,12 @@
 #include <vector>
 #include <string>
 
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
 class TwoWire;
 class HardwareSerial;
 class SPIClass;
 struct SPISettings;
+#endif
 
 /*!
   @namespace m5
@@ -69,6 +71,7 @@ public:
 
     ///@name Add unit(I2C)
     ///@{
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Add unit to be managed (I2C via TwoWire)
       @param u Unit Component
@@ -76,6 +79,27 @@ public:
       @return True if successful
     */
     bool add(Component& u, TwoWire& wire);
+#endif
+#if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>))
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF native driver)
+      @param u Unit Component
+      @param bus ESP-IDF I2C master bus handle
+      @return True if successful
+     */
+    bool add(Component& u, i2c_master_bus_handle_t bus);
+#endif
+#if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && !__has_include(<driver/i2c_master.h>))
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF legacy driver)
+      @param u Unit Component
+      @param port I2C port (driver must be installed beforehand via i2c_param_config / i2c_driver_install)
+      @param sda SDA GPIO
+      @param scl SCL GPIO
+      @return True if successful
+     */
+    bool add(Component& u, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl);
+#endif
     /*!
       @brief Add unit to be managed (I2C via I2C_Class)
       @param u Unit Component
@@ -99,6 +123,7 @@ public:
 
     ///@name Add unit(UART)
     ///@{
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Add unit to be managed (UART)
       @param u Unit Component
@@ -106,10 +131,22 @@ public:
       @return True if successful
     */
     bool add(Component& u, HardwareSerial& serial);
+#endif
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
+    /*!
+      @brief Adding unit to be managed (UART, ESP-IDF native driver)
+      @param u Unit Component
+      @param uart_num UART port number (the driver must be installed beforehand via
+                      uart_driver_install / uart_param_config / uart_set_pin)
+      @return True if successful
+    */
+    bool add(Component& u, const uart_port_t uart_num);
+#endif
     ///@}
 
     ///@name Add unit(SPI)
     ///@{
+#if defined(ARDUINO) || defined(DOXYGEN_PROCESS)
     /*!
       @brief Add unit to be managed (SPI)
       @param u Unit Component
@@ -118,6 +155,18 @@ public:
       @return True if successful
     */
     bool add(Component& u, SPIClass& spi, const SPISettings& settings);
+#endif
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
+    /*!
+      @brief Adding unit to be managed (SPI, ESP-IDF native driver)
+      @param u Unit Component
+      @param handle ESP-IDF SPI device handle (create with spics_io_num = -1; init bus with SPI_DMA_DISABLED)
+      @param cs CS GPIO controlled manually by this library. If `GPIO_NUM_NC` (default), uses `Component::address()` as
+      the CS pin (same convention as Arduino SPI)
+      @return True if successful
+     */
+    bool add(Component& u, spi_device_handle_t handle, const gpio_num_t cs = GPIO_NUM_NC);
+#endif
     ///@}
 
     ///@name Add unit(M5HAL)
