@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.0 git rev:f196fcd</span>
    </div>
   </td>
  </tr>
@@ -119,8 +119,6 @@ Inheritance diagram for m5::unit::Adapter:</div>
   <map id="m5::unit::Adapter_map" name="m5::unit::Adapter_map">
 <area href="classm5_1_1unit_1_1_adapter_g_p_i_o_base.html" alt="m5::unit::AdapterGPIOBase" shape="rect" coords="0,56,163,80"/>
 <area href="classm5_1_1unit_1_1_adapter_i2_c.html" title="I2C access adapter." alt="m5::unit::AdapterI2C" shape="rect" coords="173,56,336,80"/>
-<area href="classm5_1_1unit_1_1_adapter_s_p_i.html" title="SPI access adapter." alt="m5::unit::AdapterSPI" shape="rect" coords="346,56,509,80"/>
-<area href="classm5_1_1unit_1_1_adapter_u_a_r_t.html" title="UART access adapter." alt="m5::unit::AdapterUART" shape="rect" coords="519,56,682,80"/>
 <area href="classm5_1_1unit_1_1_adapter_g_p_i_o.html" title="GPIO access adapter." alt="m5::unit::AdapterGPIO" shape="rect" coords="0,112,163,136"/>
   </map>
 </div></div>
@@ -163,12 +161,6 @@ Type&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> () const</td
 <tr class="memitem:abd0e300cbe4b9aa7d9788d3015eae42c" id="r_abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memItemLeft" align="right" valign="top"><a id="abd0e300cbe4b9aa7d9788d3015eae42c" name="abd0e300cbe4b9aa7d9788d3015eae42c"></a>
 virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>duplicate</b> (const uint8_t)</td></tr>
 <tr class="separator:abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94a03e8015a2130db46325c3f7923787" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top"><a id="a94a03e8015a2130db46325c3f7923787" name="a94a03e8015a2130db46325c3f7923787"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beginTransaction</b> ()</td></tr>
-<tr class="separator:a94a03e8015a2130db46325c3f7923787"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b42754a6936551054435507443b2e5f" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top"><a id="a8b42754a6936551054435507443b2e5f" name="a8b42754a6936551054435507443b2e5f"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>endTransaction</b> ()</td></tr>
-<tr class="separator:a8b42754a6936551054435507443b2e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa70c6328189e26683081aea2663d9438" id="r_aa70c6328189e26683081aea2663d9438"><td class="memItemLeft" align="right" valign="top"><a id="aa70c6328189e26683081aea2663d9438" name="aa70c6328189e26683081aea2663d9438"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *data, const size_t len)</td></tr>
 <tr class="separator:aa70c6328189e26683081aea2663d9438"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -220,6 +212,30 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>re
 <tr class="memitem:a976ac17eeabdaba60dd73128101ae75e" id="r_a976ac17eeabdaba60dd73128101ae75e"><td class="memItemLeft" align="right" valign="top"><a id="a976ac17eeabdaba60dd73128101ae75e" name="a976ac17eeabdaba60dd73128101ae75e"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pulseInTX</b> (uint32_t &amp;duration, const int state, const uint32_t timeout_us)</td></tr>
 <tr class="separator:a976ac17eeabdaba60dd73128101ae75e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01693f487f7ca239ac73461662b6f30f" id="r_a01693f487f7ca239ac73461662b6f30f"><td class="memItemLeft" align="right" valign="top"><a id="a01693f487f7ca239ac73461662b6f30f" name="a01693f487f7ca239ac73461662b6f30f"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>clock</b> () const</td></tr>
+<tr class="separator:a01693f487f7ca239ac73461662b6f30f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3810d67ebc9496db6fbc33e13ca72eb" id="r_ac3810d67ebc9496db6fbc33e13ca72eb"><td class="memItemLeft" align="right" valign="top"><a id="ac3810d67ebc9496db6fbc33e13ca72eb" name="ac3810d67ebc9496db6fbc33e13ca72eb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setClock</b> (const uint32_t)</td></tr>
+<tr class="separator:ac3810d67ebc9496db6fbc33e13ca72eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a732eff1d57bc0b978b40434bf3d04b4a" id="r_a732eff1d57bc0b978b40434bf3d04b4a"><td class="memItemLeft" align="right" valign="top"><a id="a732eff1d57bc0b978b40434bf3d04b4a" name="a732eff1d57bc0b978b40434bf3d04b4a"></a>
+int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>sda</b> () const</td></tr>
+<tr class="separator:a732eff1d57bc0b978b40434bf3d04b4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0495b4589fc467f81414c7457d513353" id="r_a0495b4589fc467f81414c7457d513353"><td class="memItemLeft" align="right" valign="top"><a id="a0495b4589fc467f81414c7457d513353" name="a0495b4589fc467f81414c7457d513353"></a>
+int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>scl</b> () const</td></tr>
+<tr class="separator:a0495b4589fc467f81414c7457d513353"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac00c89bdc87eac22f25ade467e87241" id="r_aac00c89bdc87eac22f25ade467e87241"><td class="memItemLeft" align="right" valign="top"><a id="aac00c89bdc87eac22f25ade467e87241" name="aac00c89bdc87eac22f25ade467e87241"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pinMode</b> (const uint8_t pin, const uint8_t mode)</td></tr>
+<tr class="separator:aac00c89bdc87eac22f25ade467e87241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af91865457cc39b0c70cf1d5a8d4ba5e4" id="r_af91865457cc39b0c70cf1d5a8d4ba5e4"><td class="memItemLeft" align="right" valign="top"><a id="af91865457cc39b0c70cf1d5a8d4ba5e4" name="af91865457cc39b0c70cf1d5a8d4ba5e4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>digitalWrite</b> (const uint8_t pin, const uint8_t high)</td></tr>
+<tr class="separator:af91865457cc39b0c70cf1d5a8d4ba5e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0fe852e0bc0dc6b63c5f4b651f12fe4" id="r_ae0fe852e0bc0dc6b63c5f4b651f12fe4"><td class="memItemLeft" align="right" valign="top"><a id="ae0fe852e0bc0dc6b63c5f4b651f12fe4" name="ae0fe852e0bc0dc6b63c5f4b651f12fe4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> ()</td></tr>
+<tr class="separator:ae0fe852e0bc0dc6b63c5f4b651f12fe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a030b0a34297961c6136ebce0c75d2ed6" id="r_a030b0a34297961c6136ebce0c75d2ed6"><td class="memItemLeft" align="right" valign="top"><a id="a030b0a34297961c6136ebce0c75d2ed6" name="a030b0a34297961c6136ebce0c75d2ed6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> ()</td></tr>
+<tr class="separator:a030b0a34297961c6136ebce0c75d2ed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
