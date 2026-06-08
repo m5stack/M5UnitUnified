@@ -7,6 +7,7 @@ var classm5_1_1unit_1_1_component =
     [ "asAdapter", "classm5_1_1unit_1_1_component.html#ae70425d20042d7f00451e6938c5e7725", null ],
     [ "asAdapter", "classm5_1_1unit_1_1_component.html#aaacee85eb9f4e97753e32b90719a0514", null ],
     [ "assign", "classm5_1_1unit_1_1_component.html#aba759dd9653fcd447bcd444efa54a713", null ],
+    [ "assign", "classm5_1_1unit_1_1_component.html#accf8e5ebd50f33e78230f21b45e376d1", null ],
     [ "assign", "classm5_1_1unit_1_1_component.html#a808553bbfb783c0583f057cfe1624fe5", null ],
     [ "assign", "classm5_1_1unit_1_1_component.html#adf86f24753905a792c5ef2782f8ac064", null ],
     [ "attribute", "classm5_1_1unit_1_1_component.html#a0a18533077bbb3b96a023529bd9bf267", null ],

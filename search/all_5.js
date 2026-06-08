@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['flush_0',['flush',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#af6047af4d99fbdbd13abb4e6816fc53f',1,'m5::unit::PeriodicMeasurementAdapter']]],
-  ['full_1',['full',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#adeea35f0c10395823b0d2a448a68f60f',1,'m5::unit::PeriodicMeasurementAdapter']]]
+  ['filter_5fenabled_0',['filter_enabled',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#a52d2f181decaec2e0eb4de7f63c336e0',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]],
+  ['filter_5fticks_5fthreshold_1',['filter_ticks_threshold',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#ad5fa5de2f2b46c35a9f2d81645598ae1',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]],
+  ['flush_2',['flush',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#af6047af4d99fbdbd13abb4e6816fc53f',1,'m5::unit::PeriodicMeasurementAdapter']]],
+  ['full_3',['full',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#adeea35f0c10395823b0d2a448a68f60f',1,'m5::unit::PeriodicMeasurementAdapter']]]
 ];
