@@ -1,8 +1,4 @@
 var searchData=
 [
-  ['idle_5flevel_5fhigh_0',['idle_level_high',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html#ad4c746b9babd89803adcdfe07ac0ba83',1,'m5::unit::gpio::adapter_config_t::tx_config_t']]],
-  ['idle_5foutput_5fenabled_1',['idle_output_enabled',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html#a878151121d1df326f2e56376ba19d746',1,'m5::unit::gpio::adapter_config_t::tx_config_t']]],
-  ['idle_5fticks_5fthreshold_2',['idle_ticks_threshold',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#a619d7ca069a92fbbfd49a650a10649c4',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]],
-  ['intervals_3',['intervals',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#ae2db545e537544a2c781feee480798aa',1,'m5::unit::googletest::PeriodicMeasurementResult']]],
-  ['invert_5fsignal_4',['invert_signal',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html#ac5e3f058a114240317fe1a575d93bf26',1,'m5::unit::gpio::adapter_config_t::config_t']]]
+  ['uid_0',['uid',['../classm5_1_1unit_1_1_component.html#a2c3614663a8c4e47710bb020c1a8422e',1,'m5::unit::Component']]]
 ];
