@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['unitunified_0',['UnitUnified',['../classm5_1_1unit_1_1_unit_unified.html',1,'m5::unit']]]
+  ['rx_5fconfig_5ft_0',['rx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]]
 ];
