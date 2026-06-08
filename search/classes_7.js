@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tx_5fconfig_5ft_0',['tx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]]
+  ['spiimpl_0',['SPIImpl',['../classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.html',1,'m5::unit::AdapterSPI']]]
 ];

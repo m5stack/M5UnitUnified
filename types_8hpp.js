@@ -28,5 +28,6 @@ var types_8hpp =
     ] ],
     [ "AccessGPIO", "types_8hpp.html#abb8c959b7da0c36559abbaf94083e92d", null ],
     [ "AccessI2C", "types_8hpp.html#abf00663c896e5c458427688334cac1e4", null ],
+    [ "AccessSPI", "types_8hpp.html#a21adcfd382b75f822386924460945965", null ],
     [ "AccessUART", "types_8hpp.html#aaafee3dd3328f345232d1109d90c10b1", null ]
 ];

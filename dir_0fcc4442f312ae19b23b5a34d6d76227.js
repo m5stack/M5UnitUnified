@@ -11,6 +11,8 @@ var dir_0fcc4442f312ae19b23b5a34d6d76227 =
     [ "adapter_gpio_v2.hpp", "adapter__gpio__v2_8hpp.html", "adapter__gpio__v2_8hpp" ],
     [ "adapter_i2c.cpp", "adapter__i2c_8cpp.html", null ],
     [ "adapter_i2c.hpp", "adapter__i2c_8hpp.html", "adapter__i2c_8hpp" ],
+    [ "adapter_spi.cpp", "adapter__spi_8cpp.html", null ],
+    [ "adapter_spi.hpp", "adapter__spi_8hpp.html", "adapter__spi_8hpp" ],
     [ "adapter_uart.cpp", "adapter__uart_8cpp.html", null ],
     [ "adapter_uart.hpp", "adapter__uart_8hpp.html", "adapter__uart_8hpp" ],
     [ "identify_functions.hpp", "identify__functions_8hpp.html", null ],
