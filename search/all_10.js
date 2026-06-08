@@ -9,8 +9,6 @@ var searchData=
   ['twowire_6',['TwoWire',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a',1,'m5::unit::AdapterI2C']]],
   ['tx_7',['tx',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#a9a672c9bdcd87f79abda9f03890e6b6b',1,'m5::unit::gpio::adapter_config_t']]],
   ['tx_5fconfig_5ft_8',['tx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]],
-  ['type_9',['Type',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce',1,'m5::unit::Adapter']]],
-  ['type_10',['type',['../classm5_1_1unit_1_1_adapter.html#a719a345fe6b6047d73aa28853b05f172',1,'m5::unit::Adapter']]],
-  ['types_11',['types',['../namespacetypes.html',1,'']]],
-  ['types_2ehpp_12',['types.hpp',['../types_8hpp.html',1,'']]]
+  ['types_9',['types',['../namespacetypes.html',1,'']]],
+  ['types_2ehpp_10',['types.hpp',['../types_8hpp.html',1,'']]]
 ];

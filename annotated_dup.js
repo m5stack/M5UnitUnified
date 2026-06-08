@@ -11,7 +11,7 @@ var annotated_dup =
         ] ],
         [ "gpio", null, [
           [ "adapter_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t" ],
-          [ "pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", "classm5_1_1unit_1_1gpio_1_1pin__backup__t" ]
+          [ "pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", null ]
         ] ],
         [ "Adapter", "classm5_1_1unit_1_1_adapter.html", "classm5_1_1unit_1_1_adapter" ],
         [ "AdapterGPIO", "classm5_1_1unit_1_1_adapter_g_p_i_o.html", null ],
