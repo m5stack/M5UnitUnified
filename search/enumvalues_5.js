@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['softwarei2c_0',['SoftwareI2C',['../structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bccaaf78c43df851b7e42a27a373ed86523f',1,'m5::unit::wiring::I2CPins']]],
-  ['spi_1',['SPI',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafcea33dc5312b091968f5a120c2484d40df8',1,'m5::unit::Adapter']]]
+  ['uart_0',['UART',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafceacec5769b01fb096efaf0d6186823c78f',1,'m5::unit::Adapter']]],
+  ['unitled_1',['UnitLED',['../types_8hpp.html#afc6a5cb8f5312d045fd6b8896356db3aab8303a8a985aef6506929ae7b4bfdc78',1,'m5::unit::types']]],
+  ['unknown_2',['Unknown',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafcea88183b946cc5f0e8c96b2e66e1c74a7e',1,'m5::unit::Adapter::Unknown'],['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a88183b946cc5f0e8c96b2e66e1c74a7e',1,'m5::unit::AdapterI2C::Unknown']]]
 ];

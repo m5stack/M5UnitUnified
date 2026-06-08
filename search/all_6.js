@@ -10,7 +10,5 @@ var searchData=
   ['gpio_5fnum_7',['gpio_num',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html#aec7d50f816afada37f9b5fc2fd500c7b',1,'m5::unit::gpio::adapter_config_t::config_t']]],
   ['gpiocomponenttestbase_8',['GPIOComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html',1,'m5::unit::googletest']]],
   ['gpioimpl_9',['GPIOImpl',['../classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html',1,'m5::unit::AdapterGPIOBase']]],
-  ['gpioimplv2_10',['GPIOImplV2',['../classm5_1_1unit_1_1_g_p_i_o_impl_v2.html',1,'m5::unit']]],
-  ['gpiopinpair_11',['GpioPinPair',['../structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html',1,'m5::unit::wiring']]],
-  ['gpiorole_12',['GpioRole',['../m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794',1,'m5::unit::wiring']]]
+  ['gpioimplv2_10',['GPIOImplV2',['../classm5_1_1unit_1_1_g_p_i_o_impl_v2.html',1,'m5::unit']]]
 ];

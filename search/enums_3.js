@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['impltype_0',['ImplType',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704',1,'m5::unit::AdapterI2C']]]
+  ['type_0',['Type',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce',1,'m5::unit::Adapter']]]
 ];
