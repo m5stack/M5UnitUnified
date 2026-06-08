@@ -19,7 +19,6 @@ var hierarchy =
     [ "m5::unit::wiring::GpioPinPair", "structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html", null ],
     [ "m5::unit::wiring::HatI2CPins", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html", null ],
     [ "m5::unit::wiring::HatPinPair", "structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html", null ],
-    [ "m5::unit::wiring::detail::I2CCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html", null ],
     [ "m5::unit::wiring::I2CPins", "structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html", null ],
     [ "m5::unit::wiring::IdfUartParams", "structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html", null ],
     [ "m5::unit::Adapter::Impl", "classm5_1_1unit_1_1_adapter_1_1_impl.html", [

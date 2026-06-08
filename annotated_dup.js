@@ -15,7 +15,6 @@ var annotated_dup =
         ] ],
         [ "wiring", null, [
           [ "detail", null, [
-            [ "I2CCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html", null ],
             [ "SPIDevEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html", null ],
             [ "SPIHostEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html", null ],
             [ "UARTCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html", null ]

@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#ae46b2ba1960edc0051d8c63df5cd6019":[2,0,0,0,1,0,4],
 "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html":[2,0,0,0,1,0,0],
 "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html#a58db7938e10f69d7ef6afb885f321705":[2,0,0,0,1,0,0,3],
 "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html#a71eaa1394d6907b3846a7d0803164fee":[2,0,0,0,1,0,0,4],
@@ -32,10 +31,9 @@ var NAVTREEINDEX1 =
 "structm5_1_1unit_1_1wiring_1_1_spi_pins.html":[2,0,0,0,2,6],
 "structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html":[2,0,0,0,2,7],
 "structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html#aa097bb81d199e7fdedfc66c7361a4f1e":[2,0,0,0,2,7,0],
-"structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html":[2,0,0,0,2,0,0],
-"structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html":[2,0,0,0,2,0,1],
-"structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html":[2,0,0,0,2,0,2],
-"structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html":[2,0,0,0,2,0,3],
+"structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html":[2,0,0,0,2,0,0],
+"structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html":[2,0,0,0,2,0,1],
+"structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html":[2,0,0,0,2,0,2],
 "test__helper_8hpp.html":[3,0,0,0,0],
 "test__helper_8hpp.html#ac78ba57e2e4421084ab7cb9f16ed9b5d":[3,0,0,0,0,1],
 "test__helper_8hpp_source.html":[3,0,0,0,0],
