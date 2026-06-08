@@ -4,8 +4,7 @@ var annotated_dup =
       [ "unit", null, [
         [ "googletest", null, [
           [ "ComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_component_test_base" ],
-          [ "GlobalFixture", "classm5_1_1unit_1_1googletest_1_1_global_fixture.html", null ],
-          [ "GPIOComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base" ]
+          [ "GlobalFixture", "classm5_1_1unit_1_1googletest_1_1_global_fixture.html", null ]
         ] ],
         [ "gpio", null, [
           [ "adapter_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t" ],
