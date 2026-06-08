@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['writeregister_0',['writeRegister',['../classm5_1_1unit_1_1_component.html#a935cb3bdbbd3419e0cd976ee49d70786',1,'m5::unit::Component']]],
-  ['writeregister16be_1',['writeRegister16BE',['../classm5_1_1unit_1_1_component.html#a48e52513db6c4203e506754eeb35bdaa',1,'m5::unit::Component']]],
-  ['writeregister16le_2',['writeRegister16LE',['../classm5_1_1unit_1_1_component.html#ac461804889d563d43d4a3dbac6175281',1,'m5::unit::Component']]],
-  ['writeregister32be_3',['writeRegister32BE',['../classm5_1_1unit_1_1_component.html#a31203a6754896b7ab53a91c9f6d5ea9c',1,'m5::unit::Component']]],
-  ['writeregister32le_4',['writeRegister32LE',['../classm5_1_1unit_1_1_component.html#a465efea2df8df7c15906bec3a897b0bf',1,'m5::unit::Component']]],
-  ['writeregister8_5',['writeRegister8',['../classm5_1_1unit_1_1_component.html#a2eada03d7b8e4cbb60a3a5ec5f7e805f',1,'m5::unit::Component']]],
-  ['writewithtransaction_6',['writeWithTransaction',['../classm5_1_1unit_1_1_adapter.html#a3bb60cb080411363c779ece2d51a7a6f',1,'m5::unit::Adapter::writeWithTransaction(const uint8_t *data, const size_t len, const bool stop=true)'],['../classm5_1_1unit_1_1_adapter.html#a0b668e6b306a95df683325ff4ec4fb8b',1,'m5::unit::Adapter::writeWithTransaction(const uint8_t reg, const uint8_t *data, const size_t len, const bool stop=true)'],['../classm5_1_1unit_1_1_adapter.html#af8799c00fe1d6830112d0bd4ef9f0c20',1,'m5::unit::Adapter::writeWithTransaction(const uint16_t reg, const uint8_t *data, const size_t len, const bool stop=true)'],['../classm5_1_1unit_1_1_component.html#ac62700a935d04f0d80fe2f43e7b0fec7',1,'m5::unit::Component::writeWithTransaction(const uint8_t *data, const size_t len, const bool stop=true)'],['../classm5_1_1unit_1_1_component.html#a5f6b1eb17c5a6020103d0ed2eb7fc991',1,'m5::unit::Component::writeWithTransaction(const Reg reg, const uint8_t *data, const size_t len, const bool stop=true)']]]
+  ['selectchannel_0',['selectChannel',['../classm5_1_1unit_1_1_component.html#a2c4741ece432fdfbfd4ef2ae5afc70fb',1,'m5::unit::Component']]],
+  ['setpin_1',['setPin',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ab7a30173a1a01746f3f396c9319dcd14',1,'m5::unit::gpio::pin_backup_t']]],
+  ['spidevicehandle_2',['spiDeviceHandle',['../m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86',1,'m5::unit::wiring']]],
+  ['startperiodicmeasurement_3',['startPeriodicMeasurement',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#a41fd64f96029d49a8b29a44de071e56b',1,'m5::unit::PeriodicMeasurementAdapter']]],
+  ['stopperiodicmeasurement_4',['stopPeriodicMeasurement',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#ac36fa57687aa67bb0c9275f33b19f9f1',1,'m5::unit::PeriodicMeasurementAdapter']]]
 ];
