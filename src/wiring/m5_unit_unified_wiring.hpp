@@ -38,7 +38,13 @@
 #include <SPI.h>
 #include <HardwareSerial.h>
 #else  // ESP-IDF native
+// driver/i2c_master.h (new I2C master driver) exists only on IDF >= 5.2. On IDF 5.0/5.1 fall back to
+// the legacy driver/i2c.h so the I2C wiring helpers keep working across the whole IDF >= 5.0 range.
+#if __has_include(<driver/i2c_master.h>)
 #include <driver/i2c_master.h>
+#else
+#include <driver/i2c.h>
+#endif
 #include <driver/uart.h>
 #include <driver/spi_master.h>
 #include <hal/gpio_types.h>
@@ -571,10 +577,12 @@ constexpr size_t kUARTPortCacheSize = 4;
 constexpr size_t kSPIHostCacheSize  = 2;  // SPI2_HOST / SPI3_HOST
 constexpr size_t kSPIDevCacheSize   = 4;
 
+#if __has_include(<driver/i2c_master.h>)
 struct I2CCacheEntry {
     uint32_t key;
     i2c_master_bus_handle_t handle;
 };
+#endif
 
 struct UARTCacheEntry {
     uint32_t key;
@@ -591,6 +599,7 @@ struct SPIDevEntry {
     spi_device_handle_t handle;
 };
 
+#if __has_include(<driver/i2c_master.h>)
 //! @brief Get or create an I2C master bus, cached by {port, sda, scl}.
 inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
                                             const uint32_t /*clock - not used to key, single bus per pins*/)
@@ -629,6 +638,39 @@ inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_nu
     cache[count].key = key;
     return cache[count++].handle;
 }
+#else   // legacy driver/i2c.h (IDF 5.0 / 5.1)
+//! @brief Install the legacy I2C master driver once per {port, sda, scl}; cached so re-adds are no-ops.
+inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
+                                  const uint32_t clock)
+{
+    const uint32_t key = (static_cast<uint32_t>(static_cast<uint8_t>(port)) << 24) |
+                         (static_cast<uint32_t>(static_cast<uint8_t>(sda)) << 16) |
+                         (static_cast<uint32_t>(static_cast<uint8_t>(scl)) << 8);
+    static uint32_t cache[kI2CBusCacheSize]{};
+    static size_t count{};
+    for (size_t i = 0; i < count; ++i) {
+        if (cache[i] == key) return true;
+    }
+    if (count >= kI2CBusCacheSize) {
+        M5_LIB_LOGE("wiring: I2C bus cache full (max %zu)", kI2CBusCacheSize);
+        return false;
+    }
+    i2c_config_t conf{};
+    conf.mode             = I2C_MODE_MASTER;
+    conf.sda_io_num       = sda;
+    conf.scl_io_num       = scl;
+    conf.sda_pullup_en    = true;
+    conf.scl_pullup_en    = true;
+    conf.master.clk_speed = clock;
+    if (i2c_param_config(port, &conf) != ESP_OK ||
+        i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
+        M5_LIB_LOGE("wiring: legacy i2c driver install failed port=%d sda=%d scl=%d", (int)port, (int)sda, (int)scl);
+        return false;
+    }
+    cache[count++] = key;
+    return true;
+}
+#endif
 
 //! @brief Get or install a UART port, cached by {port, rx, tx}.
 inline uart_port_t ensureUARTPort(const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud,
@@ -727,15 +769,18 @@ inline spi_device_handle_t ensureSPIDevice(const spi_host_device_t host, const g
 
 }  // namespace detail
 
+#if __has_include(<driver/i2c_master.h>)
 /*!
   @brief Get or create an I2C master bus handle (cached by {port, sda, scl})
   @note  Intended for unit-specific wiring in M5Unit-* libraries; examples should use addI2C() instead.
+  @note  Available only on IDF >= 5.2 (new I2C master driver). On IDF 5.0/5.1 use addI2C() instead.
 */
 inline i2c_master_bus_handle_t i2cBusHandle(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
                                             const uint32_t clock = 100000)
 {
     return detail::ensureI2CBus(port, sda, scl, clock);
 }
+#endif
 
 /*!
   @brief Get or install a UART port (cached by {port, rx, tx})
@@ -793,9 +838,16 @@ inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 1
                 return i2cClass(units, unit, M5.In_I2C);
             } else {
                 // Core / Stick / S3 etc: M5Unified does not call Wire.begin(), so install ourselves
+#if __has_include(<driver/i2c_master.h>)
                 auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock);
                 if (!bus) return false;
                 return units.add(unit, bus);
+#else  // legacy driver (IDF 5.0 / 5.1): install legacy driver, then add by port
+                if (!detail::ensureI2CLegacyDriver(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock)) {
+                    return false;
+                }
+                return units.add(unit, I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl);
+#endif
             }
         case I2CPins::Backend::ExI2C:
             // NanoC6 / NanoH2: M5Unified manages Ex_I2C -> borrow
@@ -863,9 +915,14 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
     }
     M5_LIB_LOGI("wiring(ESP-IDF): addHatI2C port=%d sda=%d scl=%d clock=%u", (int)port, (int)p.sda, (int)p.scl,
                 (unsigned)clock);
+#if __has_include(<driver/i2c_master.h>)
     auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock);
     if (!bus) return false;
     return units.add(unit, bus);
+#else  // legacy driver (IDF 5.0 / 5.1)
+    if (!detail::ensureI2CLegacyDriver(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock)) return false;
+    return units.add(unit, port, (gpio_num_t)p.sda, (gpio_num_t)p.scl);
+#endif
 }
 
 //! @brief Add a unit on the board's Hat GPIO header (ESP-IDF native)
