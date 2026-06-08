@@ -16,25 +16,25 @@ var hierarchy =
       [ "m5::unit::gpio::adapter_config_t::rx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html", null ],
       [ "m5::unit::gpio::adapter_config_t::tx_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html", null ]
     ] ],
-    [ "testing::Environment", null, [
-      [ "m5::unit::googletest::GlobalFixture< FREQ, WNUM >", "classm5_1_1unit_1_1googletest_1_1_global_fixture.html", null ]
-    ] ],
     [ "m5::unit::Adapter::Impl", "classm5_1_1unit_1_1_adapter_1_1_impl.html", [
       [ "m5::unit::AdapterGPIOBase::GPIOImpl", "classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html", [
         [ "m5::unit::GPIOImplV2", "classm5_1_1unit_1_1_g_p_i_o_impl_v2.html", null ]
       ] ],
       [ "m5::unit::AdapterI2C::I2CImpl", "classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html", [
-        [ "m5::unit::AdapterI2C::BusImpl", "classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html", null ]
+        [ "m5::unit::AdapterI2C::BusImpl", "classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html", null ],
+        [ "m5::unit::AdapterI2C::I2CClassImpl", "classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html", null ]
       ] ],
       [ "m5::unit::AdapterSPI::SPIImpl", "classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.html", null ],
       [ "m5::unit::AdapterUART::UARTImpl", "classm5_1_1unit_1_1_adapter_u_a_r_t_1_1_u_a_r_t_impl.html", null ]
     ] ],
     [ "m5::unit::PeriodicMeasurementAdapter< Derived, MD >", "classm5_1_1unit_1_1_periodic_measurement_adapter.html", null ],
+    [ "m5::unit::googletest::PeriodicMeasurementResult", "structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html", null ],
     [ "m5::unit::gpio::pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", null ],
-    [ "testing::TestWithParam", null, [
-      [ "m5::unit::googletest::ComponentTestBase< U, TP >", "classm5_1_1unit_1_1googletest_1_1_component_test_base.html", null ],
-      [ "m5::unit::googletest::GPIOComponentTestBase< U, TP >", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html", null ],
-      [ "m5::unit::googletest::UARTComponentTestBase< U, TP >", "classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html", null ]
+    [ "testing::Test", null, [
+      [ "m5::unit::googletest::GPIOComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html", null ],
+      [ "m5::unit::googletest::I2CComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html", null ],
+      [ "m5::unit::googletest::SPIComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html", null ],
+      [ "m5::unit::googletest::UARTComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html", null ]
     ] ],
     [ "m5::unit::transaction_guard", "structm5_1_1unit_1_1transaction__guard.html", null ],
     [ "m5::unit::UnitUnified", "classm5_1_1unit_1_1_unit_unified.html", null ]

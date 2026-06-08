@@ -3,9 +3,10 @@ var annotated_dup =
     [ "m5", "namespacem5.html", [
       [ "unit", null, [
         [ "googletest", null, [
-          [ "ComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_component_test_base" ],
-          [ "GlobalFixture", "classm5_1_1unit_1_1googletest_1_1_global_fixture.html", null ],
           [ "GPIOComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base" ],
+          [ "I2CComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base" ],
+          [ "PeriodicMeasurementResult", "structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html", "structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result" ],
+          [ "SPIComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base" ],
           [ "UARTComponentTestBase", "classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html", "classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base" ]
         ] ],
         [ "gpio", null, [
