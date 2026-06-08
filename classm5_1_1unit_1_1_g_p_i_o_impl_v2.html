@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.3 git rev:c03c57d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.2 git rev:2990d3c</span>
    </div>
   </td>
  </tr>
@@ -115,7 +115,7 @@ Inheritance diagram for m5::unit::GPIOImplV2:</div>
   <img src="classm5_1_1unit_1_1_g_p_i_o_impl_v2.png" usemap="#m5::unit::GPIOImplV2_map" alt=""/>
   <map id="m5::unit::GPIOImplV2_map" name="m5::unit::GPIOImplV2_map">
 <area href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html" alt="m5::unit::AdapterGPIOBase::GPIOImpl" shape="rect" coords="0,56,221,80"/>
-<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" alt="m5::unit::Adapter::Impl" shape="rect" coords="0,0,221,24"/>
+<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" title="Implementation base class (Pimpl pattern)" alt="m5::unit::Adapter::Impl" shape="rect" coords="0,0,221,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -129,6 +129,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5167898adcf8e0605e65d8720a26597e" id="r_a5167898adcf8e0605e65d8720a26597e"><td class="memItemLeft" align="right" valign="top"><a id="a5167898adcf8e0605e65d8720a26597e" name="a5167898adcf8e0605e65d8720a26597e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>GPIOImplV2</b> (const int8_t rx_pin, const int8_t tx_pin)</td></tr>
 <tr class="separator:a5167898adcf8e0605e65d8720a26597e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fbec0d6db2dbfeb66b376d164f42748" id="r_a9fbec0d6db2dbfeb66b376d164f42748"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9fbec0d6db2dbfeb66b376d164f42748">rmtTxHandle</a> () const override</td></tr>
+<tr class="memdesc:a9fbec0d6db2dbfeb66b376d164f42748"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the RMT TX handle (V2: rmt_channel_handle_t, V1: nullptr)  <br /></td></tr>
+<tr class="separator:a9fbec0d6db2dbfeb66b376d164f42748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27c9586f633a90f7395ff220462a0d4d" id="r_a27c9586f633a90f7395ff220462a0d4d"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a27c9586f633a90f7395ff220462a0d4d">rmtRxHandle</a> () const override</td></tr>
+<tr class="memdesc:a27c9586f633a90f7395ff220462a0d4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the RMT RX handle (V2: rmt_channel_handle_t, V1: nullptr)  <br /></td></tr>
+<tr class="separator:a27c9586f633a90f7395ff220462a0d4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc8c26a86088943d759ce6395a1fa7ad" id="r_abc8c26a86088943d759ce6395a1fa7ad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abc8c26a86088943d759ce6395a1fa7ad">begin</a> (const <a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">gpio::adapter_config_t</a> &amp;cfg)</td></tr>
 <tr class="separator:abc8c26a86088943d759ce6395a1fa7ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2db5b0e026ebe71a9b6aa4dd1075d334" id="r_a2db5b0e026ebe71a9b6aa4dd1075d334"><td class="memItemLeft" align="right" valign="top">m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2db5b0e026ebe71a9b6aa4dd1075d334">writeWithTransaction</a> (const uint8_t *data, const size_t len, const uint32_t waitMs) override</td></tr>
@@ -148,6 +154,14 @@ gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>tx_pin</b> () c
 <tr class="memitem:a4b0b7f58bf3801e4417539343112e03f inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a4b0b7f58bf3801e4417539343112e03f"><td class="memItemLeft" align="right" valign="top">
 <a class="el" href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">gpio::adapter_config_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>adapter_config</b> () const</td></tr>
 <tr class="separator:a4b0b7f58bf3801e4417539343112e03f inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d0b80109182ea814b016aec36b958ee inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a1d0b80109182ea814b016aec36b958ee"><td class="memItemLeft" align="right" valign="top">
+virtual int&#160;</td><td class="memItemRight" valign="bottom"><b>rmtTxChannel</b> () const</td></tr>
+<tr class="memdesc:a1d0b80109182ea814b016aec36b958ee inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the RMT TX channel (V1: rmt_channel_t, V2: -1) <br /></td></tr>
+<tr class="separator:a1d0b80109182ea814b016aec36b958ee inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e282923ddbeb47998dead116dd400ea inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a9e282923ddbeb47998dead116dd400ea"><td class="memItemLeft" align="right" valign="top">
+virtual int&#160;</td><td class="memItemRight" valign="bottom"><b>rmtRxChannel</b> () const</td></tr>
+<tr class="memdesc:a9e282923ddbeb47998dead116dd400ea inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the RMT RX channel (V1: rmt_channel_t, V2: -1) <br /></td></tr>
+<tr class="separator:a9e282923ddbeb47998dead116dd400ea inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7007eeb9489c6be694708848ed1e07cd inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a7007eeb9489c6be694708848ed1e07cd"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a7007eeb9489c6be694708848ed1e07cd">pinModeRX</a> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m) override</td></tr>
 <tr class="separator:a7007eeb9489c6be694708848ed1e07cd inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63df5f652e828adcaf9590c0ee95b86e inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a63df5f652e828adcaf9590c0ee95b86e"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a63df5f652e828adcaf9590c0ee95b86e">writeDigitalRX</a> (const bool high) override</td></tr>
@@ -156,8 +170,8 @@ gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>tx_pin</b> () c
 <tr class="separator:a72b0dba893043d81d2257d3eeb2d2226 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acaec7f2e674ae55add7f88de5657d833 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_acaec7f2e674ae55add7f88de5657d833"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#acaec7f2e674ae55add7f88de5657d833">writeAnalogRX</a> (const uint16_t v) override</td></tr>
 <tr class="separator:acaec7f2e674ae55add7f88de5657d833 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac85c0acb4eb808eb27244109b55d4808 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ac85c0acb4eb808eb27244109b55d4808"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#ac85c0acb4eb808eb27244109b55d4808">readAnalogRX</a> (uint16_t &amp;v)</td></tr>
-<tr class="separator:ac85c0acb4eb808eb27244109b55d4808 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3780db10880f534a3d7cdb53514b817 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ae3780db10880f534a3d7cdb53514b817"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#ae3780db10880f534a3d7cdb53514b817">readAnalogRX</a> (uint16_t &amp;v) override</td></tr>
+<tr class="separator:ae3780db10880f534a3d7cdb53514b817 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91b36c56b50e4ebccfc78ada1e20c8b0 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a91b36c56b50e4ebccfc78ada1e20c8b0"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a91b36c56b50e4ebccfc78ada1e20c8b0">readAnalogMilliVoltsRX</a> (uint32_t &amp;mv) override</td></tr>
 <tr class="separator:a91b36c56b50e4ebccfc78ada1e20c8b0 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3bc8e366f4a51e8efaa31aa7abd15a82 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_a3bc8e366f4a51e8efaa31aa7abd15a82"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a3bc8e366f4a51e8efaa31aa7abd15a82">pulseInRX</a> (uint32_t &amp;duration, const int state, const uint32_t timeout_us=30000) override</td></tr>
@@ -170,8 +184,8 @@ gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>tx_pin</b> () c
 <tr class="separator:a92dacca5215c2e848d631a806f5ce744 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa68d7d8d1628a626c5a4c65d6a6ee44 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_aaa68d7d8d1628a626c5a4c65d6a6ee44"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#aaa68d7d8d1628a626c5a4c65d6a6ee44">writeAnalogTX</a> (const uint16_t v) override</td></tr>
 <tr class="separator:aaa68d7d8d1628a626c5a4c65d6a6ee44 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae081981a920814e1146a7defc5a40018 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ae081981a920814e1146a7defc5a40018"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#ae081981a920814e1146a7defc5a40018">readAnalogTX</a> (uint16_t &amp;v)</td></tr>
-<tr class="separator:ae081981a920814e1146a7defc5a40018 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4bcd87465dc397db6d22eb2b1363b48 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_ad4bcd87465dc397db6d22eb2b1363b48"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#ad4bcd87465dc397db6d22eb2b1363b48">readAnalogTX</a> (uint16_t &amp;v) override</td></tr>
+<tr class="separator:ad4bcd87465dc397db6d22eb2b1363b48 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7ec8669d5db202c7b1bb63914c07694 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_af7ec8669d5db202c7b1bb63914c07694"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#af7ec8669d5db202c7b1bb63914c07694">readAnalogMilliVoltsTX</a> (uint32_t &amp;mv) override</td></tr>
 <tr class="separator:af7ec8669d5db202c7b1bb63914c07694 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbc9853813b374ad4da87e9b9ef418c0 inherit pub_methods_classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl" id="r_abbc9853813b374ad4da87e9b9ef418c0"><td class="memItemLeft" align="right" valign="top">virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#abbc9853813b374ad4da87e9b9ef418c0">pulseInTX</a> (uint32_t &amp;duration, const int state, const uint32_t timeout_us=30000) override</td></tr>
@@ -257,17 +271,14 @@ rmt_tx_channel_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_t
 rmt_transmit_config_t&#160;</td><td class="memItemRight" valign="bottom"><b>_transmit_config</b> {}</td></tr>
 <tr class="separator:a567e092b13ac24b31973cf67d66caa9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef05f216c5702108869cd0296173b544" id="r_aef05f216c5702108869cd0296173b544"><td class="memItemLeft" align="right" valign="top"><a id="aef05f216c5702108869cd0296173b544" name="aef05f216c5702108869cd0296173b544"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_buf_len</b></td></tr>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_buf_len</b> {}</td></tr>
 <tr class="separator:aef05f216c5702108869cd0296173b544"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24a670301c56706b5300cbece36b1d05" id="r_a24a670301c56706b5300cbece36b1d05"><td class="memItemLeft" align="right" valign="top"><a id="a24a670301c56706b5300cbece36b1d05" name="a24a670301c56706b5300cbece36b1d05"></a>
-volatile uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>_receive_len</b> {}</td></tr>
-<tr class="separator:a24a670301c56706b5300cbece36b1d05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af47011cc1c6dc9466262a7f0254fa2e7" id="r_af47011cc1c6dc9466262a7f0254fa2e7"><td class="memItemLeft" align="right" valign="top"><a id="af47011cc1c6dc9466262a7f0254fa2e7" name="af47011cc1c6dc9466262a7f0254fa2e7"></a>
 uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><b>_rx_buf</b> {}</td></tr>
 <tr class="separator:af47011cc1c6dc9466262a7f0254fa2e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a285fc77aae7ebb4d74939de5256d64d1" id="r_a285fc77aae7ebb4d74939de5256d64d1"><td class="memItemLeft" align="right" valign="top"><a id="a285fc77aae7ebb4d74939de5256d64d1" name="a285fc77aae7ebb4d74939de5256d64d1"></a>
-<a class="el" href="structm5_1_1unit_1_1_g_p_i_o_impl_v2_1_1callback__struct__t.html">callback_struct_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_callback_data</b> {}</td></tr>
-<tr class="separator:a285fc77aae7ebb4d74939de5256d64d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a427ff5a75f29410dbe91f450eab505c0" id="r_a427ff5a75f29410dbe91f450eab505c0"><td class="memItemLeft" align="right" valign="top"><a id="a427ff5a75f29410dbe91f450eab505c0" name="a427ff5a75f29410dbe91f450eab505c0"></a>
+RingbufHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_ring_buf</b> {}</td></tr>
+<tr class="separator:a427ff5a75f29410dbe91f450eab505c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a450a6e125dd88114196ce78d84bb4a5f" id="r_a450a6e125dd88114196ce78d84bb4a5f"><td class="memItemLeft" align="right" valign="top"><a id="a450a6e125dd88114196ce78d84bb4a5f" name="a450a6e125dd88114196ce78d84bb4a5f"></a>
 SemaphoreHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_sem</b> {}</td></tr>
 <tr class="separator:a450a6e125dd88114196ce78d84bb4a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -359,6 +370,64 @@ static TaskHandle_t&#160;</td><td class="memItemRight" valign="bottom"><b>_recei
 </div><div class="memdoc">
 
 <p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">m5::unit::Adapter::Impl</a>.</p>
+
+</div>
+</div>
+<a id="a27c9586f633a90f7395ff220462a0d4d" name="a27c9586f633a90f7395ff220462a0d4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27c9586f633a90f7395ff220462a0d4d">&#9670;&#160;</a></span>rmtRxHandle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * m5::unit::GPIOImplV2::rmtRxHandle </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the RMT RX handle (V2: rmt_channel_handle_t, V1: nullptr) </p>
+
+<p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a3e10b4b4ae422b56330d704d9817d6b6">m5::unit::AdapterGPIOBase::GPIOImpl</a>.</p>
+
+</div>
+</div>
+<a id="a9fbec0d6db2dbfeb66b376d164f42748" name="a9fbec0d6db2dbfeb66b376d164f42748"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fbec0d6db2dbfeb66b376d164f42748">&#9670;&#160;</a></span>rmtTxHandle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * m5::unit::GPIOImplV2::rmtTxHandle </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the RMT TX handle (V2: rmt_channel_handle_t, V1: nullptr) </p>
+
+<p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html#a9415c044bf73aa2dac171df79a608c1e">m5::unit::AdapterGPIOBase::GPIOImpl</a>.</p>
 
 </div>
 </div>

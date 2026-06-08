@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['i2cclass_0',['I2CClass',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a3223fe82a0ceaf3c26a5b4ad65298237',1,'m5::unit::AdapterI2C']]]
+  ['default_0',['Default',['../m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67',1,'m5::unit::wiring']]]
 ];

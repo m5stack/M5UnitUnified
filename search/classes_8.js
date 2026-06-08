@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['transaction_5fguard_0',['transaction_guard',['../structm5_1_1unit_1_1transaction__guard.html',1,'m5::unit']]],
-  ['tx_5fconfig_5ft_1',['tx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]]
+  ['spicomponenttestbase_0',['SPIComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html',1,'m5::unit::googletest']]],
+  ['spideventry_1',['SPIDevEntry',['../structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html',1,'m5::unit::wiring::detail']]],
+  ['spihostentry_2',['SPIHostEntry',['../structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html',1,'m5::unit::wiring::detail']]],
+  ['spiimpl_3',['SPIImpl',['../classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.html',1,'m5::unit::AdapterSPI']]],
+  ['spipins_4',['SpiPins',['../structm5_1_1unit_1_1wiring_1_1_spi_pins.html',1,'m5::unit::wiring']]]
 ];

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.3 git rev:c03c57d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.2 git rev:2990d3c</span>
    </div>
   </td>
  </tr>
@@ -128,23 +128,29 @@ Inheritance diagram for m5::unit::Adapter:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">Impl</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation base class (Pimpl pattern)  <a href="classm5_1_1unit_1_1_adapter_1_1_impl.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a6d3797f5be198a03cd4699e63dbbafce" id="r_a6d3797f5be198a03cd4699e63dbbafce"><td class="memItemLeft" align="right" valign="top"><a id="a6d3797f5be198a03cd4699e63dbbafce" name="a6d3797f5be198a03cd4699e63dbbafce"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><b>Type</b> : uint8_t { <br />
-&#160;&#160;<b>Unknown</b>
-, <b>I2C</b>
-, <b>GPIO</b>
-, <b>UART</b>
+<tr class="memitem:a6d3797f5be198a03cd4699e63dbbafce" id="r_a6d3797f5be198a03cd4699e63dbbafce"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d3797f5be198a03cd4699e63dbbafce">Type</a> : uint8_t { <br />
+&#160;&#160;<a class="el" href="#a6d3797f5be198a03cd4699e63dbbafcea88183b946cc5f0e8c96b2e66e1c74a7e">Unknown</a>
+, <a class="el" href="#a6d3797f5be198a03cd4699e63dbbafceafb87bf1fc88386ca21395991f90fff95">I2C</a>
+, <a class="el" href="#a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235">GPIO</a>
+, <a class="el" href="#a6d3797f5be198a03cd4699e63dbbafceacec5769b01fb096efaf0d6186823c78f">UART</a>
 , <br />
-&#160;&#160;<b>SPI</b>
+&#160;&#160;<a class="el" href="#a6d3797f5be198a03cd4699e63dbbafcea33dc5312b091968f5a120c2484d40df8">SPI</a>
 <br />
  }</td></tr>
+<tr class="memdesc:a6d3797f5be198a03cd4699e63dbbafce"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classm5_1_1unit_1_1_adapter.html" title="Adapter base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way.">Adapter</a> type.  <a href="#a6d3797f5be198a03cd4699e63dbbafce">More...</a><br /></td></tr>
 <tr class="separator:a6d3797f5be198a03cd4699e63dbbafce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a3ef68d3ebd48c5d8fb37c9b3ff603e94" id="r_a3ef68d3ebd48c5d8fb37c9b3ff603e94"><td class="memItemLeft" align="right" valign="top"><a id="a3ef68d3ebd48c5d8fb37c9b3ff603e94" name="a3ef68d3ebd48c5d8fb37c9b3ff603e94"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Adapter</b> ()</td></tr>
+<tr class="memdesc:a3ef68d3ebd48c5d8fb37c9b3ff603e94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor (creates Unknown type adapter) <br /></td></tr>
+<tr class="separator:a3ef68d3ebd48c5d8fb37c9b3ff603e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a827123c423a28eb497dc20c5b5764c8f" id="r_a827123c423a28eb497dc20c5b5764c8f"><td class="memItemLeft" align="right" valign="top"><a id="a827123c423a28eb497dc20c5b5764c8f" name="a827123c423a28eb497dc20c5b5764c8f"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Adapter</b> (const <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> &amp;)=delete</td></tr>
 <tr class="separator:a827123c423a28eb497dc20c5b5764c8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -158,32 +164,41 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> &amp;&amp;) noexcept=default</td></tr>
 <tr class="separator:a1dccea02ba197ab8d9931c99851c270a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a719a345fe6b6047d73aa28853b05f172" id="r_a719a345fe6b6047d73aa28853b05f172"><td class="memItemLeft" align="right" valign="top"><a id="a719a345fe6b6047d73aa28853b05f172" name="a719a345fe6b6047d73aa28853b05f172"></a>
-Type&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> () const</td></tr>
+<a class="el" href="#a6d3797f5be198a03cd4699e63dbbafce">Type</a>&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> () const</td></tr>
+<tr class="memdesc:a719a345fe6b6047d73aa28853b05f172"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the adapter type. <br /></td></tr>
 <tr class="separator:a719a345fe6b6047d73aa28853b05f172"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd0e300cbe4b9aa7d9788d3015eae42c" id="r_abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memItemLeft" align="right" valign="top"><a id="abd0e300cbe4b9aa7d9788d3015eae42c" name="abd0e300cbe4b9aa7d9788d3015eae42c"></a>
-virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>duplicate</b> (const uint8_t)</td></tr>
+<tr class="memitem:abd0e300cbe4b9aa7d9788d3015eae42c" id="r_abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd0e300cbe4b9aa7d9788d3015eae42c">duplicate</a> (const uint8_t)</td></tr>
+<tr class="memdesc:abd0e300cbe4b9aa7d9788d3015eae42c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a duplicate adapter with a different address.  <br /></td></tr>
 <tr class="separator:abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94a03e8015a2130db46325c3f7923787" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top"><a id="a94a03e8015a2130db46325c3f7923787" name="a94a03e8015a2130db46325c3f7923787"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beginTransaction</b> ()</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Transaction control</div></td></tr>
+<tr class="memitem:a94a03e8015a2130db46325c3f7923787" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94a03e8015a2130db46325c3f7923787">beginTransaction</a> ()</td></tr>
+<tr class="memdesc:a94a03e8015a2130db46325c3f7923787"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin a bus transaction.  <br /></td></tr>
 <tr class="separator:a94a03e8015a2130db46325c3f7923787"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b42754a6936551054435507443b2e5f" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top"><a id="a8b42754a6936551054435507443b2e5f" name="a8b42754a6936551054435507443b2e5f"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>endTransaction</b> ()</td></tr>
+<tr class="memitem:a8b42754a6936551054435507443b2e5f" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8b42754a6936551054435507443b2e5f">endTransaction</a> ()</td></tr>
+<tr class="memdesc:a8b42754a6936551054435507443b2e5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">End a bus transaction.  <br /></td></tr>
 <tr class="separator:a8b42754a6936551054435507443b2e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">I2C read/write</div></td></tr>
 <tr class="memitem:aa70c6328189e26683081aea2663d9438" id="r_aa70c6328189e26683081aea2663d9438"><td class="memItemLeft" align="right" valign="top"><a id="aa70c6328189e26683081aea2663d9438" name="aa70c6328189e26683081aea2663d9438"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *data, const size_t len)</td></tr>
+<tr class="memdesc:aa70c6328189e26683081aea2663d9438"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read data within a transaction. <br /></td></tr>
 <tr class="separator:aa70c6328189e26683081aea2663d9438"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5920ba3e2b337a01f1cb378fe2097063" id="r_a5920ba3e2b337a01f1cb378fe2097063"><td class="memItemLeft" align="right" valign="top"><a id="a5920ba3e2b337a01f1cb378fe2097063" name="a5920ba3e2b337a01f1cb378fe2097063"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeWithTransaction</b> (const uint8_t *data, const size_t len, const uint32_t exparam=1)</td></tr>
+<tr class="memdesc:a5920ba3e2b337a01f1cb378fe2097063"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read data within a transaction. <br /></td></tr>
 <tr class="separator:a5920ba3e2b337a01f1cb378fe2097063"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a06f4d9502dcc3a28fb04b4bda8c8e8" id="r_a4a06f4d9502dcc3a28fb04b4bda8c8e8"><td class="memItemLeft" align="right" valign="top"><a id="a4a06f4d9502dcc3a28fb04b4bda8c8e8" name="a4a06f4d9502dcc3a28fb04b4bda8c8e8"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeWithTransaction</b> (const uint8_t reg, const uint8_t *data, const size_t len, const uint32_t exparam=1)</td></tr>
+<tr class="memdesc:a4a06f4d9502dcc3a28fb04b4bda8c8e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read data within a transaction. <br /></td></tr>
 <tr class="separator:a4a06f4d9502dcc3a28fb04b4bda8c8e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad467bdff28bb07b1e58192c89f6fba2c" id="r_ad467bdff28bb07b1e58192c89f6fba2c"><td class="memItemLeft" align="right" valign="top"><a id="ad467bdff28bb07b1e58192c89f6fba2c" name="ad467bdff28bb07b1e58192c89f6fba2c"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeWithTransaction</b> (const uint16_t reg, const uint8_t *data, const size_t len, const uint32_t exparam=1)</td></tr>
+<tr class="memdesc:ad467bdff28bb07b1e58192c89f6fba2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read data within a transaction. <br /></td></tr>
 <tr class="separator:ad467bdff28bb07b1e58192c89f6fba2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae56d640b22b5a20c175c33644d45681d" id="r_ae56d640b22b5a20c175c33644d45681d"><td class="memItemLeft" align="right" valign="top"><a id="ae56d640b22b5a20c175c33644d45681d" name="ae56d640b22b5a20c175c33644d45681d"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>generalCall</b> (const uint8_t *data, const size_t len)</td></tr>
+<tr class="memdesc:ae56d640b22b5a20c175c33644d45681d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a general call on the I2C bus. <br /></td></tr>
 <tr class="separator:ae56d640b22b5a20c175c33644d45681d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">GPIO RX pin operations</div></td></tr>
 <tr class="memitem:aa72ef1b83a1b3358988a8b74b77fc852" id="r_aa72ef1b83a1b3358988a8b74b77fc852"><td class="memItemLeft" align="right" valign="top"><a id="aa72ef1b83a1b3358988a8b74b77fc852" name="aa72ef1b83a1b3358988a8b74b77fc852"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeRX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m)</td></tr>
 <tr class="separator:aa72ef1b83a1b3358988a8b74b77fc852"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,6 +220,7 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>re
 <tr class="memitem:a1515e60ec4838ff5f64566519ddae3d4" id="r_a1515e60ec4838ff5f64566519ddae3d4"><td class="memItemLeft" align="right" valign="top"><a id="a1515e60ec4838ff5f64566519ddae3d4" name="a1515e60ec4838ff5f64566519ddae3d4"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pulseInRX</b> (uint32_t &amp;duration, const int state, const uint32_t timeout_us)</td></tr>
 <tr class="separator:a1515e60ec4838ff5f64566519ddae3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">GPIO TX pin operations</div></td></tr>
 <tr class="memitem:a424374fe986b843d0ae62ad6c81b7923" id="r_a424374fe986b843d0ae62ad6c81b7923"><td class="memItemLeft" align="right" valign="top"><a id="a424374fe986b843d0ae62ad6c81b7923" name="a424374fe986b843d0ae62ad6c81b7923"></a>
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeTX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m)</td></tr>
 <tr class="separator:a424374fe986b843d0ae62ad6c81b7923"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -230,7 +246,7 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pu
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:abd7cacd7e89598d790f98edb89897d24" id="r_abd7cacd7e89598d790f98edb89897d24"><td class="memItemLeft" align="right" valign="top"><a id="abd7cacd7e89598d790f98edb89897d24" name="abd7cacd7e89598d790f98edb89897d24"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Adapter</b> (const Type t, <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">Impl</a> *impl)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Adapter</b> (const <a class="el" href="#a6d3797f5be198a03cd4699e63dbbafce">Type</a> t, <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">Impl</a> *impl)</td></tr>
 <tr class="separator:abd7cacd7e89598d790f98edb89897d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
@@ -241,7 +257,132 @@ std::unique_ptr&lt; <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.htm
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classm5_1_1unit_1_1_adapter.html" title="Adapter base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way.">Adapter</a> base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="a6d3797f5be198a03cd4699e63dbbafce" name="a6d3797f5be198a03cd4699e63dbbafce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d3797f5be198a03cd4699e63dbbafce">&#9670;&#160;</a></span>Type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a6d3797f5be198a03cd4699e63dbbafce">m5::unit::Adapter::Type</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classm5_1_1unit_1_1_adapter.html" title="Adapter base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way.">Adapter</a> type. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a6d3797f5be198a03cd4699e63dbbafcea88183b946cc5f0e8c96b2e66e1c74a7e" name="a6d3797f5be198a03cd4699e63dbbafcea88183b946cc5f0e8c96b2e66e1c74a7e"></a>Unknown&#160;</td><td class="fielddoc"><p>Not yet assigned. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a6d3797f5be198a03cd4699e63dbbafceafb87bf1fc88386ca21395991f90fff95" name="a6d3797f5be198a03cd4699e63dbbafceafb87bf1fc88386ca21395991f90fff95"></a>I2C&#160;</td><td class="fielddoc"><p>I2C bus. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235" name="a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235"></a>GPIO&#160;</td><td class="fielddoc"><p>GPIO pins. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a6d3797f5be198a03cd4699e63dbbafceacec5769b01fb096efaf0d6186823c78f" name="a6d3797f5be198a03cd4699e63dbbafceacec5769b01fb096efaf0d6186823c78f"></a>UART&#160;</td><td class="fielddoc"><p>UART serial. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a6d3797f5be198a03cd4699e63dbbafcea33dc5312b091968f5a120c2484d40df8" name="a6d3797f5be198a03cd4699e63dbbafcea33dc5312b091968f5a120c2484d40df8"></a>SPI&#160;</td><td class="fielddoc"><p>SPI bus. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a94a03e8015a2130db46325c3f7923787" name="a94a03e8015a2130db46325c3f7923787"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94a03e8015a2130db46325c3f7923787">&#9670;&#160;</a></span>beginTransaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void m5::unit::Adapter::beginTransaction </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Begin a bus transaction. </p>
+
+<p>Reimplemented in <a class="el" href="classm5_1_1unit_1_1_adapter_s_p_i.html#a7c9e09b7b8968c806a172d9ed72249b3">m5::unit::AdapterSPI</a>.</p>
+
+</div>
+</div>
+<a id="abd0e300cbe4b9aa7d9788d3015eae42c" name="abd0e300cbe4b9aa7d9788d3015eae42c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd0e300cbe4b9aa7d9788d3015eae42c">&#9670;&#160;</a></span>duplicate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> * m5::unit::Adapter::duplicate </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a duplicate adapter with a different address. </p>
+
+<p>Reimplemented in <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c.html#a65120f0f4d29cee27a26339cb892b823">m5::unit::AdapterI2C</a>.</p>
+
+</div>
+</div>
+<a id="a8b42754a6936551054435507443b2e5f" name="a8b42754a6936551054435507443b2e5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b42754a6936551054435507443b2e5f">&#9670;&#160;</a></span>endTransaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void m5::unit::Adapter::endTransaction </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>End a bus transaction. </p>
+
+<p>Reimplemented in <a class="el" href="classm5_1_1unit_1_1_adapter_s_p_i.html#a63f957fa0ce0aff06bb9c9711ac86e85">m5::unit::AdapterSPI</a>.</p>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

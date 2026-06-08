@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.3 git rev:c03c57d</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.2 git rev:2990d3c</span>
    </div>
   </td>
  </tr>
@@ -109,21 +109,21 @@ Inheritance diagram for m5::unit::AdapterSPI::SPIImpl:</div>
  <div class="center">
   <img src="classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.png" usemap="#m5::unit::AdapterSPI::SPIImpl_map" alt=""/>
   <map id="m5::unit::AdapterSPI::SPIImpl_map" name="m5::unit::AdapterSPI::SPIImpl_map">
-<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" alt="m5::unit::Adapter::Impl" shape="rect" coords="0,0,171,24"/>
+<area href="classm5_1_1unit_1_1_adapter_1_1_impl.html" title="Implementation base class (Pimpl pattern)" alt="m5::unit::Adapter::Impl" shape="rect" coords="0,0,171,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acc46385a400c5971c96cda794e81ee28" id="r_acc46385a400c5971c96cda794e81ee28"><td class="memItemLeft" align="right" valign="top"><a id="acc46385a400c5971c96cda794e81ee28" name="acc46385a400c5971c96cda794e81ee28"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SPIImpl</b> (const uint8_t cs=0xFF)</td></tr>
-<tr class="separator:acc46385a400c5971c96cda794e81ee28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0c5e4269b0fe263fde47c265f5475bf" id="r_ab0c5e4269b0fe263fde47c265f5475bf"><td class="memItemLeft" align="right" valign="top"><a id="ab0c5e4269b0fe263fde47c265f5475bf" name="ab0c5e4269b0fe263fde47c265f5475bf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SPIImpl</b> (const gpio_num_t cs=GPIO_NUM_NC)</td></tr>
+<tr class="separator:ab0c5e4269b0fe263fde47c265f5475bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d6e0080fb4dd5ddcb9bda1df83cddb5" id="r_a8d6e0080fb4dd5ddcb9bda1df83cddb5"><td class="memItemLeft" align="right" valign="top"><a id="a8d6e0080fb4dd5ddcb9bda1df83cddb5" name="a8d6e0080fb4dd5ddcb9bda1df83cddb5"></a>
 virtual SPIClass *&#160;</td><td class="memItemRight" valign="bottom"><b>getSPI</b> ()</td></tr>
 <tr class="separator:a8d6e0080fb4dd5ddcb9bda1df83cddb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45263dc7105cf9187ea2e387b86cc5ee" id="r_a45263dc7105cf9187ea2e387b86cc5ee"><td class="memItemLeft" align="right" valign="top"><a id="a45263dc7105cf9187ea2e387b86cc5ee" name="a45263dc7105cf9187ea2e387b86cc5ee"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>cs_pin</b> () const</td></tr>
-<tr class="separator:a45263dc7105cf9187ea2e387b86cc5ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2be68bed8143eb99b6f25c4eafc10c52" id="r_a2be68bed8143eb99b6f25c4eafc10c52"><td class="memItemLeft" align="right" valign="top"><a id="a2be68bed8143eb99b6f25c4eafc10c52" name="a2be68bed8143eb99b6f25c4eafc10c52"></a>
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>cs_pin</b> () const</td></tr>
+<tr class="separator:a2be68bed8143eb99b6f25c4eafc10c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60e54e873bb66973f7704c79a795a843" id="r_a60e54e873bb66973f7704c79a795a843"><td class="memItemLeft" align="right" valign="top"><a id="a60e54e873bb66973f7704c79a795a843" name="a60e54e873bb66973f7704c79a795a843"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beginTransaction</b> ()</td></tr>
 <tr class="separator:a60e54e873bb66973f7704c79a795a843"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -191,9 +191,9 @@ virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="botto
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:aa188e35c7a00c37252c9b843c2d2e481" id="r_aa188e35c7a00c37252c9b843c2d2e481"><td class="memItemLeft" align="right" valign="top"><a id="aa188e35c7a00c37252c9b843c2d2e481" name="aa188e35c7a00c37252c9b843c2d2e481"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_cs</b> {}</td></tr>
-<tr class="separator:aa188e35c7a00c37252c9b843c2d2e481"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14cef3968431fec5f04b7a923d7c946c" id="r_a14cef3968431fec5f04b7a923d7c946c"><td class="memItemLeft" align="right" valign="top"><a id="a14cef3968431fec5f04b7a923d7c946c" name="a14cef3968431fec5f04b7a923d7c946c"></a>
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_cs</b> {GPIO_NUM_NC}</td></tr>
+<tr class="separator:a14cef3968431fec5f04b7a923d7c946c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
