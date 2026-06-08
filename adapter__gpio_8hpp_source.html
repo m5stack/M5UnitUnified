@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.1.4 git rev:75e6e5f</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.0 git rev:cb8c468</span>
    </div>
   </td>
  </tr>
@@ -173,7 +173,7 @@ $(function(){initNavTree('adapter__gpio_8hpp_source.html',''); initResizable(tru
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        }</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>        <span class="keyword">inline</span> <span class="keyword">virtual</span> m5::hal::error::error_t pulseInRX(uint32_t&amp; duration, <span class="keyword">const</span> <span class="keywordtype">int</span> state,</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>                                                         <span class="keyword">const</span> uint32_t timeout_us)<span class="keyword"> override</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>                                                         <span class="keyword">const</span> uint32_t timeout_us = 30000)<span class="keyword"> override</span></div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="keyword">        </span>{</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            <span class="keywordflow">return</span> pulse_in(duration, rx_pin(), state, timeout_us);</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        }</div>
@@ -200,7 +200,7 @@ $(function(){initNavTree('adapter__gpio_8hpp_source.html',''); initResizable(tru
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>            <span class="keywordflow">return</span> read_analog(v, tx_pin());</div>
 <div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>        }</div>
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>        <span class="keyword">inline</span> <span class="keyword">virtual</span> m5::hal::error::error_t pulseInTX(uint32_t&amp; duration, <span class="keyword">const</span> <span class="keywordtype">int</span> state,</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>                                                         <span class="keyword">const</span> uint32_t timeout_us)<span class="keyword"> override</span></div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>                                                         <span class="keyword">const</span> uint32_t timeout_us = 30000)<span class="keyword"> override</span></div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="keyword">        </span>{</div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>            <span class="keywordflow">return</span> pulse_in(duration, tx_pin(), state, timeout_us);</div>
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        }</div>
@@ -250,18 +250,18 @@ $(function(){initNavTree('adapter__gpio_8hpp_source.html',''); initResizable(tru
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aadapter__base_8hpp_html"><div class="ttname"><a href="adapter__base_8hpp.html">adapter_base.hpp</a></div><div class="ttdoc">Adapter base.</div></div>
-<div class="ttc" id="aadapter__gpio_8cpp_html_a57170955382e4d9e3e5c54b55cea2ec1"><div class="ttname"><a href="adapter__gpio_8cpp.html#a57170955382e4d9e3e5c54b55cea2ec1">m5::unit::gpio::calculate_rmt_resolution_hz</a></div><div class="ttdeci">uint32_t calculate_rmt_resolution_hz(uint32_t apb_freq_hz, uint32_t tick_ns)</div><div class="ttdoc">Calculate resolution from desired tick time.</div><div class="ttdef"><b>Definition</b> adapter_gpio.cpp:335</div></div>
-<div class="ttc" id="aadapter__gpio_8cpp_html_a7b1c4e0fb11c8fcc031bddc47e7d41bb"><div class="ttname"><a href="adapter__gpio_8cpp.html#a7b1c4e0fb11c8fcc031bddc47e7d41bb">m5::unit::gpio::calculate_rmt_clk_div</a></div><div class="ttdeci">uint8_t calculate_rmt_clk_div(uint32_t apb_freq_hz, uint32_t tick_ns)</div><div class="ttdoc">Calculate clk_div from desired tick time (nanoseconds)</div><div class="ttdef"><b>Definition</b> adapter_gpio.cpp:324</div></div>
+<div class="ttc" id="aadapter__gpio_8cpp_html_a57170955382e4d9e3e5c54b55cea2ec1"><div class="ttname"><a href="adapter__gpio_8cpp.html#a57170955382e4d9e3e5c54b55cea2ec1">m5::unit::gpio::calculate_rmt_resolution_hz</a></div><div class="ttdeci">uint32_t calculate_rmt_resolution_hz(uint32_t apb_freq_hz, uint32_t tick_ns)</div><div class="ttdoc">Calculate resolution from desired tick time.</div><div class="ttdef"><b>Definition</b> adapter_gpio.cpp:346</div></div>
+<div class="ttc" id="aadapter__gpio_8cpp_html_a7b1c4e0fb11c8fcc031bddc47e7d41bb"><div class="ttname"><a href="adapter__gpio_8cpp.html#a7b1c4e0fb11c8fcc031bddc47e7d41bb">m5::unit::gpio::calculate_rmt_clk_div</a></div><div class="ttdeci">uint8_t calculate_rmt_clk_div(uint32_t apb_freq_hz, uint32_t tick_ns)</div><div class="ttdoc">Calculate clk_div from desired tick time (nanoseconds)</div><div class="ttdef"><b>Definition</b> adapter_gpio.cpp:335</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_1_1_impl_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter_1_1_impl.html">m5::unit::Adapter::Impl</a></div><div class="ttdef"><b>Definition</b> adapter_base.hpp:35</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html">m5::unit::AdapterGPIOBase::GPIOImpl</a></div><div class="ttdef"><b>Definition</b> adapter_gpio.hpp:43</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_g_p_i_o_base_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter_g_p_i_o_base.html">m5::unit::AdapterGPIOBase</a></div><div class="ttdef"><b>Definition</b> adapter_gpio.hpp:41</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></div><div class="ttdoc">Adapter base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way.</div></div>
 <div class="ttc" id="aidentify__functions_8hpp_html"><div class="ttname"><a href="identify__functions_8hpp.html">identify_functions.hpp</a></div><div class="ttdoc">Identification of functions to be used.</div></div>
-<div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:18</div></div>
+<div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:20</div></div>
 <div class="ttc" id="anamespaceunit_html"><div class="ttname"><a href="namespaceunit.html">unit</a></div><div class="ttdoc">Unit-related namespace.</div></div>
-<div class="ttc" id="astructm5_1_1unit_1_1gpio_1_1adapter__config__t_html"><div class="ttname"><a href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">m5::unit::gpio::adapter_config_t</a></div><div class="ttdoc">Common pinMode, RMT v1 and v2 settings.</div></div>
+<div class="ttc" id="astructm5_1_1unit_1_1gpio_1_1adapter__config__t_html"><div class="ttname"><a href="structm5_1_1unit_1_1gpio_1_1adapter__config__t.html">m5::unit::gpio::adapter_config_t</a></div><div class="ttdoc">Unified configuration for RMT v1/v2.</div></div>
 <div class="ttc" id="atypes_8hpp_html"><div class="ttname"><a href="types_8hpp.html">types.hpp</a></div><div class="ttdoc">Type and enumerator definitions.</div></div>
-<div class="ttc" id="atypes_8hpp_html_afa9b8e9030a766f371861f8d4899572a"><div class="ttname"><a href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">m5::unit::gpio::Mode</a></div><div class="ttdeci">Mode</div><div class="ttdoc">Pin mode.</div><div class="ttdef"><b>Definition</b> types.hpp:59</div></div>
+<div class="ttc" id="atypes_8hpp_html_afa9b8e9030a766f371861f8d4899572a"><div class="ttname"><a href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">m5::unit::gpio::Mode</a></div><div class="ttdeci">Mode</div><div class="ttdoc">Pin mode.</div><div class="ttdef"><b>Definition</b> types.hpp:61</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
