@@ -11,9 +11,14 @@
 #include "adapter_gpio_v2.hpp"
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/queue.h>
+#include <freertos/semphr.h>
 #include <freertos/ringbuf.h>
 #include <esp_private/esp_clk.h>
 #include <soc/soc_caps.h>  // SOC_RMT_MEM_WORDS_PER_CHANNEL
+#include <soc/soc.h>       // PRO_CPU_NUM
 
 using namespace m5::unit::gpio;
 
