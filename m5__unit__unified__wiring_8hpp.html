@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.2 git rev:2990d3c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.0 git rev:a6b22f7</span>
    </div>
   </td>
  </tr>
@@ -108,7 +108,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp.html',''); initResizabl
 <p>Opt-in, header-only board-aware connection helpers for M5UnitUnified examples.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="_m5_unit_unified_8hpp_source.html">../M5UnitUnified.hpp</a>&quot;</code><br />
-<code>#include &lt;driver/i2c.h&gt;</code><br />
+<code>#include &lt;driver/i2c_master.h&gt;</code><br />
 <code>#include &lt;driver/uart.h&gt;</code><br />
 <code>#include &lt;driver/spi_master.h&gt;</code><br />
 <code>#include &lt;hal/gpio_types.h&gt;</code><br />
@@ -138,6 +138,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">m5::unit::wiring::IdfUartParams</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map UartConfig to ESP-IDF native uart_config_t fields.  <a href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html">m5::unit::wiring::detail::I2CCacheEntry</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">m5::unit::wiring::detail::UARTCacheEntry</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -183,10 +185,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a2aa2c7f5ad22757ed1fbacdd5b8b238b" id="r_a2aa2c7f5ad22757ed1fbacdd5b8b238b"><td class="memItemLeft" align="right" valign="top"><a id="a2aa2c7f5ad22757ed1fbacdd5b8b238b" name="a2aa2c7f5ad22757ed1fbacdd5b8b238b"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::ensureI2CLegacyDriver</b> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint32_t clock)</td></tr>
-<tr class="memdesc:a2aa2c7f5ad22757ed1fbacdd5b8b238b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install the legacy I2C master driver once per {port, sda, scl}; cached so re-adds are no-ops. <br /></td></tr>
-<tr class="separator:a2aa2c7f5ad22757ed1fbacdd5b8b238b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e40128cb0f860dfa5a67d7aeb6fd4bb" id="r_a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="memItemLeft" align="right" valign="top"><a id="a6e40128cb0f860dfa5a67d7aeb6fd4bb" name="a6e40128cb0f860dfa5a67d7aeb6fd4bb"></a>
+i2c_master_bus_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::ensureI2CBus</b> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint32_t)</td></tr>
+<tr class="memdesc:a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or create an I2C master bus, cached by {port, sda, scl}. <br /></td></tr>
+<tr class="separator:a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa99c963da97ab56cfaf807630045fd49" id="r_aa99c963da97ab56cfaf807630045fd49"><td class="memItemLeft" align="right" valign="top"><a id="aa99c963da97ab56cfaf807630045fd49" name="aa99c963da97ab56cfaf807630045fd49"></a>
 uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::ensureUARTPort</b> (const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config)</td></tr>
 <tr class="memdesc:aa99c963da97ab56cfaf807630045fd49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or install a UART port, cached by {port, rx, tx}. <br /></td></tr>
@@ -203,6 +205,9 @@ uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiri
 <a class="el" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">IdfUartParams</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::toIdfUartParams</b> (const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> c)</td></tr>
 <tr class="memdesc:ac39ae8305ec751c074344031b7b2197c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native) <br /></td></tr>
 <tr class="separator:ac39ae8305ec751c074344031b7b2197c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee7a97d6fb60816e57bb5d8c64dadd7e" id="r_aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="memItemLeft" align="right" valign="top">i2c_master_bus_handle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee7a97d6fb60816e57bb5d8c64dadd7e">m5::unit::wiring::i2cBusHandle</a> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint32_t clock=100000)</td></tr>
+<tr class="memdesc:aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or create an I2C master bus handle (cached by {port, sda, scl})  <br /></td></tr>
+<tr class="separator:aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96c46c20af17ec84bc2bb6c6d0f9c35b" id="r_a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="memItemLeft" align="right" valign="top">uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96c46c20af17ec84bc2bb6c6d0f9c35b">m5::unit::wiring::uartPortHandle</a> (const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config=<a class="el" href="#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67">UartConfig::Default</a>)</td></tr>
 <tr class="memdesc:a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or install a UART port (cached by {port, rx, tx})  <br /></td></tr>
 <tr class="separator:a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -348,6 +353,48 @@ On ESP-IDF native, the following public lifecycle hooks are also exposed for uni
 
 <p>Get or initialize a SPI device, cached by {host, clock_hz, mode, bit_order}. </p>
 <dl class="section note"><dt>Note</dt><dd>spics_io_num is fixed to GPIO_NUM_NC; cs is controlled manually by the unit's adapter. </dd></dl>
+
+</div>
+</div>
+<a id="aee7a97d6fb60816e57bb5d8c64dadd7e" name="aee7a97d6fb60816e57bb5d8c64dadd7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee7a97d6fb60816e57bb5d8c64dadd7e">&#9670;&#160;</a></span>i2cBusHandle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">i2c_master_bus_handle_t m5::unit::wiring::i2cBusHandle </td>
+          <td>(</td>
+          <td class="paramtype">const i2c_port_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sda</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>scl</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>clock</em></span><span class="paramdefsep"> = </span><span class="paramdefval">100000</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get or create an I2C master bus handle (cached by {port, sda, scl}) </p>
+<dl class="section note"><dt>Note</dt><dd>Intended for unit-specific wiring in M5Unit-* libraries; examples should use addI2C() instead. </dd></dl>
 
 </div>
 </div>

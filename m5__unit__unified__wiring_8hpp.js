@@ -7,6 +7,7 @@ var m5__unit__unified__wiring_8hpp =
     [ "m5::unit::wiring::HatI2CPins", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins" ],
     [ "m5::unit::wiring::HatPinPair", "structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html", null ],
     [ "m5::unit::wiring::IdfUartParams", "structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html", null ],
+    [ "m5::unit::wiring::detail::I2CCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html", null ],
     [ "m5::unit::wiring::detail::UARTCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html", null ],
     [ "m5::unit::wiring::detail::SPIHostEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html", null ],
     [ "m5::unit::wiring::detail::SPIDevEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html", null ],
@@ -30,9 +31,10 @@ var m5__unit__unified__wiring_8hpp =
       [ "_7O1", "m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cfa5b5d86a82c2f105fe2c2a22b5503a2c4", null ]
     ] ],
     [ "defaultUartPort", "m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975", null ],
-    [ "ensureI2CLegacyDriver", "m5__unit__unified__wiring_8hpp.html#a2aa2c7f5ad22757ed1fbacdd5b8b238b", null ],
+    [ "ensureI2CBus", "m5__unit__unified__wiring_8hpp.html#a6e40128cb0f860dfa5a67d7aeb6fd4bb", null ],
     [ "ensureSPIDevice", "m5__unit__unified__wiring_8hpp.html#a1382106910f82e9537751b3226dbc1a0", null ],
     [ "ensureUARTPort", "m5__unit__unified__wiring_8hpp.html#aa99c963da97ab56cfaf807630045fd49", null ],
+    [ "i2cBusHandle", "m5__unit__unified__wiring_8hpp.html#aee7a97d6fb60816e57bb5d8c64dadd7e", null ],
     [ "spiDeviceHandle", "m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86", null ],
     [ "toIdfUartParams", "m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c", null ],
     [ "uartPortHandle", "m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b", null ]
