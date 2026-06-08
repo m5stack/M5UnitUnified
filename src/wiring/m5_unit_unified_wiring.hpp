@@ -137,6 +137,7 @@ struct HatPinPair {
   @param nesso NessoN1 only: PortB = direct GROVE (SoftwareI2C), PortA = QWIIC (Wire)
   @return I2CPins { sda, scl, backend }
   @note NessoN1 PortB -> SoftwareI2C on port_b. NessoN1 PortA -> Wire on port_a (= QWIIC).
+        Core (board_M5Stack) -> ExI2C (In_I2C/Ex_I2C are one shared bus; borrow it to avoid a collision).
         NanoC6/NanoH2 -> ExI2C (sda/scl reflect port_a pins for diagnostic). Others -> Wire on port_a.
 */
 inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
@@ -151,6 +152,13 @@ inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
                 static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_scl)), I2CPins::Backend::Wire};
     }
     if (board == m5::board_t::board_M5NanoC6 || board == m5::board_t::board_M5NanoH2) {
+        return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
+                static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
+    }
+    if (board == m5::board_t::board_M5Stack) {
+        // Core (Basic/Gray/Go/Fire): In_I2C and Ex_I2C are the same bus (I2C_NUM_0 / GPIO21,22).
+        // M5.begin() already installs that bus via In_I2C, so opening a new Wire / native master bus
+        // on the same port would collide. Borrow M5.Ex_I2C instead (ExI2C backend -> i2cClass).
         return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
                 static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
     }
@@ -812,9 +820,10 @@ inline spi_device_handle_t spiDeviceHandle(const spi_host_device_t host, const g
 //! @note  Dispatch matrix (mirrors Arduino addI2C's intent on each backend / board):
 //!          - SoftwareI2C (NessoN1 PortB)   -> i2cSoftware() via M5HAL bit-bang
 //!          - Wire on NessoN1 (PortA QWIIC) -> borrow M5.Ex_I2C (M5Unified holds I2C_NUM_0)
-//!          - Wire on other boards (Core/Stick/S3 etc) -> install a new bus via i2c_new_master_bus
+//!          - Wire on other boards (Stick/S3 etc) -> install a new bus via i2c_new_master_bus
 //!            (M5Unified does NOT call Wire.begin() on these boards, so I2C_NUM_0 is free)
-//!          - ExI2C (NanoC6/NanoH2)         -> borrow M5.Ex_I2C
+//!          - ExI2C (Core, NanoC6/NanoH2)   -> borrow M5.Ex_I2C
+//!            (Core: In_I2C/Ex_I2C share I2C_NUM_0, already installed by M5.begin(); borrow it)
 inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 100000,
                    const NessoPort nesso = NessoPort::PortB)
 {
@@ -836,7 +845,8 @@ inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 1
                 // M5Unified already holds I2C_NUM_0 here, so borrow instead of installing.
                 return i2cClass(units, unit, M5.In_I2C);
             } else {
-                // Core / Stick / S3 etc: M5Unified does not call Wire.begin(), so install ourselves
+                // Stick / S3 etc: M5Unified does not call Wire.begin(), so install ourselves
+                // (Core is routed to ExI2C by i2cPins() and never reaches this branch)
 #if __has_include(<driver/i2c_master.h>)
                 auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock);
                 if (!bus) return false;
@@ -849,7 +859,7 @@ inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 1
 #endif
             }
         case I2CPins::Backend::ExI2C:
-            // NanoC6 / NanoH2: M5Unified manages Ex_I2C -> borrow
+            // Core / NanoC6 / NanoH2: M5Unified manages Ex_I2C (Core shares it with In_I2C) -> borrow
             return i2cClass(units, unit, M5.Ex_I2C);
     }
     return false;
