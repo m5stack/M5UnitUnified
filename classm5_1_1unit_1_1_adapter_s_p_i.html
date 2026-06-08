@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.5 git rev:ecfdca5</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.2 git rev:2990d3c</span>
    </div>
   </td>
  </tr>
@@ -132,9 +132,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ada81658ff6a48a71050e3128a5739f19" id="r_ada81658ff6a48a71050e3128a5739f19"><td class="memItemLeft" align="right" valign="top"><a id="ada81658ff6a48a71050e3128a5739f19" name="ada81658ff6a48a71050e3128a5739f19"></a>
 const <a class="el" href="classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.html">SPIImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>impl</b> () const</td></tr>
 <tr class="separator:ada81658ff6a48a71050e3128a5739f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40040c8b1b817aaa22bb83581ae4b0f2" id="r_a40040c8b1b817aaa22bb83581ae4b0f2"><td class="memItemLeft" align="right" valign="top"><a id="a40040c8b1b817aaa22bb83581ae4b0f2" name="a40040c8b1b817aaa22bb83581ae4b0f2"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>cs_pin</b> () const</td></tr>
-<tr class="separator:a40040c8b1b817aaa22bb83581ae4b0f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686488e4d8ff720618e627deb3721f04" id="r_a686488e4d8ff720618e627deb3721f04"><td class="memItemLeft" align="right" valign="top"><a id="a686488e4d8ff720618e627deb3721f04" name="a686488e4d8ff720618e627deb3721f04"></a>
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>cs_pin</b> () const</td></tr>
+<tr class="separator:a686488e4d8ff720618e627deb3721f04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c9e09b7b8968c806a172d9ed72249b3" id="r_a7c9e09b7b8968c806a172d9ed72249b3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c9e09b7b8968c806a172d9ed72249b3">beginTransaction</a> () override</td></tr>
 <tr class="memdesc:a7c9e09b7b8968c806a172d9ed72249b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin a bus transaction.  <br /></td></tr>
 <tr class="separator:a7c9e09b7b8968c806a172d9ed72249b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -230,9 +230,9 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pu
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a82f75fe8501f08eda8382595ded5ee4f" id="r_a82f75fe8501f08eda8382595ded5ee4f"><td class="memItemLeft" align="right" valign="top"><a id="a82f75fe8501f08eda8382595ded5ee4f" name="a82f75fe8501f08eda8382595ded5ee4f"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_cs</b> {}</td></tr>
-<tr class="separator:a82f75fe8501f08eda8382595ded5ee4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac14efff8a30465f0d67c8dcbbc470e15" id="r_ac14efff8a30465f0d67c8dcbbc470e15"><td class="memItemLeft" align="right" valign="top"><a id="ac14efff8a30465f0d67c8dcbbc470e15" name="ac14efff8a30465f0d67c8dcbbc470e15"></a>
+gpio_num_t&#160;</td><td class="memItemRight" valign="bottom"><b>_cs</b> {GPIO_NUM_NC}</td></tr>
+<tr class="separator:ac14efff8a30465f0d67c8dcbbc470e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classm5_1_1unit_1_1_adapter"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classm5_1_1unit_1_1_adapter')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></td></tr>
 <tr class="memitem:a4c423923d7660a86e12acc3aedf98333 inherit pro_attribs_classm5_1_1unit_1_1_adapter" id="r_a4c423923d7660a86e12acc3aedf98333"><td class="memItemLeft" align="right" valign="top">
 std::unique_ptr&lt; <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.html">Impl</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_impl</b> {}</td></tr>

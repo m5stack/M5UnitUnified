@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gpio_0',['GPIO',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235',1,'m5::unit::Adapter']]]
+  ['default_0',['Default',['../m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67',1,'m5::unit::wiring']]]
 ];
