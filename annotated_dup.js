@@ -11,7 +11,15 @@ var annotated_dup =
         ] ],
         [ "gpio", null, [
           [ "adapter_config_t", "structm5_1_1unit_1_1gpio_1_1adapter__config__t.html", "structm5_1_1unit_1_1gpio_1_1adapter__config__t" ],
-          [ "pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", null ]
+          [ "pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", "classm5_1_1unit_1_1gpio_1_1pin__backup__t" ]
+        ] ],
+        [ "wiring", null, [
+          [ "GpioPinPair", "structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html", "structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair" ],
+          [ "HatI2CPins", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins" ],
+          [ "HatPinPair", "structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html", null ],
+          [ "I2CPins", "structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html", "structm5_1_1unit_1_1wiring_1_1_i2_c_pins" ],
+          [ "SpiPins", "structm5_1_1unit_1_1wiring_1_1_spi_pins.html", null ],
+          [ "UartPinPair", "structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html", "structm5_1_1unit_1_1wiring_1_1_uart_pin_pair" ]
         ] ],
         [ "Adapter", "classm5_1_1unit_1_1_adapter.html", "classm5_1_1unit_1_1_adapter" ],
         [ "AdapterGPIO", "classm5_1_1unit_1_1_adapter_g_p_i_o.html", null ],
