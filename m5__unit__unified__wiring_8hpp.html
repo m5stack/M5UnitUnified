@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.0 git rev:a6b22f7</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.8 git rev:aa04668</span>
    </div>
   </td>
  </tr>
@@ -98,9 +98,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp.html',''); initResizabl
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#namespaces">Namespaces</a>  </div>
   <div class="headertitle"><div class="title">m5_unit_unified_wiring.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -108,11 +106,6 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp.html',''); initResizabl
 <p>Opt-in, header-only board-aware connection helpers for M5UnitUnified examples.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="_m5_unit_unified_8hpp_source.html">../M5UnitUnified.hpp</a>&quot;</code><br />
-<code>#include &lt;driver/i2c_master.h&gt;</code><br />
-<code>#include &lt;driver/uart.h&gt;</code><br />
-<code>#include &lt;driver/spi_master.h&gt;</code><br />
-<code>#include &lt;hal/gpio_types.h&gt;</code><br />
-<code>#include &lt;soc/soc_caps.h&gt;</code><br />
 </div>
 <p><a href="m5__unit__unified__wiring_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -136,17 +129,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html">m5::unit::wiring::HatPinPair</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hat rx/tx pin pair (shared by Hat GPIO and Hat UART); rx=tx=-1 if board has no Hat header.  <a href="structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">m5::unit::wiring::IdfUartParams</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map UartConfig to ESP-IDF native uart_config_t fields.  <a href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html">m5::unit::wiring::detail::I2CCacheEntry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">m5::unit::wiring::detail::UARTCacheEntry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html">m5::unit::wiring::detail::SPIHostEntry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html">m5::unit::wiring::detail::SPIDevEntry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -168,75 +150,12 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a5ef72887835235a6726c6825654b9794"><td class="mdescLeft">&#160;</td><td class="mdescRight">GPIO usage role: how many pins of the port the unit actually uses.  <a href="#a5ef72887835235a6726c6825654b9794">More...</a><br /></td></tr>
 <tr class="separator:a5ef72887835235a6726c6825654b9794"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05c1e7359bb737af1b33c0e736d114cf" id="r_a05c1e7359bb737af1b33c0e736d114cf"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">m5::unit::wiring::UartConfig</a> : uint32_t { <br />
-&#160;&#160;<a class="el" href="#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67">Default</a> = 0
-, <b>_8N1</b> = 1
-, <b>_8N2</b> = 2
-, <b>_8E1</b> = 3
-, <br />
-&#160;&#160;<b>_8O1</b> = 4
-, <b>_7N1</b> = 5
-, <b>_7E1</b> = 6
-, <b>_7O1</b> = 7
-<br />
- }</td></tr>
-<tr class="memdesc:a05c1e7359bb737af1b33c0e736d114cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">UART config (word length / parity / stop bits). Common across Arduino and ESP-IDF native.  <a href="#a05c1e7359bb737af1b33c0e736d114cf">More...</a><br /></td></tr>
-<tr class="separator:a05c1e7359bb737af1b33c0e736d114cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a6e40128cb0f860dfa5a67d7aeb6fd4bb" id="r_a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="memItemLeft" align="right" valign="top"><a id="a6e40128cb0f860dfa5a67d7aeb6fd4bb" name="a6e40128cb0f860dfa5a67d7aeb6fd4bb"></a>
-i2c_master_bus_handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::ensureI2CBus</b> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint32_t)</td></tr>
-<tr class="memdesc:a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or create an I2C master bus, cached by {port, sda, scl}. <br /></td></tr>
-<tr class="separator:a6e40128cb0f860dfa5a67d7aeb6fd4bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa99c963da97ab56cfaf807630045fd49" id="r_aa99c963da97ab56cfaf807630045fd49"><td class="memItemLeft" align="right" valign="top"><a id="aa99c963da97ab56cfaf807630045fd49" name="aa99c963da97ab56cfaf807630045fd49"></a>
-uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::ensureUARTPort</b> (const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config)</td></tr>
-<tr class="memdesc:aa99c963da97ab56cfaf807630045fd49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or install a UART port, cached by {port, rx, tx}. <br /></td></tr>
-<tr class="separator:aa99c963da97ab56cfaf807630045fd49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1382106910f82e9537751b3226dbc1a0" id="r_a1382106910f82e9537751b3226dbc1a0"><td class="memItemLeft" align="right" valign="top">spi_device_handle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1382106910f82e9537751b3226dbc1a0">m5::unit::wiring::detail::ensureSPIDevice</a> (const spi_host_device_t host, const gpio_num_t mosi, const gpio_num_t miso, const gpio_num_t sck, const uint32_t clock_hz, const uint8_t mode, const uint8_t bit_order)</td></tr>
-<tr class="memdesc:a1382106910f82e9537751b3226dbc1a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or initialize a SPI device, cached by {host, clock_hz, mode, bit_order}.  <br /></td></tr>
-<tr class="separator:a1382106910f82e9537751b3226dbc1a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader">ESP-IDF native infrastructure (cache, hooks, defaults)</div></td></tr>
-<tr class="memitem:a8ce916fe64759a45f8d58d593222b975" id="r_a8ce916fe64759a45f8d58d593222b975"><td class="memItemLeft" align="right" valign="top"><a id="a8ce916fe64759a45f8d58d593222b975" name="a8ce916fe64759a45f8d58d593222b975"></a>
-uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::defaultUartPort</b> ()</td></tr>
-<tr class="memdesc:a8ce916fe64759a45f8d58d593222b975"><td class="mdescLeft">&#160;</td><td class="mdescRight">The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native) <br /></td></tr>
-<tr class="separator:a8ce916fe64759a45f8d58d593222b975"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac39ae8305ec751c074344031b7b2197c" id="r_ac39ae8305ec751c074344031b7b2197c"><td class="memItemLeft" align="right" valign="top"><a id="ac39ae8305ec751c074344031b7b2197c" name="ac39ae8305ec751c074344031b7b2197c"></a>
-<a class="el" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">IdfUartParams</a>&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::toIdfUartParams</b> (const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> c)</td></tr>
-<tr class="memdesc:ac39ae8305ec751c074344031b7b2197c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native) <br /></td></tr>
-<tr class="separator:ac39ae8305ec751c074344031b7b2197c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee7a97d6fb60816e57bb5d8c64dadd7e" id="r_aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="memItemLeft" align="right" valign="top">i2c_master_bus_handle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee7a97d6fb60816e57bb5d8c64dadd7e">m5::unit::wiring::i2cBusHandle</a> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint32_t clock=100000)</td></tr>
-<tr class="memdesc:aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or create an I2C master bus handle (cached by {port, sda, scl})  <br /></td></tr>
-<tr class="separator:aee7a97d6fb60816e57bb5d8c64dadd7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96c46c20af17ec84bc2bb6c6d0f9c35b" id="r_a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="memItemLeft" align="right" valign="top">uart_port_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96c46c20af17ec84bc2bb6c6d0f9c35b">m5::unit::wiring::uartPortHandle</a> (const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config=<a class="el" href="#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67">UartConfig::Default</a>)</td></tr>
-<tr class="memdesc:a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or install a UART port (cached by {port, rx, tx})  <br /></td></tr>
-<tr class="separator:a96c46c20af17ec84bc2bb6c6d0f9c35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c27c8a9a2ceddc4d5fc180295b60c86" id="r_a0c27c8a9a2ceddc4d5fc180295b60c86"><td class="memItemLeft" align="right" valign="top">spi_device_handle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0c27c8a9a2ceddc4d5fc180295b60c86">m5::unit::wiring::spiDeviceHandle</a> (const spi_host_device_t host, const gpio_num_t mosi, const gpio_num_t miso, const gpio_num_t sck, const uint32_t clock_hz, const uint8_t mode=0, const uint8_t bit_order=0)</td></tr>
-<tr class="memdesc:a0c27c8a9a2ceddc4d5fc180295b60c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or initialize a SPI device on the given host (cached by {host, clock_hz, mode, bit_order})  <br /></td></tr>
-<tr class="separator:a0c27c8a9a2ceddc4d5fc180295b60c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a79d4cf52da10f8407a08c6e069f7f5dd" id="r_a79d4cf52da10f8407a08c6e069f7f5dd"><td class="memItemLeft" align="right" valign="top"><a id="a79d4cf52da10f8407a08c6e069f7f5dd" name="a79d4cf52da10f8407a08c6e069f7f5dd"></a>
-constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::kI2CBusCacheSize</b> = 4</td></tr>
-<tr class="separator:a79d4cf52da10f8407a08c6e069f7f5dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c1770eeae8c311f77b2fd07c35da6a7" id="r_a2c1770eeae8c311f77b2fd07c35da6a7"><td class="memItemLeft" align="right" valign="top"><a id="a2c1770eeae8c311f77b2fd07c35da6a7" name="a2c1770eeae8c311f77b2fd07c35da6a7"></a>
-constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::kUARTPortCacheSize</b> = 4</td></tr>
-<tr class="separator:a2c1770eeae8c311f77b2fd07c35da6a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a23a39b64044196e25b658fd190e93a" id="r_a4a23a39b64044196e25b658fd190e93a"><td class="memItemLeft" align="right" valign="top"><a id="a4a23a39b64044196e25b658fd190e93a" name="a4a23a39b64044196e25b658fd190e93a"></a>
-constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::kSPIHostCacheSize</b> = 2</td></tr>
-<tr class="separator:a4a23a39b64044196e25b658fd190e93a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5077b9b6368051714d972acf06dd8c80" id="r_a5077b9b6368051714d972acf06dd8c80"><td class="memItemLeft" align="right" valign="top"><a id="a5077b9b6368051714d972acf06dd8c80" name="a5077b9b6368051714d972acf06dd8c80"></a>
-constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::wiring::detail::kSPIDevCacheSize</b> = 4</td></tr>
-<tr class="separator:a5077b9b6368051714d972acf06dd8c80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Opt-in, header-only board-aware connection helpers for M5UnitUnified examples. </p>
 <p>This header exists solely to keep the example code in M5UnitUnified and M5Unit-* repositories short and readable. Each helper resolves board-specific pins / backends through M5Unified, opens the bus, and calls UnitUnified::add().</p>
 <p>Users SHOULD treat these helpers as reference implementations, not as the only supported way to wire a unit. In real applications, prefer to call UnitUnified::add() directly with a bus or handle that fits the application's lifecycle (shared bus management, custom pins, alternative backends, etc.).</p>
-<dl class="section note"><dt>Note</dt><dd>REQUIRES &lt;M5Unified.h&gt; (or &lt;M5Unified.hpp&gt;) to be included BEFORE this header. Pin-acquisition helpers (i2cPins / gpioPins / uartPins / spiPins / hatI2CPins / hatGPIOPins / hatUARTPins) work on both Arduino and ESP-IDF (any platform where M5Unified is available). High-level addX helpers (addI2C / addGPIO / addUART / addSPI / addHatI2C / addHatGPIO / addHatUART) provide the same signatures on Arduino and ESP-IDF native, so example code can compile on both frameworks unchanged.</dd>
-<dd>
-On ESP-IDF native, the following public lifecycle hooks are also exposed for unit-specific wiring developers (M5Unit-* libraries that need to share a bus handle with the generic helpers above): <code>i2cBusHandle</code>, <code>uartPortHandle</code>, <code>spiDeviceHandle</code>. Examples should NOT use these directly; use the generic addX helpers instead. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>REQUIRES &lt;M5Unified.h&gt; (or &lt;M5Unified.hpp&gt;) to be included BEFORE this header. Pin-acquisition helpers (i2cPins / gpioPins / uartPins / spiPins / hatI2CPins / hatGPIOPins / hatUARTPins) work on both Arduino and ESP-IDF (any platform where M5Unified is available). High-level addX helpers that drive Wire/SPI/HardwareSerial are guarded by ARDUINO since the underlying APIs are Arduino-only. </dd></dl>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a5ef72887835235a6726c6825654b9794" name="a5ef72887835235a6726c6825654b9794"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5ef72887835235a6726c6825654b9794">&#9670;&#160;</a></span>GpioRole</h2>
@@ -267,238 +186,6 @@ On ESP-IDF native, the following public lifecycle hooks are also exposed for uni
 <tr><td class="fieldname"><a id="a5ef72887835235a6726c6825654b9794a423a26dfb5d881095b7d2d87758af79a" name="a5ef72887835235a6726c6825654b9794a423a26dfb5d881095b7d2d87758af79a"></a>OutOnly&#160;</td><td class="fielddoc"><p>Output only — rx = -1, tx = port_*_out (pin2) (e.g., Flashlight, RF433 Tx, IR Tx alone) </p>
 </td></tr>
 </table>
-
-</div>
-</div>
-<a id="a05c1e7359bb737af1b33c0e736d114cf" name="a05c1e7359bb737af1b33c0e736d114cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a05c1e7359bb737af1b33c0e736d114cf">&#9670;&#160;</a></span>UartConfig</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum class <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">m5::unit::wiring::UartConfig</a> : uint32_t</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>UART config (word length / parity / stop bits). Common across Arduino and ESP-IDF native. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67" name="a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67"></a>Default&#160;</td><td class="fielddoc"><p>= _8N1 </p>
-</td></tr>
-</table>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a1382106910f82e9537751b3226dbc1a0" name="a1382106910f82e9537751b3226dbc1a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1382106910f82e9537751b3226dbc1a0">&#9670;&#160;</a></span>ensureSPIDevice()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">spi_device_handle_t m5::unit::wiring::detail::ensureSPIDevice </td>
-          <td>(</td>
-          <td class="paramtype">const spi_host_device_t</td>          <td class="paramname"><span class="paramname"><em>host</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>mosi</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>miso</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sck</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>clock_hz</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>mode</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>bit_order</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get or initialize a SPI device, cached by {host, clock_hz, mode, bit_order}. </p>
-<dl class="section note"><dt>Note</dt><dd>spics_io_num is fixed to GPIO_NUM_NC; cs is controlled manually by the unit's adapter. </dd></dl>
-
-</div>
-</div>
-<a id="aee7a97d6fb60816e57bb5d8c64dadd7e" name="aee7a97d6fb60816e57bb5d8c64dadd7e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aee7a97d6fb60816e57bb5d8c64dadd7e">&#9670;&#160;</a></span>i2cBusHandle()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">i2c_master_bus_handle_t m5::unit::wiring::i2cBusHandle </td>
-          <td>(</td>
-          <td class="paramtype">const i2c_port_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sda</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>scl</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>clock</em></span><span class="paramdefsep"> = </span><span class="paramdefval">100000</span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get or create an I2C master bus handle (cached by {port, sda, scl}) </p>
-<dl class="section note"><dt>Note</dt><dd>Intended for unit-specific wiring in M5Unit-* libraries; examples should use addI2C() instead. </dd></dl>
-
-</div>
-</div>
-<a id="a0c27c8a9a2ceddc4d5fc180295b60c86" name="a0c27c8a9a2ceddc4d5fc180295b60c86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c27c8a9a2ceddc4d5fc180295b60c86">&#9670;&#160;</a></span>spiDeviceHandle()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">spi_device_handle_t m5::unit::wiring::spiDeviceHandle </td>
-          <td>(</td>
-          <td class="paramtype">const spi_host_device_t</td>          <td class="paramname"><span class="paramname"><em>host</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>mosi</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>miso</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sck</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>clock_hz</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>mode</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>bit_order</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get or initialize a SPI device on the given host (cached by {host, clock_hz, mode, bit_order}) </p>
-<dl class="section note"><dt>Note</dt><dd>Intended for unit-specific wiring; examples should use addSPI() instead. CS is controlled manually by the unit's adapter (spics_io_num = GPIO_NUM_NC). </dd></dl>
-
-</div>
-</div>
-<a id="a96c46c20af17ec84bc2bb6c6d0f9c35b" name="a96c46c20af17ec84bc2bb6c6d0f9c35b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96c46c20af17ec84bc2bb6c6d0f9c35b">&#9670;&#160;</a></span>uartPortHandle()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uart_port_t m5::unit::wiring::uartPortHandle </td>
-          <td>(</td>
-          <td class="paramtype">const uart_port_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>rx</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>tx</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>baud</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a></td>          <td class="paramname"><span class="paramname"><em>config</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67">UartConfig::Default</a></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get or install a UART port (cached by {port, rx, tx}) </p>
-<dl class="section note"><dt>Note</dt><dd>Intended for unit-specific wiring; examples should use addUART() instead. </dd></dl>
 
 </div>
 </div>

@@ -19,9 +19,7 @@ var hierarchy =
     [ "m5::unit::wiring::GpioPinPair", "structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html", null ],
     [ "m5::unit::wiring::HatI2CPins", "structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html", null ],
     [ "m5::unit::wiring::HatPinPair", "structm5_1_1unit_1_1wiring_1_1_hat_pin_pair.html", null ],
-    [ "m5::unit::wiring::detail::I2CCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_i2_c_cache_entry.html", null ],
     [ "m5::unit::wiring::I2CPins", "structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html", null ],
-    [ "m5::unit::wiring::IdfUartParams", "structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html", null ],
     [ "m5::unit::Adapter::Impl", "classm5_1_1unit_1_1_adapter_1_1_impl.html", [
       [ "m5::unit::AdapterGPIOBase::GPIOImpl", "classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html", [
         [ "m5::unit::GPIOImplV2", "classm5_1_1unit_1_1_g_p_i_o_impl_v2.html", null ]
@@ -36,8 +34,6 @@ var hierarchy =
     [ "m5::unit::PeriodicMeasurementAdapter< Derived, MD >", "classm5_1_1unit_1_1_periodic_measurement_adapter.html", null ],
     [ "m5::unit::googletest::PeriodicMeasurementResult", "structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html", null ],
     [ "m5::unit::gpio::pin_backup_t", "classm5_1_1unit_1_1gpio_1_1pin__backup__t.html", null ],
-    [ "m5::unit::wiring::detail::SPIDevEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html", null ],
-    [ "m5::unit::wiring::detail::SPIHostEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html", null ],
     [ "m5::unit::wiring::SpiPins", "structm5_1_1unit_1_1wiring_1_1_spi_pins.html", null ],
     [ "testing::Test", null, [
       [ "m5::unit::googletest::GPIOComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html", null ],
@@ -46,7 +42,6 @@ var hierarchy =
       [ "m5::unit::googletest::UARTComponentTestBase< U >", "classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html", null ]
     ] ],
     [ "m5::unit::transaction_guard", "structm5_1_1unit_1_1transaction__guard.html", null ],
-    [ "m5::unit::wiring::detail::UARTCacheEntry", "structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html", null ],
     [ "m5::unit::wiring::UartPinPair", "structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html", null ],
     [ "m5::unit::UnitUnified", "classm5_1_1unit_1_1_unit_unified.html", null ]
 ];

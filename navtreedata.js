@@ -49,7 +49,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_m5_unit_component_8cpp.html",
-"structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#ae46b2ba1960edc0051d8c63df5cd6019"
+"structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bcca8d0be41ab58751f3fe6fb5aa87b0e794"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

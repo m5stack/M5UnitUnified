@@ -5,13 +5,12 @@ var searchData=
   ['tick_5fns_2',['tick_ns',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1config__t.html#a58db7938e10f69d7ef6afb885f321705',1,'m5::unit::gpio::adapter_config_t::config_t']]],
   ['timed_5fout_3',['timed_out',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a4999c4ba5ed48de9c46a7d25c81c6795',1,'m5::unit::googletest::PeriodicMeasurementResult']]],
   ['todo_20list_4',['Todo List',['../todo.html',1,'']]],
-  ['toidfuartparams_5',['toIdfUartParams',['../m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c',1,'m5::unit::wiring']]],
-  ['transaction_5fguard_6',['transaction_guard',['../structm5_1_1unit_1_1transaction__guard.html',1,'m5::unit']]],
-  ['twowire_7',['TwoWire',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a',1,'m5::unit::AdapterI2C']]],
-  ['tx_8',['tx',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#a9a672c9bdcd87f79abda9f03890e6b6b',1,'m5::unit::gpio::adapter_config_t']]],
-  ['tx_5fconfig_5ft_9',['tx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]],
-  ['type_10',['Type',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce',1,'m5::unit::Adapter']]],
-  ['type_11',['type',['../classm5_1_1unit_1_1_adapter.html#a719a345fe6b6047d73aa28853b05f172',1,'m5::unit::Adapter']]],
-  ['types_12',['types',['../namespacetypes.html',1,'']]],
-  ['types_2ehpp_13',['types.hpp',['../types_8hpp.html',1,'']]]
+  ['transaction_5fguard_5',['transaction_guard',['../structm5_1_1unit_1_1transaction__guard.html',1,'m5::unit']]],
+  ['twowire_6',['TwoWire',['../classm5_1_1unit_1_1_adapter_i2_c.html#a8d18994dbe5d6f786c355fc9ba12b704a5518a135bfe8f5336cb77de15b93551a',1,'m5::unit::AdapterI2C']]],
+  ['tx_7',['tx',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#a9a672c9bdcd87f79abda9f03890e6b6b',1,'m5::unit::gpio::adapter_config_t']]],
+  ['tx_5fconfig_5ft_8',['tx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1tx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]],
+  ['type_9',['Type',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce',1,'m5::unit::Adapter']]],
+  ['type_10',['type',['../classm5_1_1unit_1_1_adapter.html#a719a345fe6b6047d73aa28853b05f172',1,'m5::unit::Adapter']]],
+  ['types_11',['types',['../namespacetypes.html',1,'']]],
+  ['types_2ehpp_12',['types.hpp',['../types_8hpp.html',1,'']]]
 ];

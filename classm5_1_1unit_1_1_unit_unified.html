@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.0 git rev:a6b22f7</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.4.8 git rev:aa04668</span>
    </div>
   </td>
  </tr>
@@ -150,12 +150,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afb723f54c355657542dd04f8e3491147" id="r_afb723f54c355657542dd04f8e3491147"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afb723f54c355657542dd04f8e3491147">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, TwoWire &amp;wire)</td></tr>
 <tr class="memdesc:afb723f54c355657542dd04f8e3491147"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add unit to be managed (I2C via TwoWire)  <br /></td></tr>
 <tr class="separator:afb723f54c355657542dd04f8e3491147"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f4062e4bdbefb46743f3b02785624b2" id="r_a4f4062e4bdbefb46743f3b02785624b2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4f4062e4bdbefb46743f3b02785624b2">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, i2c_master_bus_handle_t bus)</td></tr>
-<tr class="memdesc:a4f4062e4bdbefb46743f3b02785624b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (I2C, ESP-IDF native driver)  <br /></td></tr>
-<tr class="separator:a4f4062e4bdbefb46743f3b02785624b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab93ef2e30ac7402d74ddbd21d5107283" id="r_ab93ef2e30ac7402d74ddbd21d5107283"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab93ef2e30ac7402d74ddbd21d5107283">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)</td></tr>
-<tr class="memdesc:ab93ef2e30ac7402d74ddbd21d5107283"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (I2C, ESP-IDF legacy driver)  <br /></td></tr>
-<tr class="separator:ab93ef2e30ac7402d74ddbd21d5107283"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2a494bd63c30170267ab123a32eba6a" id="r_ae2a494bd63c30170267ab123a32eba6a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae2a494bd63c30170267ab123a32eba6a">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::I2C_Class &amp;i2c)</td></tr>
 <tr class="memdesc:ae2a494bd63c30170267ab123a32eba6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add unit to be managed (I2C via I2C_Class)  <br /></td></tr>
 <tr class="separator:ae2a494bd63c30170267ab123a32eba6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,16 +161,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a67163d219c4b919ebf003530c9d938ce" id="r_a67163d219c4b919ebf003530c9d938ce"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a67163d219c4b919ebf003530c9d938ce">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, HardwareSerial &amp;serial)</td></tr>
 <tr class="memdesc:a67163d219c4b919ebf003530c9d938ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add unit to be managed (UART)  <br /></td></tr>
 <tr class="separator:a67163d219c4b919ebf003530c9d938ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89714c208fbfda5dd4d94fe4a086855b" id="r_a89714c208fbfda5dd4d94fe4a086855b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a89714c208fbfda5dd4d94fe4a086855b">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, const uart_port_t uart_num)</td></tr>
-<tr class="memdesc:a89714c208fbfda5dd4d94fe4a086855b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (UART, ESP-IDF native driver)  <br /></td></tr>
-<tr class="separator:a89714c208fbfda5dd4d94fe4a086855b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Add unit(SPI)</div></td></tr>
 <tr class="memitem:a50ca997b7e43e9b6cb11dac3d58555c7" id="r_a50ca997b7e43e9b6cb11dac3d58555c7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a50ca997b7e43e9b6cb11dac3d58555c7">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, SPIClass &amp;spi, const SPISettings &amp;settings)</td></tr>
 <tr class="memdesc:a50ca997b7e43e9b6cb11dac3d58555c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add unit to be managed (SPI)  <br /></td></tr>
 <tr class="separator:a50ca997b7e43e9b6cb11dac3d58555c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15d289846654520f52068fed9bd13781" id="r_a15d289846654520f52068fed9bd13781"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15d289846654520f52068fed9bd13781">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, spi_device_handle_t handle, const gpio_num_t cs=GPIO_NUM_NC)</td></tr>
-<tr class="memdesc:a15d289846654520f52068fed9bd13781"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adding unit to be managed (SPI, ESP-IDF native driver)  <br /></td></tr>
-<tr class="separator:a15d289846654520f52068fed9bd13781"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Add unit(M5HAL)</div></td></tr>
 <tr class="memitem:afa7412b0a654e1274441c501cfc1d7aa" id="r_afa7412b0a654e1274441c501cfc1d7aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa7412b0a654e1274441c501cfc1d7aa">add</a> (<a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;u, m5::hal::bus::Bus *bus)</td></tr>
 <tr class="memdesc:afa7412b0a654e1274441c501cfc1d7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add unit to be managed (M5HAL bus)  <br /></td></tr>
@@ -200,51 +188,8 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For managing and leading units. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="ab93ef2e30ac7402d74ddbd21d5107283" name="ab93ef2e30ac7402d74ddbd21d5107283"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab93ef2e30ac7402d74ddbd21d5107283">&#9670;&#160;</a></span>add() <span class="overload">[1/10]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool m5::unit::UnitUnified::add </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const i2c_port_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sda</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>scl</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Adding unit to be managed (I2C, ESP-IDF legacy driver) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
-    <tr><td class="paramname">port</td><td>I2C port (driver must be installed beforehand via i2c_param_config / i2c_driver_install) </td></tr>
-    <tr><td class="paramname">sda</td><td>SDA GPIO </td></tr>
-    <tr><td class="paramname">scl</td><td>SCL GPIO </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
-
-</div>
-</div>
 <a id="acc8dd860a59342229f5d5fb560bb71d5" name="acc8dd860a59342229f5d5fb560bb71d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[2/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acc8dd860a59342229f5d5fb560bb71d5">&#9670;&#160;</a></span>add() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -280,39 +225,8 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 
 </div>
 </div>
-<a id="a89714c208fbfda5dd4d94fe4a086855b" name="a89714c208fbfda5dd4d94fe4a086855b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89714c208fbfda5dd4d94fe4a086855b">&#9670;&#160;</a></span>add() <span class="overload">[3/10]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool m5::unit::UnitUnified::add </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const uart_port_t</td>          <td class="paramname"><span class="paramname"><em>uart_num</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Adding unit to be managed (UART, ESP-IDF native driver) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
-    <tr><td class="paramname">uart_num</td><td>UART port number (the driver must be installed beforehand via uart_driver_install / uart_param_config / uart_set_pin) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
-
-</div>
-</div>
 <a id="a67163d219c4b919ebf003530c9d938ce" name="a67163d219c4b919ebf003530c9d938ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67163d219c4b919ebf003530c9d938ce">&#9670;&#160;</a></span>add() <span class="overload">[4/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a67163d219c4b919ebf003530c9d938ce">&#9670;&#160;</a></span>add() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -342,39 +256,8 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 
 </div>
 </div>
-<a id="a4f4062e4bdbefb46743f3b02785624b2" name="a4f4062e4bdbefb46743f3b02785624b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f4062e4bdbefb46743f3b02785624b2">&#9670;&#160;</a></span>add() <span class="overload">[5/10]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool m5::unit::UnitUnified::add </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">i2c_master_bus_handle_t</td>          <td class="paramname"><span class="paramname"><em>bus</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Adding unit to be managed (I2C, ESP-IDF native driver) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
-    <tr><td class="paramname">bus</td><td>ESP-IDF I2C master bus handle </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
-
-</div>
-</div>
 <a id="afa7412b0a654e1274441c501cfc1d7aa" name="afa7412b0a654e1274441c501cfc1d7aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[6/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afa7412b0a654e1274441c501cfc1d7aa">&#9670;&#160;</a></span>add() <span class="overload">[3/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -405,7 +288,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="ae2a494bd63c30170267ab123a32eba6a" name="ae2a494bd63c30170267ab123a32eba6a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2a494bd63c30170267ab123a32eba6a">&#9670;&#160;</a></span>add() <span class="overload">[7/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2a494bd63c30170267ab123a32eba6a">&#9670;&#160;</a></span>add() <span class="overload">[4/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -435,45 +318,8 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 
 </div>
 </div>
-<a id="a15d289846654520f52068fed9bd13781" name="a15d289846654520f52068fed9bd13781"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15d289846654520f52068fed9bd13781">&#9670;&#160;</a></span>add() <span class="overload">[8/10]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool m5::unit::UnitUnified::add </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classm5_1_1unit_1_1_component.html">Component</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>u</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">spi_device_handle_t</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>cs</em></span><span class="paramdefsep"> = </span><span class="paramdefval">GPIO_NUM_NC</span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Adding unit to be managed (SPI, ESP-IDF native driver) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">u</td><td>Unit <a class="el" href="classm5_1_1unit_1_1_component.html" title="Base class of unit component.">Component</a> </td></tr>
-    <tr><td class="paramname">handle</td><td>ESP-IDF SPI device handle (create with spics_io_num = -1; init bus with SPI_DMA_DISABLED) </td></tr>
-    <tr><td class="paramname">cs</td><td>CS GPIO controlled manually by this library. If <code>GPIO_NUM_NC</code> (default), uses <code><a class="el" href="classm5_1_1unit_1_1_component.html#ad0ec815607bc9e68f806430594665acc" title="Address used to I2C access the device.">Component::address()</a></code> as the CS pin (same convention as Arduino SPI) </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
-
-</div>
-</div>
 <a id="a50ca997b7e43e9b6cb11dac3d58555c7" name="a50ca997b7e43e9b6cb11dac3d58555c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50ca997b7e43e9b6cb11dac3d58555c7">&#9670;&#160;</a></span>add() <span class="overload">[9/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a50ca997b7e43e9b6cb11dac3d58555c7">&#9670;&#160;</a></span>add() <span class="overload">[5/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -510,7 +356,7 @@ container_type&#160;</td><td class="memItemRight" valign="bottom"><b>_units</b> 
 </div>
 </div>
 <a id="afb723f54c355657542dd04f8e3491147" name="afb723f54c355657542dd04f8e3491147"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[10/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb723f54c355657542dd04f8e3491147">&#9670;&#160;</a></span>add() <span class="overload">[6/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
