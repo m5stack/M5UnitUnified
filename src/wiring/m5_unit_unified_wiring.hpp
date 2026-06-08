@@ -638,7 +638,7 @@ inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_nu
     cache[count].key = key;
     return cache[count++].handle;
 }
-#else   // legacy driver/i2c.h (IDF 5.0 / 5.1)
+#else  // legacy driver/i2c.h (IDF 5.0 / 5.1)
 //! @brief Install the legacy I2C master driver once per {port, sda, scl}; cached so re-adds are no-ops.
 inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
                                   const uint32_t clock)
@@ -656,14 +656,13 @@ inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, c
         return false;
     }
     i2c_config_t conf{};
-    conf.mode             = I2C_MODE_MASTER;
-    conf.sda_io_num       = sda;
-    conf.scl_io_num       = scl;
-    conf.sda_pullup_en    = true;
-    conf.scl_pullup_en    = true;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = sda;
+    conf.scl_io_num = scl;
+    conf.sda_pullup_en = true;
+    conf.scl_pullup_en = true;
     conf.master.clk_speed = clock;
-    if (i2c_param_config(port, &conf) != ESP_OK ||
-        i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
+    if (i2c_param_config(port, &conf) != ESP_OK || i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
         M5_LIB_LOGE("wiring: legacy i2c driver install failed port=%d sda=%d scl=%d", (int)port, (int)sda, (int)scl);
         return false;
     }
