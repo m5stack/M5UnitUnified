@@ -6,5 +6,6 @@ var searchData=
   ['m5unitunified_3',['M5UnitUnified',['../index.html',1,'']]],
   ['m5unitunified_2ecpp_4',['M5UnitUnified.cpp',['../_m5_unit_unified_8cpp.html',1,'']]],
   ['m5unitunified_2ehpp_5',['M5UnitUnified.hpp',['../_m5_unit_unified_8hpp.html',1,'']]],
-  ['max_5fchildren_6',['max_children',['../structm5_1_1unit_1_1_component_1_1component__config__t.html#a824d00f5b8e198a53d8a6bd021ad9cef',1,'m5::unit::Component::component_config_t']]]
+  ['max_5fchildren_6',['max_children',['../structm5_1_1unit_1_1_component_1_1component__config__t.html#a824d00f5b8e198a53d8a6bd021ad9cef',1,'m5::unit::Component::component_config_t']]],
+  ['mode_7',['Mode',['../types_8hpp.html#afa9b8e9030a766f371861f8d4899572a',1,'m5::unit::gpio']]]
 ];

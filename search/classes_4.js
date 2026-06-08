@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['periodicmeasurementadapter_0',['PeriodicMeasurementAdapter',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html',1,'m5::unit']]],
-  ['pin_5fbackup_5ft_1',['pin_backup_t',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html',1,'m5::unit::gpio']]]
+  ['i2cimpl_0',['I2CImpl',['../classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html',1,'m5::unit::AdapterI2C']]],
+  ['impl_1',['Impl',['../classm5_1_1unit_1_1_adapter_1_1_impl.html',1,'m5::unit::Adapter']]]
 ];
