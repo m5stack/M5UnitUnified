@@ -333,17 +333,25 @@ inline bool i2cSoftware(UnitUnified& units, Component& unit, const int sda, cons
   @param nesso NessoN1 only: PortB (default) -> SoftwareI2C, PortA -> Wire (QWIIC)
   @note Dispatches via i2cPins() backend: Wire / SoftwareI2C / ExI2C.
 */
-inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 100000,
+inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 0,
                    const NessoPort nesso = NessoPort::PortB)
 {
-    const auto p = i2cPins(nesso);
-    M5_LIB_LOGI("wiring: addI2C board=0x%02x nesso=%d backend=%d sda=%d scl=%d", (int)M5.getBoard(), (int)nesso,
-                (int)p.backend, (int)p.sda, (int)p.scl);
+    // clock == 0: use the unit's own configured clock; clock > 0: override it. Either way the unit's
+    // component_config().clock is the single source of truth applied per transaction by every backend.
+    if (clock != 0) {
+        auto cfg  = unit.component_config();
+        cfg.clock = clock;
+        unit.component_config(cfg);
+    }
+    const uint32_t eff_clock = unit.component_config().clock;
+    const auto p             = i2cPins(nesso);
+    M5_LIB_LOGI("wiring: addI2C board=0x%02x nesso=%d backend=%d sda=%d scl=%d clock=%lu", (int)M5.getBoard(),
+                (int)nesso, (int)p.backend, (int)p.sda, (int)p.scl, (unsigned long)eff_clock);
     switch (p.backend) {
         case I2CPins::Backend::SoftwareI2C:
             return i2cSoftware(units, unit, p.sda, p.scl);
         case I2CPins::Backend::Wire:
-            return i2cWire(units, unit, Wire, p.sda, p.scl, clock);
+            return i2cWire(units, unit, Wire, p.sda, p.scl, eff_clock);
         case I2CPins::Backend::ExI2C:
             return i2cClass(units, unit, M5.Ex_I2C);
     }
@@ -468,13 +476,20 @@ inline bool addSPI(UnitUnified& units, Component& unit, const uint32_t clock_hz,
   @note Some Hats need extra pin pre-setup (e.g. HatHEART does pinMode(scl, OUTPUT)); do that in the
         caller before this call, or build the connection with the low-level i2cWire.
 */
-inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock = 400000)
+inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock = 0)
 {
     const auto p = hatI2CPins();
     if (p.sda < 0 || p.scl < 0) {
         M5_LIB_LOGE("wiring: Hat I2C unsupported board=0x%02x", (int)M5.getBoard());
         return false;
     }
+    // clock == 0: use the unit's own configured clock; clock > 0: override it.
+    if (clock != 0) {
+        auto cfg  = unit.component_config();
+        cfg.clock = clock;
+        unit.component_config(cfg);
+    }
+    const uint32_t eff_clock = unit.component_config().clock;
 #if SOC_I2C_NUM > 1
     TwoWire& wire = p.useWire1 ? Wire1 : Wire;
 #else
@@ -486,8 +501,8 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
     TwoWire& wire = Wire;
 #endif
     M5_LIB_LOGI("wiring: addHatI2C board=0x%02x sda=%d scl=%d clock=%lu wire=%s", (int)M5.getBoard(), (int)p.sda,
-                (int)p.scl, (unsigned long)clock, p.useWire1 ? "Wire1" : "Wire");
-    return i2cWire(units, unit, wire, p.sda, p.scl, clock);
+                (int)p.scl, (unsigned long)eff_clock, p.useWire1 ? "Wire1" : "Wire");
+    return i2cWire(units, unit, wire, p.sda, p.scl, eff_clock);
 }
 
 /*!
@@ -663,15 +678,42 @@ inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, c
         M5_LIB_LOGE("wiring: I2C bus cache full (max %zu)", kI2CBusCacheSize);
         return false;
     }
-    i2c_config_t conf{};
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = sda;
-    conf.scl_io_num = scl;
-    conf.sda_pullup_en = true;
-    conf.scl_pullup_en = true;
-    conf.master.clk_speed = clock;
-    if (i2c_param_config(port, &conf) != ESP_OK || i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
-        M5_LIB_LOGE("wiring: legacy i2c driver install failed port=%d sda=%d scl=%d", (int)port, (int)sda, (int)scl);
+    // i2c_driver_install returns ESP_FAIL for several distinct reasons in IDF 5.0/5.1 (already
+    // installed by another owner / OOM / slave-setup failure). Probe i2c_get_period to disambiguate:
+    // it writes high/low only when the driver object exists (p_i2c_obj != NULL), so high>0 && low>0
+    // means the port is genuinely installed and can be borrowed.
+    const esp_err_t install_err = i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0);
+    if (install_err == ESP_OK) {
+        // Freshly installed by us: configure pins and timing.
+        i2c_config_t conf{};
+        conf.mode             = I2C_MODE_MASTER;
+        conf.sda_io_num       = sda;
+        conf.scl_io_num       = scl;
+        conf.sda_pullup_en    = true;
+        conf.scl_pullup_en    = true;
+        conf.master.clk_speed = clock;
+        if (i2c_param_config(port, &conf) != ESP_OK) {
+            M5_LIB_LOGE("wiring: legacy i2c param_config failed port=%d sda=%d scl=%d", (int)port, (int)sda, (int)scl);
+            i2c_driver_delete(port);
+            return false;
+        }
+        M5_LIB_LOGI("wiring: legacy i2c INSTALLED(new) port=%d sda=%d scl=%d clock=%u", (int)port, (int)sda, (int)scl,
+                    (unsigned)clock);
+    } else if (install_err == ESP_FAIL) {
+        // Already installed by another owner -> borrow it (keep the owner's pins/timing; do NOT
+        // re-run i2c_param_config and override them). Confirm the driver really exists first.
+        int high = 0, low = 0;
+        i2c_get_period(port, &high, &low);
+        if (!(high > 0 && low > 0)) {
+            M5_LIB_LOGE("wiring: legacy i2c driver install failed port=%d sda=%d scl=%d", (int)port, (int)sda,
+                        (int)scl);
+            return false;
+        }
+        M5_LIB_LOGI("wiring: legacy i2c BORROW(already) port=%d sda=%d scl=%d high=%d low=%d", (int)port, (int)sda,
+                    (int)scl, high, low);
+    } else {
+        M5_LIB_LOGE("wiring: legacy i2c driver install error=0x%x port=%d sda=%d scl=%d", (int)install_err, (int)port,
+                    (int)sda, (int)scl);
         return false;
     }
     cache[count++] = key;
@@ -824,13 +866,21 @@ inline spi_device_handle_t spiDeviceHandle(const spi_host_device_t host, const g
 //!            (M5Unified does NOT call Wire.begin() on these boards, so I2C_NUM_0 is free)
 //!          - ExI2C (Core, NanoC6/NanoH2)   -> borrow M5.Ex_I2C
 //!            (Core: In_I2C/Ex_I2C share I2C_NUM_0, already installed by M5.begin(); borrow it)
-inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 100000,
+inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 0,
                    const NessoPort nesso = NessoPort::PortB)
 {
-    const auto pins  = i2cPins(nesso);
-    const auto board = M5.getBoard();
+    // clock == 0: use the unit's own configured clock; clock > 0: override it. component_config().clock
+    // is the single source of truth applied per transaction (Wire / I2C_Class / master device / legacy).
+    if (clock != 0) {
+        auto cfg  = unit.component_config();
+        cfg.clock = clock;
+        unit.component_config(cfg);
+    }
+    const uint32_t eff_clock = unit.component_config().clock;
+    const auto pins          = i2cPins(nesso);
+    const auto board         = M5.getBoard();
     M5_LIB_LOGI("wiring(ESP-IDF): addI2C board=0x%02x nesso=%d sda=%d scl=%d clock=%u backend=%d", (int)board,
-                (int)nesso, (int)pins.sda, (int)pins.scl, (unsigned)clock, (int)pins.backend);
+                (int)nesso, (int)pins.sda, (int)pins.scl, (unsigned)eff_clock, (int)pins.backend);
     switch (pins.backend) {
         case I2CPins::Backend::SoftwareI2C:
 #if defined(M5_HAL_HPP)
@@ -848,11 +898,11 @@ inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 1
                 // Stick / S3 etc: M5Unified does not call Wire.begin(), so install ourselves
                 // (Core is routed to ExI2C by i2cPins() and never reaches this branch)
 #if __has_include(<driver/i2c_master.h>)
-                auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock);
+                auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock);
                 if (!bus) return false;
                 return units.add(unit, bus);
 #else  // legacy driver (IDF 5.0 / 5.1): install legacy driver, then add by port
-                if (!detail::ensureI2CLegacyDriver(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, clock)) {
+                if (!detail::ensureI2CLegacyDriver(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock)) {
                     return false;
                 }
                 return units.add(unit, I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl);
@@ -902,13 +952,20 @@ inline bool addSPI(UnitUnified& units, Component& unit, const uint32_t clock_hz,
 }
 
 //! @brief Add a unit on the board's Hat I2C header (NessoN1 uses Wire1, others Wire) (ESP-IDF native)
-inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock = 400000)
+inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock = 0)
 {
     const auto p = hatI2CPins();
     if (p.sda < 0 || p.scl < 0) {
         M5_LIB_LOGE("wiring: Hat I2C unsupported board=0x%02x", (int)M5.getBoard());
         return false;
     }
+    // clock == 0: use the unit's own configured clock; clock > 0: override it.
+    if (clock != 0) {
+        auto cfg  = unit.component_config();
+        cfg.clock = clock;
+        unit.component_config(cfg);
+    }
+    const uint32_t eff_clock = unit.component_config().clock;
     i2c_port_t port;
     if (p.useWire1) {
 #if SOC_HP_I2C_NUM >= 2
@@ -923,13 +980,13 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
         port = I2C_NUM_0;
     }
     M5_LIB_LOGI("wiring(ESP-IDF): addHatI2C port=%d sda=%d scl=%d clock=%u", (int)port, (int)p.sda, (int)p.scl,
-                (unsigned)clock);
+                (unsigned)eff_clock);
 #if __has_include(<driver/i2c_master.h>)
-    auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock);
+    auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, eff_clock);
     if (!bus) return false;
     return units.add(unit, bus);
 #else  // legacy driver (IDF 5.0 / 5.1)
-    if (!detail::ensureI2CLegacyDriver(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, clock)) return false;
+    if (!detail::ensureI2CLegacyDriver(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, eff_clock)) return false;
     return units.add(unit, port, (gpio_num_t)p.sda, (gpio_num_t)p.scl);
 #endif
 }
