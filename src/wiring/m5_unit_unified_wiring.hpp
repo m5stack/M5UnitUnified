@@ -686,11 +686,11 @@ inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, c
     if (install_err == ESP_OK) {
         // Freshly installed by us: configure pins and timing.
         i2c_config_t conf{};
-        conf.mode             = I2C_MODE_MASTER;
-        conf.sda_io_num       = sda;
-        conf.scl_io_num       = scl;
-        conf.sda_pullup_en    = true;
-        conf.scl_pullup_en    = true;
+        conf.mode = I2C_MODE_MASTER;
+        conf.sda_io_num = sda;
+        conf.scl_io_num = scl;
+        conf.sda_pullup_en = true;
+        conf.scl_pullup_en = true;
         conf.master.clk_speed = clock;
         if (i2c_param_config(port, &conf) != ESP_OK) {
             M5_LIB_LOGE("wiring: legacy i2c param_config failed port=%d sda=%d scl=%d", (int)port, (int)sda, (int)scl);
