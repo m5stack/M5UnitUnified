@@ -2,7 +2,7 @@ description: Unified library for handling various M5 unit products (sensors, act
 url: https://github.com/m5stack/M5UnitUnified
 issues: https://github.com/m5stack/M5UnitUnified/issues
 license: MIT
-version: "0.5.3"
+version: "0.5.4"
 
 dependencies:
   idf: ">=5.0"
