@@ -631,12 +631,12 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 #endif
         cali_config.atten    = M5_ADC_ATTEN_DB;
         cali_config.bitwidth = ADC_BITWIDTH_DEFAULT;
-        cali_ok = (adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle) == ESP_OK);
+        cali_ok              = (adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle) == ESP_OK);
 #elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
         adc_cali_line_fitting_config_t cali_config = {
-            .unit_id = unit,
-            .atten = M5_ADC_ATTEN_DB,
-            .bitwidth = ADC_BITWIDTH_DEFAULT,
+            .unit_id      = unit,
+            .atten        = M5_ADC_ATTEN_DB,
+            .bitwidth     = ADC_BITWIDTH_DEFAULT,
 #if CONFIG_IDF_TARGET_ESP32
             .default_vref = 1100,  // Fallback Vref (mV); used only when eFuse has no calibration
 #endif
