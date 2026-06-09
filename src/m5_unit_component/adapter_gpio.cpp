@@ -381,15 +381,19 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::ensure_adc_handle(const gpio_
 
     adc_unit_t unit = (needed_unit == 0) ? ADC_UNIT_1 : ADC_UNIT_2;
     adc_oneshot_unit_handle_t handle{};
+    adc_oneshot_unit_init_cfg_t init_config{};
+    init_config.unit_id = unit;
+    // clk_src member was added in ESP-IDF v5.1.0; v5.0.x has no such field
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
 #if SOC_ADC_RTC_CTRL_SUPPORTED
 #pragma message "ADC oneshot clk_src: RTC (ADC_RTC_CLK_SRC_DEFAULT)"
-    adc_oneshot_unit_init_cfg_t init_config = {
-        .unit_id = unit, .clk_src = ADC_RTC_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+    init_config.clk_src = ADC_RTC_CLK_SRC_DEFAULT;
 #else
 #pragma message "ADC oneshot clk_src: DIGI (ADC_DIGI_CLK_SRC_DEFAULT)"
-    adc_oneshot_unit_init_cfg_t init_config = {
-        .unit_id = unit, .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, .ulp_mode = ADC_ULP_MODE_DISABLE};
+    init_config.clk_src = ADC_DIGI_CLK_SRC_DEFAULT;
 #endif
+#endif
+    init_config.ulp_mode = ADC_ULP_MODE_DISABLE;
 
     if (adc_oneshot_new_unit(&init_config, &handle) != ESP_OK) {
         return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -619,12 +623,14 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
         bool cali_ok{};
 
 #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
-        adc_cali_curve_fitting_config_t cali_config = {
-            .unit_id  = unit,
-            .chan     = channel,
-            .atten    = M5_ADC_ATTEN_DB,
-            .bitwidth = ADC_BITWIDTH_DEFAULT,
-        };
+        adc_cali_curve_fitting_config_t cali_config{};
+        cali_config.unit_id = unit;
+        // chan member was added in ESP-IDF v5.1.0; v5.0.x has no such field
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+        cali_config.chan = channel;
+#endif
+        cali_config.atten    = M5_ADC_ATTEN_DB;
+        cali_config.bitwidth = ADC_BITWIDTH_DEFAULT;
         cali_ok = (adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle) == ESP_OK);
 #elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
         adc_cali_line_fitting_config_t cali_config = {
