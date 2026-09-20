@@ -55,7 +55,7 @@ void pin_backup_t::backup(void)
         }
     }
 #else
-#pragma message "ESP32-P4 is not supported"
+#pragma message("ESP32-P4 is not supported")
 #endif
 }
 
@@ -98,7 +98,7 @@ void pin_backup_t::restore(void)
         *gpio_enable_reg = val;
     }
 #else
-#pragma message "ESP32-P4 is not supported"
+#pragma message("ESP32-P4 is not supported")
 #endif
 }
 
