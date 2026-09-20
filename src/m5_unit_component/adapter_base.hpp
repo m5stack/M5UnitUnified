@@ -69,10 +69,12 @@ public:
         ///@}
         ///@name GPIO
         ///@{
+#if defined(ESP_PLATFORM)
         virtual m5::hal::error::error_t pinModeRX(const gpio::Mode)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
+#endif
         virtual m5::hal::error::error_t writeDigitalRX(const bool)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -98,10 +100,12 @@ public:
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
 
+#if defined(ESP_PLATFORM)
         virtual m5::hal::error::error_t pinModeTX(const gpio::Mode)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
+#endif
         virtual m5::hal::error::error_t writeDigitalTX(const bool)
         {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
@@ -205,10 +209,12 @@ public:
 
     ///@name GPIO RX pin operations
     ///@{
+#if defined(ESP_PLATFORM)
     inline m5::hal::error::error_t pinModeRX(const gpio::Mode m)
     {
         return _impl->pinModeRX(m);
     }
+#endif
     inline m5::hal::error::error_t writeDigitalRX(const bool high)
     {
         return _impl->writeDigitalRX(high);
@@ -237,10 +243,12 @@ public:
     ///@}
     ///@name GPIO TX pin operations
     ///@{
+#if defined(ESP_PLATFORM)
     inline m5::hal::error::error_t pinModeTX(const gpio::Mode m)
     {
         return _impl->pinModeTX(m);
     }
+#endif
     inline m5::hal::error::error_t writeDigitalTX(const bool high)
     {
         return _impl->writeDigitalTX(high);

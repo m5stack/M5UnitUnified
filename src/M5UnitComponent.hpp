@@ -332,6 +332,7 @@ public:
     virtual bool assign(m5::I2C_Class& i2c);
     ///@}
 
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
     ///@name Assign(GPIO)
     ///@{
     /*!
@@ -339,9 +340,11 @@ public:
       @param rx_pin Pin number to be used for RX
       @param tx_pin Pin number to be used for TX
       @return True if successful
+      @note ESP platform only
     */
     virtual bool assign(const int8_t rx_pin, const int8_t tx_pin);
     ///@}
+#endif
 
     ///@name Assign(UART)
     ///@{
@@ -642,7 +645,8 @@ public:
         return write_register32E(reg, value, stop, false);
     }
 
-    // GPIO
+    // GPIO (ESP platform only)
+#if defined(ESP_PLATFORM)
     bool pinModeRX(const gpio::Mode m);
     bool writeDigitalRX(const bool high);
     bool readDigitalRX(bool& high);
@@ -658,6 +662,7 @@ public:
     bool readAnalogTX(uint16_t& v);
     bool readAnalogMilliVoltsTX(uint32_t& mv);
     bool pulseInTX(uint32_t& duration, const int state, const uint32_t timeout_us = 1000000);
+#endif  // ESP_PLATFORM
     ///@endcond
 
 #if defined(DOXYGEN_PROCESS)
