@@ -10,6 +10,7 @@
 #ifndef M5_UNIT_UNIFIED_IDENTIFY_FUNCTIONS_HPP
 #define M5_UNIT_UNIFIED_IDENTIFY_FUNCTIONS_HPP
 
+#if defined(ESP_PLATFORM)
 // Detect ESP-IDF version
 #if __has_include(<esp_idf_version.h>)
 #include <esp_idf_version.h>
@@ -23,5 +24,6 @@
 #define M5_UNIT_UNIFIED_USING_RMT_V2
 #define M5_UNIT_UNIFIED_USING_ADC_ONESHOT
 #endif
+#endif  // ESP_PLATFORM
 
 #endif
