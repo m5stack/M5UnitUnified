@@ -9,6 +9,7 @@
   @note  Currently handles GPIO directly, but will handle via M5HAL in the future
 */
 #include "adapter_gpio.hpp"
+#if defined(ESP_PLATFORM)
 #include <driver/gpio.h>
 #include <esp_idf_version.h>
 
@@ -727,3 +728,4 @@ AdapterGPIOBase::AdapterGPIOBase(GPIOImpl* impl) : Adapter(Adapter::Type::GPIO, 
 
 }  // namespace unit
 }  // namespace m5
+#endif  // ESP_PLATFORM

@@ -10,7 +10,7 @@
 */
 #include "adapter_gpio_v1.hpp"
 
-#if !defined(M5_UNIT_UNIFIED_USING_RMT_V2)
+#if defined(ESP_PLATFORM) && !defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 
 // #include <esp_clk.h>
 #include <esp32/clk.h>

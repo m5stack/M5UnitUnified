@@ -14,8 +14,10 @@
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
+#if defined(ESP_PLATFORM)
 #include <soc/gpio_struct.h>
 #include <soc/gpio_sig_map.h>
+#endif
 #include <cassert>
 #if __has_include(<utility/I2C_Class.hpp>)
 #include <utility/I2C_Class.hpp>

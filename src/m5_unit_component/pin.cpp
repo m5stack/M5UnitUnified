@@ -11,15 +11,18 @@
 #include "pin.hpp"
 #include <M5Utility.hpp>
 #include <cstddef>
+#if defined(ESP_PLATFORM)
 #include <driver/i2c.h>
 #include <soc/gpio_struct.h>
 #include <soc/gpio_periph.h>
 #include <soc/gpio_reg.h>
+#endif
 
 namespace m5 {
 namespace unit {
 namespace gpio {
 
+#if defined(ESP_PLATFORM)
 pin_backup_t::pin_backup_t(int pin_num) : _pin_num{static_cast<gpio_num_t>(pin_num)}
 {
     if (pin_num >= 0) {
@@ -101,6 +104,20 @@ void pin_backup_t::restore(void)
 #pragma message("ESP32-P4 is not supported")
 #endif
 }
+#else
+// GPIO register access is unavailable on non-ESP builds; keep the API and do nothing
+pin_backup_t::pin_backup_t(int pin_num) : _pin_num{static_cast<int8_t>(pin_num)}
+{
+}
+
+void pin_backup_t::backup(void)
+{
+}
+
+void pin_backup_t::restore(void)
+{
+}
+#endif
 
 }  // namespace gpio
 }  // namespace unit
