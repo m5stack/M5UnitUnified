@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <m5_utility/compatibility_feature.hpp>
 #include "identify_functions.hpp"
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #include <driver/rmt_types.h>
@@ -39,7 +40,7 @@ enum class category_t {
 
 using uid_t          = uint32_t;       //!< @brief Component unique identifier
 using attr_t         = uint32_t;       //!< @brief Component attribute bits
-using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms)
+using elapsed_time_t = m5::utility::elapsed_time_t;  //!< @brief Elapsed time unit (ms)
 
 namespace attribute {
 ///@name Attribute
