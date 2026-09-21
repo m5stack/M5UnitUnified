@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.5 git rev:bf711f3</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.6 git rev:330aba0</span>
    </div>
   </td>
  </tr>
@@ -112,13 +112,15 @@ $(function(){initNavTree('adapter_8hpp_source.html',''); initResizable(true); })
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;<a class="code" href="identify__functions_8hpp.html">identify_functions.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)</span></div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;<a class="code" href="adapter__gpio__v2_8hpp.html">adapter_gpio_v2.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#elif defined(ESP_PLATFORM)</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &quot;<a class="code" href="adapter__gpio__v1_8hpp.html">adapter_gpio_v1.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;<a class="code" href="adapter__uart_8hpp.html">adapter_uart.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;<a class="code" href="adapter__spi_8hpp.html">adapter_spi.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#if defined(ESP_PLATFORM)</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="adapter__spi_8hpp.html">adapter_spi.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aadapter__base_8hpp_html"><div class="ttname"><a href="adapter__base_8hpp.html">adapter_base.hpp</a></div><div class="ttdoc">Adapter base.</div></div>
 <div class="ttc" id="aadapter__gpio__v1_8hpp_html"><div class="ttname"><a href="adapter__gpio__v1_8hpp.html">adapter_gpio_v1.hpp</a></div><div class="ttdoc">Adapters to treat M5HAL and GPIO in the same way using RMT v1.</div></div>
 <div class="ttc" id="aadapter__gpio__v2_8hpp_html"><div class="ttname"><a href="adapter__gpio__v2_8hpp.html">adapter_gpio_v2.hpp</a></div><div class="ttdoc">Adapters to treat M5HAL and GPIO in the same way using RMT v2.</div></div>

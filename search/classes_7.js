@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['rx_5fconfig_5ft_0',['rx_config_t',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html',1,'m5::unit::gpio::adapter_config_t']]]
+  ['spicomponenttestbase_0',['SPIComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html',1,'m5::unit::googletest']]],
+  ['spipins_1',['SpiPins',['../structm5_1_1unit_1_1wiring_1_1_spi_pins.html',1,'m5::unit::wiring']]]
 ];

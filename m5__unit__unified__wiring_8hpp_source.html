@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.5 git rev:bf711f3</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.6 git rev:330aba0</span>
    </div>
   </td>
  </tr>
@@ -112,7 +112,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &lt;Wire.h&gt;</span></div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &lt;SPI.h&gt;</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;HardwareSerial.h&gt;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#else  </span><span class="comment">// ESP-IDF native</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#elif defined(ESP_PLATFORM)  </span><span class="comment">// ESP-IDF native</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">// driver/i2c_master.h (new I2C master driver) exists only on IDF &gt;= 5.2. On IDF 5.0/5.1 fall back to</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="comment">// the legacy driver/i2c.h so the I2C wiring helpers keep working across the whole IDF &gt;= 5.0 range.</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#if __has_include(&lt;driver/i2c_master.h&gt;)</span></div>
@@ -346,7 +346,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>}</div>
 <div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span> </div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span><span class="preprocessor">#if defined(M5_HAL_HPP)</span></div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span><span class="preprocessor">#if defined(M5_HAL_HPP) &amp;&amp; defined(ESP_PLATFORM)</span></div>
 <div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> i2cSoftware(UnitUnified&amp; units, Component&amp; <a class="code hl_namespace" href="namespaceunit.html">unit</a>, <span class="keyword">const</span> <span class="keywordtype">int</span> sda, <span class="keyword">const</span> <span class="keywordtype">int</span> scl)</div>
 <div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>{</div>
 <div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>    M5_LIB_LOGI(<span class="stringliteral">&quot;wiring: I2C(Software/M5HAL) sda=%d scl=%d&quot;</span>, sda, scl);</div>
@@ -489,7 +489,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span><span class="preprocessor">#if SOC_I2C_NUM &gt; 1</span></div>
 <div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>    TwoWire&amp; wire = p.useWire1 ? Wire1 : Wire;</div>
 <div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>    <span class="comment">// SOC_I2C_NUM == 1 (ESP32-C3/C6/H2): Arduino-ESP32 declares Wire only; Wire1 is absent.</span></div>
+<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>    <span class="comment">// SOC_I2C_NUM == 1 (ESP32-C3): Arduino-ESP32 declares Wire only; Wire1 is absent.</span></div>
 <div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>    <span class="keywordflow">if</span> (p.useWire1) {</div>
 <div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>        M5_LIB_LOGE(<span class="stringliteral">&quot;wiring: addHatI2C NessoN1 Hat needs Wire1, but SOC_I2C_NUM==1&quot;</span>);</div>
 <div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
@@ -533,10 +533,9 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>}</div>
 <div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span><span class="preprocessor">#endif  </span><span class="comment">// ARDUINO</span></div>
 <div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="preprocessor">#if !defined(ARDUINO)</span></div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="preprocessor">#if !defined(ARDUINO) &amp;&amp; defined(ESP_PLATFORM)</span></div>
 <div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span> </div>
-<div class="foldopen" id="foldopen00555" data-start="{" data-end="}">
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975">  555</a></span><span class="keyword">inline</span> uart_port_t <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975">defaultUartPort</a>()</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span><span class="keyword">inline</span> uart_port_t defaultUartPort()</div>
 <div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>{</div>
 <div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span><span class="preprocessor">#if defined(CONFIG_IDF_TARGET_ESP32C6)</span></div>
 <div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>    <span class="keywordflow">return</span> UART_NUM_1;</div>
@@ -548,17 +547,13 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span><span class="preprocessor">#error &quot;Not enough UART&quot;</span></div>
 <div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>}</div>
-</div>
 <div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span> </div>
-<div class="foldopen" id="foldopen00569" data-start="{" data-end="};">
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno"><a class="line" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">  569</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">IdfUartParams</a> {</div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span><span class="keyword">struct </span>IdfUartParams {</div>
 <div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>    uart_word_length_t word_length;</div>
 <div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>    uart_parity_t parity;</div>
 <div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    uart_stop_bits_t stop_bits;</div>
 <div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>};</div>
-</div>
-<div class="foldopen" id="foldopen00574" data-start="{" data-end="}">
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c">  574</a></span><span class="keyword">inline</span> <a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">IdfUartParams</a> <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c">toIdfUartParams</a>(<span class="keyword">const</span> <a class="code hl_enumeration" href="m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> c)</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span><span class="keyword">inline</span> IdfUartParams toIdfUartParams(<span class="keyword">const</span> UartConfig c)</div>
 <div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>{</div>
 <div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>    <span class="keywordflow">switch</span> (c) {</div>
 <div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        <span class="keywordflow">case</span> UartConfig::_8N2:</div>
@@ -579,7 +574,6 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>            <span class="keywordflow">return</span> {UART_DATA_8_BITS, UART_PARITY_DISABLE, UART_STOP_BITS_1};</div>
 <div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>    }</div>
 <div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>}</div>
-</div>
 <div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span> </div>
 <div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span><span class="keyword">namespace </span>detail {</div>
 <div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span> </div>
@@ -595,26 +589,20 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>};</div>
 <div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span> </div>
-<div class="foldopen" id="foldopen00610" data-start="{" data-end="};">
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno"><a class="line" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">  610</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">UARTCacheEntry</a> {</div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="keyword">struct </span>UARTCacheEntry {</div>
 <div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    uint32_t key;</div>
 <div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    uart_port_t port;</div>
 <div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>};</div>
-</div>
 <div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span> </div>
-<div class="foldopen" id="foldopen00615" data-start="{" data-end="};">
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno"><a class="line" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html">  615</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html">SPIHostEntry</a> {</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span><span class="keyword">struct </span>SPIHostEntry {</div>
 <div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    spi_host_device_t host;</div>
 <div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <span class="keywordtype">bool</span> initialized;</div>
 <div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>};</div>
-</div>
 <div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span> </div>
-<div class="foldopen" id="foldopen00620" data-start="{" data-end="};">
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno"><a class="line" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html">  620</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html">SPIDevEntry</a> {</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span><span class="keyword">struct </span>SPIDevEntry {</div>
 <div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    uint32_t key;</div>
 <div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>    spi_device_handle_t handle;</div>
 <div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>};</div>
-</div>
 <div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span> </div>
 <div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span><span class="preprocessor">#if __has_include(&lt;driver/i2c_master.h&gt;)</span></div>
 <div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span><span class="keyword">inline</span> i2c_master_bus_handle_t ensureI2CBus(<span class="keyword">const</span> i2c_port_t port, <span class="keyword">const</span> gpio_num_t sda, <span class="keyword">const</span> gpio_num_t scl,</div>
@@ -655,8 +643,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>    <span class="keywordflow">return</span> cache[count++].handle;</div>
 <div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>}</div>
 <div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span><span class="preprocessor">#else  </span><span class="comment">// legacy driver/i2c.h (IDF 5.0 / 5.1)</span></div>
-<div class="foldopen" id="foldopen00666" data-start="{" data-end="}">
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#a2aa2c7f5ad22757ed1fbacdd5b8b238b">  666</a></span>inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,</div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,</div>
 <div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>                                  <span class="keyword">const</span> uint32_t clock)</div>
 <div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>{</div>
 <div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>    <span class="keyword">const</span> uint32_t key = (<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(<span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(port)) &lt;&lt; 24) |</div>
@@ -712,17 +699,15 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>    cache[count++] = key;</div>
 <div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>}</div>
-</div>
 <div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span> </div>
-<div class="foldopen" id="foldopen00725" data-start="{" data-end="}">
-<div class="line"><a id="l00725" name="l00725"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#aa99c963da97ab56cfaf807630045fd49">  725</a></span><span class="keyword">inline</span> uart_port_t <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#aa99c963da97ab56cfaf807630045fd49">ensureUARTPort</a>(<span class="keyword">const</span> uart_port_t port, <span class="keyword">const</span> gpio_num_t rx, <span class="keyword">const</span> gpio_num_t tx, <span class="keyword">const</span> uint32_t baud,</div>
-<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>                                  <span class="keyword">const</span> <a class="code hl_enumeration" href="m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config)</div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span><span class="keyword">inline</span> uart_port_t ensureUARTPort(<span class="keyword">const</span> uart_port_t port, <span class="keyword">const</span> gpio_num_t rx, <span class="keyword">const</span> gpio_num_t tx, <span class="keyword">const</span> uint32_t baud,</div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>                                  <span class="keyword">const</span> UartConfig config)</div>
 <div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>{</div>
 <div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>    <span class="keyword">const</span> uint32_t key = (<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(<span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(port)) &lt;&lt; 24) |</div>
 <div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>                         (<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(<span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(rx)) &lt;&lt; 16) |</div>
 <div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>                         (<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(<span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(tx)) &lt;&lt; 8);</div>
-<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span>    <span class="keyword">static</span> <a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">UARTCacheEntry</a> cache[kUARTPortCacheSize]{};</div>
+<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span>    <span class="keyword">static</span> UARTCacheEntry cache[kUARTPortCacheSize]{};</div>
 <div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>    <span class="keyword">static</span> <span class="keywordtype">size_t</span> count{};</div>
 <div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; count; ++i) {</div>
 <div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        <span class="keywordflow">if</span> (cache[i].key == key) <span class="keywordflow">return</span> cache[i].port;</div>
@@ -735,7 +720,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        cache[count] = {key, port};</div>
 <div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>        <span class="keywordflow">return</span> cache[count++].port;</div>
 <div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>    }</div>
-<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>    <span class="keyword">const</span> <span class="keyword">auto</span> p = <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c">toIdfUartParams</a>(config);</div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>    <span class="keyword">const</span> <span class="keyword">auto</span> p = toIdfUartParams(config);</div>
 <div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>    uart_config_t uc{};</div>
 <div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>    uc.baud_rate  = <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(baud);</div>
 <div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>    uc.data_bits  = p.word_length;</div>
@@ -752,15 +737,13 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>    cache[count] = {key, port};</div>
 <div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span>    <span class="keywordflow">return</span> cache[count++].port;</div>
 <div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>}</div>
-</div>
 <div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span> </div>
-<div class="foldopen" id="foldopen00764" data-start="{" data-end="}">
-<div class="line"><a id="l00764" name="l00764"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#a1382106910f82e9537751b3226dbc1a0">  764</a></span><span class="keyword">inline</span> spi_device_handle_t <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a1382106910f82e9537751b3226dbc1a0">ensureSPIDevice</a>(<span class="keyword">const</span> spi_host_device_t host, <span class="keyword">const</span> gpio_num_t mosi, <span class="keyword">const</span> gpio_num_t miso,</div>
+<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span><span class="keyword">inline</span> spi_device_handle_t ensureSPIDevice(<span class="keyword">const</span> spi_host_device_t host, <span class="keyword">const</span> gpio_num_t mosi, <span class="keyword">const</span> gpio_num_t miso,</div>
 <div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>                                           <span class="keyword">const</span> gpio_num_t sck, <span class="keyword">const</span> uint32_t clock_hz, <span class="keyword">const</span> uint8_t mode,</div>
 <div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>                                           <span class="keyword">const</span> uint8_t bit_order)</div>
 <div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span>{</div>
-<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>    <span class="keyword">static</span> <a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html">SPIHostEntry</a> host_cache[kSPIHostCacheSize]{};</div>
-<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span>    <span class="keyword">static</span> <a class="code hl_struct" href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html">SPIDevEntry</a> dev_cache[kSPIDevCacheSize]{};</div>
+<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>    <span class="keyword">static</span> SPIHostEntry host_cache[kSPIHostCacheSize]{};</div>
+<div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span>    <span class="keyword">static</span> SPIDevEntry dev_cache[kSPIDevCacheSize]{};</div>
 <div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span>    <span class="keyword">static</span> <span class="keywordtype">size_t</span> host_count{};</div>
 <div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span>    <span class="keyword">static</span> <span class="keywordtype">size_t</span> dev_count{};</div>
 <div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span> </div>
@@ -809,7 +792,6 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00815" name="l00815"></a><span class="lineno">  815</span>    dev_cache[dev_count].key = key;</div>
 <div class="line"><a id="l00816" name="l00816"></a><span class="lineno">  816</span>    <span class="keywordflow">return</span> dev_cache[dev_count++].handle;</div>
 <div class="line"><a id="l00817" name="l00817"></a><span class="lineno">  817</span>}</div>
-</div>
 <div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span> </div>
 <div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span>}  <span class="comment">// namespace detail</span></div>
 <div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span> </div>
@@ -821,29 +803,25 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00831" name="l00831"></a><span class="lineno">  831</span>}</div>
 <div class="line"><a id="l00832" name="l00832"></a><span class="lineno">  832</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span> </div>
-<div class="foldopen" id="foldopen00838" data-start="{" data-end="}">
-<div class="line"><a id="l00838" name="l00838"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b">  838</a></span><span class="keyword">inline</span> uart_port_t <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b">uartPortHandle</a>(<span class="keyword">const</span> uart_port_t port, <span class="keyword">const</span> gpio_num_t rx, <span class="keyword">const</span> gpio_num_t tx, <span class="keyword">const</span> uint32_t baud,</div>
-<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>                                  <span class="keyword">const</span> <a class="code hl_enumeration" href="m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cf">UartConfig</a> config = UartConfig::Default)</div>
+<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span><span class="keyword">inline</span> uart_port_t uartPortHandle(<span class="keyword">const</span> uart_port_t port, <span class="keyword">const</span> gpio_num_t rx, <span class="keyword">const</span> gpio_num_t tx, <span class="keyword">const</span> uint32_t baud,</div>
+<div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>                                  <span class="keyword">const</span> UartConfig config = UartConfig::Default)</div>
 <div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>{</div>
 <div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>    <span class="keywordflow">return</span> detail::ensureUARTPort(port, rx, tx, baud, config);</div>
 <div class="line"><a id="l00842" name="l00842"></a><span class="lineno">  842</span>}</div>
-</div>
 <div class="line"><a id="l00843" name="l00843"></a><span class="lineno">  843</span> </div>
-<div class="foldopen" id="foldopen00849" data-start="{" data-end="}">
-<div class="line"><a id="l00849" name="l00849"></a><span class="lineno"><a class="line" href="m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86">  849</a></span><span class="keyword">inline</span> spi_device_handle_t <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86">spiDeviceHandle</a>(<span class="keyword">const</span> spi_host_device_t host, <span class="keyword">const</span> gpio_num_t mosi, <span class="keyword">const</span> gpio_num_t miso,</div>
+<div class="line"><a id="l00849" name="l00849"></a><span class="lineno">  849</span><span class="keyword">inline</span> spi_device_handle_t spiDeviceHandle(<span class="keyword">const</span> spi_host_device_t host, <span class="keyword">const</span> gpio_num_t mosi, <span class="keyword">const</span> gpio_num_t miso,</div>
 <div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>                                           <span class="keyword">const</span> gpio_num_t sck, <span class="keyword">const</span> uint32_t clock_hz, <span class="keyword">const</span> uint8_t mode = 0,</div>
 <div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span>                                           <span class="keyword">const</span> uint8_t bit_order = 0)</div>
 <div class="line"><a id="l00852" name="l00852"></a><span class="lineno">  852</span>{</div>
 <div class="line"><a id="l00853" name="l00853"></a><span class="lineno">  853</span>    <span class="keywordflow">return</span> detail::ensureSPIDevice(host, mosi, miso, sck, clock_hz, mode, bit_order);</div>
 <div class="line"><a id="l00854" name="l00854"></a><span class="lineno">  854</span>}</div>
-</div>
 <div class="line"><a id="l00855" name="l00855"></a><span class="lineno">  855</span> </div>
 <div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span><span class="comment">//</span></div>
 <div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span><span class="comment">// === ESP-IDF native generic helpers (Phase C) — same signatures as Arduino ===</span></div>
 <div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span><span class="comment">//</span></div>
 <div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span> </div>
 <div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span><span class="preprocessor">#if defined(__M5UNIFIED_HPP__)</span></div>
-<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> addI2C(<a class="code hl_class" href="classm5_1_1unit_1_1_unit_unified.html">UnitUnified</a>&amp; units, <a class="code hl_class" href="classm5_1_1unit_1_1_component.html">Component</a>&amp; <a class="code hl_namespace" href="namespaceunit.html">unit</a>, <span class="keyword">const</span> uint32_t clock = 0,</div>
+<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> addI2C(UnitUnified&amp; units, Component&amp; <a class="code hl_namespace" href="namespaceunit.html">unit</a>, <span class="keyword">const</span> uint32_t clock = 0,</div>
 <div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span>                   <span class="keyword">const</span> NessoPort nesso = NessoPort::PortB)</div>
 <div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>{</div>
 <div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>    <span class="comment">// clock == 0: use the unit&#39;s own configured clock; clock &gt; 0: override it. component_config().clock</span></div>
@@ -877,12 +855,12 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span><span class="preprocessor">#if __has_include(&lt;driver/i2c_master.h&gt;)</span></div>
 <div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>                <span class="keyword">auto</span> bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock);</div>
 <div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span>                <span class="keywordflow">if</span> (!bus) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>                <span class="keywordflow">return</span> units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, bus);</div>
+<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>                <span class="keywordflow">return</span> units.add(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, bus);</div>
 <div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span><span class="preprocessor">#else  </span><span class="comment">// legacy driver (IDF 5.0 / 5.1): install legacy driver, then add by port</span></div>
 <div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>                <span class="keywordflow">if</span> (!detail::ensureI2CLegacyDriver(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock)) {</div>
 <div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span>                }</div>
-<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>                <span class="keywordflow">return</span> units.<a class="code hl_function" href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">add</a>(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl);</div>
+<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>                <span class="keywordflow">return</span> units.add(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl);</div>
 <div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>            }</div>
 <div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>        <span class="keywordflow">case</span> <a class="code hl_enumvalue" href="structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bcca9702a85d4405fb5502c8398078f6a870">I2CPins::Backend::ExI2C</a>:</div>
@@ -908,7 +886,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>    <span class="keyword">const</span> <span class="keyword">auto</span> pins = uartPins();</div>
 <div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>    M5_LIB_LOGI(<span class="stringliteral">&quot;wiring(ESP-IDF): UART rx=%d tx=%d baud=%u fallback_a=%d&quot;</span>, (<span class="keywordtype">int</span>)pins.rx, (<span class="keywordtype">int</span>)pins.tx, (<span class="keywordtype">unsigned</span>)baud,</div>
 <div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>                (<span class="keywordtype">int</span>)pins.fallback_a);</div>
-<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    <span class="keyword">auto</span> port = <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b">uartPortHandle</a>(<a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975">defaultUartPort</a>(), (gpio_num_t)pins.rx, (gpio_num_t)pins.tx, baud, config);</div>
+<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    <span class="keyword">auto</span> port = uartPortHandle(defaultUartPort(), (gpio_num_t)pins.rx, (gpio_num_t)pins.tx, baud, config);</div>
 <div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span>    <span class="keywordflow">if</span> (port == UART_NUM_MAX) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>    <span class="keywordflow">return</span> units.add(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, port);</div>
 <div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span>}</div>
@@ -919,7 +897,7 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>    <span class="keyword">const</span> <span class="keyword">auto</span> pins = spiPins();</div>
 <div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>    M5_LIB_LOGI(<span class="stringliteral">&quot;wiring(ESP-IDF): addSPI sclk=%d miso=%d mosi=%d clock=%u mode=%u bit_order=%u&quot;</span>, (<span class="keywordtype">int</span>)pins.sclk,</div>
 <div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>                (<span class="keywordtype">int</span>)pins.miso, (<span class="keywordtype">int</span>)pins.mosi, (<span class="keywordtype">unsigned</span>)clock_hz, (<span class="keywordtype">unsigned</span>)mode, (<span class="keywordtype">unsigned</span>)bit_order);</div>
-<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>    <span class="keyword">auto</span> dev = <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86">spiDeviceHandle</a>(SPI2_HOST, (gpio_num_t)pins.mosi, (gpio_num_t)pins.miso, (gpio_num_t)pins.sclk, clock_hz,</div>
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>    <span class="keyword">auto</span> dev = spiDeviceHandle(SPI2_HOST, (gpio_num_t)pins.mosi, (gpio_num_t)pins.miso, (gpio_num_t)pins.sclk, clock_hz,</div>
 <div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>                               mode, bit_order);</div>
 <div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>    <span class="keywordflow">if</span> (!dev) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>    <span class="keywordflow">return</span> units.add(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, dev);  <span class="comment">// cs omitted -&gt; Component::assign uses address() as CS</span></div>
@@ -988,13 +966,13 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l01017" name="l01017"></a><span class="lineno"> 1017</span>    }</div>
 <div class="line"><a id="l01018" name="l01018"></a><span class="lineno"> 1018</span>    M5_LIB_LOGI(<span class="stringliteral">&quot;wiring(ESP-IDF): addHatUART board=0x%02x rx=%d tx=%d baud=%u&quot;</span>, (<span class="keywordtype">int</span>)M5.getBoard(), (<span class="keywordtype">int</span>)p.rx,</div>
 <div class="line"><a id="l01019" name="l01019"></a><span class="lineno"> 1019</span>                (<span class="keywordtype">int</span>)p.tx, (<span class="keywordtype">unsigned</span>)baud);</div>
-<div class="line"><a id="l01020" name="l01020"></a><span class="lineno"> 1020</span>    <span class="keyword">auto</span> port = <a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b">uartPortHandle</a>(<a class="code hl_function" href="m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975">defaultUartPort</a>(), (gpio_num_t)p.rx, (gpio_num_t)p.tx, baud, config);</div>
+<div class="line"><a id="l01020" name="l01020"></a><span class="lineno"> 1020</span>    <span class="keyword">auto</span> port = uartPortHandle(defaultUartPort(), (gpio_num_t)p.rx, (gpio_num_t)p.tx, baud, config);</div>
 <div class="line"><a id="l01021" name="l01021"></a><span class="lineno"> 1021</span>    <span class="keywordflow">if</span> (port == UART_NUM_MAX) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01022" name="l01022"></a><span class="lineno"> 1022</span>    <span class="keywordflow">return</span> units.add(<a class="code hl_namespace" href="namespaceunit.html">unit</a>, port);</div>
 <div class="line"><a id="l01023" name="l01023"></a><span class="lineno"> 1023</span>}</div>
 <div class="line"><a id="l01024" name="l01024"></a><span class="lineno"> 1024</span><span class="preprocessor">#endif  </span><span class="comment">// __M5UNIFIED_HPP__</span></div>
 <div class="line"><a id="l01025" name="l01025"></a><span class="lineno"> 1025</span> </div>
-<div class="line"><a id="l01026" name="l01026"></a><span class="lineno"> 1026</span><span class="preprocessor">#endif  </span><span class="comment">// !ARDUINO</span></div>
+<div class="line"><a id="l01026" name="l01026"></a><span class="lineno"> 1026</span><span class="preprocessor">#endif  </span><span class="comment">// !ARDUINO &amp;&amp; ESP_PLATFORM</span></div>
 <div class="line"><a id="l01028" name="l01028"></a><span class="lineno"> 1028</span> </div>
 <div class="line"><a id="l01031" name="l01031"></a><span class="lineno"> 1031</span><span class="preprocessor">#if defined(__M5UNIFIED_HPP__)</span></div>
 <div class="line"><a id="l01033" name="l01033"></a><span class="lineno"> 1033</span>[[noreturn]] <span class="keyword">inline</span> <span class="keywordtype">void</span> failStop()</div>
@@ -1011,22 +989,13 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="line"><a id="l01045" name="l01045"></a><span class="lineno"> 1045</span>}  <span class="comment">// namespace m5</span></div>
 <div class="line"><a id="l01046" name="l01046"></a><span class="lineno"> 1046</span><span class="preprocessor">#endif  </span><span class="comment">// M5_UNIT_UNIFIED_WIRING_HPP</span></div>
 <div class="ttc" id="a_m5_unit_unified_8hpp_html"><div class="ttname"><a href="_m5_unit_unified_8hpp.html">M5UnitUnified.hpp</a></div><div class="ttdoc">Main header of M5UnitUnified.</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_component_html"><div class="ttname"><a href="classm5_1_1unit_1_1_component.html">m5::unit::Component</a></div><div class="ttdoc">Base class of unit component.</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html">m5::unit::UnitUnified</a></div><div class="ttdoc">For managing and leading units.</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1_unit_unified_html_afb723f54c355657542dd04f8e3491147"><div class="ttname"><a href="classm5_1_1unit_1_1_unit_unified.html#afb723f54c355657542dd04f8e3491147">m5::unit::UnitUnified::add</a></div><div class="ttdeci">bool add(Component &amp;u, TwoWire &amp;wire)</div><div class="ttdoc">Add unit to be managed (I2C via TwoWire)</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a05c1e7359bb737af1b33c0e736d114cf"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cf">m5::unit::wiring::UartConfig</a></div><div class="ttdeci">UartConfig</div><div class="ttdoc">UART config (word length / parity / stop bits). Common across Arduino and ESP-IDF native.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:72</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cfa7a1920d61156abc05a60135aefe8bc67">m5::unit::wiring::UartConfig::Default</a></div><div class="ttdeci">@ Default</div><div class="ttdoc">= _8N1</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a0c27c8a9a2ceddc4d5fc180295b60c86"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a0c27c8a9a2ceddc4d5fc180295b60c86">m5::unit::wiring::spiDeviceHandle</a></div><div class="ttdeci">spi_device_handle_t spiDeviceHandle(const spi_host_device_t host, const gpio_num_t mosi, const gpio_num_t miso, const gpio_num_t sck, const uint32_t clock_hz, const uint8_t mode=0, const uint8_t bit_order=0)</div><div class="ttdoc">Get or initialize a SPI device on the given host (cached by {host, clock_hz, mode,...</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:849</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a1382106910f82e9537751b3226dbc1a0"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a1382106910f82e9537751b3226dbc1a0">m5::unit::wiring::detail::ensureSPIDevice</a></div><div class="ttdeci">spi_device_handle_t ensureSPIDevice(const spi_host_device_t host, const gpio_num_t mosi, const gpio_num_t miso, const gpio_num_t sck, const uint32_t clock_hz, const uint8_t mode, const uint8_t bit_order)</div><div class="ttdoc">Get or initialize a SPI device, cached by {host, clock_hz, mode, bit_order}.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:764</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a5ef72887835235a6726c6825654b9794"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794">m5::unit::wiring::GpioRole</a></div><div class="ttdeci">GpioRole</div><div class="ttdoc">GPIO usage role: how many pins of the port the unit actually uses.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:65</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a5ef72887835235a6726c6825654b9794a130c5b3473c57faa76e2a1c54e26f88e"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794a130c5b3473c57faa76e2a1c54e26f88e">m5::unit::wiring::GpioRole::Both</a></div><div class="ttdeci">@ Both</div><div class="ttdoc">Both input and output pins (e.g., IR Tx+Rx)</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a5ef72887835235a6726c6825654b9794a423a26dfb5d881095b7d2d87758af79a"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794a423a26dfb5d881095b7d2d87758af79a">m5::unit::wiring::GpioRole::OutOnly</a></div><div class="ttdeci">@ OutOnly</div><div class="ttdoc">Output only — rx = -1, tx = port_*_out (pin2) (e.g., Flashlight, RF433 Tx, IR Tx alone)</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a5ef72887835235a6726c6825654b9794a6e4307ac37b7b0a4b7b4e9c2b6b4d942"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794a6e4307ac37b7b0a4b7b4e9c2b6b4d942">m5::unit::wiring::GpioRole::InOnly</a></div><div class="ttdeci">@ InOnly</div><div class="ttdoc">Input only — rx = port_*_in (pin1), tx = -1 (e.g., RF433 Rx, IR Rx alone)</div></div>
 <div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a87527fb6fac3034f894657dfb54ccec1"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a87527fb6fac3034f894657dfb54ccec1">m5::unit::wiring::NessoPort</a></div><div class="ttdeci">NessoPort</div><div class="ttdoc">NessoN1 connection choice: PortB = direct GROVE (SoftwareI2C), PortA = QWIIC / PbHub (Wire)</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:62</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a8ce916fe64759a45f8d58d593222b975"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a8ce916fe64759a45f8d58d593222b975">m5::unit::wiring::defaultUartPort</a></div><div class="ttdeci">uart_port_t defaultUartPort()</div><div class="ttdoc">The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native)</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:555</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_a96c46c20af17ec84bc2bb6c6d0f9c35b"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#a96c46c20af17ec84bc2bb6c6d0f9c35b">m5::unit::wiring::uartPortHandle</a></div><div class="ttdeci">uart_port_t uartPortHandle(const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const UartConfig config=UartConfig::Default)</div><div class="ttdoc">Get or install a UART port (cached by {port, rx, tx})</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:838</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_aa99c963da97ab56cfaf807630045fd49"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#aa99c963da97ab56cfaf807630045fd49">m5::unit::wiring::detail::ensureUARTPort</a></div><div class="ttdeci">uart_port_t ensureUARTPort(const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud, const UartConfig config)</div><div class="ttdoc">Get or install a UART port, cached by {port, rx, tx}.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:725</div></div>
-<div class="ttc" id="am5__unit__unified__wiring_8hpp_html_ac39ae8305ec751c074344031b7b2197c"><div class="ttname"><a href="m5__unit__unified__wiring_8hpp.html#ac39ae8305ec751c074344031b7b2197c">m5::unit::wiring::toIdfUartParams</a></div><div class="ttdeci">IdfUartParams toIdfUartParams(const UartConfig c)</div><div class="ttdoc">The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native)</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:574</div></div>
 <div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5Stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:20</div></div>
 <div class="ttc" id="anamespaceunit_html"><div class="ttname"><a href="namespaceunit.html">unit</a></div><div class="ttdoc">Unit-related namespace.</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_gpio_pin_pair_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html">m5::unit::wiring::GpioPinPair</a></div><div class="ttdoc">GPIO rx/tx pin pair; fallback_a indicates port_a fallback was used.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:98</div></div>
@@ -1039,13 +1008,9 @@ $(function(){initNavTree('m5__unit__unified__wiring_8hpp_source.html',''); initR
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_i2_c_pins_html_a7bfb6e3a5bb2a265de08ec6234c07bcca8d0be41ab58751f3fe6fb5aa87b0e794"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bcca8d0be41ab58751f3fe6fb5aa87b0e794">m5::unit::wiring::I2CPins::Backend::Wire</a></div><div class="ttdeci">@ Wire</div><div class="ttdoc">Arduino TwoWire on (sda, scl)</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_i2_c_pins_html_a7bfb6e3a5bb2a265de08ec6234c07bcca9702a85d4405fb5502c8398078f6a870"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bcca9702a85d4405fb5502c8398078f6a870">m5::unit::wiring::I2CPins::Backend::ExI2C</a></div><div class="ttdeci">@ ExI2C</div><div class="ttdoc">M5.Ex_I2C (pin numbers are for reference; M5Unified manages them)</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_i2_c_pins_html_a7bfb6e3a5bb2a265de08ec6234c07bccaaf78c43df851b7e42a27a373ed86523f"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bccaaf78c43df851b7e42a27a373ed86523f">m5::unit::wiring::I2CPins::Backend::SoftwareI2C</a></div><div class="ttdeci">@ SoftwareI2C</div><div class="ttdoc">M5HAL SoftwareI2C on (sda, scl) — NessoN1 PortB.</div></div>
-<div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_idf_uart_params_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_idf_uart_params.html">m5::unit::wiring::IdfUartParams</a></div><div class="ttdoc">Map UartConfig to ESP-IDF native uart_config_t fields.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:569</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_spi_pins_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_spi_pins.html">m5::unit::wiring::SpiPins</a></div><div class="ttdoc">SPI pin set (sclk / miso / mosi) on the board's shared SD/SPI bus.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:112</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_uart_pin_pair_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html">m5::unit::wiring::UartPinPair</a></div><div class="ttdoc">UART rx/tx pin pair; fallback_a indicates port_a fallback was used.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:105</div></div>
 <div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1_uart_pin_pair_html_aa097bb81d199e7fdedfc66c7361a4f1e"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1_uart_pin_pair.html#aa097bb81d199e7fdedfc66c7361a4f1e">m5::unit::wiring::UartPinPair::fallback_a</a></div><div class="ttdeci">bool fallback_a</div><div class="ttdoc">True when PortC unavailable and PortA was chosen.</div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:108</div></div>
-<div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_dev_entry.html">m5::unit::wiring::detail::SPIDevEntry</a></div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:620</div></div>
-<div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1detail_1_1_s_p_i_host_entry.html">m5::unit::wiring::detail::SPIHostEntry</a></div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:615</div></div>
-<div class="ttc" id="astructm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry_html"><div class="ttname"><a href="structm5_1_1unit_1_1wiring_1_1detail_1_1_u_a_r_t_cache_entry.html">m5::unit::wiring::detail::UARTCacheEntry</a></div><div class="ttdef"><b>Definition</b> m5_unit_unified_wiring.hpp:610</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mode_0',['Mode',['../types_8hpp.html#afa9b8e9030a766f371861f8d4899572a',1,'m5::unit::gpio']]]
+  ['nessoport_0',['NessoPort',['../m5__unit__unified__wiring_8hpp.html#a87527fb6fac3034f894657dfb54ccec1',1,'m5::unit::wiring']]]
 ];

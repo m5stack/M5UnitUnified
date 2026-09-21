@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['type_0',['Type',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce',1,'m5::unit::Adapter']]]
+  ['uartconfig_0',['UartConfig',['../m5__unit__unified__wiring_8hpp.html#a05c1e7359bb737af1b33c0e736d114cf',1,'m5::unit::wiring']]]
 ];

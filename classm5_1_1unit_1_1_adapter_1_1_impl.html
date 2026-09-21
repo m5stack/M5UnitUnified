@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.5 git rev:bf711f3</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.6 git rev:330aba0</span>
    </div>
   </td>
  </tr>
@@ -112,13 +112,10 @@ Inheritance diagram for m5::unit::Adapter::Impl:</div>
  <div class="center">
   <img src="classm5_1_1unit_1_1_adapter_1_1_impl.png" usemap="#m5::unit::Adapter::Impl_map" alt=""/>
   <map id="m5::unit::Adapter::Impl_map" name="m5::unit::Adapter::Impl_map">
-<area href="classm5_1_1unit_1_1_adapter_g_p_i_o_base_1_1_g_p_i_o_impl.html" alt="m5::unit::AdapterGPIOBase::GPIOImpl" shape="rect" coords="0,56,221,80"/>
-<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html" alt="m5::unit::AdapterI2C::I2CImpl" shape="rect" coords="346,56,567,80"/>
-<area href="classm5_1_1unit_1_1_adapter_s_p_i_1_1_s_p_i_impl.html" alt="m5::unit::AdapterSPI::SPIImpl" shape="rect" coords="577,56,798,80"/>
-<area href="classm5_1_1unit_1_1_adapter_u_a_r_t_1_1_u_a_r_t_impl.html" alt="m5::unit::AdapterUART::UARTImpl" shape="rect" coords="808,56,1029,80"/>
-<area href="classm5_1_1unit_1_1_g_p_i_o_impl_v2.html" alt="m5::unit::GPIOImplV2" shape="rect" coords="0,112,221,136"/>
-<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html" alt="m5::unit::AdapterI2C::BusImpl" shape="rect" coords="231,112,452,136"/>
-<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html" alt="m5::unit::AdapterI2C::I2CClassImpl" shape="rect" coords="462,112,683,136"/>
+<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html" alt="m5::unit::AdapterI2C::I2CImpl" shape="rect" coords="106,56,308,80"/>
+<area href="classm5_1_1unit_1_1_adapter_u_a_r_t_1_1_u_a_r_t_impl.html" alt="m5::unit::AdapterUART::UARTImpl" shape="rect" coords="318,56,520,80"/>
+<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_bus_impl.html" alt="m5::unit::AdapterI2C::BusImpl" shape="rect" coords="0,112,202,136"/>
+<area href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_class_impl.html" alt="m5::unit::AdapterI2C::I2CClassImpl" shape="rect" coords="212,112,414,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -141,9 +138,6 @@ virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="botto
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>generalCall</b> (const uint8_t *, const size_t)</td></tr>
 <tr class="separator:a7a446e16b212e142d823f7fe0a89ee80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">GPIO</div></td></tr>
-<tr class="memitem:a24304ee633120feb58b8d70058ce2bdb" id="r_a24304ee633120feb58b8d70058ce2bdb"><td class="memItemLeft" align="right" valign="top"><a id="a24304ee633120feb58b8d70058ce2bdb" name="a24304ee633120feb58b8d70058ce2bdb"></a>
-virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeRX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a>)</td></tr>
-<tr class="separator:a24304ee633120feb58b8d70058ce2bdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3eccb26953dffa073582322e921fa3e0" id="r_a3eccb26953dffa073582322e921fa3e0"><td class="memItemLeft" align="right" valign="top"><a id="a3eccb26953dffa073582322e921fa3e0" name="a3eccb26953dffa073582322e921fa3e0"></a>
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeDigitalRX</b> (const bool)</td></tr>
 <tr class="separator:a3eccb26953dffa073582322e921fa3e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,9 +156,6 @@ virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="botto
 <tr class="memitem:ae2b3e66a6b48d1b08774eb98f8db6ab5" id="r_ae2b3e66a6b48d1b08774eb98f8db6ab5"><td class="memItemLeft" align="right" valign="top"><a id="ae2b3e66a6b48d1b08774eb98f8db6ab5" name="ae2b3e66a6b48d1b08774eb98f8db6ab5"></a>
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pulseInRX</b> (uint32_t &amp;, const int, const uint32_t)</td></tr>
 <tr class="separator:ae2b3e66a6b48d1b08774eb98f8db6ab5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44691159de6fb2a8aeadb19b3af19efa" id="r_a44691159de6fb2a8aeadb19b3af19efa"><td class="memItemLeft" align="right" valign="top"><a id="a44691159de6fb2a8aeadb19b3af19efa" name="a44691159de6fb2a8aeadb19b3af19efa"></a>
-virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeTX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a>)</td></tr>
-<tr class="separator:a44691159de6fb2a8aeadb19b3af19efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af76ceea851920202883d750cba1a9c8c" id="r_af76ceea851920202883d750cba1a9c8c"><td class="memItemLeft" align="right" valign="top"><a id="af76ceea851920202883d750cba1a9c8c" name="af76ceea851920202883d750cba1a9c8c"></a>
 virtual m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeDigitalTX</b> (const bool)</td></tr>
 <tr class="separator:af76ceea851920202883d750cba1a9c8c"><td class="memSeparator" colspan="2">&#160;</td></tr>

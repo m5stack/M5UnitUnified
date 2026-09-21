@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.5 git rev:bf711f3</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.6 git rev:330aba0</span>
    </div>
   </td>
  </tr>
@@ -186,12 +186,12 @@ $(function(){initNavTree('test__helper_8hpp_source.html',''); initResizable(true
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    }</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keyword">auto</span> actual_timeout = timeout_duration ? timeout_duration : result.<a class="code hl_variable" href="structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a2ef30d5d0fb08b6392c3e23c9b6101f6">expected_interval</a> * (times + 1);</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">auto</span> timeout_at     = m5::utility::millis() + actual_timeout;</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">const</span> <span class="keyword">auto</span> start_at = m5::utility::millis();</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    uint32_t remaining  = times;</div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keyword">decltype</span>(<a class="code hl_namespace" href="namespaceunit.html">unit</a>-&gt;updatedMillis()) prev{};</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="keywordtype">bool</span> first_update = <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">while</span> (remaining &amp;&amp; m5::utility::millis() &lt;= timeout_at) {</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">while</span> (remaining &amp;&amp; !m5::utility::hasElapsed(start_at, actual_timeout)) {</div>
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        <a class="code hl_namespace" href="namespaceunit.html">unit</a>-&gt;update();</div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        <span class="keywordflow">if</span> (<a class="code hl_namespace" href="namespaceunit.html">unit</a>-&gt;updated()) {</div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>            ++result.<a class="code hl_variable" href="structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a16c313502efb553d89f3ed3bb6a7036a">update_count</a>;</div>

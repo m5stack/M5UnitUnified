@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.5 git rev:bf711f3</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.5.6 git rev:330aba0</span>
    </div>
   </td>
  </tr>
@@ -164,11 +164,13 @@ const <a class="el" href="classm5_1_1unit_1_1_adapter_u_a_r_t_1_1_u_a_r_t_impl.h
 <tr class="memitem:abd0e300cbe4b9aa7d9788d3015eae42c inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_abd0e300cbe4b9aa7d9788d3015eae42c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter.html#abd0e300cbe4b9aa7d9788d3015eae42c">duplicate</a> (const uint8_t)</td></tr>
 <tr class="memdesc:abd0e300cbe4b9aa7d9788d3015eae42c inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a duplicate adapter with a different address.  <br /></td></tr>
 <tr class="separator:abd0e300cbe4b9aa7d9788d3015eae42c inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94a03e8015a2130db46325c3f7923787 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter.html#a94a03e8015a2130db46325c3f7923787">beginTransaction</a> ()</td></tr>
-<tr class="memdesc:a94a03e8015a2130db46325c3f7923787 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin a bus transaction.  <br /></td></tr>
+<tr class="memitem:a94a03e8015a2130db46325c3f7923787 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a94a03e8015a2130db46325c3f7923787"><td class="memItemLeft" align="right" valign="top">
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>beginTransaction</b> ()</td></tr>
+<tr class="memdesc:a94a03e8015a2130db46325c3f7923787 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin a bus transaction. <br /></td></tr>
 <tr class="separator:a94a03e8015a2130db46325c3f7923787 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b42754a6936551054435507443b2e5f inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classm5_1_1unit_1_1_adapter.html#a8b42754a6936551054435507443b2e5f">endTransaction</a> ()</td></tr>
-<tr class="memdesc:a8b42754a6936551054435507443b2e5f inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">End a bus transaction.  <br /></td></tr>
+<tr class="memitem:a8b42754a6936551054435507443b2e5f inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a8b42754a6936551054435507443b2e5f"><td class="memItemLeft" align="right" valign="top">
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>endTransaction</b> ()</td></tr>
+<tr class="memdesc:a8b42754a6936551054435507443b2e5f inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">End a bus transaction. <br /></td></tr>
 <tr class="separator:a8b42754a6936551054435507443b2e5f inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa70c6328189e26683081aea2663d9438 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_aa70c6328189e26683081aea2663d9438"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>readWithTransaction</b> (uint8_t *data, const size_t len)</td></tr>
@@ -190,9 +192,6 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>wr
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>generalCall</b> (const uint8_t *data, const size_t len)</td></tr>
 <tr class="memdesc:ae56d640b22b5a20c175c33644d45681d inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a general call on the I2C bus. <br /></td></tr>
 <tr class="separator:ae56d640b22b5a20c175c33644d45681d inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa72ef1b83a1b3358988a8b74b77fc852 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_aa72ef1b83a1b3358988a8b74b77fc852"><td class="memItemLeft" align="right" valign="top">
-m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeRX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m)</td></tr>
-<tr class="separator:aa72ef1b83a1b3358988a8b74b77fc852 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6925b754f7763838eb59b71f28b69172 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a6925b754f7763838eb59b71f28b69172"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeDigitalRX</b> (const bool high)</td></tr>
 <tr class="separator:a6925b754f7763838eb59b71f28b69172 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -211,9 +210,6 @@ m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>re
 <tr class="memitem:a1515e60ec4838ff5f64566519ddae3d4 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a1515e60ec4838ff5f64566519ddae3d4"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pulseInRX</b> (uint32_t &amp;duration, const int state, const uint32_t timeout_us)</td></tr>
 <tr class="separator:a1515e60ec4838ff5f64566519ddae3d4 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a424374fe986b843d0ae62ad6c81b7923 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a424374fe986b843d0ae62ad6c81b7923"><td class="memItemLeft" align="right" valign="top">
-m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>pinModeTX</b> (const <a class="el" href="types_8hpp.html#afa9b8e9030a766f371861f8d4899572a">gpio::Mode</a> m)</td></tr>
-<tr class="separator:a424374fe986b843d0ae62ad6c81b7923 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a483ae129f5383cda00189d6f2b386d58 inherit pub_methods_classm5_1_1unit_1_1_adapter" id="r_a483ae129f5383cda00189d6f2b386d58"><td class="memItemLeft" align="right" valign="top">
 m5::hal::error::error_t&#160;</td><td class="memItemRight" valign="bottom"><b>writeDigitalTX</b> (const bool high)</td></tr>
 <tr class="separator:a483ae129f5383cda00189d6f2b386d58 inherit pub_methods_classm5_1_1unit_1_1_adapter"><td class="memSeparator" colspan="2">&#160;</td></tr>

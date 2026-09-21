@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['ring_5fbuffer_5fsize_0',['ring_buffer_size',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t_1_1rx__config__t.html#a51267335db1d3e4ec2e6c969b955ff2a',1,'m5::unit::gpio::adapter_config_t::rx_config_t']]],
-  ['rx_1',['rx',['../structm5_1_1unit_1_1gpio_1_1adapter__config__t.html#ae46b2ba1960edc0051d8c63df5cd6019',1,'m5::unit::gpio::adapter_config_t']]]
+  ['uid_0',['uid',['../classm5_1_1unit_1_1_component.html#a2c3614663a8c4e47710bb020c1a8422e',1,'m5::unit::Component']]],
+  ['update_5fcount_1',['update_count',['../structm5_1_1unit_1_1googletest_1_1_periodic_measurement_result.html#a16c313502efb553d89f3ed3bb6a7036a',1,'m5::unit::googletest::PeriodicMeasurementResult']]],
+  ['usewire1_2',['useWire1',['../structm5_1_1unit_1_1wiring_1_1_hat_i2_c_pins.html#a13af745c1790b1d04de17c11aec23ad9',1,'m5::unit::wiring::HatI2CPins']]]
 ];
