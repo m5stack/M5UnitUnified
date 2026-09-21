@@ -95,12 +95,12 @@ PeriodicMeasurementResult collect_periodic_measurements(U* unit, const uint32_t 
     }
 
     auto actual_timeout = timeout_duration ? timeout_duration : result.expected_interval * (times + 1);
-    auto timeout_at     = m5::utility::millis() + actual_timeout;
+    const auto start_at = m5::utility::millis();
     uint32_t remaining  = times;
     decltype(unit->updatedMillis()) prev{};
     bool first_update = true;
 
-    while (remaining && m5::utility::millis() <= timeout_at) {
+    while (remaining && !m5::utility::hasElapsed(start_at, actual_timeout)) {
         unit->update();
         if (unit->updated()) {
             ++result.update_count;
