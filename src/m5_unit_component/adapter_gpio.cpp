@@ -437,6 +437,9 @@ uint32_t calculate_rmt_resolution_hz(uint32_t apb_freq_hz, uint32_t tick_ns)
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pin_mode(const gpio_num_t pin, const gpio::Mode m)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     if (m < gpio::Mode::RmtRX) {
         gpio_config_t cfg = gpio_cfg_table[m5::stl::to_underlying(m)];
         cfg.pin_bit_mask  = 1ULL << pin;
@@ -448,12 +451,18 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pin_mode(const gpio_num_t pin
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_digital(const gpio_num_t pin, const bool high)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     gpio_set_level(pin, high);
     return m5::hal::error::error_t::OK;
 }
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_digital(const gpio_num_t pin, bool& high)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     high = gpio_get_level(pin);
     return m5::hal::error::error_t::OK;
 }
@@ -687,7 +696,10 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pulse_in(uint32_t& duration, const gpio_num_t pin, const int state,
                                                             const uint32_t timeout_us)
 {
-    duration   = 0;
+    duration = 0;
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     auto start = esp_timer_get_time();
     auto now   = start;
 
