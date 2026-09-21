@@ -26,7 +26,8 @@
     "license": "MIT",
     "export": {
         "exclude": [
-            "docs/html"
+            "docs/html",
+            "extras"
         ]
     }
 }

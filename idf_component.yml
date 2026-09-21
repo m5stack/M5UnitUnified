@@ -25,6 +25,7 @@ files:
   exclude:
     - "docs/**"
     - "test/**"
+    - "extras/**"
     - ".github/**"
     - "boards/**"
     - "src/googletest/**"
