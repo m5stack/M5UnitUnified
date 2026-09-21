@@ -338,7 +338,8 @@ bool Component::read_register32E(const Reg reg, uint32_t& result, const uint32_t
     uint8_t tmp[4]{};
     auto ret = readRegister(reg, tmp, 4, delayMillis, stop);
     if (ret) {
-        result = (tmp[0 + 3 * endian] | (tmp[1 + endian] << 8) | (tmp[2 - endian] << 16)) | (tmp[3 - 3 * endian] << 24);
+        result = static_cast<uint32_t>(tmp[0 + 3 * endian]) | (static_cast<uint32_t>(tmp[1 + endian]) << 8) |
+                 (static_cast<uint32_t>(tmp[2 - endian]) << 16) | (static_cast<uint32_t>(tmp[3 - 3 * endian]) << 24);
     }
     return ret;
 }
