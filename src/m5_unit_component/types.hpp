@@ -40,8 +40,8 @@ enum class category_t {
     UnitLED,  //!< Derived from UnitLED
 };
 
-using uid_t          = uint32_t;       //!< @brief Component unique identifier
-using attr_t         = uint32_t;       //!< @brief Component attribute bits
+using uid_t          = uint32_t;                     //!< @brief Component unique identifier
+using attr_t         = uint32_t;                     //!< @brief Component attribute bits
 using elapsed_time_t = m5::utility::elapsed_time_t;  //!< @brief Elapsed time unit (ms)
 
 namespace attribute {
