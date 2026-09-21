@@ -13,10 +13,8 @@ include($ENV{IDF_PATH}/tools/cmake/version.cmake)
 file(GLOB_RECURSE SRCS "src/*.cpp")
 list(FILTER SRCS EXCLUDE REGEX "/googletest/")
 
-# M5Utility is public: the public header m5_unit_component/types.hpp includes
-# <m5_utility/compatibility_feature.hpp> for m5::utility::elapsed_time_t.
-set(public_requires driver M5HAL M5Utility)
-set(private_requires esp_adc esp_timer)
+set(public_requires driver M5HAL)
+set(private_requires esp_adc esp_timer M5Utility)
 
 # Keep IDF 5.x on the driver meta-component. IDF v6 no longer exposes all split
 # driver include paths transitively, so add only the v6-specific component deps.

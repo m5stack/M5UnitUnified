@@ -12,7 +12,6 @@
 
 #include <cstdint>
 #include <type_traits>
-#include <m5_utility/compatibility_feature.hpp>
 #include "identify_functions.hpp"
 #if defined(ESP_PLATFORM)
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
@@ -40,9 +39,9 @@ enum class category_t {
     UnitLED,  //!< Derived from UnitLED
 };
 
-using uid_t          = uint32_t;                     //!< @brief Component unique identifier
-using attr_t         = uint32_t;                     //!< @brief Component attribute bits
-using elapsed_time_t = m5::utility::elapsed_time_t;  //!< @brief Elapsed time unit (ms)
+using uid_t          = uint32_t;       //!< @brief Component unique identifier
+using attr_t         = uint32_t;       //!< @brief Component attribute bits
+using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms), same type as m5::utility::elapsed_time_t
 
 namespace attribute {
 ///@name Attribute
