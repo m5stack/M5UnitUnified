@@ -4,8 +4,7 @@
 
 ## Get version from library.properties
 ## Get git rev of HEAD
-LIB_VERSION="$(pcregrep -o1 "^\s*version\s*=\s*(\*|\d+(\.\d+){0,3}(\.\*)?)" library.properties)"
+LIB_VERSION="$(grep -E '^[[:space:]]*version[[:space:]]*=' library.properties | head -n1 | cut -d'=' -f2 | tr -d '[:space:]')"
 #echo ${DOXYGEN_PROJECT_NUMBER}
-DOXYGEN_PROJECT_NUMBER="${LIB_VERSION} git rev:$(git rev-parse --short HEAD)" doxygen docs/Doxyfile
-
-
+GIT_REV="$(git rev-parse --short HEAD 2>/dev/null)"
+DOXYGEN_PROJECT_NUMBER="${LIB_VERSION}${GIT_REV:+ git rev:${GIT_REV}}" doxygen docs/Doxyfile
