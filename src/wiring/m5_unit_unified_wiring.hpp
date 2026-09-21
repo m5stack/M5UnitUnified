@@ -493,7 +493,7 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
 #if SOC_I2C_NUM > 1
     TwoWire& wire = p.useWire1 ? Wire1 : Wire;
 #else
-    // SOC_I2C_NUM == 1 (ESP32-C3/C6/H2): Arduino-ESP32 declares Wire only; Wire1 is absent.
+    // SOC_I2C_NUM == 1 (ESP32-C3): Arduino-ESP32 declares Wire only; Wire1 is absent.
     if (p.useWire1) {
         M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but SOC_I2C_NUM==1");
         return false;
