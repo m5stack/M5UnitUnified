@@ -16,10 +16,12 @@
 #include "identify_functions.hpp"
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #include "adapter_gpio_v2.hpp"
-#else
+#elif defined(ESP_PLATFORM)
 #include "adapter_gpio_v1.hpp"
 #endif
 #include "adapter_uart.hpp"
+#if defined(ESP_PLATFORM)
 #include "adapter_spi.hpp"
+#endif
 
 #endif

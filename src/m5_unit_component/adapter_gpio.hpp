@@ -15,6 +15,8 @@
 #include "types.hpp"
 #include "adapter_base.hpp"
 
+// GPIO / RMT are ESP platform features
+#if defined(ESP_PLATFORM)
 namespace m5 {
 namespace unit {
 namespace gpio {
@@ -201,5 +203,6 @@ public:
 
 }  // namespace unit
 }  // namespace m5
+#endif  // ESP_PLATFORM
 
 #endif

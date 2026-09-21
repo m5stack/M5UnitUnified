@@ -15,8 +15,6 @@
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
-#include <soc/gpio_struct.h>
-#include <soc/gpio_sig_map.h>
 
 namespace m5 {
 namespace unit {

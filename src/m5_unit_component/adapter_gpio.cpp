@@ -9,16 +9,17 @@
   @note  Currently handles GPIO directly, but will handle via M5HAL in the future
 */
 #include "adapter_gpio.hpp"
+#if defined(ESP_PLATFORM)
 #include <driver/gpio.h>
 #include <esp_idf_version.h>
 
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
-#pragma message "Using RMT v2,Oneshot"
+#pragma message("Using RMT v2,Oneshot")
 #include <esp_adc/adc_oneshot.h>
 #include <esp_adc/adc_cali.h>
 #include <esp_adc/adc_cali_scheme.h>
 #else
-#pragma message "Using RMT v1"
+#pragma message("Using RMT v1")
 #include <driver/adc.h>
 #include <esp_adc_cal.h>
 #endif
@@ -26,15 +27,15 @@
 // ADC_ATTEN_DB_12 was introduced in ESP-IDF v4.4.7 / v5.1.3
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 3) || \
     (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 7) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0))
-#pragma message "Exists ADC_ATTEN_DB_12"
+#pragma message("Exists ADC_ATTEN_DB_12")
 constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_12;
 #else
-#pragma message "Not exists ADC_ATTEN_DB_12"
+#pragma message("Not exists ADC_ATTEN_DB_12")
 constexpr auto M5_ADC_ATTEN_DB       = ADC_ATTEN_DB_11;
 #endif
 
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
-#pragma message "DAC supported"
+#pragma message("DAC supported")
 
 #if __has_include(<driver/dac_common.h>)
 #include <driver/dac_common.h>
@@ -48,9 +49,9 @@ constexpr auto M5_ADC_ATTEN_DB       = ADC_ATTEN_DB_11;
 #endif
 
 #if SOC_ADC_SUPPORTED
-#pragma message "ADC supported"
+#pragma message("ADC supported")
 #else
-#pragma message "ADC Not supported"
+#pragma message("ADC Not supported")
 #endif
 
 #include <esp_timer.h>
@@ -159,7 +160,7 @@ constexpr gpio_config_t gpio_cfg_table[] = {
 };
 
 #if CONFIG_IDF_TARGET_ESP32
-#pragma message "ADC table: ESP32"
+#pragma message("ADC table: ESP32")
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 11,  // ADC2_CHANNEL_1
     /*  1 */ -1,
@@ -203,7 +204,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 39 */ 3   // ADC1_CHANNEL_3
 };
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#pragma message "ADC table: ESP32-S2/S3"
+#pragma message("ADC table: ESP32-S2/S3")
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ 0,   // ADC1_CHANNEL_0
@@ -228,7 +229,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /* 20 */ 19,  // ADC2_CHANNEL_9
 };
 #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
-#pragma message "ADC table: ESP32-C3/C2"
+#pragma message("ADC table: ESP32-C3/C2")
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,   // ADC1_CHANNEL_0
     /*  1 */ 1,   // ADC1_CHANNEL_1
@@ -238,7 +239,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  5 */ 10,  // ADC2_CHANNEL_0
 };
 #elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
-#pragma message "ADC table: ESP32-C6/H2/C5/C61"
+#pragma message("ADC table: ESP32-C6/H2/C5/C61")
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ 0,  // ADC1_CHANNEL_0
     /*  1 */ 1,  // ADC1_CHANNEL_1
@@ -249,7 +250,7 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  6 */ 6,  // ADC1_CHANNEL_6
 };
 #elif CONFIG_IDF_TARGET_ESP32P4
-#pragma message "ADC table: ESP32-P4"
+#pragma message("ADC table: ESP32-P4")
 constexpr int8_t gpio_to_adc_table[] = {
     /*  0 */ -1,
     /*  1 */ -1,
@@ -386,10 +387,10 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::ensure_adc_handle(const gpio_
     // clk_src member was added in ESP-IDF v5.1.0; v5.0.x has no such field
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
 #if SOC_ADC_RTC_CTRL_SUPPORTED
-#pragma message "ADC oneshot clk_src: RTC (ADC_RTC_CLK_SRC_DEFAULT)"
+#pragma message("ADC oneshot clk_src: RTC (ADC_RTC_CLK_SRC_DEFAULT)")
     init_config.clk_src = ADC_RTC_CLK_SRC_DEFAULT;
 #else
-#pragma message "ADC oneshot clk_src: DIGI (ADC_DIGI_CLK_SRC_DEFAULT)"
+#pragma message("ADC oneshot clk_src: DIGI (ADC_DIGI_CLK_SRC_DEFAULT)")
     init_config.clk_src = ADC_DIGI_CLK_SRC_DEFAULT;
 #endif
 #endif
@@ -436,6 +437,9 @@ uint32_t calculate_rmt_resolution_hz(uint32_t apb_freq_hz, uint32_t tick_ns)
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pin_mode(const gpio_num_t pin, const gpio::Mode m)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     if (m < gpio::Mode::RmtRX) {
         gpio_config_t cfg = gpio_cfg_table[m5::stl::to_underlying(m)];
         cfg.pin_bit_mask  = 1ULL << pin;
@@ -447,12 +451,18 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pin_mode(const gpio_num_t pin
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_digital(const gpio_num_t pin, const bool high)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     gpio_set_level(pin, high);
     return m5::hal::error::error_t::OK;
 }
 
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_digital(const gpio_num_t pin, bool& high)
 {
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     high = gpio_get_level(pin);
     return m5::hal::error::error_t::OK;
 }
@@ -686,7 +696,10 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::pulse_in(uint32_t& duration, const gpio_num_t pin, const int state,
                                                             const uint32_t timeout_us)
 {
-    duration   = 0;
+    duration = 0;
+    if (static_cast<int>(pin) < 0) {
+        return m5::hal::error::error_t::INVALID_ARGUMENT;
+    }
     auto start = esp_timer_get_time();
     auto now   = start;
 
@@ -727,3 +740,4 @@ AdapterGPIOBase::AdapterGPIOBase(GPIOImpl* impl) : Adapter(Adapter::Type::GPIO, 
 
 }  // namespace unit
 }  // namespace m5
+#endif  // ESP_PLATFORM

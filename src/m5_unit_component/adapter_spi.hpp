@@ -21,6 +21,8 @@ class SPIClass;
 #include <driver/spi_master.h>
 #endif
 
+// SPI is an ESP platform feature here (SPIImpl holds a gpio_num_t chip select)
+#if defined(ESP_PLATFORM)
 namespace m5 {
 namespace unit {
 
@@ -147,4 +149,5 @@ protected:
 
 }  // namespace unit
 }  // namespace m5
+#endif  // ESP_PLATFORM
 #endif

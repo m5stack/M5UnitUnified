@@ -15,7 +15,7 @@
 #include "types.hpp"
 #include "adapter_gpio.hpp"
 
-#if !defined(M5_UNIT_UNIFIED_USING_RMT_V2)
+#if defined(ESP_PLATFORM) && !defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #include <driver/rmt.h>
 
 namespace m5 {

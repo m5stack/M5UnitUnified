@@ -14,8 +14,10 @@
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
+#if defined(ESP_PLATFORM)
 #include <soc/gpio_struct.h>
 #include <soc/gpio_sig_map.h>
+#endif
 #include <cassert>
 #if __has_include(<utility/I2C_Class.hpp>)
 #include <utility/I2C_Class.hpp>
@@ -333,7 +335,7 @@ m5::hal::error::error_t AdapterI2C::BusImpl::write_with_transaction(const m5::ha
 }
 
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
-#pragma message "ESP-IDF I2C backend: i2c_master (new driver)"
+#pragma message("ESP-IDF I2C backend: i2c_master (new driver)")
 namespace {
 constexpr int default_i2c_timeout_ms = 1000;
 
@@ -523,7 +525,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::wakeup()
     return to_i2c_error(i2c_master_probe(_bus, _addr, default_i2c_timeout_ms));
 }
 #elif defined(ESP_PLATFORM)
-#pragma message "ESP-IDF I2C backend: legacy driver/i2c.h"
+#pragma message("ESP-IDF I2C backend: legacy driver/i2c.h")
 
 AdapterI2C::ESPIDFLegacyBusImpl::ESPIDFLegacyBusImpl(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
                                                      const uint8_t addr, const uint32_t clock)
@@ -904,14 +906,14 @@ AdapterI2C::AdapterI2C(const i2c_port_t port, const gpio_num_t sda, const gpio_n
 #endif
 
 #if defined(M5_UNITUNIFIED_ADAPTER_HAS_M5_I2C_CLASS)
-#pragma message "Support I2C_Class"
+#pragma message("Support I2C_Class")
 AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
     : Adapter(Adapter::Type::I2C, new AdapterI2C::I2CClassImpl(i2c, addr, clock))
 {
     assert(_impl);
 }
 #else
-#pragma message "Not support I2C_Class"
+#pragma message("Not support I2C_Class")
 AdapterI2C::AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock) : Adapter()
 {
     (void)i2c;

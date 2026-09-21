@@ -18,8 +18,7 @@
 
 #include "M5UnitComponent.hpp"
 #include <M5HAL.hpp>
-#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
-#else
+#if defined(ESP_PLATFORM) && !defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #include <driver/rmt.h>
 #endif
 #include <vector>
@@ -109,6 +108,7 @@ public:
     bool add(Component& u, m5::I2C_Class& i2c);
     ///@}
 
+#if defined(ESP_PLATFORM) || defined(DOXYGEN_PROCESS)
     ///@name Add unit(GPIO)
     ///@{
     /*!
@@ -117,9 +117,11 @@ public:
       @param rx_pin Pin number to be used for RX
       @param tx_pin Pin number to be used for TX
       @return True if successful
+      @note ESP platform only
      */
     bool add(Component& u, const int8_t rx_pin, const int8_t tx_pin);
     ///@}
+#endif
 
     ///@name Add unit(UART)
     ///@{

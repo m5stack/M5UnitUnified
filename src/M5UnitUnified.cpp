@@ -122,6 +122,7 @@ bool UnitUnified::add(Component& u, const i2c_port_t port, const gpio_num_t sda,
 }
 #endif
 
+#if defined(ESP_PLATFORM)
 bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
 {
     if (u.isRegistered()) {
@@ -140,6 +141,7 @@ bool UnitUnified::add(Component& u, const int8_t rx_pin, const int8_t tx_pin)
     M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessGPIO());
     return false;
 }
+#endif
 
 #if defined(ARDUINO)
 bool UnitUnified::add(Component& u, HardwareSerial& serial)

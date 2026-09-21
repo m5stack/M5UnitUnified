@@ -37,7 +37,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <HardwareSerial.h>
-#else  // ESP-IDF native
+#elif defined(ESP_PLATFORM)  // ESP-IDF native
 // driver/i2c_master.h (new I2C master driver) exists only on IDF >= 5.2. On IDF 5.0/5.1 fall back to
 // the legacy driver/i2c.h so the I2C wiring helpers keep working across the whole IDF >= 5.0 range.
 #if __has_include(<driver/i2c_master.h>)
@@ -311,7 +311,7 @@ inline bool i2cClass(UnitUnified& units, Component& unit, m5::I2C_Class& i2c)
 }
 #endif
 
-#if defined(M5_HAL_HPP)
+#if defined(M5_HAL_HPP) && defined(ESP_PLATFORM)
 //! @brief Add a unit on a software (bit-bang) I2C bus via M5HAL on explicit pins
 inline bool i2cSoftware(UnitUnified& units, Component& unit, const int sda, const int scl)
 {
@@ -493,7 +493,7 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
 #if SOC_I2C_NUM > 1
     TwoWire& wire = p.useWire1 ? Wire1 : Wire;
 #else
-    // SOC_I2C_NUM == 1 (ESP32-C3/C6/H2): Arduino-ESP32 declares Wire only; Wire1 is absent.
+    // SOC_I2C_NUM == 1 (ESP32-C3): Arduino-ESP32 declares Wire only; Wire1 is absent.
     if (p.useWire1) {
         M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but SOC_I2C_NUM==1");
         return false;
@@ -549,7 +549,7 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
 
 ///@name ESP-IDF native infrastructure (cache, hooks, defaults)
 ///@{
-#if !defined(ARDUINO)
+#if !defined(ARDUINO) && defined(ESP_PLATFORM)
 
 //! @brief The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native)
 inline uart_port_t defaultUartPort()
@@ -1023,7 +1023,7 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
 }
 #endif  // __M5UNIFIED_HPP__
 
-#endif  // !ARDUINO
+#endif  // !ARDUINO && ESP_PLATFORM
 ///@}
 
 ///@name Error handling

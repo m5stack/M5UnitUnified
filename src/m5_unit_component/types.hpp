@@ -12,13 +12,16 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <m5_utility/compatibility_feature.hpp>
 #include "identify_functions.hpp"
+#if defined(ESP_PLATFORM)
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
 #include <driver/rmt_types.h>
 #else
 #include <soc/rmt_struct.h>
 #endif
 #include <driver/gpio.h>
+#endif  // ESP_PLATFORM
 
 namespace m5 {
 namespace unit {
@@ -37,9 +40,9 @@ enum class category_t {
     UnitLED,  //!< Derived from UnitLED
 };
 
-using uid_t          = uint32_t;       //!< @brief Component unique identifier
-using attr_t         = uint32_t;       //!< @brief Component attribute bits
-using elapsed_time_t = unsigned long;  //!< @brief Elapsed time unit (ms)
+using uid_t          = uint32_t;                     //!< @brief Component unique identifier
+using attr_t         = uint32_t;                     //!< @brief Component attribute bits
+using elapsed_time_t = m5::utility::elapsed_time_t;  //!< @brief Elapsed time unit (ms)
 
 namespace attribute {
 ///@name Attribute
@@ -53,6 +56,7 @@ constexpr attr_t AccessSPI  = 0x00000008;  //!< SPI Accessible Unit
 
 }  // namespace types
 
+#if defined(ESP_PLATFORM)
 namespace gpio {
 /*!
   @enum Mode
@@ -118,6 +122,7 @@ using m5_rmt_item_t = rmt_item32_t;  //!< Alias for RMT item
 #endif
 
 }  // namespace gpio
+#endif  // ESP_PLATFORM
 
 }  // namespace unit
 }  // namespace m5

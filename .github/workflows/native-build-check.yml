@@ -1,0 +1,93 @@
+name: Build(native)
+
+on:
+  push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'extras/native_check/**'
+      - '.github/workflows/native-build-check.yml'
+  pull_request:
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'extras/native_check/**'
+      - '.github/workflows/native-build-check.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The ESP_PLATFORM guards in the public headers and the adapters are what let
+  # M5UnitUnified build for the host (native). A missing guard never shows up in
+  # the ESP32 builds, so check the host build here with GCC / Clang / MSVC.
+  native-build:
+    name: Native:Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout M5UnitUnified
+        uses: actions/checkout@v4
+        with:
+          path: M5UnitUnified
+
+      # Follow the same branches as idf_component.yml
+      - name: Checkout M5HAL
+        uses: actions/checkout@v4
+        with:
+          repository: m5stack/M5HAL
+          ref: main
+          path: M5HAL
+
+      - name: Checkout M5Utility
+        uses: actions/checkout@v4
+        with:
+          repository: m5stack/M5Utility
+          ref: main
+          path: M5Utility
+
+      # PlatformIO's native platform always uses GCC, so MSVC can only be reached
+      # through CMake. The check project lives in extras/native_check (not shipped
+      # with the library). On the host only the M5HAL bus and I2C_Class paths
+      # remain; GPIO / RMT / UART / SPI are excluded by design.
+      - name: Configure
+        run: |
+          cmake -S M5UnitUnified/extras/native_check -B build \
+            -DM5HAL_DIR="${{ github.workspace }}/M5HAL" \
+            -DM5UTILITY_DIR="${{ github.workspace }}/M5Utility"
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+
+      - name: Run
+        run: |
+          if [ -x build/Release/m5unitunified_native_check.exe ]; then
+            build/Release/m5unitunified_native_check.exe
+          else
+            build/m5unitunified_native_check
+          fi

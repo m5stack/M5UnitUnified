@@ -206,6 +206,7 @@ bool Component::assign(const i2c_port_t port, const gpio_num_t sda, const gpio_n
 }
 #endif
 
+#if defined(ESP_PLATFORM)
 bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
 {
     if (canAccessGPIO()) {
@@ -214,6 +215,7 @@ bool Component::assign(const int8_t rx_pin, const int8_t tx_pin)
     }
     return false;
 }
+#endif
 
 #if defined(ARDUINO)
 bool Component::assign(HardwareSerial& serial)
@@ -336,7 +338,8 @@ bool Component::read_register32E(const Reg reg, uint32_t& result, const uint32_t
     uint8_t tmp[4]{};
     auto ret = readRegister(reg, tmp, 4, delayMillis, stop);
     if (ret) {
-        result = (tmp[0 + 3 * endian] | (tmp[1 + endian] << 8) | (tmp[2 - endian] << 16)) | (tmp[3 - 3 * endian] << 24);
+        result = static_cast<uint32_t>(tmp[0 + 3 * endian]) | (static_cast<uint32_t>(tmp[1 + endian]) << 8) |
+                 (static_cast<uint32_t>(tmp[2 - endian]) << 16) | (static_cast<uint32_t>(tmp[3 - 3 * endian]) << 24);
     }
     return ret;
 }
@@ -388,6 +391,7 @@ bool Component::generalCall(const uint8_t* data, const size_t len)
     return adapter()->generalCall(data, len) == m5::hal::error::error_t::OK;
 }
 
+#if defined(ESP_PLATFORM)
 bool Component::pinModeRX(const gpio::Mode m)
 {
     return adapter()->pinModeRX(m) == m5::hal::error::error_t::OK;
@@ -457,6 +461,7 @@ bool Component::pulseInTX(uint32_t& duration, const int state, const uint32_t ti
 {
     return adapter()->pulseInTX(duration, state, timeout_us) == m5::hal::error::error_t::OK;
 }
+#endif  // ESP_PLATFORM
 
 bool Component::changeAddress(const uint8_t addr)
 {
@@ -481,11 +486,13 @@ std::string Component::debugInfo() const
             tmp = m5::utility::formatString("%p:%u ADDR:%02X", _adapter.get(), _adapter.use_count(),
                                             asAdapter<AdapterI2C>(Adapter::Type::I2C)->address());
             break;
+#if defined(ESP_PLATFORM)
         case Adapter::Type::GPIO:
             tmp = m5::utility::formatString("%p:%u RX:%d TX:%d", _adapter.get(), _adapter.use_count(),
                                             asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->rx_pin(),
                                             asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->tx_pin());
             break;
+#endif
         default:
             tmp = m5::utility::formatString("%p:%u Type:%d", _adapter.get(), _adapter.use_count(), _adapter->type());
             break;
