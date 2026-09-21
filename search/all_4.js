@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['elapsed_5ftime_5ft_0',['elapsed_time_t',['../types_8hpp.html#abde8943435600b2a20556e276bffee04',1,'m5::unit::types']]],
+  ['elapsed_5ftime_5ft_0',['elapsed_time_t',['../types_8hpp.html#a2186c1c440ded1cd15c39912d90e7a7a',1,'m5::unit::types']]],
   ['empty_1',['empty',['../classm5_1_1unit_1_1_periodic_measurement_adapter.html#ac55a3e59a9c7f3b8c44fb2722ab7da0a',1,'m5::unit::PeriodicMeasurementAdapter']]],
   ['endtransaction_2',['endTransaction',['../classm5_1_1unit_1_1_adapter.html#a8b42754a6936551054435507443b2e5f',1,'m5::unit::Adapter']]],
   ['exi2c_3',['ExI2C',['../structm5_1_1unit_1_1wiring_1_1_i2_c_pins.html#a7bfb6e3a5bb2a265de08ec6234c07bcca9702a85d4405fb5502c8398078f6a870',1,'m5::unit::wiring::I2CPins']]],
