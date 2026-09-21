@@ -1,0 +1,131 @@
+name: Build(native)
+
+on:
+  push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - '.github/workflows/native-build-check.yml'
+  pull_request:
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - '.github/workflows/native-build-check.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The ESP_PLATFORM guards in the public headers and the adapters are what let
+  # M5UnitUnified build for the host (native). A missing guard never shows up in
+  # the ESP32 builds, so check the host build here with GCC / Clang / MSVC.
+  native-build:
+    name: Native:Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout M5UnitUnified
+        uses: actions/checkout@v4
+        with:
+          path: M5UnitUnified
+
+      # Follow the same branches as idf_component.yml
+      - name: Checkout M5HAL
+        uses: actions/checkout@v4
+        with:
+          repository: m5stack/M5HAL
+          ref: main
+          path: M5HAL
+
+      - name: Checkout M5Utility
+        uses: actions/checkout@v4
+        with:
+          repository: m5stack/M5Utility
+          ref: main
+          path: M5Utility
+
+      # PlatformIO's native platform always uses GCC, so MSVC can only be reached
+      # through CMake. A throwaway project keeps a second build system out of the
+      # repository. On the host only the M5HAL bus and the M5Utility-backed paths
+      # (I2C_Class stub) remain; GPIO / RMT / UART / SPI are excluded by design.
+      - name: Generate the check project
+        run: |
+          mkdir -p native_check
+          cat > native_check/main.cpp <<'EOF'
+          #include <M5UnitUnified.hpp>
+
+          int main()
+          {
+              m5::unit::UnitUnified units;
+              (void)units;
+              return 0;
+          }
+          EOF
+          cat > native_check/CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.16)
+          project(m5unitunified_native_check CXX)
+
+          set(CMAKE_CXX_STANDARD 11)
+          set(CMAKE_CXX_STANDARD_REQUIRED ON)
+          set(CMAKE_CXX_EXTENSIONS OFF)
+
+          file(GLOB_RECURSE m5uu_sources "${M5UU_DIR}/src/*.cpp")
+          # Test scaffolding pulls in <M5Unified.h>; not part of the library
+          list(FILTER m5uu_sources EXCLUDE REGEX "/googletest/")
+          file(GLOB_RECURSE m5hal_sources "${M5HAL_DIR}/src/*.cpp")
+          file(GLOB_RECURSE m5utility_sources "${M5UTILITY_DIR}/src/*.cpp")
+
+          add_executable(m5unitunified_native_check main.cpp ${m5uu_sources} ${m5hal_sources} ${m5utility_sources})
+          target_include_directories(m5unitunified_native_check PRIVATE
+            "${M5UU_DIR}/src" "${M5HAL_DIR}/src" "${M5UTILITY_DIR}/src")
+
+          # Without this MSVC reports __cplusplus as 199711L, so the C++ version
+          # checks in M5Utility (std::optional / std::expected and the like)
+          # would select a different configuration than the other compilers.
+          if(MSVC)
+            target_compile_options(m5unitunified_native_check PRIVATE /Zc:__cplusplus)
+          endif()
+          EOF
+
+      - name: Configure
+        run: |
+          cmake -S native_check -B native_check/build \
+            -DM5UU_DIR="${{ github.workspace }}/M5UnitUnified" \
+            -DM5HAL_DIR="${{ github.workspace }}/M5HAL" \
+            -DM5UTILITY_DIR="${{ github.workspace }}/M5Utility"
+
+      - name: Build
+        run: |
+          cmake --build native_check/build --config Release
+
+      - name: Run
+        run: |
+          if [ -x native_check/build/Release/m5unitunified_native_check.exe ]; then
+            native_check/build/Release/m5unitunified_native_check.exe
+          else
+            native_check/build/m5unitunified_native_check
+          fi
