@@ -14,6 +14,11 @@
 
 using namespace m5::unit::types;
 
+// types.hpp defines elapsed_time_t on its own so that the public headers do not depend on M5Utility.
+// Keep it the same type as m5::utility::elapsed_time_t (the return type of m5::utility::millis()).
+static_assert(std::is_same<elapsed_time_t, m5::utility::elapsed_time_t>::value,
+              "m5::unit::types::elapsed_time_t must match m5::utility::elapsed_time_t");
+
 namespace m5 {
 namespace unit {
 

@@ -1,0 +1,100 @@
+name: Build(arduino)
+
+on:
+  push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'library.properties'
+      - 'extras/arduino_check/**'
+      - '.github/workflows/arduino-build-check.yml'
+  pull_request:
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'library.properties'
+      - 'extras/arduino_check/**'
+      - '.github/workflows/arduino-build-check.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Builds extras/arduino_check, a sketch that includes <M5UnitUnified.h> and
+  # nothing else, the way Arduino IDE users consume the library. The
+  # dependencies are installed by name from the Library Manager (not by path),
+  # so a dependency that is only reachable through a subdirectory include is not
+  # discovered and the build fails here, as it would for users.
+  build:
+    name: ${{ matrix.board }}@${{ matrix.platform-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform-url:
+          - https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+        # One representative per chip generation (see skill m5-build-ci-matrix)
+        board:
+          - m5stack_core    # ESP32
+          - m5stack_cores3  # ESP32-S3
+          - m5stack_nanoc6  # ESP32-C6
+          - m5stack_tab5    # ESP32-P4
+
+        # Pinned to 3.3.7: 3.3.8 breaks the Tab5 (ESP32-P4) build upstream
+        # (BOARD_SDMMC_POWER_CHANNEL missing in variants/m5stack_tab5).
+        platform-version:
+          - 3.3.7
+
+        platform:
+          - esp32
+
+        archi:
+          - esp32
+
+        include:
+          # Arduino-ESP32 2.x (ESP-IDF 4.4) takes the RMT v1 / legacy branches.
+          # 2.x uses different board IDs (see skill m5-arduino-workflow-fqbn).
+          - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            board: m5stack-core-esp32
+            platform-version: 2.0.17
+            platform: esp32
+            archi: esp32
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile library discovery check
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.platform }}:${{ matrix.archi }}:${{ matrix.board }}
+          platforms: |
+            - name: ${{ matrix.platform }}:${{ matrix.archi }}
+              source-url: ${{ matrix.platform-url }}
+              version: ${{ matrix.platform-version }}
+          # M5Utility / M5HAL by name, exactly as the Library Manager resolves
+          # the depends= line of library.properties for users
+          libraries: |
+            - name: M5Utility
+            - name: M5HAL
+            - source-path: ./
+          sketch-paths: |
+            - extras/arduino_check
