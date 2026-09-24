@@ -27,8 +27,18 @@ file(GLOB_RECURSE m5hal_sources "${M5HAL_DIR}/src/*.cpp")
 file(GLOB_RECURSE m5utility_sources "${M5UTILITY_DIR}/src/*.cpp")
 
 add_executable(m5unitunified_native_check main.cpp ${m5uu_sources} ${m5hal_sources} ${m5utility_sources})
-target_include_directories(m5unitunified_native_check PRIVATE
-  "${M5UU_DIR}/src" "${M5HAL_DIR}/src" "${M5UTILITY_DIR}/src")
+target_include_directories(m5unitunified_native_check PRIVATE "${M5UU_DIR}/src")
+# SYSTEM: warnings raised inside the dependencies are not actionable here
+target_include_directories(m5unitunified_native_check SYSTEM PRIVATE
+  "${M5HAL_DIR}/src" "${M5UTILITY_DIR}/src")
+
+# Warnings for this library only. M5HAL / M5Utility are built here as well, and
+# their warnings are not actionable from this repository.
+if(MSVC)
+  set_source_files_properties(${m5uu_sources} PROPERTIES COMPILE_OPTIONS "/W4")
+else()
+  set_source_files_properties(${m5uu_sources} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
+endif()
 
 # Without this MSVC reports __cplusplus as 199711L, so the C++ version checks in
 # M5Utility (std::optional / std::expected and the like) would select a
