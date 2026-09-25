@@ -1,0 +1,10 @@
+dependencies:
+  idf: ">=5.1"
+  # The local working tree, so that the check runs against the current sources
+  m5stack/M5UnitUnified:
+    override_path: "../../.."
+  # From the registry, where the component name is lower case
+  # (managed_components/m5stack__m5unified). M5UnitUnified picks it up through
+  # idf_component_optional_requires; a name that does not match is skipped
+  # silently and adapter_i2c.cpp builds the I2C_Class stub instead.
+  m5stack/M5Unified: ">=0.2.17"

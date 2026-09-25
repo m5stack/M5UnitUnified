@@ -1,0 +1,102 @@
+name: Build(esp-idf-native)
+
+on:
+  push:
+    tags-ignore:
+      - '*.*.*'
+      - 'v*.*.*'
+    branches:
+      - '*'
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'CMakeLists.txt'
+      - 'idf_component.yml'
+      - 'extras/idf_check/**'
+      - '.github/workflows/esp-idf-build-check.yml'
+  pull_request:
+    paths:
+      - 'src/**.cpp'
+      - 'src/**.hpp'
+      - 'src/**.h'
+      - 'src/**.c'
+      - 'CMakeLists.txt'
+      - 'idf_component.yml'
+      - 'extras/idf_check/**'
+      - '.github/workflows/esp-idf-build-check.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # This library has no examples of its own, so extras/idf_check is a throwaway
+  # ESP-IDF consumer: it includes the public headers and the wiring helper, and
+  # its main/CMakeLists.txt declares no esp_* requires, so anything the public
+  # headers need has to come from this library's own REQUIRES.
+  #
+  # The build log is also checked for "Support I2C_Class". When the optional
+  # M5Unified requires does not match the managed component name, adapter_i2c.cpp
+  # misses <utility/I2C_Class.hpp> and builds the stub: the build stays green but
+  # add(unit, M5.Ex_I2C) / M5.In_I2C fails on the device.
+  build:
+    name: ${{ matrix.target }}:${{ matrix.idf }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        # Version boundaries: v5.1.7 legacy driver (v5.0.x is excluded because
+        # M5GFX needs esp_mm, added in v5.1), v5.4.4 new driver/*_master.h
+        # generation, v5.5.4 latest 5.x, v6.1 latest 6.x
+        idf:
+          - v5.1.7
+          - v5.4.4
+          - v5.5.4
+          - v6.1
+
+        # esp32 covers the version axis; the other chips run on the latest 5.x
+        # and 6.x only (see include below)
+        target:
+          - esp32
+
+        include:
+          # Single core (the CONFIG_FREERTOS_UNICORE paths) and P4
+          - target: esp32c6
+            idf: v5.5.4
+          - target: esp32h2
+            idf: v5.5.4
+          - target: esp32s3
+            idf: v5.5.4
+          - target: esp32p4
+            idf: v5.5.4
+          - target: esp32c6
+            idf: v6.1
+          - target: esp32p4
+            idf: v6.1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and check that the I2C_Class adapter is not the stub
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ matrix.idf }}
+          target: ${{ matrix.target }}
+          path: extras/idf_check
+          command: |
+            idf.py build 2>&1 | tee build.log
+            status=${PIPESTATUS[0]}
+            if [ "$status" -ne 0 ]; then exit "$status"; fi
+            grep -q "Support I2C_Class" build.log \
+              || { echo "ERROR: adapter_i2c.cpp built the I2C_Class stub"; exit 1; }
