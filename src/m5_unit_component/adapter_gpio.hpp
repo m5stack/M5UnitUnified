@@ -37,6 +37,13 @@ uint8_t calculate_rmt_clk_div(const uint32_t apb_freq_hz, const uint32_t tick_ns
 */
 uint32_t calculate_rmt_resolution_hz(const uint32_t apb_freq_hz, const uint32_t tick_ns);
 
+/*!
+  @brief Get the ADC channel of a GPIO
+  @param pin GPIO number
+  @return 0-9: ADC1 channel, 10 or more: ADC2 channel + 10, -1: not an ADC pin
+*/
+int8_t gpio_to_adc_channel(const int8_t pin);
+
 }  // namespace gpio
 
 // Base class for AdapterGPIO

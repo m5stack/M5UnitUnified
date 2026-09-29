@@ -159,6 +159,8 @@ constexpr gpio_config_t gpio_cfg_table[] = {
     },
 };
 
+#if !defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+// ESP-IDF 4.x: GPIO to ADC channel tables (0-9: ADC1 channel, 10-: ADC2 channel + 10)
 #if CONFIG_IDF_TARGET_ESP32
 #pragma message("ADC table: ESP32")
 constexpr int8_t gpio_to_adc_table[] = {
@@ -238,90 +240,9 @@ constexpr int8_t gpio_to_adc_table[] = {
     /*  4 */ 4,   // ADC1_CHANNEL_4
     /*  5 */ 10,  // ADC2_CHANNEL_0
 };
-#elif CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2 || CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32C61
-#pragma message("ADC table: ESP32-C6/H2/C5/C61")
-constexpr int8_t gpio_to_adc_table[] = {
-    /*  0 */ 0,  // ADC1_CHANNEL_0
-    /*  1 */ 1,  // ADC1_CHANNEL_1
-    /*  2 */ 2,  // ADC1_CHANNEL_2
-    /*  3 */ 3,  // ADC1_CHANNEL_3
-    /*  4 */ 4,  // ADC1_CHANNEL_4
-    /*  5 */ 5,  // ADC1_CHANNEL_5
-    /*  6 */ 6,  // ADC1_CHANNEL_6
-};
-#elif CONFIG_IDF_TARGET_ESP32P4
-#pragma message("ADC table: ESP32-P4")
-constexpr int8_t gpio_to_adc_table[] = {
-    /*  0 */ -1,
-    /*  1 */ -1,
-    /*  2 */ -1,
-    /*  3 */ -1,
-    /*  4 */ -1,
-    /*  5 */ -1,
-    /*  6 */ -1,
-    /*  7 */ -1,
-    /*  8 */ -1,
-    /*  9 */ -1,
-    /* 10 */ -1,
-    /* 11 */ -1,
-    /* 12 */ -1,
-    /* 13 */ -1,
-    /* 14 */ -1,
-    /* 15 */ -1,
-    /* 16 */ 0,  // ADC1_CHANNEL_0
-    /* 17 */ 1,  // ADC1_CHANNEL_1
-    /* 18 */ 2,  // ADC1_CHANNEL_2
-    /* 19 */ 3,  // ADC1_CHANNEL_3
-    /* 20 */ 4,  // ADC1_CHANNEL_4
-    /* 21 */ 5,  // ADC1_CHANNEL_5
-    /* 22 */ 6,  // ADC1_CHANNEL_6
-    /* 23 */ 7,  // ADC1_CHANNEL_7
-    /* 24 */ -1,
-    /* 25 */ -1,
-    /* 26 */ -1,
-    /* 27 */ -1,
-    /* 28 */ -1,
-    /* 29 */ -1,
-    /* 30 */ -1,
-    /* 31 */ -1,
-    /* 32 */ -1,
-    /* 33 */ -1,
-    /* 34 */ -1,
-    /* 35 */ -1,
-    /* 36 */ -1,
-    /* 37 */ -1,
-    /* 38 */ -1,
-    /* 39 */ -1,
-    /* 40 */ -1,
-    /* 41 */ -1,
-    /* 42 */ -1,
-    /* 43 */ -1,
-    /* 44 */ -1,
-    /* 45 */ -1,
-    /* 46 */ -1,
-    /* 47 */ -1,
-    /* 48 */ -1,
-    /* 49 */ 10,  // ADC2_CHANNEL_0
-    /* 50 */ 11,  // ADC2_CHANNEL_1
-    /* 51 */ 12,  // ADC2_CHANNEL_2
-    /* 52 */ 13,  // ADC2_CHANNEL_3
-    /* 53 */ 14,  // ADC2_CHANNEL_4
-    /* 54 */ 15,  // ADC2_CHANNEL_5
-};
 #else
 #error Invalid target
 #endif
-
-// 0-9: ADC1 10-:ADC2 (ESP-IDF 4.x)
-// 0-9, 10- : ADC (ESP-IDF 5.x)
-int8_t gpio_to_adc_channel(const int8_t pin)
-{
-    if (pin < 0 || pin >= m5::stl::size(gpio_to_adc_table)) {
-        return -1;
-    }
-    auto v = gpio_to_adc_table[pin];
-    return (v < 10) ? v : v - 10;
-}
 
 #if 0
 // -1:invalid 0:ADC1 1:ADC2
@@ -332,11 +253,40 @@ int gpio_to_adc12(const int8_t pin)
                : -1;
 }
 #endif
+#endif
 
 }  // namespace
 
 namespace m5 {
 namespace unit {
+namespace gpio {
+
+int8_t gpio_to_adc_channel(const int8_t pin)
+{
+#if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+    // Reverse-look up with adc_oneshot_channel_to_io() within each unit's real channel count.
+    // adc_oneshot_io_to_channel() is not used: it scans slots up to SOC_ADC_MAX_CHANNEL_NUM whose unused
+    // entries are 0, so GPIO0 matches them (e.g. P4 ADC2 has 6 of 8 channels, C3 ADC2 has 1 of 5)
+    if (pin < 0) {
+        return -1;
+    }
+    for (int unit = 0; unit < SOC_ADC_PERIPH_NUM; ++unit) {
+        for (int ch = 0; ch < SOC_ADC_CHANNEL_NUM(unit); ++ch) {
+            const auto unit_id = static_cast<adc_unit_t>(unit);
+            const auto channel = static_cast<adc_channel_t>(ch);
+            int io{-1};
+            if (adc_oneshot_channel_to_io(unit_id, channel, &io) == ESP_OK && io == pin) {
+                return static_cast<int8_t>(unit == 0 ? ch : ch + 10);
+            }
+        }
+    }
+    return -1;
+#else
+    return (pin >= 0 && pin < m5::stl::size(gpio_to_adc_table)) ? gpio_to_adc_table[pin] : -1;
+#endif
+}
+
+}  // namespace gpio
 
 AdapterGPIOBase::GPIOImpl::~GPIOImpl()
 {
@@ -367,7 +317,7 @@ void AdapterGPIOBase::GPIOImpl::release_adc_resources()
 m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::ensure_adc_handle(const gpio_num_t pin)
 {
 #if defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
-    const auto ch = gpio_to_adc_channel(pin);
+    const auto ch = gpio::gpio_to_adc_channel(pin);
     if (ch < 0) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
@@ -522,7 +472,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 {
     value = 0;
 
-    const auto ch = gpio_to_adc_channel(pin);
+    const auto ch = gpio::gpio_to_adc_channel(pin);
     if (ch < 0) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
@@ -585,7 +535,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 {
     millivolts = 0;
 
-    const auto ch = gpio_to_adc_channel(pin);
+    const auto ch = gpio::gpio_to_adc_channel(pin);
     if (ch < 0) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
