@@ -15,7 +15,9 @@ namespace m5 {
 namespace unit {
 
 //! Dummy I2C address for testing (any valid non-zero value)
-constexpr uint8_t DUMMY_I2C_ADDR{0x01};
+//! @note SPI units reuse address() as the CS GPIO. Use a value that is not a GPIO on any chip,
+//! so that SPI-capable dummies never drive a real pin (0x01 was GPIO1 = UART0 TX on ESP32).
+constexpr uint8_t DUMMY_I2C_ADDR{0x77};
 
 // DummyComponent for UnitTest (I2C accessible)
 class UnitDummy : public m5::unit::Component {
