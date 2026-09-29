@@ -14,15 +14,21 @@
 
 // #include <esp_clk.h>
 #include <esp32/clk.h>
+#include <soc/soc_caps.h>
 using namespace m5::unit::gpio;
 
 namespace {
 
+// RX-capable channels follow the TX-only ones (ESP32/S2: 0, S3: 4, C3: 2)
+constexpr int8_t rmt_rx_first = SOC_RMT_CHANNELS_PER_GROUP - SOC_RMT_RX_CANDIDATES_PER_GROUP;
+// TX-capable channels are [0, rmt_tx_end)
+constexpr int8_t rmt_tx_end = SOC_RMT_TX_CANDIDATES_PER_GROUP;
+
 uint32_t using_rmt_channel_bits{};
 
-rmt_channel_t retrieve_available_rmt_channel(const int8_t first = 0)
+rmt_channel_t retrieve_available_rmt_channel(const int8_t first, const int8_t end)
 {
-    for (int_fast8_t ch = first; ch < RMT_CHANNEL_MAX; ++ch) {
+    for (int_fast8_t ch = first; ch < end; ++ch) {
         if (((1U << ch) & using_rmt_channel_bits) == 0) {
             return (rmt_channel_t)ch;
         }
@@ -151,7 +157,7 @@ public:
         // RMT TX
         if (_tx_config.channel == RMT_CHANNEL_MAX &&
             (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX)) {
-            rmt_channel_t ch = retrieve_available_rmt_channel();
+            rmt_channel_t ch = retrieve_available_rmt_channel(0, rmt_tx_end);
             if (ch >= RMT_CHANNEL_MAX) {
                 M5_LIB_LOGE("RMT(v1) No room on TX channel");
                 return false;
@@ -184,14 +190,7 @@ public:
         // RMT RX
         if (_rx_config.channel == RMT_CHANNEL_MAX &&
             (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-            int8_t first = 4;  // RX channel 4 - 7
-#elif defined(CONFIG_IDF_TARGET_ESP32C6)
-            int8_t first = 2;  // RX channel 2 - 3
-#else
-            int8_t first = 0;
-#endif
-            rmt_channel_t ch = retrieve_available_rmt_channel(first);
+            rmt_channel_t ch = retrieve_available_rmt_channel(rmt_rx_first, RMT_CHANNEL_MAX);
             if (ch >= RMT_CHANNEL_MAX) {
                 M5_LIB_LOGE("RMT(v1) No room on RX channel");
                 return false;
@@ -216,7 +215,8 @@ public:
             }
 
             if (_adapter_cfg.rx.invert_signal) {
-                gpio_matrix_in(_rx_config.gpio_num, _rx_config.channel + RMT_SIG_IN0_IDX, true);
+                // RX input signals are numbered from the first RX-capable channel
+                gpio_matrix_in(_rx_config.gpio_num, RMT_SIG_IN0_IDX + (_rx_config.channel - rmt_rx_first), true);
             }
 
             declare_use_rmt_channel(ch);
