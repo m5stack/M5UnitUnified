@@ -121,6 +121,22 @@
 #include <M5UnitUnifiedFLASHLIGHT.h>
 #define HAS_UNIT_FLASHLIGHT
 #endif
+#if __has_include(<M5UnitUnifiedIMU.h>)
+#include <M5UnitUnifiedIMU.h>
+#define HAS_UNIT_IMU
+#endif
+#if __has_include(<M5UnitUnifiedOBD.h>)
+#include <M5UnitUnifiedOBD.h>
+#define HAS_UNIT_OBD
+#endif
+#if __has_include(<M5UnitUnifiedTRACKBALL.h>)
+#include <M5UnitUnifiedTRACKBALL.h>
+#define HAS_UNIT_TRACKBALL
+#endif
+#if __has_include(<M5UnitUnifiedUWB.h>)
+#include <M5UnitUnifiedUWB.h>
+#define HAS_UNIT_UWB
+#endif
 
 #include <algorithm>
 #include <utility>
@@ -345,6 +361,37 @@ TEST(UnitUnified, EachUnit)
 
 #ifdef HAS_UNIT_FLASHLIGHT
     each_unit_test<m5::unit::UnitAW3641E>();
+#endif
+
+#ifdef HAS_UNIT_IMU
+    // UnitMPU6xxx is abstract
+    each_unit_test<m5::unit::UnitAK8963>();
+    each_unit_test<m5::unit::UnitBMI270>();
+    each_unit_test<m5::unit::UnitBMI270AuxBMM150>();
+    each_unit_test<m5::unit::UnitBMM150>();
+    each_unit_test<m5::unit::UnitBMM350>();
+    each_unit_test<m5::unit::UnitDoF10>();
+    each_unit_test<m5::unit::UnitDoF9>();
+    each_unit_test<m5::unit::UnitMAG3110>();
+    each_unit_test<m5::unit::UnitMPU6050>();
+    each_unit_test<m5::unit::UnitMPU6500>();
+    each_unit_test<m5::unit::UnitMPU6886>();
+    each_unit_test<m5::unit::UnitMPU9250>();
+    each_unit_test<m5::unit::UnitMiniIMUPro>();
+    each_unit_test<m5::unit::UnitSH200Q>();
+#endif
+
+#ifdef HAS_UNIT_OBD
+    each_unit_test<m5::unit::UnitMCP2515>();
+    each_unit_test<m5::unit::CapMCP2515>();
+#endif
+
+#ifdef HAS_UNIT_TRACKBALL
+    each_unit_test<m5::unit::UnitTrackBall>();
+#endif
+
+#ifdef HAS_UNIT_UWB
+    each_unit_test<m5::unit::UnitUWBPro>();
 #endif
 
     for (auto&& e : vec) {
