@@ -31,42 +31,55 @@ namespace unit {
 
 namespace {
 
-// The input-signal selection field of gpio_func_in_sel_cfg_reg_t differs by chip generation
-// (independent of the ESP-IDF version):
-//   Older chips (ESP32/S2/S3/C3):     func_sel
-//   Newer chips (C6/H2/P4 and later): in_sel
+// The input-signal selection field of gpio_func_in_sel_cfg_reg_t differs by chip and ESP-IDF version:
+//   ESP32/S2/S3, C3 (IDF 4.x):  func_sel
+//   C3 (IDF 5.x), C6/H2/P4/C5:  in_sel
+//   C61:                        func_in_sel
 // Detect which member exists at compile time and read whichever is present (no chip defines needed).
+// Overloads are ranked so that exactly one is chosen even if several members were present.
+template <int N>
+struct sfinae_rank : sfinae_rank<N - 1> {};
+template <>
+struct sfinae_rank<0> {};
+
 template <class T>
-auto read_func_in_sel(const volatile T& reg, int) -> decltype(+reg.in_sel)
+auto read_func_in_sel(const volatile T& reg, sfinae_rank<2>) -> decltype(+reg.in_sel)
 {
     return reg.in_sel;
 }
 template <class T>
-auto read_func_in_sel(const volatile T& reg, long) -> decltype(+reg.func_sel)
+auto read_func_in_sel(const volatile T& reg, sfinae_rank<1>) -> decltype(+reg.func_sel)
 {
     return reg.func_sel;
+}
+template <class T>
+auto read_func_in_sel(const volatile T& reg, sfinae_rank<0>) -> decltype(+reg.func_in_sel)
+{
+    return reg.func_in_sel;
 }
 
 int16_t search_pin_number(const int peripheral_sig)
 {
     int16_t no{-1};
     no = (peripheral_sig >= 0 && peripheral_sig < m5::stl::size(GPIO.func_in_sel_cfg))
-             ? static_cast<int16_t>(read_func_in_sel(GPIO.func_in_sel_cfg[peripheral_sig], 0))
+             ? static_cast<int16_t>(read_func_in_sel(GPIO.func_in_sel_cfg[peripheral_sig], sfinae_rank<2>{}))
              : -1;
     return (no < GPIO_NUM_MAX) ? no : -1;
 }
 
-int8_t idx_table[][2] = {
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
+const int8_t idx_table[][2] = {
+#if defined(I2CEXT0_SDA_IN_IDX)
     {I2CEXT0_SDA_IN_IDX, I2CEXT0_SCL_IN_IDX},  // Wire
-#if !defined(CONFIG_IDF_TARGET_ESP32C6)
-    {I2CEXT1_SDA_IN_IDX, I2CEXT1_SCL_IN_IDX},  // Wire1
 #else
-    {I2CEXT0_SDA_IN_IDX, I2CEXT0_SCL_IN_IDX},  // Same as Wire
+    {I2C0_SDA_PAD_IN_IDX, I2C0_SCL_PAD_IN_IDX},  // Wire (P4)
 #endif
+#if defined(I2CEXT1_SDA_IN_IDX)
+    {I2CEXT1_SDA_IN_IDX, I2CEXT1_SCL_IN_IDX},  // Wire1 (HP I2C1)
+#elif defined(I2C1_SDA_PAD_IN_IDX)
+    {I2C1_SDA_PAD_IN_IDX, I2C1_SCL_PAD_IN_IDX},  // Wire1 (HP I2C1, P4)
 #else
-    {I2C0_SDA_PAD_IN_IDX, I2C0_SCL_PAD_IN_IDX},  // Wire
-    {I2C1_SDA_PAD_IN_IDX, I2C1_SCL_PAD_IN_IDX},  // Wire1
+    // No HP I2C1: Wire1 is absent or is LP I2C on fixed pads (not routed through the GPIO matrix)
+    {-1, -1},
 #endif
 };
 }  // namespace
