@@ -20,11 +20,25 @@
 namespace m5 {
 namespace unit {
 
+#if defined(ESP_PLATFORM)
+namespace {
+// A CS that cannot drive an output (e.g. an I2C address reused as CS) is treated as not connected
+gpio_num_t output_cs_or_nc(const gpio_num_t cs)
+{
+    if (cs == GPIO_NUM_NC || GPIO_IS_VALID_OUTPUT_GPIO(cs)) {
+        return cs;
+    }
+    M5_LIB_LOGW("SPI CS %d is not an output-capable GPIO, treated as not connected", static_cast<int>(cs));
+    return GPIO_NUM_NC;
+}
+}  // namespace
+#endif
+
 #if defined(ARDUINO)
 uint32_t AdapterSPI::SPIClassImpl::transaction_count{};
 
 AdapterSPI::SPIClassImpl::SPIClassImpl(SPIClass& spi, const SPISettings& settings, const gpio_num_t cs)
-    : AdapterSPI::SPIImpl(cs), _spi(&spi), _settings{settings}
+    : AdapterSPI::SPIImpl(output_cs_or_nc(cs)), _spi(&spi), _settings{settings}
 {
     if (_cs != GPIO_NUM_NC) {
         gpio_set_direction(_cs, GPIO_MODE_OUTPUT);
@@ -130,7 +144,7 @@ m5::hal::error::error_t to_spi_error(const esp_err_t err)
 }  // namespace
 
 AdapterSPI::ESPIDFImpl::ESPIDFImpl(spi_device_handle_t handle, const gpio_num_t cs)
-    : AdapterSPI::SPIImpl(), _handle(handle), _cs(cs)
+    : AdapterSPI::SPIImpl(), _handle(handle), _cs(output_cs_or_nc(cs))
 {
     if (_cs != GPIO_NUM_NC) {
         gpio_set_direction(_cs, GPIO_MODE_OUTPUT);
