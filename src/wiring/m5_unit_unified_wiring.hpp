@@ -52,6 +52,23 @@
 #endif
 // NOTE: M5Unified.h / M5GFX are NOT included; caller must include them BEFORE this header.
 
+#if defined(ESP_PLATFORM)
+#include <esp_idf_version.h>
+// Number of HP I2C controllers. SOC_HP_I2C_NUM exists from ESP-IDF 5.3; before that SOC_I2C_NUM counts HP only.
+#if defined(SOC_HP_I2C_NUM)
+#define M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM SOC_HP_I2C_NUM
+#else
+#define M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM SOC_I2C_NUM
+#endif
+// Whether Arduino-ESP32 declares Wire1 (mirrors its Wire.h):
+//   2.x / 3.0: SOC_I2C_NUM > 1, 3.1: SOC_HP_I2C_NUM > 1, 3.2+ on ESP-IDF >= 5.4: SOC_I2C_NUM > 1 (LP I2C included)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#define M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 (SOC_I2C_NUM > 1)
+#else
+#define M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 (M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM > 1)
+#endif
+#endif
+
 namespace m5 {
 namespace unit {
 namespace wiring {
@@ -490,12 +507,12 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
         unit.component_config(cfg);
     }
     const uint32_t eff_clock = unit.component_config().clock;
-#if SOC_I2C_NUM > 1
+#if M5_UNIT_UNIFIED_WIRING_HAS_WIRE1
     TwoWire& wire = p.useWire1 ? Wire1 : Wire;
 #else
-    // SOC_I2C_NUM == 1 (ESP32-C3): Arduino-ESP32 declares Wire only; Wire1 is absent.
+    // Arduino-ESP32 declares Wire only (e.g. ESP32-C3); Wire1 is absent.
     if (p.useWire1) {
-        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but SOC_I2C_NUM==1");
+        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but Wire1 is not available");
         return false;
     }
     TwoWire& wire = Wire;
@@ -645,8 +662,14 @@ inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_nu
     cfg.scl_io_num = scl;
 #if SOC_LP_I2C_SUPPORTED
     if (port == LP_I2C_NUM_0) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
         // LP I2C uses RTC_FAST clock (union with clk_source, mutually exclusive).
         cfg.lp_source_clk = LP_I2C_SCLK_DEFAULT;
+#else
+        // i2c_master_bus_config_t has no lp_source_clk before ESP-IDF 5.3; LP I2C cannot be opened
+        M5_LIB_LOGE("wiring: LP I2C needs ESP-IDF >= 5.3");
+        return nullptr;
+#endif
     } else
 #endif
     {
@@ -968,7 +991,7 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
     const uint32_t eff_clock = unit.component_config().clock;
     i2c_port_t port;
     if (p.useWire1) {
-#if SOC_HP_I2C_NUM >= 2
+#if M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM >= 2
         port = I2C_NUM_1;  // HP I2C #1 (ESP32 / S2 / S3 / P4 / H2 etc.)
 #elif SOC_LP_I2C_SUPPORTED
         port = LP_I2C_NUM_0;  // C6: 2nd I2C is LP (= Arduino Wire1)
