@@ -9,7 +9,7 @@
   @note  Currently handles GPIO directly, but will handle via M5HAL in the future
 */
 #include "adapter_gpio_v2.hpp"
-#if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
+#if defined(M5_UNIT_UNIFIED_USING_RMT_V2) && M5_UNIT_UNIFIED_HAS_RMT
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -442,6 +442,31 @@ TaskHandle_t GPIOImplV2::_receive_task_handle{};
 
 //
 AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplV2(rx_pin, tx_pin))
+{
+}
+
+}  // namespace unit
+}  // namespace m5
+#endif
+
+#if defined(M5_UNIT_UNIFIED_USING_RMT_V2) && !M5_UNIT_UNIFIED_HAS_RMT
+namespace m5 {
+namespace unit {
+
+// No RMT on this SoC (e.g. ESP32-C61): digital I/O, ADC and pulseIn work, RMT modes fail in begin()
+class GPIOImplNoRmt : public AdapterGPIOBase::GPIOImpl {
+public:
+    GPIOImplNoRmt(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
+    {
+    }
+    bool begin(const gpio::adapter_config_t &) override
+    {
+        M5_LIB_LOGE("RMT is not supported on this SoC");
+        return false;
+    }
+};
+
+AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplNoRmt(rx_pin, tx_pin))
 {
 }
 
