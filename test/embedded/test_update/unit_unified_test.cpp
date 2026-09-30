@@ -383,7 +383,7 @@ TEST(UnitUnified, EachUnit)
 
 #ifdef HAS_UNIT_OBD
     each_unit_test<m5::unit::UnitMCP2515>();
-    each_unit_test<m5::unit::CapMCP2515>();
+    each_unit_test<m5::unit::CapOBD>();
 #endif
 
 #ifdef HAS_UNIT_TRACKBALL
