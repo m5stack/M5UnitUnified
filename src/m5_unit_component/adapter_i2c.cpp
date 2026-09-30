@@ -32,9 +32,9 @@ namespace unit {
 namespace {
 
 // The input-signal selection field of gpio_func_in_sel_cfg_reg_t differs by chip and ESP-IDF version:
-//   ESP32/S2/S3, C3 (IDF 4.x):  func_sel
-//   C3 (IDF 5.x), C6/H2/P4/C5:  in_sel
-//   C61:                        func_in_sel
+//   ESP32/S2/S3, C3 (ESP-IDF < 5.1):  func_sel
+//   C3 (ESP-IDF >= 5.1), C6/H2/P4/C5: in_sel
+//   C61:                              func_in_sel
 // Detect which member exists at compile time and read whichever is present (no chip defines needed).
 // Overloads are ranked so that exactly one is chosen even if several members were present.
 template <int N>
