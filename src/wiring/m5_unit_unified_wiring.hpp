@@ -67,6 +67,13 @@
 #else
 #define M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 (M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM > 1)
 #endif
+// Number of HP UARTs. SOC_UART_HP_NUM exists from ESP-IDF 5.2; before that SOC_UART_NUM counts HP only.
+// (SOC_UART_NUM includes the LP UART on C6 / C5 / P4, which cannot be routed to the GROVE ports.)
+#if defined(SOC_UART_HP_NUM)
+#define M5_UNIT_UNIFIED_WIRING_HP_UART_NUM SOC_UART_HP_NUM
+#else
+#define M5_UNIT_UNIFIED_WIRING_HP_UART_NUM SOC_UART_NUM
+#endif
 #endif
 
 namespace m5 {
@@ -154,8 +161,9 @@ struct HatPinPair {
   @param nesso NessoN1 only: PortB = direct GROVE (SoftwareI2C), PortA = QWIIC (Wire)
   @return I2CPins { sda, scl, backend }
   @note NessoN1 PortB -> SoftwareI2C on port_b. NessoN1 PortA -> Wire on port_a (= QWIIC).
-        Core (board_M5Stack) -> ExI2C (In_I2C/Ex_I2C are one shared bus; borrow it to avoid a collision).
-        NanoC6/NanoH2 -> ExI2C (sda/scl reflect port_a pins for diagnostic). Others -> Wire on port_a.
+        NanoC6/NanoH2 -> ExI2C (sda/scl reflect port_a pins for diagnostic).
+        Boards whose In_I2C and Ex_I2C share the same pins (Core, ToughC5, CoreMatrix, PaperDIY...) -> ExI2C
+        (one shared bus; borrow it to avoid a collision). Others -> Wire on port_a.
 */
 inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
 {
@@ -172,12 +180,14 @@ inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
         return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
                 static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
     }
-    if (board == m5::board_t::board_M5Stack) {
-        // Core (Basic/Gray/Go/Fire): In_I2C and Ex_I2C are the same bus (I2C_NUM_0 / GPIO21,22).
-        // M5.begin() already installs that bus via In_I2C, so opening a new Wire / native master bus
-        // on the same port would collide. Borrow M5.Ex_I2C instead (ExI2C backend -> i2cClass).
-        return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
-                static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
+    // In_I2C and Ex_I2C on the same pins are one bus that M5.begin() already installed via In_I2C
+    // (Core Basic/Gray/Go/Fire, ToughC5, CoreMatrix, PaperDIY...). Opening a new Wire / native master bus
+    // on it would collide, so borrow M5.Ex_I2C instead (ExI2C backend -> i2cClass).
+    const int8_t ex_sda = M5.getPin(m5::pin_name_t::ex_i2c_sda);
+    const int8_t ex_scl = M5.getPin(m5::pin_name_t::ex_i2c_scl);
+    if (ex_sda >= 0 && ex_scl >= 0 && ex_sda == M5.getPin(m5::pin_name_t::in_i2c_sda) &&
+        ex_scl == M5.getPin(m5::pin_name_t::in_i2c_scl)) {
+        return {ex_sda, ex_scl, I2CPins::Backend::ExI2C};
     }
     return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_sda)),
             static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_scl)), I2CPins::Backend::Wire};
@@ -417,11 +427,9 @@ inline uint32_t toArduinoSerialConfig(const UartConfig c)
 //! @brief The board's default Serial for a Port unit, chosen by SoC UART count
 inline HardwareSerial& defaultUartSerial()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    return Serial1;
-#elif SOC_UART_NUM > 2
+#if M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 2
     return Serial2;
-#elif SOC_UART_NUM > 1
+#elif M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 1
     return Serial1;
 #else
 #error "Not enough Serial"
@@ -571,11 +579,9 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
 //! @brief The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native)
 inline uart_port_t defaultUartPort()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    return UART_NUM_1;
-#elif SOC_UART_NUM > 2
+#if M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 2
     return UART_NUM_2;
-#elif SOC_UART_NUM > 1
+#elif M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 1
     return UART_NUM_1;
 #else
 #error "Not enough UART"
