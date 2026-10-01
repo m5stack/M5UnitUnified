@@ -57,6 +57,8 @@ jobs:
           - m5stack_cores3  # ESP32-S3
           - m5stack_nanoc6  # ESP32-C6
           - m5stack_tab5    # ESP32-P4
+          - m5stack_stamp_c3  # ESP32-C3 (single HP I2C, in_sel register field)
+          # ESP32-C61: not available, Arduino-ESP32 ships no prebuilt libraries for it
 
         # Pinned to 3.3.7: 3.3.8 breaks the Tab5 (ESP32-P4) build upstream
         # (BOARD_SDMMC_POWER_CHANNEL missing in variants/m5stack_tab5).
@@ -74,6 +76,12 @@ jobs:
           # 2.x uses different board IDs (see skill m5-arduino-workflow-fqbn).
           - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
             board: m5stack-core-esp32
+            platform-version: 2.0.17
+            platform: esp32
+            archi: esp32
+          # ESP32-C3 on 2.x: func_sel register field and RMT v1 RX channel range
+          - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            board: esp32c3
             platform-version: 2.0.17
             platform: esp32
             archi: esp32
