@@ -256,6 +256,40 @@ TEST(ChipCaps, RmtV1ChannelAllocation)
         EXPECT_EQ(adapters.size(), static_cast<size_t>(SOC_RMT_RX_CANDIDATES_PER_GROUP));
     }
 }
+
+// RMT v1: a channel with mem_block_num k occupies blocks [ch, ch + k), so channels must not share blocks
+TEST(ChipCaps, RmtV1MemoryBlocksDoNotOverlap)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin)) {
+        GTEST_SKIP() << "No free GPIO port on this board";
+    }
+    constexpr uint8_t blocks = 2;
+
+    gpio::adapter_config_t cfg{};
+    cfg.mode          = gpio::Mode::RmtTX;
+    cfg.tx.tick_ns    = 1000;
+    cfg.tx.mem_blocks = blocks;
+
+    std::vector<std::unique_ptr<AdapterGPIO>> adapters;
+    std::vector<int> channels;
+    for (int i = 0; i < SOC_RMT_CHANNELS_PER_GROUP; ++i) {
+        std::unique_ptr<AdapterGPIO> a(new AdapterGPIO(-1, pin));
+        if (!a->begin(cfg)) {
+            break;
+        }
+        channels.push_back(a->impl()->rmtTxChannel());
+        adapters.emplace_back(std::move(a));
+    }
+    // TX channels [0, TX candidates) with 2 blocks each: 0, 2, 4, ... (ESP32: 4, S3: 2, C3: 1)
+    EXPECT_EQ(channels.size(), static_cast<size_t>((SOC_RMT_TX_CANDIDATES_PER_GROUP + blocks - 1) / blocks));
+    for (size_t i = 1; i < channels.size(); ++i) {
+        EXPECT_GE(channels[i] - channels[i - 1], static_cast<int>(blocks)) << "channel " << channels[i];
+    }
+    for (auto&& ch : channels) {
+        EXPECT_LE(ch + blocks, SOC_RMT_CHANNELS_PER_GROUP) << "channel " << ch;
+    }
+}
 #endif
 
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)
