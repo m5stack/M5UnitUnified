@@ -284,8 +284,11 @@ void loop() {
 
 ## サポートされているもの
 ### サポートされるフレームワーク
-- Arduino (Arduino-ESP32)
-- ESP-IDF (>=5.0)
+- Arduino (Arduino-ESP32 2.x / 3.x)
+- ESP-IDF native (5.1 以降)
+
+> **NOTE:** ESP-IDF native でのビルドは ESP-IDF **5.1 以降** (5.x および 6.x) を対象としています。
+> NessoN1 の `wiring::addHatI2C` は HatPort (ESP32-C6 の LP I2C) を使います。ESP-IDF native では ESP-IDF **5.3 以降**、Arduino では Arduino-ESP32 **3.2 以降**が必要です。
 
 将来的には Wire クラス等を直接使わず、全て M5HAL 経由で接続を行えるようになる予定です。
 
@@ -293,9 +296,13 @@ void loop() {
 - I2C TwoWire class による
 - I2C I2C_Class (M5Unified In_I2C/Ex_I2C) による
 - I2C M5HAL Bus (SoftwareI2C を含む) による
+- I2C ESP-IDF I2C master bus ハンドル (`i2c_master_bus_handle_t`、ESP-IDF 5.2 以降) による
+- I2C ESP-IDF 旧 I2C ドライバのポート (`i2c_port_t`、ESP-IDF 5.1 以前) による
 - GPIO (現在は各ユニットに必要な機能のみ搭載）
 - UART HardwareSerial class による
+- UART ESP-IDF UART ドライバのポート (`uart_port_t`) による
 - SPI SPI class による
+- SPI ESP-IDF SPI デバイスハンドル (`spi_device_handle_t`) による
 
 ### サポートされるデバイス,ユニット
 [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)を参照

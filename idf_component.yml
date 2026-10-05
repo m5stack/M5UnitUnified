@@ -5,7 +5,7 @@ license: MIT
 version: "0.6.0"
 
 dependencies:
-  idf: ">=5.0"
+  idf: ">=5.1"
   m5stack/M5HAL:
     git: https://github.com/m5stack/M5HAL.git
     version: main
