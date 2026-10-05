@@ -38,9 +38,11 @@ namespace {
 // Detect which member exists at compile time and read whichever is present (no chip defines needed).
 // Overloads are ranked so that exactly one is chosen even if several members were present.
 template <int N>
-struct sfinae_rank : sfinae_rank<N - 1> {};
+struct sfinae_rank : sfinae_rank<N - 1> {
+};
 template <>
-struct sfinae_rank<0> {};
+struct sfinae_rank<0> {
+};
 
 template <class T>
 auto read_func_in_sel(const volatile T& reg, sfinae_rank<2>) -> decltype(+reg.in_sel)
