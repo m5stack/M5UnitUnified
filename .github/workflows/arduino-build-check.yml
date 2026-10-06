@@ -87,6 +87,12 @@ jobs:
             platform-version: 2.0.17
             platform: esp32
             archi: esp32
+          # ESP32-S2 on 2.x: ESP-IDF 4.x defines only the 13-bit ADC width
+          - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            board: esp32s2
+            platform-version: 2.0.17
+            platform: esp32
+            archi: esp32
 
     steps:
       - name: Checkout
