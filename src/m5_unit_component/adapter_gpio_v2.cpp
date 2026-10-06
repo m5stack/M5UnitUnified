@@ -13,8 +13,6 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <freertos/queue.h>
-#include <freertos/semphr.h>
 #include <freertos/ringbuf.h>
 #include <esp_private/esp_clk.h>
 #include <soc/soc_caps.h>      // SOC_RMT_MEM_WORDS_PER_CHANNEL
@@ -157,8 +155,7 @@ namespace unit {
 //
 class GPIOImplV2 : public AdapterGPIO::GPIOImpl {
 public:
-    GPIOImplV2(const int8_t rx_pin, const int8_t tx_pin)
-        : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin), _sem(xSemaphoreCreateMutex())
+    GPIOImplV2(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase::GPIOImpl(rx_pin, tx_pin)
     {
     }
     void *rmtTxHandle() const override
@@ -176,9 +173,24 @@ public:
             rmt_disable(_tx_handle);
             rmt_del_channel(_tx_handle);
         }
+        // The receive callback touches only this instance's buffers, so it must stop before they are freed.
+        // On dual-core chips the callback may be restarting reception on the other core while disabling,
+        // which makes rmt_disable / rmt_del_channel fail: stop it from restarting and retry
         if (_rx_handle) {
-            rmt_disable(_rx_handle);
-            rmt_del_channel(_rx_handle);
+            _rx_stopping = true;
+            bool deleted{};
+            for (int_fast8_t i = 0; i < 10 && !deleted; ++i) {
+                rmt_disable(_rx_handle);
+                deleted = (rmt_del_channel(_rx_handle) == ESP_OK);
+                if (!deleted) {
+                    m5::utility::delay(1);
+                }
+            }
+            if (!deleted) {
+                // Keep the buffers rather than free them under a live channel
+                M5_LIB_LOGE("Failed to delete RMT RX channel, its buffers are left allocated");
+                return;
+            }
         }
         if (_ring_buf) {
             vRingbufferDelete(_ring_buf);
@@ -186,7 +198,6 @@ public:
         if (_rx_buf) {
             heap_caps_free(_rx_buf);
         }
-        vSemaphoreDelete(_sem);
     }
 
     IRAM_ATTR static bool callbackReceive(rmt_channel_handle_t handle, const rmt_rx_done_event_data_t *edata,
@@ -195,16 +206,6 @@ public:
     bool begin(const gpio::adapter_config_t &cfg);
     m5::hal::error::error_t writeWithTransaction(const uint8_t *data, const size_t len, const uint32_t waitMs) override;
     m5::hal::error::error_t readWithTransaction(uint8_t *data, const size_t len) override;
-
-protected:
-    struct callback_struct_t {
-        GPIOImplV2 *me{};
-        uint16_t len{};
-    };
-
-    bool createReceiveTask();
-    static void receive_loop_task(void *);
-    void receive_loop(const uint16_t received_len);
 
 protected:
     rmt_channel_handle_t _rx_handle{}, _tx_handle{};
@@ -218,10 +219,10 @@ protected:
     uint8_t *_rx_buf{};
     RingbufHandle_t _ring_buf{};
 
-    SemaphoreHandle_t _sem{};
-
-    static QueueHandle_t _receive_queue;
-    static TaskHandle_t _receive_task_handle;
+    volatile uint32_t _dropped{};  // Frames the receive callback could not store (counted in ISR)
+    uint32_t _dropped_reported{};
+    volatile bool _rx_stopping{};  // Set before disabling: the callback no longer restarts reception
+    volatile bool _rx_stalled{};   // The callback failed to restart reception (restarted on the next read)
 };
 
 bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
@@ -252,10 +253,6 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
 
     // RMT RX
     if (!_rx_handle && (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
-        if (!createReceiveTask()) {
-            return false;
-        }
-
         _rx_buf = (uint8_t *)heap_caps_malloc(cfg.rx.ring_buffer_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
         if (!_rx_buf) {
             M5_LIB_LOGE("Failed to allocate memory %u", cfg.rx.ring_buffer_size);
@@ -364,6 +361,21 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
 
+    const uint32_t dropped = _dropped;
+    if (dropped != _dropped_reported) {
+        M5_LIB_LOGW("Ringbuffer full, dropped %u frames", static_cast<unsigned>(dropped - _dropped_reported));
+        _dropped_reported = dropped;
+    }
+
+    if (_rx_stalled && !_rx_stopping) {
+        _rx_stalled    = false;
+        const auto err = rmt_receive(_rx_handle, _rx_buf, _rx_buf_len, &_receive_config);
+        M5_LIB_LOGW("RMT RX had stopped, restarted:%s", esp_err_to_name(err));
+        if (err != ESP_OK) {
+            _rx_stalled = true;
+        }
+    }
+
     size_t max_len = len - 2;  // Top of 2 bytes is receive length
     size_t rx_size{};
     auto *items = static_cast<uint8_t *>(xRingbufferReceive(_ring_buf, &rx_size, pdMS_TO_TICKS(50)));
@@ -380,68 +392,25 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
     return rx_size ? m5::hal::error::error_t::OK : m5::hal::error::error_t::TIMEOUT_ERROR;
 }
 
-void GPIOImplV2::receive_loop_task(void *)
-{
-    for (;;) {
-        callback_struct_t cs{};
-        if (xQueueReceive(_receive_queue, &cs, portMAX_DELAY) && cs.me) {
-            cs.me->receive_loop(cs.len);
-        }
-    }
-}
-
-void GPIOImplV2::receive_loop(const uint16_t received_len)
-{
-    xSemaphoreTake(_sem, portMAX_DELAY);
-
-    // Push received data to ringbuffer before restarting rmt_receive
-    if (_ring_buf && received_len > 0) {
-        if (xRingbufferSend(_ring_buf, _rx_buf, received_len, 0) != pdTRUE) {
-            M5_LIB_LOGW("Ringbuffer full, dropped %u bytes", received_len);
-        }
-    }
-    auto err = rmt_receive(_rx_handle, _rx_buf, _rx_buf_len, &_receive_config);
-
-    xSemaphoreGive(_sem);
-
-    if (err != ESP_OK) {
-        M5_LIB_LOGE("Failed to rmt_receive %x", err);
-    }
-}
-
-bool GPIOImplV2::createReceiveTask()
-{
-    if (_receive_task_handle) {
-        return true;
-    }
-
-    if (!_receive_queue) {
-        _receive_queue = xQueueCreate(16, sizeof(callback_struct_t));
-        if (!_receive_queue) {
-            M5_LIB_LOGE("Failed to create queue");
-            return false;
-        }
-    }
-    auto err =
-        xTaskCreatePinnedToCore(receive_loop_task, "M5UnitRmtRX", 8192, nullptr, 2, &_receive_task_handle, PRO_CPU_NUM);
-    return (err == pdPASS) && _receive_task_handle;
-}
-
+// Runs in ISR: hand the frame to the reader and restart reception into the same buffer (both calls are ISR-safe).
+// Everything stays within this instance, so nothing outlives it once the channel is disabled
 IRAM_ATTR bool GPIOImplV2::callbackReceive(rmt_channel_handle_t handle, const rmt_rx_done_event_data_t *edata,
                                            void *user_ctx)
 {
+    auto *me = static_cast<GPIOImplV2 *>(user_ctx);
+    if (me->_rx_stopping) {
+        return false;
+    }
     BaseType_t high_task_wakeup{pdFALSE};
-    callback_struct_t cs{
-        static_cast<GPIOImplV2 *>(user_ctx),
-        static_cast<uint16_t>(edata->num_symbols * sizeof(rmt_symbol_word_t)),
-    };
-    //    esp_rom_printf("ISR %u\n", (uint32_t)edata->num_symbols);
-    xQueueSendFromISR(_receive_queue, &cs, &high_task_wakeup);
-    return (high_task_wakeup == pdTRUE);
+    const size_t len = edata->num_symbols * sizeof(rmt_symbol_word_t);
+    if (len && xRingbufferSendFromISR(me->_ring_buf, edata->received_symbols, len, &high_task_wakeup) != pdTRUE) {
+        me->_dropped = me->_dropped + 1;
+    }
+    if (rmt_receive(handle, me->_rx_buf, me->_rx_buf_len, &me->_receive_config) != ESP_OK) {
+        me->_rx_stalled = true;
+    }
+    return high_task_wakeup == pdTRUE;
 }
-
-QueueHandle_t GPIOImplV2::_receive_queue{};
-TaskHandle_t GPIOImplV2::_receive_task_handle{};
 
 //
 AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplV2(rx_pin, tx_pin))

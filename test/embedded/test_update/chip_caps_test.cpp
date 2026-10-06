@@ -347,3 +347,127 @@ TEST(ChipCaps, RmtV2ChannelAllocation)
     }
 }
 #endif
+}
+#endif
+
+#if defined(M5_UNIT_UNIFIED_USING_RMT_V2) && M5_UNIT_UNIFIED_HAS_RMT
+#include <driver/rmt_types.h>
+
+namespace {
+// RX and TX on the same pin: the RX channel reads back what the TX channel drives, so no unit is needed
+gpio::adapter_config_t loopback_config(const uint16_t ring_buffer_size)
+{
+    gpio::adapter_config_t cfg{};
+    cfg.mode                    = gpio::Mode::RmtRXTX;
+    cfg.tx.tick_ns              = 1000;
+    cfg.tx.mem_blocks           = 1;
+    cfg.tx.idle_output_enabled  = true;
+    cfg.rx.tick_ns              = 1000;
+    cfg.rx.ring_buffer_size     = ring_buffer_size;
+    cfg.rx.idle_ticks_threshold = 200;  // 200us of no edge ends a frame
+#if defined(SOC_RMT_SUPPORT_RX_PINGPONG) && SOC_RMT_SUPPORT_RX_PINGPONG
+    cfg.rx.mem_blocks = 1;
+#else
+    cfg.rx.mem_blocks = 4;  // Without RX ping-pong a frame must fit in the channel memory
+#endif
+    return cfg;
+}
+
+std::vector<rmt_symbol_word_t> make_frame(const size_t count)
+{
+    std::vector<rmt_symbol_word_t> v(count);
+    for (size_t i = 0; i < count; ++i) {
+        v[i].level0    = 1;
+        v[i].duration0 = 30 + (i % 7) * 5;  // us
+        v[i].level1    = 0;
+        v[i].duration1 = 40 + (i % 5) * 5;
+    }
+    return v;
+}
+
+// Read one frame (2-byte length + symbols). Returns the number of symbols
+size_t read_frame(AdapterGPIO& a, std::vector<uint8_t>& buf)
+{
+    for (int i = 0; i < 10; ++i) {
+        if (a.readWithTransaction(buf.data(), buf.size()) == m5::hal::error::error_t::OK) {
+            uint16_t len{};
+            memcpy(&len, buf.data(), sizeof(len));
+            return len / sizeof(rmt_symbol_word_t);
+        }
+    }
+    return 0;
+}
+}  // namespace
+
+// Frames go through the receive ISR into the ringbuffer, including one larger than half of ring_buffer_size
+TEST(ChipCaps, RmtV2LoopbackReceive)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin) || !GPIO_IS_VALID_OUTPUT_GPIO(pin)) {
+        GTEST_SKIP() << "No free output-capable GPIO on this board";
+    }
+    constexpr uint16_t ring_buffer_size = 1024;
+    AdapterGPIO a(pin, pin);
+    if (!a.begin(loopback_config(ring_buffer_size))) {
+        ADD_FAILURE() << "begin failed";
+        return;
+    }
+
+    std::vector<uint8_t> buf(ring_buffer_size + 2);
+    for (auto&& count : {8u, 64u, 200u}) {  // 200 symbols = 800 bytes > ring_buffer_size / 2
+        SCOPED_TRACE(count);
+        const auto frame = make_frame(count);
+        EXPECT_EQ(a.writeWithTransaction(reinterpret_cast<const uint8_t*>(frame.data()),
+                                         frame.size() * sizeof(rmt_symbol_word_t), 1000),
+                  m5::hal::error::error_t::OK);
+
+        const size_t received = read_frame(a, buf);
+        EXPECT_EQ(received, count);
+        if (received != count) {
+            continue;
+        }
+        const auto* sym = reinterpret_cast<const rmt_symbol_word_t*>(buf.data() + 2);
+        for (size_t i = 0; i < received; ++i) {
+            EXPECT_EQ(sym[i].level0, 1u) << i;
+            EXPECT_NEAR(sym[i].duration0, frame[i].duration0, 2) << i;
+            if (i + 1 < received) {  // The last low lasts until the idle threshold ends the frame
+                EXPECT_NEAR(sym[i].duration1, frame[i].duration1, 2) << i;
+            }
+        }
+    }
+}
+
+// Destroy adapters while frames are still in flight: the receive ISR must never touch a freed adapter
+TEST(ChipCaps, RmtV2RecreateWhileReceiving)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin) || !GPIO_IS_VALID_OUTPUT_GPIO(pin)) {
+        GTEST_SKIP() << "No free output-capable GPIO on this board";
+    }
+    const auto frame = make_frame(16);
+    for (int i = 0; i < 100; ++i) {
+        AdapterGPIO a(pin, pin);
+        if (!a.begin(loopback_config(256))) {
+            ADD_FAILURE() << "begin failed at " << i;
+            return;
+        }
+        for (int j = 0; j < 3; ++j) {
+            a.writeWithTransaction(reinterpret_cast<const uint8_t*>(frame.data()),
+                                   frame.size() * sizeof(rmt_symbol_word_t), 0);
+        }
+        m5::utility::delay(i % 4);  // Destroy at different points of the transmission / reception
+    }
+
+    // A fresh adapter still works
+    AdapterGPIO a(pin, pin);
+    if (!a.begin(loopback_config(256))) {
+        ADD_FAILURE() << "begin failed after recreating";
+        return;
+    }
+    std::vector<uint8_t> buf(256 + 2);
+    EXPECT_EQ(a.writeWithTransaction(reinterpret_cast<const uint8_t*>(frame.data()),
+                                     frame.size() * sizeof(rmt_symbol_word_t), 1000),
+              m5::hal::error::error_t::OK);
+    EXPECT_EQ(read_frame(a, buf), frame.size());
+}
+#endif
