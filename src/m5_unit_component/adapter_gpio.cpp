@@ -34,6 +34,15 @@ constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_12;
 constexpr auto M5_ADC_ATTEN_DB = ADC_ATTEN_DB_11;
 #endif
 
+#if !defined(M5_UNIT_UNIFIED_USING_ADC_ONESHOT)
+// Widest single-read width of the chip (ESP-IDF 4.x defines only ADC_WIDTH_BIT_13 on ESP32-S2)
+#if SOC_ADC_MAX_BITWIDTH == 13
+constexpr auto M5_ADC_WIDTH = ADC_WIDTH_BIT_13;
+#else
+constexpr auto M5_ADC_WIDTH          = ADC_WIDTH_BIT_12;
+#endif
+#endif
+
 #if defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED
 #pragma message("DAC supported")
 
@@ -511,7 +520,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 
     adc_oneshot_chan_cfg_t chan_config = {
         .atten    = M5_ADC_ATTEN_DB,      // 0~3.3V
-        .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
+        .bitwidth = ADC_BITWIDTH_DEFAULT  // Max width of the chip (13 bit on ESP32-S2, 12 bit on others)
     };
 
     if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) != ESP_OK) {
@@ -531,7 +540,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
 #if SOC_ADC_SUPPORTED && SOC_ADC_PERIPH_NUM > 1
         adc2_channel_t channel = static_cast<adc2_channel_t>(ch - 10);
         int v                  = 0;
-        if (adc2_get_raw(channel, ADC_WIDTH_BIT_12, &v) != ESP_OK) {
+        if (adc2_get_raw(channel, M5_ADC_WIDTH, &v) != ESP_OK) {
             return m5::hal::error::error_t::UNKNOWN_ERROR;
         }
         value = static_cast<uint16_t>(v);
@@ -540,7 +549,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog(uint16_t& value, 
     }
     // ADC1
     adc1_channel_t channel = static_cast<adc1_channel_t>(ch);
-    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_width(M5_ADC_WIDTH);
     adc1_config_channel_atten(channel, M5_ADC_ATTEN_DB);
     value = static_cast<uint16_t>(adc1_get_raw(channel));
     return m5::hal::error::error_t::OK;
@@ -574,7 +583,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 
     adc_oneshot_chan_cfg_t chan_config = {
         .atten    = M5_ADC_ATTEN_DB,      // 0~3.3V
-        .bitwidth = ADC_BITWIDTH_DEFAULT  // 12bit
+        .bitwidth = ADC_BITWIDTH_DEFAULT  // Max width of the chip (13 bit on ESP32-S2, 12 bit on others)
     };
 
     if (adc_oneshot_config_channel(adc_handle, channel, &chan_config) != ESP_OK) {
@@ -653,7 +662,7 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::read_analog_millivolts(uint32
 
     adc_unit_t unit = (ch < 10) ? ADC_UNIT_1 : ADC_UNIT_2;
     esp_adc_cal_characteristics_t chars{};
-    esp_adc_cal_characterize(unit, M5_ADC_ATTEN_DB, ADC_WIDTH_BIT_12, 1100, &chars);
+    esp_adc_cal_characterize(unit, M5_ADC_ATTEN_DB, M5_ADC_WIDTH, 1100, &chars);
     millivolts = esp_adc_cal_raw_to_voltage(raw, &chars);
     return m5::hal::error::error_t::OK;
 #endif
