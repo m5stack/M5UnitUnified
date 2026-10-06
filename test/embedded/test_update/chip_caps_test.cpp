@@ -347,6 +347,43 @@ TEST(ChipCaps, RmtV2ChannelAllocation)
     }
 }
 #endif
+
+#if M5_UNIT_UNIFIED_HAS_RMT
+// RxPull is applied at begin() whatever the RMT driver did to the pin (ESP-IDF 5.1-5.5 enables the pull-up itself)
+TEST(ChipCaps, RmtRxPull)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin) || !GPIO_IS_VALID_OUTPUT_GPIO(pin)) {
+        GTEST_SKIP() << "No free GPIO with an internal pull on this board";
+    }
+
+    auto level_with = [pin](const gpio::RxPull pull) {
+        gpio::adapter_config_t cfg{};
+        cfg.mode                    = gpio::Mode::RmtRX;
+        cfg.rx.tick_ns              = 1000;
+        cfg.rx.mem_blocks           = 1;
+        cfg.rx.ring_buffer_size     = 256;
+        cfg.rx.idle_ticks_threshold = 10000;
+        cfg.rx.pull                 = pull;
+        AdapterGPIO a(pin, -1);
+        EXPECT_TRUE(a.begin(cfg));
+        m5::utility::delay(5);
+        return gpio_get_level(static_cast<gpio_num_t>(pin));
+    };
+
+    const int up   = level_with(gpio::RxPull::Up);
+    const int down = level_with(gpio::RxPull::Down);
+    if (up == down) {
+        GTEST_SKIP() << "GPIO" << pin << " is driven externally (level " << up << " with both pulls)";
+    }
+    EXPECT_EQ(up, 1);
+    EXPECT_EQ(down, 0);
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    // Input-only pads have no internal pull
+    EXPECT_FALSE(gpio::apply_rx_pull(GPIO_NUM_36, gpio::RxPull::Up));
+    EXPECT_TRUE(gpio::apply_rx_pull(GPIO_NUM_36, gpio::RxPull::None));
+#endif
 }
 #endif
 

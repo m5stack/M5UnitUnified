@@ -78,6 +78,18 @@ enum class Mode : uint8_t {
 };
 
 /*!
+  @enum RxPull
+  @brief Internal pull applied to the RMT RX pin at begin()
+  @note The RMT driver's own pull setting differs by version (ESP-IDF 5.1-5.5 enables the pull-up, 6.x and the
+  legacy driver leave it), so the adapter always applies this explicitly
+ */
+enum class RxPull : uint8_t {
+    None,  //!< Disable both pull-up and pull-down (default)
+    Up,    //!< Enable the pull-up only (for receivers without an external pull-up)
+    Down,  //!< Enable the pull-down only
+};
+
+/*!
   @struct m5::unit::gpio::adapter_config_t
   @brief Unified configuration for RMT v1/v2
 */
@@ -105,6 +117,7 @@ struct adapter_config_t {
         uint16_t filter_ticks_threshold{};  ///< Filter: min valid pulse duration (in ticks)
         uint16_t idle_ticks_threshold{};    ///< RX idle threshold (in ticks for v1, in us for v2)
         bool filter_enabled{};              ///< Enable input signal filter
+        RxPull pull{RxPull::None};          ///< Internal pull on the RX pin
         //        bool eof_flag{};                    ///< Use RX EOF detection via timeout (v2 feature)
     };
 

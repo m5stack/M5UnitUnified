@@ -44,6 +44,14 @@ uint32_t calculate_rmt_resolution_hz(const uint32_t apb_freq_hz, const uint32_t 
 */
 int8_t gpio_to_adc_channel(const int8_t pin);
 
+/*!
+  @brief Apply the internal pull to an RMT RX pin
+  @param pin GPIO number
+  @param pull Pull to apply
+  @return True if successful (Up/Down on an input-only pad fails: it has no internal pull)
+*/
+bool apply_rx_pull(const gpio_num_t pin, const RxPull pull);
+
 }  // namespace gpio
 
 // Base class for AdapterGPIO

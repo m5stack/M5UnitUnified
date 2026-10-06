@@ -296,6 +296,7 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             }
             gpio_set_direction(rx_pin(), GPIO_MODE_INPUT);
         }
+        apply_rx_pull(rx_pin(), cfg.rx.pull);
 
         err = rmt_enable(_rx_handle);
         if (err != ESP_OK) {

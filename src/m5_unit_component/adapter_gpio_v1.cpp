@@ -239,6 +239,7 @@ public:
 
             declare_use_rmt_channel(ch, blocks);
             M5_LIB_LOGI("Retrieve RMT(v1) RX %d/%u blocks:%u", rx_pin(), ch, blocks);
+            apply_rx_pull(rx_pin(), cfg.rx.pull);
 
             if (rmt_rx_start(_rx_config.channel, true) != ESP_OK) {
                 M5_LIB_LOGE("Failed to start RX");

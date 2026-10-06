@@ -286,6 +286,22 @@ int8_t gpio_to_adc_channel(const int8_t pin)
 #endif
 }
 
+bool apply_rx_pull(const gpio_num_t pin, const RxPull pull)
+{
+    if (!GPIO_IS_VALID_OUTPUT_GPIO(pin)) {
+        // Input-only pads (e.g. ESP32 GPIO34-39) have no internal pull: None is already the state
+        if (pull != RxPull::None) {
+            M5_LIB_LOGW("GPIO%d has no internal pull, RxPull ignored", pin);
+            return false;
+        }
+        return true;
+    }
+    const gpio_pull_mode_t mode = (pull == RxPull::Up)     ? GPIO_PULLUP_ONLY
+                                  : (pull == RxPull::Down) ? GPIO_PULLDOWN_ONLY
+                                                           : GPIO_FLOATING;
+    return gpio_set_pull_mode(pin, mode) == ESP_OK;
+}
+
 }  // namespace gpio
 
 AdapterGPIOBase::GPIOImpl::~GPIOImpl()
