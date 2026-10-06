@@ -285,8 +285,11 @@ void loop() {
 
 ## Supported things
 ### Supported frameworks
-- Arduino (Arduino-ESP32)
-- ESP-IDF (>=5.0)
+- Arduino (Arduino-ESP32 2.x and 3.x)
+- ESP-IDF native (5.1 or later)
+
+> **NOTE:** The ESP-IDF native build targets ESP-IDF **5.1 or later** (5.x and 6.x).
+> On NessoN1, `wiring::addHatI2C` uses the HatPort, which is the ESP32-C6 LP I2C. This requires ESP-IDF **5.3 or later** for the ESP-IDF native build, and Arduino-ESP32 **3.2 or later** for Arduino.
 
 In the future, all connections will be made through M5HAL, eliminating the need to use Wire class etc. directly.
 
@@ -294,9 +297,13 @@ In the future, all connections will be made through M5HAL, eliminating the need 
 - I2C with TwoWire class
 - I2C with I2C_Class (M5Unified In_I2C/Ex_I2C)
 - I2C with M5HAL Bus (including SoftwareI2C)
+- I2C with ESP-IDF I2C master bus handle (`i2c_master_bus_handle_t`, ESP-IDF 5.2 or later)
+- I2C with ESP-IDF legacy I2C driver port (`i2c_port_t`, ESP-IDF 5.1 or earlier)
 - GPIO (Currently only functions required for the units are included)
 - UART with HardwareSerial class
+- UART with ESP-IDF UART driver port (`uart_port_t`)
 - SPI with SPI class
+- SPI with ESP-IDF SPI device handle (`spi_device_handle_t`)
 
 ### Supported devices, units
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)

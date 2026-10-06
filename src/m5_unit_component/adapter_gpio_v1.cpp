@@ -14,35 +14,55 @@
 
 // #include <esp_clk.h>
 #include <esp32/clk.h>
+#include <soc/soc_caps.h>
 using namespace m5::unit::gpio;
 
 namespace {
 
-uint32_t using_rmt_channel_bits{};
+// RX-capable channels follow the TX-only ones (ESP32/S2: 0, S3: 4, C3: 2)
+constexpr int8_t rmt_rx_first = SOC_RMT_CHANNELS_PER_GROUP - SOC_RMT_RX_CANDIDATES_PER_GROUP;
+// TX-capable channels are [0, rmt_tx_end)
+constexpr int8_t rmt_tx_end = SOC_RMT_TX_CANDIDATES_PER_GROUP;
 
-rmt_channel_t retrieve_available_rmt_channel(const int8_t first = 0)
+// RMT memory blocks in use. Channel n with mem_block_num k occupies blocks [n, n + k), so a channel is
+// only free when all of its blocks are (the legacy driver does not check overlaps between channels)
+uint32_t using_rmt_block_bits{};
+
+uint8_t rmt_blocks_of(const uint8_t mem_block_num)
 {
-    for (int_fast8_t ch = first; ch < RMT_CHANNEL_MAX; ++ch) {
-        if (((1U << ch) & using_rmt_channel_bits) == 0) {
-            return (rmt_channel_t)ch;
+    return std::max<uint8_t>(1, mem_block_num);
+}
+
+uint32_t rmt_block_mask(const int ch, const uint8_t blocks)
+{
+    return ((1U << blocks) - 1U) << ch;
+}
+
+// First channel in [first, end) whose blocks [ch, ch + blocks) are all free and inside the group
+rmt_channel_t retrieve_available_rmt_channel(const int8_t first, const int8_t end, const uint8_t blocks)
+{
+    for (int_fast8_t ch = first; ch < end && ch + blocks <= SOC_RMT_CHANNELS_PER_GROUP; ++ch) {
+        if ((rmt_block_mask(ch, blocks) & using_rmt_block_bits) == 0) {
+            return static_cast<rmt_channel_t>(ch);
         }
     }
     return RMT_CHANNEL_MAX;
 }
 
-bool declare_use_rmt_channel(const int ch)
+bool declare_use_rmt_channel(const int ch, const uint8_t blocks)
 {
-    if (ch >= 0 && ch < RMT_CHANNEL_MAX && ((1U << ch) & using_rmt_channel_bits) == 0) {
-        using_rmt_channel_bits |= (1U << ch);
+    if (ch >= 0 && ch + blocks <= SOC_RMT_CHANNELS_PER_GROUP &&
+        (rmt_block_mask(ch, blocks) & using_rmt_block_bits) == 0) {
+        using_rmt_block_bits |= rmt_block_mask(ch, blocks);
         return true;
     }
     return false;
 }
 
-void clear_use_rmt_channel(const int ch)
+void clear_use_rmt_channel(const int ch, const uint8_t blocks)
 {
-    if (ch >= 0 && ch < RMT_CHANNEL_MAX) {
-        using_rmt_channel_bits &= ~(1U << ch);
+    if (ch >= 0 && ch + blocks <= SOC_RMT_CHANNELS_PER_GROUP) {
+        using_rmt_block_bits &= ~rmt_block_mask(ch, blocks);
     }
 }
 
@@ -135,12 +155,12 @@ public:
         if (_tx_config.channel != RMT_CHANNEL_MAX) {
             rmt_tx_stop(_tx_config.channel);
             rmt_driver_uninstall(_tx_config.channel);
-            clear_use_rmt_channel(_tx_config.channel);
+            clear_use_rmt_channel(_tx_config.channel, rmt_blocks_of(_tx_config.mem_block_num));
         }
         if (_rx_config.channel != RMT_CHANNEL_MAX) {
             rmt_rx_stop(_rx_config.channel);
             rmt_driver_uninstall(_rx_config.channel);
-            clear_use_rmt_channel(_rx_config.channel);
+            clear_use_rmt_channel(_rx_config.channel, rmt_blocks_of(_rx_config.mem_block_num));
         }
     }
 
@@ -151,12 +171,14 @@ public:
         // RMT TX
         if (_tx_config.channel == RMT_CHANNEL_MAX &&
             (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX)) {
-            rmt_channel_t ch = retrieve_available_rmt_channel();
+            auto tx_config         = to_rmt_config_tx(cfg, esp_clk_apb_freq());
+            const uint8_t blocks   = rmt_blocks_of(tx_config.mem_block_num);
+            const rmt_channel_t ch = retrieve_available_rmt_channel(0, rmt_tx_end, blocks);
             if (ch >= RMT_CHANNEL_MAX) {
-                M5_LIB_LOGE("RMT(v1) No room on TX channel");
+                M5_LIB_LOGE("RMT(v1) No room on TX channel for %u memory blocks", blocks);
                 return false;
             }
-            _tx_config          = to_rmt_config_tx(cfg, esp_clk_apb_freq());
+            _tx_config          = tx_config;
             _tx_config.channel  = ch;
             _tx_config.gpio_num = tx_pin();
 
@@ -178,26 +200,21 @@ public:
                 gpio_matrix_out(_tx_config.gpio_num, _tx_config.channel + RMT_SIG_OUT0_IDX, true, false);
             }
 
-            declare_use_rmt_channel(ch);
-            M5_LIB_LOGI("Retrieve RMT(v1) TX %d/%u", tx_pin(), ch);
+            declare_use_rmt_channel(ch, blocks);
+            M5_LIB_LOGI("Retrieve RMT(v1) TX %d/%u blocks:%u", tx_pin(), ch, blocks);
         }
         // RMT RX
         if (_rx_config.channel == RMT_CHANNEL_MAX &&
             (cfg.mode == gpio::Mode::RmtRX || cfg.mode == gpio::Mode::RmtRXTX)) {
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-            int8_t first = 4;  // RX channel 4 - 7
-#elif defined(CONFIG_IDF_TARGET_ESP32C6)
-            int8_t first = 2;  // RX channel 2 - 3
-#else
-            int8_t first = 0;
-#endif
-            rmt_channel_t ch = retrieve_available_rmt_channel(first);
+            auto rx_config         = to_rmt_config_rx(cfg, esp_clk_apb_freq());
+            const uint8_t blocks   = rmt_blocks_of(rx_config.mem_block_num);
+            const rmt_channel_t ch = retrieve_available_rmt_channel(rmt_rx_first, RMT_CHANNEL_MAX, blocks);
             if (ch >= RMT_CHANNEL_MAX) {
-                M5_LIB_LOGE("RMT(v1) No room on RX channel");
+                M5_LIB_LOGE("RMT(v1) No room on RX channel for %u memory blocks", blocks);
                 return false;
             }
 
-            _rx_config          = to_rmt_config_rx(cfg, esp_clk_apb_freq());
+            _rx_config          = rx_config;
             _rx_config.channel  = ch;
             _rx_config.gpio_num = rx_pin();
 
@@ -216,11 +233,13 @@ public:
             }
 
             if (_adapter_cfg.rx.invert_signal) {
-                gpio_matrix_in(_rx_config.gpio_num, _rx_config.channel + RMT_SIG_IN0_IDX, true);
+                // RX input signals are numbered from the first RX-capable channel
+                gpio_matrix_in(_rx_config.gpio_num, RMT_SIG_IN0_IDX + (_rx_config.channel - rmt_rx_first), true);
             }
 
-            declare_use_rmt_channel(ch);
-            M5_LIB_LOGI("Retrieve RMT(v1) RX %d/%u", rx_pin(), ch);
+            declare_use_rmt_channel(ch, blocks);
+            M5_LIB_LOGI("Retrieve RMT(v1) RX %d/%u blocks:%u", rx_pin(), ch, blocks);
+            apply_rx_pull(rx_pin(), cfg.rx.pull);
 
             if (rmt_rx_start(_rx_config.channel, true) != ESP_OK) {
                 M5_LIB_LOGE("Failed to start RX");

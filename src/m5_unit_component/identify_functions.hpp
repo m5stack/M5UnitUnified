@@ -24,6 +24,16 @@
 #define M5_UNIT_UNIFIED_USING_RMT_V2
 #define M5_UNIT_UNIFIED_USING_ADC_ONESHOT
 #endif
+
+// RMT availability: every ESP-IDF 4.x target has RMT; from 5.x follow SOC_RMT_SUPPORTED (C2 / C61 have none)
+#include <soc/soc_caps.h>
+#if !defined(M5_UNIT_UNIFIED_USING_RMT_V2) || (defined(SOC_RMT_SUPPORTED) && SOC_RMT_SUPPORTED)
+#define M5_UNIT_UNIFIED_HAS_RMT 1
+#else
+#define M5_UNIT_UNIFIED_HAS_RMT 0
+#endif
+#else
+#define M5_UNIT_UNIFIED_HAS_RMT 0
 #endif  // ESP_PLATFORM
 
 #endif

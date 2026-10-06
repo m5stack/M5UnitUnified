@@ -18,6 +18,19 @@
 #include <soc/gpio_reg.h>
 #endif
 
+#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#include <soc/io_mux_reg.h>
+// GPIO_PIN_MUX_REG[] is declared by ESP-IDF but has no definition on chips with a contiguous IO_MUX
+// (ESP32-C5 / C61 etc.); fall back to computing the address from IO_MUX_GPIO0_REG
+extern "C" const uint32_t GPIO_PIN_MUX_REG[] __attribute__((weak));
+namespace {
+uint32_t io_mux_reg(const size_t pin)
+{
+    return GPIO_PIN_MUX_REG ? GPIO_PIN_MUX_REG[pin] : (IO_MUX_GPIO0_REG + static_cast<uint32_t>(pin) * 4u);
+}
+}  // namespace
+#endif
+
 namespace m5 {
 namespace unit {
 namespace gpio {
@@ -35,7 +48,7 @@ void pin_backup_t::backup(void)
 #if !defined(CONFIG_IDF_TARGET_ESP32P4)
     auto pin_num = (size_t)_pin_num;
     if (pin_num < GPIO_NUM_MAX) {
-        _io_mux_gpio_reg   = *reinterpret_cast<uint32_t*>(GPIO_PIN_MUX_REG[pin_num]);
+        _io_mux_gpio_reg   = *reinterpret_cast<uint32_t*>(io_mux_reg(pin_num));
         _gpio_pin_reg      = *reinterpret_cast<uint32_t*>(GPIO_PIN0_REG + (pin_num * 4));
         _gpio_func_out_reg = *reinterpret_cast<uint32_t*>(GPIO_FUNC0_OUT_SEL_CFG_REG + (pin_num * 4));
 
@@ -74,13 +87,13 @@ void pin_backup_t::restore(void)
 
         M5_LIB_LOGV("restore pin:%d ", pin_num);
         M5_LIB_LOGV("restore IO_MUX_GPIO0_REG          :%08x -> %08x ",
-                    *reinterpret_cast<uint32_t*>(GPIO_PIN_MUX_REG[pin_num]), _io_mux_gpio_reg);
+                    *reinterpret_cast<uint32_t*>(io_mux_reg(pin_num)), _io_mux_gpio_reg);
         M5_LIB_LOGV("restore GPIO_PIN0_REG             :%08x -> %08x ",
                     *reinterpret_cast<uint32_t*>(GPIO_PIN0_REG + (pin_num * 4)), _gpio_pin_reg);
         M5_LIB_LOGV("restore GPIO_FUNC0_OUT_SEL_CFG_REG:%08x -> %08x ",
                     *reinterpret_cast<uint32_t*>(GPIO_FUNC0_OUT_SEL_CFG_REG + (pin_num * 4)), _gpio_func_out_reg);
 
-        *reinterpret_cast<uint32_t*>(GPIO_PIN_MUX_REG[_pin_num])                 = _io_mux_gpio_reg;
+        *reinterpret_cast<uint32_t*>(io_mux_reg(_pin_num))                       = _io_mux_gpio_reg;
         *reinterpret_cast<uint32_t*>(GPIO_PIN0_REG + (pin_num * 4))              = _gpio_pin_reg;
         *reinterpret_cast<uint32_t*>(GPIO_FUNC0_OUT_SEL_CFG_REG + (pin_num * 4)) = _gpio_func_out_reg;
 

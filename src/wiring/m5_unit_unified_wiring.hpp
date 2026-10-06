@@ -52,6 +52,30 @@
 #endif
 // NOTE: M5Unified.h / M5GFX are NOT included; caller must include them BEFORE this header.
 
+#if defined(ESP_PLATFORM)
+#include <esp_idf_version.h>
+// Number of HP I2C controllers. SOC_HP_I2C_NUM exists from ESP-IDF 5.3; before that SOC_I2C_NUM counts HP only.
+#if defined(SOC_HP_I2C_NUM)
+#define M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM SOC_HP_I2C_NUM
+#else
+#define M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM SOC_I2C_NUM
+#endif
+// Whether Arduino-ESP32 declares Wire1 (mirrors its Wire.h):
+//   2.x / 3.0: SOC_I2C_NUM > 1, 3.1: SOC_HP_I2C_NUM > 1, 3.2+ on ESP-IDF >= 5.4: SOC_I2C_NUM > 1 (LP I2C included)
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#define M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 (SOC_I2C_NUM > 1)
+#else
+#define M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 (M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM > 1)
+#endif
+// Number of HP UARTs. SOC_UART_HP_NUM exists from ESP-IDF 5.2; before that SOC_UART_NUM counts HP only.
+// (SOC_UART_NUM includes the LP UART on C6 / C5 / P4, which cannot be routed to the GROVE ports.)
+#if defined(SOC_UART_HP_NUM)
+#define M5_UNIT_UNIFIED_WIRING_HP_UART_NUM SOC_UART_HP_NUM
+#else
+#define M5_UNIT_UNIFIED_WIRING_HP_UART_NUM SOC_UART_NUM
+#endif
+#endif
+
 namespace m5 {
 namespace unit {
 namespace wiring {
@@ -137,8 +161,9 @@ struct HatPinPair {
   @param nesso NessoN1 only: PortB = direct GROVE (SoftwareI2C), PortA = QWIIC (Wire)
   @return I2CPins { sda, scl, backend }
   @note NessoN1 PortB -> SoftwareI2C on port_b. NessoN1 PortA -> Wire on port_a (= QWIIC).
-        Core (board_M5Stack) -> ExI2C (In_I2C/Ex_I2C are one shared bus; borrow it to avoid a collision).
-        NanoC6/NanoH2 -> ExI2C (sda/scl reflect port_a pins for diagnostic). Others -> Wire on port_a.
+        NanoC6/NanoH2 -> ExI2C (sda/scl reflect port_a pins for diagnostic).
+        Boards whose In_I2C and Ex_I2C share the same pins (Core, ToughC5, CoreMatrix, PaperDIY...) -> ExI2C
+        (one shared bus; borrow it to avoid a collision). Others -> Wire on port_a.
 */
 inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
 {
@@ -155,12 +180,14 @@ inline I2CPins i2cPins(const NessoPort nesso = NessoPort::PortB)
         return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
                 static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
     }
-    if (board == m5::board_t::board_M5Stack) {
-        // Core (Basic/Gray/Go/Fire): In_I2C and Ex_I2C are the same bus (I2C_NUM_0 / GPIO21,22).
-        // M5.begin() already installs that bus via In_I2C, so opening a new Wire / native master bus
-        // on the same port would collide. Borrow M5.Ex_I2C instead (ExI2C backend -> i2cClass).
-        return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_sda)),
-                static_cast<int8_t>(M5.getPin(m5::pin_name_t::ex_i2c_scl)), I2CPins::Backend::ExI2C};
+    // In_I2C and Ex_I2C on the same pins are one bus that M5.begin() already installed via In_I2C
+    // (Core Basic/Gray/Go/Fire, ToughC5, CoreMatrix, PaperDIY...). Opening a new Wire / native master bus
+    // on it would collide, so borrow M5.Ex_I2C instead (ExI2C backend -> i2cClass).
+    const int8_t ex_sda = M5.getPin(m5::pin_name_t::ex_i2c_sda);
+    const int8_t ex_scl = M5.getPin(m5::pin_name_t::ex_i2c_scl);
+    if (ex_sda >= 0 && ex_scl >= 0 && ex_sda == M5.getPin(m5::pin_name_t::in_i2c_sda) &&
+        ex_scl == M5.getPin(m5::pin_name_t::in_i2c_scl)) {
+        return {ex_sda, ex_scl, I2CPins::Backend::ExI2C};
     }
     return {static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_sda)),
             static_cast<int8_t>(M5.getPin(m5::pin_name_t::port_a_scl)), I2CPins::Backend::Wire};
@@ -400,11 +427,9 @@ inline uint32_t toArduinoSerialConfig(const UartConfig c)
 //! @brief The board's default Serial for a Port unit, chosen by SoC UART count
 inline HardwareSerial& defaultUartSerial()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    return Serial1;
-#elif SOC_UART_NUM > 2
+#if M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 2
     return Serial2;
-#elif SOC_UART_NUM > 1
+#elif M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 1
     return Serial1;
 #else
 #error "Not enough Serial"
@@ -490,12 +515,12 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
         unit.component_config(cfg);
     }
     const uint32_t eff_clock = unit.component_config().clock;
-#if SOC_I2C_NUM > 1
+#if M5_UNIT_UNIFIED_WIRING_HAS_WIRE1
     TwoWire& wire = p.useWire1 ? Wire1 : Wire;
 #else
-    // SOC_I2C_NUM == 1 (ESP32-C3): Arduino-ESP32 declares Wire only; Wire1 is absent.
+    // Arduino-ESP32 declares Wire only (e.g. ESP32-C3); Wire1 is absent.
     if (p.useWire1) {
-        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but SOC_I2C_NUM==1");
+        M5_LIB_LOGE("wiring: addHatI2C NessoN1 Hat needs Wire1, but Wire1 is not available");
         return false;
     }
     TwoWire& wire = Wire;
@@ -554,11 +579,9 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
 //! @brief The board's default UART port for a Port unit, chosen by SoC UART count (ESP-IDF native)
 inline uart_port_t defaultUartPort()
 {
-#if defined(CONFIG_IDF_TARGET_ESP32C6)
-    return UART_NUM_1;
-#elif SOC_UART_NUM > 2
+#if M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 2
     return UART_NUM_2;
-#elif SOC_UART_NUM > 1
+#elif M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 1
     return UART_NUM_1;
 #else
 #error "Not enough UART"
@@ -645,8 +668,14 @@ inline i2c_master_bus_handle_t ensureI2CBus(const i2c_port_t port, const gpio_nu
     cfg.scl_io_num = scl;
 #if SOC_LP_I2C_SUPPORTED
     if (port == LP_I2C_NUM_0) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
         // LP I2C uses RTC_FAST clock (union with clk_source, mutually exclusive).
         cfg.lp_source_clk = LP_I2C_SCLK_DEFAULT;
+#else
+        // i2c_master_bus_config_t has no lp_source_clk before ESP-IDF 5.3; LP I2C cannot be opened
+        M5_LIB_LOGE("wiring: LP I2C needs ESP-IDF >= 5.3");
+        return nullptr;
+#endif
     } else
 #endif
     {
@@ -968,7 +997,7 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
     const uint32_t eff_clock = unit.component_config().clock;
     i2c_port_t port;
     if (p.useWire1) {
-#if SOC_HP_I2C_NUM >= 2
+#if M5_UNIT_UNIFIED_WIRING_HP_I2C_NUM >= 2
         port = I2C_NUM_1;  // HP I2C #1 (ESP32 / S2 / S3 / P4 / H2 etc.)
 #elif SOC_LP_I2C_SUPPORTED
         port = LP_I2C_NUM_0;  // C6: 2nd I2C is LP (= Arduino Wire1)
