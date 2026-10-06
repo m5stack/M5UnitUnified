@@ -17,8 +17,10 @@
 #include <freertos/semphr.h>
 #include <freertos/ringbuf.h>
 #include <esp_private/esp_clk.h>
-#include <soc/soc_caps.h>  // SOC_RMT_MEM_WORDS_PER_CHANNEL
-#include <soc/soc.h>       // PRO_CPU_NUM
+#include <soc/soc_caps.h>      // SOC_RMT_MEM_WORDS_PER_CHANNEL
+#include <soc/soc.h>           // PRO_CPU_NUM
+#include <soc/gpio_sig_map.h>  // SIG_GPIO_OUT_IDX
+#include <esp_rom_gpio.h>
 
 using namespace m5::unit::gpio;
 
@@ -285,17 +287,12 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             return false;
         }
 
-        // For StampS3 (input-only pads such as ESP32 GPIO34-39 cannot be driven)
+        // ESP-IDF 5.4+ no longer disables the pin output in rmt_new_rx_channel (the legacy driver did),
+        // so a pin left driven as an output (e.g. GPIO13/15 after M5Unified's Capsule detection) would block reception
         if (GPIO_IS_VALID_OUTPUT_GPIO(rx_pin())) {
-            gpio_set_level(rx_pin(), 1);
-            gpio_pullup_dis(rx_pin());
-            gpio_pulldown_dis(rx_pin());
-            gpio_set_direction(rx_pin(), GPIO_MODE_INPUT_OUTPUT_OD);
-            gpio_set_intr_type(rx_pin(), GPIO_INTR_DISABLE);
-            gpio_set_level(rx_pin(), 0);
-            m5::utility::delay(22);
-            gpio_set_level(rx_pin(), 1);
+            esp_rom_gpio_connect_out_signal(rx_pin(), SIG_GPIO_OUT_IDX, false, false);
         }
+        gpio_set_direction(rx_pin(), GPIO_MODE_INPUT);
 
         err = rmt_enable(_rx_handle);
         if (err != ESP_OK) {
