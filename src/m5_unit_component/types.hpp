@@ -101,7 +101,7 @@ struct adapter_config_t {
     };
     //! @brief For RX
     struct rx_config_t : config_t {
-        uint16_t ring_buffer_size{};        ///< Ring buffer size for RX (bytes, v1 only)
+        uint16_t ring_buffer_size{};        ///< Maximum size of one received frame (bytes)
         uint16_t filter_ticks_threshold{};  ///< Filter: min valid pulse duration (in ticks)
         uint16_t idle_ticks_threshold{};    ///< RX idle threshold (in ticks for v1, in us for v2)
         bool filter_enabled{};              ///< Enable input signal filter

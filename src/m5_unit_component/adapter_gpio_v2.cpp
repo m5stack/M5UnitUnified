@@ -262,7 +262,10 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             return false;
         }
 
-        _ring_buf = xRingbufferCreate(cfg.rx.ring_buffer_size, RINGBUF_TYPE_NOSPLIT);
+        // A NOSPLIT ringbuffer only accepts items up to half its size (minus an 8-byte header),
+        // so size it to hold one full receive buffer
+        const size_t ring_size = 2 * (((cfg.rx.ring_buffer_size + 3) & ~3u) + 8);
+        _ring_buf              = xRingbufferCreate(ring_size, RINGBUF_TYPE_NOSPLIT);
         if (!_ring_buf) {
             M5_LIB_LOGE("Failed to create ringbuffer");
             return false;
