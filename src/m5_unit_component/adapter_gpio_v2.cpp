@@ -285,8 +285,8 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             return false;
         }
 
-        // For StampS3
-        {
+        // For StampS3 (input-only pads such as ESP32 GPIO34-39 cannot be driven)
+        if (GPIO_IS_VALID_OUTPUT_GPIO(rx_pin())) {
             gpio_set_level(rx_pin(), 1);
             gpio_pullup_dis(rx_pin());
             gpio_pulldown_dis(rx_pin());
