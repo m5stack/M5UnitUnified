@@ -288,11 +288,14 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
         }
 
         // ESP-IDF 5.4+ no longer disables the pin output in rmt_new_rx_channel (the legacy driver did),
-        // so a pin left driven as an output (e.g. GPIO13/15 after M5Unified's Capsule detection) would block reception
-        if (GPIO_IS_VALID_OUTPUT_GPIO(rx_pin())) {
-            esp_rom_gpio_connect_out_signal(rx_pin(), SIG_GPIO_OUT_IDX, false, false);
+        // so a pin left driven as an output (e.g. GPIO13/15 after M5Unified's Capsule detection) would block reception.
+        // A single-wire pin shared with TX is left to the TX channel
+        if (rx_pin() != tx_pin()) {
+            if (GPIO_IS_VALID_OUTPUT_GPIO(rx_pin())) {
+                esp_rom_gpio_connect_out_signal(rx_pin(), SIG_GPIO_OUT_IDX, false, false);
+            }
+            gpio_set_direction(rx_pin(), GPIO_MODE_INPUT);
         }
-        gpio_set_direction(rx_pin(), GPIO_MODE_INPUT);
 
         err = rmt_enable(_rx_handle);
         if (err != ESP_OK) {
