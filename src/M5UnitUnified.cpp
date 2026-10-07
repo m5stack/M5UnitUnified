@@ -9,6 +9,7 @@
 */
 #include "M5UnitUnified.hpp"
 #include <M5Utility.hpp>
+#include <algorithm>
 
 namespace m5 {
 namespace unit {
@@ -308,11 +309,26 @@ std::string UnitUnified::make_unit_info(const Component* u, const uint8_t indent
     stack.reserve(16);
     stack.push_back({u, indent});
 
+    // Units sharing an adapter talk over the same path (e.g. daisy-chained LEDs on one hub channel)
+    struct SeenAdapter {
+        const Adapter* adapter;
+        uint32_t order;
+    };
+    std::vector<SeenAdapter> seen;
+
     while (!stack.empty()) {
         auto entry = stack.back();
         stack.pop_back();
 
-        s += m5::utility::formatString("%*c%s\n", entry.indent * 4, ' ', entry.node->debugInfo().c_str());
+        std::string shared{};
+        const Adapter* ad = entry.node->_adapter.get();
+        auto it = std::find_if(seen.begin(), seen.end(), [ad](const SeenAdapter& sa) { return sa.adapter == ad; });
+        if (it != seen.end()) {
+            shared = m5::utility::formatString("  shared:#%u", it->order);
+        } else {
+            seen.push_back({ad, entry.node->order()});
+        }
+        s += std::string(entry.indent * 4, ' ') + entry.node->debugInfo() + shared + '\n';
 
         // Push sibling first (processed later = output later)
         if (entry.node->_next) {

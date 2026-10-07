@@ -483,27 +483,73 @@ bool Component::changeAddress(const uint8_t addr)
     return false;
 }
 
-std::string Component::debugInfo() const
+namespace {
+const char* i2c_impl_name(const AdapterI2C::ImplType t)
 {
-    std::string tmp{};
-    switch (_adapter->type()) {
-        case Adapter::Type::I2C:
-            tmp = m5::utility::formatString("%p:%u ADDR:%02X", _adapter.get(), _adapter.use_count(),
-                                            asAdapter<AdapterI2C>(Adapter::Type::I2C)->address());
-            break;
-#if defined(ESP_PLATFORM)
-        case Adapter::Type::GPIO:
-            tmp = m5::utility::formatString("%p:%u RX:%d TX:%d", _adapter.get(), _adapter.use_count(),
-                                            asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->rx_pin(),
-                                            asAdapter<AdapterGPIO>(Adapter::Type::GPIO)->tx_pin());
-            break;
+    switch (t) {
+        case AdapterI2C::ImplType::TwoWire:
+            return "TwoWire";
+        case AdapterI2C::ImplType::Bus:
+            return "M5HAL";
+        case AdapterI2C::ImplType::I2CClass:
+            return "I2C_Class";
+#if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+        case AdapterI2C::ImplType::ESPIDFMasterBus:
+            return "ESP-IDF";
+#elif defined(ESP_PLATFORM)
+        case AdapterI2C::ImplType::ESPIDFLegacyBus:
+            return "ESP-IDF(legacy)";
 #endif
         default:
-            tmp = m5::utility::formatString("%p:%u Type:%d", _adapter.get(), _adapter.use_count(), _adapter->type());
-            break;
+            return "Unknown";
     }
-    return m5::utility::formatString("[%s]:ID{0X%08x}:%s CH:%d parent:%u children:%zu/%u", deviceName(), identifier(),
-                                     tmp.c_str(), channel(), hasParent(), childrenSize(), _component_cfg.max_children);
+}
+}  // namespace
+
+// e.g. "#2 UnitPuzzle{0x9C1E33D5}  UnitPbHub#1 ch:0  children:1/1"
+//      "#1 UnitPbHub{0x2B4F7A10}  I2C TwoWire(sda:21 scl:22) 0x61  children:1/6"
+std::string Component::debugInfo() const
+{
+    std::string conn{};
+    const auto* i2c = (_adapter->type() == Adapter::Type::I2C) ? asAdapter<AdapterI2C>(Adapter::Type::I2C) : nullptr;
+    if (_parent) {
+        // Where on the parent (hub channel). A child with its own I2C address (e.g. behind PaHub) shows it,
+        // one reached through the parent's address (e.g. PbHub channel) does not
+        conn = m5::utility::formatString("%s#%u ch:%u", _parent->deviceName(), _parent->order(), channel());
+        const auto* parent_i2c = _parent->asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        if (i2c && (!parent_i2c || i2c->address() != parent_i2c->address())) {
+            conn += m5::utility::formatString(" 0x%02X", i2c->address());
+        }
+    } else {
+        switch (_adapter->type()) {
+            case Adapter::Type::I2C: {
+                const auto* impl = i2c->impl();
+                conn             = m5::utility::formatString("I2C %s", i2c_impl_name(impl->implType()));
+                if (impl->sda() >= 0 && impl->scl() >= 0) {
+                    conn += m5::utility::formatString("(sda:%d scl:%d)", impl->sda(), impl->scl());
+                }
+                conn += m5::utility::formatString(" 0x%02X", i2c->address());
+            } break;
+#if defined(ESP_PLATFORM)
+            case Adapter::Type::GPIO: {
+                const auto* gpio = asAdapter<AdapterGPIO>(Adapter::Type::GPIO);
+                conn             = m5::utility::formatString("GPIO rx:%d tx:%d", gpio->rx_pin(), gpio->tx_pin());
+            } break;
+            case Adapter::Type::SPI:
+                conn = m5::utility::formatString("SPI cs:%d", asAdapter<AdapterSPI>(Adapter::Type::SPI)->cs_pin());
+                break;
+#endif
+            case Adapter::Type::UART:
+                conn = "UART";
+                break;
+            default:
+                conn = "(not connected)";
+                break;
+        }
+    }
+    return m5::utility::formatString("#%u %s{0x%08X}  %s  children:%zu/%u", order(), deviceName(),
+                                     static_cast<unsigned>(identifier()), conn.c_str(), childrenSize(),
+                                     _component_cfg.max_children);
 }
 
 // Explicit template instantiation
