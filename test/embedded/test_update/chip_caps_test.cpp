@@ -13,6 +13,7 @@
 #include <m5_unit_component/adapter.hpp>
 #include <Wire.h>
 #include <driver/gpio.h>
+#include <driver/uart.h>
 #include <soc/soc_caps.h>
 #include <soc/adc_channel.h>
 #include <memory>
@@ -508,3 +509,44 @@ TEST(ChipCaps, RmtV2RecreateWhileReceiving)
     EXPECT_EQ(read_frame(a, buf), frame.size());
 }
 #endif
+
+// available() counts the received bytes, through both the Arduino and the ESP-IDF implementation.
+// The UART internal loopback (TX to RX) is used, so no unit is needed
+TEST(ChipCaps, UartAvailable)
+{
+    int tx{}, rx{};
+    if (!pick_output_pin_pair(tx, rx)) {
+        GTEST_SKIP() << "No free port pins on this board";
+    }
+    Serial1.begin(115200, SERIAL_8N1, rx, tx);
+    EXPECT_EQ(uart_set_loop_back(UART_NUM_1, true), ESP_OK);
+
+    AdapterUART a(Serial1);     // SerialImpl
+    AdapterUART b(UART_NUM_1);  // ESPIDFImpl on the same port
+    a.setTimeout(100);
+    a.flushRX();
+    EXPECT_EQ(a.available(), 0U);
+    EXPECT_EQ(b.available(), 0U);
+
+    const uint8_t out[] = {0xAA, 0x12, 0x34, 0xF0};
+    EXPECT_EQ(a.writeWithTransaction(out, sizeof(out), 0), m5::hal::error::error_t::OK);
+    a.flush();
+    m5::utility::delay(5);  // 4 bytes take about 0.35 ms at 115200 bps
+    EXPECT_EQ(a.available(), sizeof(out));
+    EXPECT_EQ(b.available(), sizeof(out));
+
+    uint8_t in[sizeof(out)]{};
+    EXPECT_EQ(a.readWithTransaction(in, sizeof(in)), m5::hal::error::error_t::OK);
+    EXPECT_EQ(memcmp(in, out, sizeof(out)), 0);
+    EXPECT_EQ(a.available(), 0U);
+
+    // flushRX() drops what is buffered
+    EXPECT_EQ(a.writeWithTransaction(out, sizeof(out), 0), m5::hal::error::error_t::OK);
+    a.flush();
+    m5::utility::delay(5);
+    a.flushRX();
+    EXPECT_EQ(a.available(), 0U);
+
+    uart_set_loop_back(UART_NUM_1, false);
+    Serial1.end();
+}

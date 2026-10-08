@@ -44,6 +44,11 @@ public:
         virtual void setTimeout(const uint32_t)
         {
         }
+        //! @brief Bytes received and not read yet (0 if unknown)
+        virtual size_t available()
+        {
+            return 0;
+        }
     };
 
     //
@@ -58,6 +63,7 @@ public:
         virtual void flush() override;
         virtual void flushRX() override;
         virtual void setTimeout(const uint32_t ms) override;
+        virtual size_t available() override;
         virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
         virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
                                                              const uint32_t stop) override;
@@ -76,6 +82,7 @@ public:
         virtual void flush() override;
         virtual void flushRX() override;
         virtual void setTimeout(const uint32_t ms) override;
+        virtual size_t available() override;
         virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
         virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
                                                              const uint32_t stop) override;
@@ -109,6 +116,16 @@ public:
     inline void setTimeout(const uint32_t ms)
     {
         impl()->setTimeout(ms);
+    }
+    /*!
+      @brief Bytes received and not read yet
+      @return Number of bytes that can be read without waiting (0 if unknown)
+      @note Lets a unit read only when a whole frame has arrived, instead of blocking until the timeout.
+      Since 0.6.1 (M5_UNIT_UNIFIED_VERSION)
+     */
+    inline size_t available()
+    {
+        return impl()->available();
     }
 
     inline UARTImpl* impl()
