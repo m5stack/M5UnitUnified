@@ -471,11 +471,11 @@ m5::hal::error::error_t AdapterGPIOBase::GPIOImpl::write_analog(const gpio_num_t
     const int idx                      = (pin == 25) ? 0 : 1;
     static bool channel_initialized[2] = {false, false};
     if (!channel_initialized[idx]) {
+        // The interrupt is off by the zero init (intr_type is deprecated on ESP-IDF 6)
         ledc_channel_config_t ch_cfg = {};
         ch_cfg.gpio_num              = static_cast<int>(pin);
         ch_cfg.speed_mode            = LEDC_LOW_SPEED_MODE;
         ch_cfg.channel               = channel;
-        ch_cfg.intr_type             = LEDC_INTR_DISABLE;
         ch_cfg.timer_sel             = LEDC_TIMER_0;
         ch_cfg.duty                  = value & 0xFFu;
         ch_cfg.hpoint                = 0;
