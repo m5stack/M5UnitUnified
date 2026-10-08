@@ -10,6 +10,7 @@
 #ifndef M5_UNIT_COMPONENT_HPP
 #define M5_UNIT_COMPONENT_HPP
 
+#include "m5_unit_unified_version.hpp"
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
 #if defined(ESP_PLATFORM)

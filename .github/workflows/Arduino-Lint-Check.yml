@@ -15,6 +15,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # src/m5_unit_unified_version.hpp must carry the same version as the three manifests
+  version:
+    name: Version header
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compare the version header with the manifests
+        run: |
+          h=src/m5_unit_unified_version.hpp
+          header="$(grep -E '^#define M5_UNIT_UNIFIED_VERSION_MAJOR ' $h | awk '{print $3}').$(grep -E '^#define M5_UNIT_UNIFIED_VERSION_MINOR ' $h | awk '{print $3}').$(grep -E '^#define M5_UNIT_UNIFIED_VERSION_PATCH ' $h | awk '{print $3}')"
+          props="$(grep -E '^version=' library.properties | cut -d= -f2 | tr -d '[:space:]')"
+          json="$(grep -E '"version"' library.json | head -1 | cut -d'"' -f4)"
+          idf="$(grep -E '^version:' idf_component.yml | cut -d'"' -f2)"
+          echo "header=$header library.properties=$props library.json=$json idf_component.yml=$idf"
+          [ "$header" = "$props" ] && [ "$header" = "$json" ] && [ "$header" = "$idf" ]
+
   lint:
     name: Lint Check
     runs-on: ubuntu-latest
