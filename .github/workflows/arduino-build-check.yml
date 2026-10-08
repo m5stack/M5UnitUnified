@@ -59,7 +59,7 @@ jobs:
           - m5stack_tab5    # ESP32-P4
           - m5stack_stamp_c3  # ESP32-C3 (single HP I2C, in_sel register field)
           - esp32c5         # ESP32-C5 (no M5 board in 3.3.7): LP UART counted in SOC_UART_NUM
-          - esp32s2         # ESP32-S2 (no M5 board): single-core Xtensa, func_sel register field
+#          - esp32s2         # ESP32-S2 is not supported: M5Unified / M5GFX do not support it. Re-enable when they do
           # ESP32-C61: not available, Arduino-ESP32 ships no prebuilt libraries for it
 
         # Pinned to 3.3.7: 3.3.8 breaks the Tab5 (ESP32-P4) build upstream
@@ -87,12 +87,12 @@ jobs:
             platform-version: 2.0.17
             platform: esp32
             archi: esp32
-          # ESP32-S2 on 2.x: ESP-IDF 4.x defines only the 13-bit ADC width
-          - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            board: esp32s2
-            platform-version: 2.0.17
-            platform: esp32
-            archi: esp32
+          # ESP32-S2 on 2.x: not supported, M5Unified / M5GFX do not support it. Re-enable when they do
+#          - platform-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+#            board: esp32s2
+#            platform-version: 2.0.17
+#            platform: esp32
+#            archi: esp32
 
     steps:
       - name: Checkout
