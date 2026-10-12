@@ -478,9 +478,14 @@ public:
       SDA/SCL become open-drain GPIO outputs, left high with the internal pull-ups,
       and the controller is fed an idle (high) bus so it does not take the GPIO waveform as bus traffic.
       Drive them with the GPIO API (gpio_set_level etc.), then call restorePins()
-      @return True if successful
+      @return True if successful. False (with nothing changed) if
+      - SDA/SCL are unknown (sda() / scl() return -1, e.g. add(unit, bus) without the port and pins)
+      - the pins are not routed through the GPIO matrix:
+        LP I2C on its fixed pads (ESP32-C6 / C5 Wire1, ESP-IDF LP_I2C_NUM_0)
+        and ESP32-P4 GPIO0-15 used as LP IO
+      - the build is not for ESP (native / host)
+      @note A software bus (M5HAL Bus) has no controller to detach, so its pins are just made GPIO
       @warning Do not access any unit on the same bus until restorePins()
-      @warning Not supported on non-ESP builds (returns false)
     */
     bool releasePins();
     /*!
