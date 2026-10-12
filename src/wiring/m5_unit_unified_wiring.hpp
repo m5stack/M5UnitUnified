@@ -929,7 +929,7 @@ inline bool addI2C(UnitUnified& units, Component& unit, const uint32_t clock = 0
 #if __has_include(<driver/i2c_master.h>)
                 auto bus = i2cBusHandle(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock);
                 if (!bus) return false;
-                return units.add(unit, bus);
+                return units.add(unit, bus, I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl);
 #else  // legacy driver (IDF 5.0 / 5.1): install legacy driver, then add by port
                 if (!detail::ensureI2CLegacyDriver(I2C_NUM_0, (gpio_num_t)pins.sda, (gpio_num_t)pins.scl, eff_clock)) {
                     return false;
@@ -1013,7 +1013,7 @@ inline bool addHatI2C(UnitUnified& units, Component& unit, const uint32_t clock 
 #if __has_include(<driver/i2c_master.h>)
     auto bus = i2cBusHandle(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, eff_clock);
     if (!bus) return false;
-    return units.add(unit, bus);
+    return units.add(unit, bus, port, (gpio_num_t)p.sda, (gpio_num_t)p.scl);
 #else  // legacy driver (IDF 5.0 / 5.1)
     if (!detail::ensureI2CLegacyDriver(port, (gpio_num_t)p.sda, (gpio_num_t)p.scl, eff_clock)) return false;
     return units.add(unit, port, (gpio_num_t)p.sda, (gpio_num_t)p.scl);

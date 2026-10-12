@@ -73,6 +73,11 @@ public:
         }
 
         //
+        //! @brief I2C port number, or -1 if unknown
+        virtual int16_t port() const
+        {
+            return -1;
+        }
         virtual int16_t scl() const
         {
             return -1;
@@ -129,10 +134,23 @@ public:
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
     class ESPIDFMasterBusImpl : public I2CImpl {
     public:
-        ESPIDFMasterBusImpl(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock);
+        ESPIDFMasterBusImpl(i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda,
+                            const gpio_num_t scl, const uint8_t addr, const uint32_t clock);
         inline virtual ImplType implType() const override
         {
             return ImplType::ESPIDFMasterBus;
+        }
+        inline virtual int16_t port() const override
+        {
+            return _port;
+        }
+        inline virtual int16_t scl() const override
+        {
+            return _scl;
+        }
+        inline virtual int16_t sda() const override
+        {
+            return _sda;
         }
         inline virtual void setAddress(const uint8_t addr) override
         {
@@ -170,6 +188,7 @@ public:
         i2c_master_bus_handle_t _bus{};
         i2c_master_dev_handle_t _dev{};
         std::vector<uint8_t> _pending_write{};
+        int16_t _port{-1}, _sda{-1}, _scl{-1};
     };
 #elif defined(ESP_PLATFORM)
     class ESPIDFLegacyBusImpl : public I2CImpl {
@@ -179,6 +198,10 @@ public:
         inline virtual ImplType implType() const override
         {
             return ImplType::ESPIDFLegacyBus;
+        }
+        inline virtual int16_t port() const override
+        {
+            return _port;
         }
         inline virtual int16_t scl() const override
         {
@@ -335,6 +358,10 @@ public:
         {
             return _i2c;
         }
+        inline virtual int16_t port() const override
+        {
+            return _port;
+        }
         inline virtual int16_t scl() const override
         {
             return _scl;
@@ -358,7 +385,7 @@ public:
 
     private:
         m5::I2C_Class* _i2c{};
-        int16_t _sda{-1}, _scl{-1};
+        int16_t _port{-1}, _sda{-1}, _scl{-1};
         bool _in_transaction{false};
     };
 
@@ -369,6 +396,8 @@ public:
     AdapterI2C(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock);
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
     AdapterI2C(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock);
+    AdapterI2C(i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
+               const uint8_t addr, const uint32_t clock);
 #elif defined(ESP_PLATFORM)
     AdapterI2C(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl, const uint8_t addr,
                const uint32_t clock);
@@ -411,6 +440,11 @@ public:
         return impl()->implType();
     }
 
+    //! @brief I2C port number, or -1 if unknown (TwoWire, Bus, or a bus handle added without its port)
+    inline int16_t port() const
+    {
+        return impl()->port();
+    }
     inline int16_t scl() const
     {
         return impl()->scl();
@@ -437,6 +471,23 @@ public:
     bool pushPin();
     bool popPin();
     ///@}
+
+    /*!
+      @brief Detach SDA/SCL from the I2C controller and make them GPIO
+      @details For sending a frame an I2C controller cannot send (e.g. a few bits, no address).
+      SDA/SCL become open-drain GPIO outputs, left high with the internal pull-ups,
+      and the controller is fed an idle (high) bus so it does not take the GPIO waveform as bus traffic.
+      Drive them with the GPIO API (gpio_set_level etc.), then call restorePins()
+      @return True if successful
+      @warning Do not access any unit on the same bus until restorePins()
+      @warning Not supported on ESP32-P4 and non-ESP builds (returns false)
+    */
+    bool releasePins();
+    /*!
+      @brief Reattach SDA/SCL to the I2C controller as they were before releasePins()
+      @return True if successful
+    */
+    bool restorePins();
 
 protected:
     AdapterI2C() : Adapter(Adapter::Type::I2C, new I2CImpl())

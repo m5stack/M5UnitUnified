@@ -11,12 +11,23 @@
 #include "adapter_i2c.hpp"
 #if defined(ARDUINO)
 #include <Wire.h>
+#include <esp32-hal-i2c.h>
 #endif
 #include <M5HAL.hpp>
 #include <M5Utility.hpp>
 #if defined(ESP_PLATFORM)
+#include <esp_idf_version.h>
+#include <soc/soc_caps.h>
 #include <soc/gpio_struct.h>
 #include <soc/gpio_sig_map.h>
+#include <soc/gpio_pins.h>
+#include <driver/gpio.h>
+#include <esp_rom_gpio.h>
+// Arduino Wire1 is LP I2C from ESP-IDF 5.4 (arduino-esp32 3.2); older hal/i2c_ll.h does not build as C++
+#if defined(ARDUINO) && SOC_LP_I2C_SUPPORTED && !SOC_LP_GPIO_MATRIX_SUPPORTED && \
+    ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#include <hal/i2c_ll.h>  // LP_I2C_SDA_IOMUX_PAD / LP_I2C_SCL_IOMUX_PAD
+#endif
 #endif
 #include <cassert>
 #if __has_include(<utility/I2C_Class.hpp>)
@@ -93,6 +104,13 @@ AdapterI2C::WireImpl::WireImpl(TwoWire& wire, const uint8_t addr, const uint32_t
     uint32_t w = (&wire != &Wire);
     _sda       = search_pin_number(idx_table[w][0]);
     _scl       = search_pin_number(idx_table[w][1]);
+#if SOC_LP_I2C_SUPPORTED && SOC_HP_I2C_NUM == 1 && !SOC_LP_GPIO_MATRIX_SUPPORTED && defined(LP_I2C_SDA_IOMUX_PAD)
+    // Wire1 is LP I2C here, which the driver only opens on its fixed pads (they differ by chip, e.g. C6 / C5)
+    if (w && i2cIsInit(1)) {
+        _sda = LP_I2C_SDA_IOMUX_PAD;
+        _scl = LP_I2C_SCL_IOMUX_PAD;
+    }
+#endif
     M5_LIB_LOGI("I2C SDA:%d, SCL:%d", _sda, _scl);
 }
 
@@ -368,9 +386,14 @@ m5::hal::error::error_t to_i2c_error(const esp_err_t err)
 }
 }  // namespace
 
-AdapterI2C::ESPIDFMasterBusImpl::ESPIDFMasterBusImpl(i2c_master_bus_handle_t bus, const uint8_t addr,
+AdapterI2C::ESPIDFMasterBusImpl::ESPIDFMasterBusImpl(i2c_master_bus_handle_t bus, const i2c_port_t port,
+                                                     const gpio_num_t sda, const gpio_num_t scl, const uint8_t addr,
                                                      const uint32_t clock)
-    : AdapterI2C::I2CImpl(addr, clock), _bus(bus)
+    : AdapterI2C::I2CImpl(addr, clock),
+      _bus(bus),
+      _port(static_cast<int16_t>(port)),
+      _sda(static_cast<int16_t>(sda)),
+      _scl(static_cast<int16_t>(scl))
 {
 }
 
@@ -395,7 +418,8 @@ bool AdapterI2C::ESPIDFMasterBusImpl::end()
 
 AdapterI2C::I2CImpl* AdapterI2C::ESPIDFMasterBusImpl::duplicate(const uint8_t addr)
 {
-    return new ESPIDFMasterBusImpl(_bus, addr, _clock);
+    return new ESPIDFMasterBusImpl(_bus, static_cast<i2c_port_t>(_port), static_cast<gpio_num_t>(_sda),
+                                   static_cast<gpio_num_t>(_scl), addr, _clock);
 }
 
 m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::ensure_device()
@@ -709,9 +733,10 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::wakeup()
 AdapterI2C::I2CClassImpl::I2CClassImpl(m5::I2C_Class& i2c, const uint8_t addr, const uint32_t clock)
     : AdapterI2C::I2CImpl(addr, clock), _i2c(&i2c)
 {
-    _sda = _i2c->getSDA();
-    _scl = _i2c->getSCL();
-    M5_LIB_LOGI("I2C_Class SDA:%d, SCL:%d", _sda, _scl);
+    _port = static_cast<int16_t>(_i2c->getPort());
+    _sda  = _i2c->getSDA();
+    _scl  = _i2c->getSCL();
+    M5_LIB_LOGI("I2C_Class port:%d SDA:%d, SCL:%d", _port, _sda, _scl);
 }
 
 bool AdapterI2C::I2CClassImpl::begin()
@@ -906,8 +931,33 @@ AdapterI2C::AdapterI2C(m5::hal::bus::Bus* bus, const uint8_t addr, const uint32_
 }
 
 #if defined(ESP_PLATFORM) && __has_include(<driver/i2c_master.h>)
+namespace {
+// The bus handle does not expose its port; find it by looking the handle up on each port.
+// The pins cannot be looked up (no public API), so they stay unknown.
+i2c_port_t port_of_bus(i2c_master_bus_handle_t bus)
+{
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
+    for (int p = 0; p < SOC_I2C_NUM; ++p) {
+        i2c_master_bus_handle_t h{};
+        if (i2c_master_get_bus_handle(static_cast<i2c_port_num_t>(p), &h) == ESP_OK && h == bus) {
+            return static_cast<i2c_port_t>(p);
+        }
+    }
+#else
+    (void)bus;
+#endif
+    return static_cast<i2c_port_t>(-1);
+}
+}  // namespace
+
 AdapterI2C::AdapterI2C(i2c_master_bus_handle_t bus, const uint8_t addr, const uint32_t clock)
-    : Adapter(Adapter::Type::I2C, new AdapterI2C::ESPIDFMasterBusImpl(bus, addr, clock))
+    : AdapterI2C(bus, port_of_bus(bus), GPIO_NUM_NC, GPIO_NUM_NC, addr, clock)
+{
+}
+
+AdapterI2C::AdapterI2C(i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
+                       const uint8_t addr, const uint32_t clock)
+    : Adapter(Adapter::Type::I2C, new AdapterI2C::ESPIDFMasterBusImpl(bus, port, sda, scl, addr, clock))
 {
     assert(_impl);
 }
@@ -955,7 +1005,7 @@ Adapter* AdapterI2C::duplicate(const uint8_t addr)
 
 bool AdapterI2C::pushPin()
 {
-#if defined(ARDUINO)
+#if defined(ESP_PLATFORM)
     if (_backupSCL.getPin() < 0 && _backupSDA.getPin() < 0) {
         _backupSCL.setPin(scl());
         _backupSCL.backup();
@@ -973,7 +1023,7 @@ bool AdapterI2C::pushPin()
 
 bool AdapterI2C::popPin()
 {
-#if defined(ARDUINO)
+#if defined(ESP_PLATFORM)
     if (_backupSCL.getPin() >= 0 && _backupSDA.getPin() >= 0) {
         M5_LIB_LOGD("<<Pop SCL:%u SDA:%u", _backupSCL.getPin(), _backupSDA.getPin());
 
@@ -984,6 +1034,59 @@ bool AdapterI2C::popPin()
         return true;
     }
     return false;
+#else
+    return false;
+#endif
+}
+
+bool AdapterI2C::releasePins()
+{
+// pin_backup_t cannot save/restore pins on ESP32-P4, so the pins could not be reattached
+#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+    const int16_t sda_pin = sda();
+    const int16_t scl_pin = scl();
+    if (sda_pin < 0 || scl_pin < 0 || !pushPin()) {
+        return false;
+    }
+    // A controller reached through fixed pads, not the GPIO matrix (e.g. LP I2C), cannot be reattached
+    // by popPin(). A software bus (M5HAL Bus) has no controller and uses the pins as plain GPIO
+    const bool routed = _backupSDA.getInFuncNum() >= 0 && _backupSCL.getInFuncNum() >= 0;
+    if (!routed && implType() != ImplType::Bus) {
+        M5_LIB_LOGE("SDA:%d SCL:%d are not routed through the GPIO matrix", sda_pin, scl_pin);
+        popPin();
+        return false;
+    }
+    // Feed an idle (high) bus to the controller inputs; popPin() restores the routing
+    for (auto&& b : {&_backupSDA, &_backupSCL}) {
+        const int16_t sig = b->getInFuncNum();
+        if (sig >= 0) {
+            esp_rom_gpio_connect_in_signal(GPIO_MATRIX_CONST_ONE_INPUT, static_cast<uint32_t>(sig), false);
+        }
+    }
+    // Set the output high before switching to GPIO so the lines do not glitch low
+    gpio_set_level(static_cast<gpio_num_t>(sda_pin), 1);
+    gpio_set_level(static_cast<gpio_num_t>(scl_pin), 1);
+    gpio_config_t cfg{};
+    cfg.pin_bit_mask = (1ULL << sda_pin) | (1ULL << scl_pin);
+    cfg.mode         = GPIO_MODE_INPUT_OUTPUT_OD;
+    cfg.pull_up_en   = GPIO_PULLUP_ENABLE;
+    cfg.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    cfg.intr_type    = GPIO_INTR_DISABLE;
+    if (gpio_config(&cfg) != ESP_OK) {
+        popPin();
+        return false;
+    }
+    M5_LIB_LOGD("Released SDA:%d SCL:%d", sda_pin, scl_pin);
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool AdapterI2C::restorePins()
+{
+#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+    return popPin();
 #else
     return false;
 #endif
