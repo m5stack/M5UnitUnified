@@ -1062,18 +1062,18 @@ bool AdapterI2C::releasePins()
             esp_rom_gpio_connect_in_signal(GPIO_MATRIX_CONST_ONE_INPUT, static_cast<uint32_t>(sig), false);
         }
     }
-    // Set the output high before switching to GPIO so the lines do not glitch low
-    gpio_set_level(static_cast<gpio_num_t>(sda_pin), 1);
-    gpio_set_level(static_cast<gpio_num_t>(scl_pin), 1);
-    gpio_config_t cfg{};
-    cfg.pin_bit_mask = (1ULL << sda_pin) | (1ULL << scl_pin);
-    cfg.mode         = GPIO_MODE_INPUT_OUTPUT_OD;
-    cfg.pull_up_en   = GPIO_PULLUP_ENABLE;
-    cfg.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    cfg.intr_type    = GPIO_INTR_DISABLE;
-    if (gpio_config(&cfg) != ESP_OK) {
-        popPin();
-        return false;
+    // Configure each pin directly: gpio_config() warns about (and may later skip) pins the I2C driver has reserved
+    for (const int16_t pin : {sda_pin, scl_pin}) {
+        const auto gpio = static_cast<gpio_num_t>(pin);
+        // Set the output high before switching to GPIO so the line does not glitch low
+        gpio_set_level(gpio, 1);
+        // gpio_set_direction() of older ESP-IDF (e.g. 5.1) does not select the GPIO function
+        esp_rom_gpio_pad_select_gpio(static_cast<uint32_t>(pin));
+        if (gpio_set_direction(gpio, GPIO_MODE_INPUT_OUTPUT_OD) != ESP_OK ||
+            gpio_set_pull_mode(gpio, GPIO_PULLUP_ONLY) != ESP_OK) {
+            popPin();
+            return false;
+        }
     }
     M5_LIB_LOGD("Released SDA:%d SCL:%d", sda_pin, scl_pin);
     return true;
