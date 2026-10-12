@@ -23,7 +23,7 @@
 
 #define M5_UNIT_UNIFIED_VERSION_MAJOR 0
 #define M5_UNIT_UNIFIED_VERSION_MINOR 6
-#define M5_UNIT_UNIFIED_VERSION_PATCH 0
+#define M5_UNIT_UNIFIED_VERSION_PATCH 1
 
 //! @brief Make a version value comparable with M5_UNIT_UNIFIED_VERSION
 #define M5_UNIT_UNIFIED_VERSION_VAL(major, minor, patch) (((major) << 16) | ((minor) << 8) | (patch))
