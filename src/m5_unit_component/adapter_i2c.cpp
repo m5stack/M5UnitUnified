@@ -1041,8 +1041,7 @@ bool AdapterI2C::popPin()
 
 bool AdapterI2C::releasePins()
 {
-// pin_backup_t cannot save/restore pins on ESP32-P4, so the pins could not be reattached
-#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if defined(ESP_PLATFORM)
     const int16_t sda_pin = sda();
     const int16_t scl_pin = scl();
     if (sda_pin < 0 || scl_pin < 0 || !pushPin()) {
@@ -1085,7 +1084,7 @@ bool AdapterI2C::releasePins()
 
 bool AdapterI2C::restorePins()
 {
-#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if defined(ESP_PLATFORM)
     return popPin();
 #else
     return false;

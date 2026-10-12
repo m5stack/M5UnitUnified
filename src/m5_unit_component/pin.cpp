@@ -18,7 +18,7 @@
 #include <soc/gpio_reg.h>
 #endif
 
-#if defined(ESP_PLATFORM) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if defined(ESP_PLATFORM)
 #include <soc/io_mux_reg.h>
 // GPIO_PIN_MUX_REG[] is declared by ESP-IDF but has no definition on chips with a contiguous IO_MUX
 // (ESP32-C5 / C61 etc.); fall back to computing the address from IO_MUX_GPIO0_REG
@@ -28,6 +28,14 @@ uint32_t io_mux_reg(const size_t pin)
 {
     return GPIO_PIN_MUX_REG ? GPIO_PIN_MUX_REG[pin] : (IO_MUX_GPIO0_REG + static_cast<uint32_t>(pin) * 4u);
 }
+// GPIO number field of the input-signal select register (ESP32-P4 reserves input signal 0, so its macros start at 1)
+#if defined(GPIO_FUNC0_IN_SEL_S)
+constexpr uint32_t in_sel_shift = GPIO_FUNC0_IN_SEL_S;
+constexpr uint32_t in_sel_mask  = GPIO_FUNC0_IN_SEL_V;
+#else
+constexpr uint32_t in_sel_shift = GPIO_FUNC1_IN_SEL_S;
+constexpr uint32_t in_sel_mask  = GPIO_FUNC1_IN_SEL_V;
+#endif
 }  // namespace
 #endif
 
@@ -45,7 +53,6 @@ pin_backup_t::pin_backup_t(int pin_num) : _pin_num{static_cast<gpio_num_t>(pin_n
 
 void pin_backup_t::backup(void)
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     auto pin_num = (size_t)_pin_num;
     if (pin_num < GPIO_NUM_MAX) {
         _io_mux_gpio_reg   = *reinterpret_cast<uint32_t*>(io_mux_reg(pin_num));
@@ -56,28 +63,25 @@ void pin_backup_t::backup(void)
         _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(((pin_num & 32) ? GPIO_ENABLE1_REG : GPIO_ENABLE_REG)) &
                                (1U << (pin_num & 31))) != 0);
 #else
-        _gpio_enable         = (bool)((*reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1U << (pin_num & 31))) != 0);
+        _gpio_enable = (bool)((*reinterpret_cast<uint32_t*>(GPIO_ENABLE_REG) & (1U << (pin_num & 31))) != 0);
 #endif
 
         _in_func_num = -1;
 
         size_t func_num = ((_gpio_func_out_reg >> GPIO_FUNC0_OUT_SEL_S) & GPIO_FUNC0_OUT_SEL_V);
         if (func_num < sizeof(GPIO.func_in_sel_cfg) / sizeof(GPIO.func_in_sel_cfg[0])) {
-            _gpio_func_in_reg = *reinterpret_cast<uint32_t*>(GPIO_FUNC0_IN_SEL_CFG_REG + (func_num * 4));
-            if (func_num == ((_gpio_func_in_reg >> GPIO_FUNC0_IN_SEL_S) & GPIO_FUNC0_IN_SEL_V)) {
+            _gpio_func_in_reg = GPIO.func_in_sel_cfg[func_num].val;
+            // The input of the same signal is routed from this pin (e.g. I2C SDA/SCL, whose in/out indexes match)
+            if (pin_num == ((_gpio_func_in_reg >> in_sel_shift) & in_sel_mask)) {
                 _in_func_num = func_num;
                 M5_LIB_LOGV("backup pin:%d : func_num:%d", pin_num, _in_func_num);
             }
         }
     }
-#else
-#pragma message("ESP32-P4 is not supported")
-#endif
 }
 
 void pin_backup_t::restore(void)
 {
-#if !defined(CONFIG_IDF_TARGET_ESP32P4)
     auto pin_num = (size_t)_pin_num;
     if (pin_num < GPIO_NUM_MAX) {
         if ((uint16_t)_in_func_num < 256) {
@@ -113,9 +117,6 @@ void pin_backup_t::restore(void)
         }
         *gpio_enable_reg = val;
     }
-#else
-#pragma message("ESP32-P4 is not supported")
-#endif
 }
 #else
 // GPIO register access is unavailable on non-ESP builds; keep the API and do nothing

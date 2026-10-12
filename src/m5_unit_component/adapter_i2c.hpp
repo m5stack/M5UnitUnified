@@ -480,7 +480,7 @@ public:
       Drive them with the GPIO API (gpio_set_level etc.), then call restorePins()
       @return True if successful
       @warning Do not access any unit on the same bus until restorePins()
-      @warning Not supported on ESP32-P4 and non-ESP builds (returns false)
+      @warning Not supported on non-ESP builds (returns false)
     */
     bool releasePins();
     /*!
