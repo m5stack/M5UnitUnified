@@ -101,9 +101,11 @@ const int8_t idx_table[][2] = {
 AdapterI2C::WireImpl::WireImpl(TwoWire& wire, const uint8_t addr, const uint32_t clock)
     : AdapterI2C::I2CImpl(addr, clock), _wire(&wire)
 {
-    uint32_t w = (&wire != &Wire);
-    _sda       = search_pin_number(idx_table[w][0]);
-    _scl       = search_pin_number(idx_table[w][1]);
+    // Wire is bus 0, anything else is treated as Wire1 (bus 1, which is LP_I2C_NUM_0 where Wire1 is LP I2C)
+    const uint32_t w = (&wire != &Wire);
+    _port            = w;
+    _sda             = search_pin_number(idx_table[w][0]);
+    _scl             = search_pin_number(idx_table[w][1]);
 #if SOC_LP_I2C_SUPPORTED && SOC_HP_I2C_NUM == 1 && !SOC_LP_GPIO_MATRIX_SUPPORTED && defined(LP_I2C_SDA_IOMUX_PAD)
     // Wire1 is LP I2C here, which the driver only opens on its fixed pads (they differ by chip, e.g. C6 / C5)
     if (w && i2cIsInit(1)) {

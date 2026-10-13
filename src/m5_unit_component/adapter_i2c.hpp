@@ -256,6 +256,10 @@ public:
         {
             return _wire;
         }
+        inline virtual int16_t port() const override
+        {
+            return _port;
+        }
         inline virtual int16_t scl() const override
         {
             return _scl;
@@ -283,7 +287,7 @@ public:
 
     private:
         TwoWire* _wire{};
-        int16_t _sda{}, _scl{};
+        int16_t _port{}, _sda{}, _scl{};
     };
 #endif
 
