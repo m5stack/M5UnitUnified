@@ -314,6 +314,59 @@ TEST(Component, OrderAndAdapter)
     EXPECT_EQ(u.adapter()->type(), Adapter::Type::I2C);
 }
 
+// Test: a child behind a hub runs at its own clock, capped by the parent's
+TEST(Component, ChildClock)
+{
+    // Children with their own adapter (hub)
+    {
+        UnitUnified units;
+        UnitDummyHub hub;
+        UnitDummy slow, fast, none;
+        auto set_clock = [](Component& u, const uint32_t clock) {
+            auto ccfg  = u.component_config();
+            ccfg.clock = clock;
+            u.component_config(ccfg);
+        };
+        set_clock(slow, I2C_FREQ / 4);
+        set_clock(fast, I2C_FREQ * 2);
+        set_clock(none, 0);
+        EXPECT_TRUE(hub.add(slow, 0));
+        EXPECT_TRUE(hub.add(fast, 1));
+        EXPECT_TRUE(hub.add(none, 2));
+        EXPECT_TRUE(add_with_i2c(units, hub));
+
+        auto hub_ad = hub.asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        EXPECT_NE(hub_ad, nullptr);
+        EXPECT_EQ(hub_ad ? hub_ad->clock() : 0U, I2C_FREQ);
+
+        auto ad = slow.asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        EXPECT_NE(ad, nullptr);
+        EXPECT_EQ(ad ? ad->clock() : 0U, I2C_FREQ / 4);  // lowered to the child's own
+        ad = fast.asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        EXPECT_EQ(ad ? ad->clock() : 0U, I2C_FREQ);  // capped by the parent
+        ad = none.asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        EXPECT_EQ(ad ? ad->clock() : 0U, I2C_FREQ);          // 0: the parent's
+        EXPECT_EQ(hub_ad ? hub_ad->clock() : 0U, I2C_FREQ);  // the parent is not changed
+    }
+    // A child sharing the parent's adapter (default ensure_adapter) leaves the parent's clock as it is
+    {
+        UnitUnified units;
+        UnitDummy parent, child;
+        auto pcfg         = parent.component_config();
+        pcfg.max_children = 1;
+        parent.component_config(pcfg);
+        auto ccfg  = child.component_config();
+        ccfg.clock = I2C_FREQ / 4;
+        child.component_config(ccfg);
+        EXPECT_TRUE(parent.add(child, 0));
+        EXPECT_TRUE(add_with_i2c(units, parent));
+
+        EXPECT_EQ(child.adapter(), parent.adapter());
+        auto ad = parent.asAdapter<AdapterI2C>(Adapter::Type::I2C);
+        EXPECT_EQ(ad ? ad->clock() : 0U, I2C_FREQ);
+    }
+}
+
 // Test: duplicate add should fail
 TEST(Component, DuplicateAdd)
 {

@@ -36,6 +36,11 @@ const char UnitDummySPI::name[] = "UnitDummySPI";
 const types::uid_t UnitDummySPI::uid{"UnitDummySPI"_mmh3};
 const types::attr_t UnitDummySPI::attr{AccessSPI};
 
+// UnitDummyHub: I2C accessible, gives each child its own adapter
+const char UnitDummyHub::name[] = "UnitDummyHub";
+const types::uid_t UnitDummyHub::uid{"UnitDummyHub"_mmh3};
+const types::attr_t UnitDummyHub::attr{AccessI2C};
+
 // UnitDummyI2CSPI: I2C + SPI accessible
 const char UnitDummyI2CSPI::name[] = "UnitDummyI2CSPI";
 const types::uid_t UnitDummyI2CSPI::uid{"UnitDummyI2CSPI"_mmh3};

@@ -275,6 +275,15 @@ bool UnitUnified::add_children(Component& u)
             }
             it->_manager = this;
             it->_adapter = parent->ensure_adapter(ch);
+            // A child behind a hub (PaHub etc.) runs at its own clock, capped by the parent's: the parent bus and
+            // the hub itself may not go faster. Skipped when the child shares the parent's adapter
+            if (it->_adapter != parent->_adapter) {
+                auto ad = it->asAdapter<AdapterI2C>(Adapter::Type::I2C);
+                const uint32_t clock{it->component_config().clock};
+                if (ad && clock && clock < ad->clock()) {
+                    ad->setClock(clock);
+                }
+            }
             M5_LIB_LOGD("  Shared:%u %u", parent->_adapter.use_count(), it->_adapter.use_count());
             it->_order = ++_registerCount;
             _units.emplace_back(&*it);

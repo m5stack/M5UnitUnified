@@ -142,6 +142,38 @@ public:
     }
 };
 
+// DummyComponent that gives each child its own adapter, as a hub (PaHub etc.) does
+class UnitDummyHub : public m5::unit::Component {
+    M5_UNIT_COMPONENT_HPP_BUILDER(UnitDummyHub, 0x00);
+
+public:
+    UnitDummyHub() : Component(DUMMY_I2C_ADDR)
+    {
+        auto ccfg         = component_config();
+        ccfg.max_children = 8;
+        component_config(ccfg);
+    }
+    virtual ~UnitDummyHub()
+    {
+    }
+    virtual bool begin() override
+    {
+        return true;
+    }
+    virtual void update(const bool force = false) override
+    {
+    }
+
+protected:
+    virtual std::shared_ptr<m5::unit::Adapter> ensure_adapter(const uint8_t ch) override
+    {
+        auto unit = child(ch);
+        auto ad   = asAdapter<m5::unit::AdapterI2C>(m5::unit::Adapter::Type::I2C);
+        return (unit && ad) ? std::shared_ptr<m5::unit::Adapter>(ad->duplicate(unit->address()))
+                            : std::make_shared<m5::unit::Adapter>();
+    }
+};
+
 // DummyComponent with no access (attr=0)
 class UnitDummyNone : public m5::unit::Component {
     M5_UNIT_COMPONENT_HPP_BUILDER(UnitDummyNone, 0x00);
