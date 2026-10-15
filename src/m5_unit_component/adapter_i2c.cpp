@@ -404,16 +404,28 @@ bool AdapterI2C::ESPIDFMasterBusImpl::begin()
     return ensure_device() == m5::hal::error::error_t::OK;
 }
 
+void AdapterI2C::ESPIDFMasterBusImpl::setClock(const uint32_t clock)
+{
+    // The speed is fixed when the device is added: drop it so that the next transfer adds it at the new clock.
+    // If it cannot be dropped, keep the old clock, which is still the one in use
+    if (_clock != clock && !end()) {
+        M5_LIB_LOGE("Failed to change the clock to %u", (unsigned)clock);
+        return;
+    }
+    I2CImpl::setClock(clock);
+}
+
 bool AdapterI2C::ESPIDFMasterBusImpl::end()
 {
-    _pending_write.clear();
     if (!_dev) {
+        _pending_write.clear();
         return true;
     }
 
     auto err = i2c_master_bus_rm_device(_dev);
     if (err == ESP_OK) {
         _dev = nullptr;
+        _pending_write.clear();  // Kept if the device stays (setClock() then keeps the old clock)
     }
     return err == ESP_OK;
 }

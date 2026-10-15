@@ -159,13 +159,7 @@ public:
             }
             I2CImpl::setAddress(addr);
         }
-        inline virtual void setClock(const uint32_t clock) override
-        {
-            if (_clock != clock) {
-                end();
-            }
-            I2CImpl::setClock(clock);
-        }
+        virtual void setClock(const uint32_t clock) override;
         virtual bool begin() override;
         virtual bool end() override;
         virtual I2CImpl* duplicate(const uint8_t addr) override;
