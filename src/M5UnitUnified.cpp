@@ -9,6 +9,7 @@
 */
 #include "M5UnitUnified.hpp"
 #include <M5Utility.hpp>
+#include <algorithm>
 
 namespace m5 {
 namespace unit {
@@ -94,6 +95,30 @@ bool UnitUnified::add(Component& u, i2c_master_bus_handle_t bus)
 
     u._manager = this;
     if (u.assign(bus)) {
+        u._order = ++_registerCount;
+        _units.emplace_back(&u);
+        return add_children(u);
+    }
+    M5_LIB_LOGE("Failed to assign %s:%u", u.deviceName(), u.canAccessI2C());
+    return false;
+}
+
+bool UnitUnified::add(Component& u, i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda,
+                      const gpio_num_t scl)
+{
+    if (u.isRegistered()) {
+        M5_LIB_LOGW("Already added");
+        return false;
+    }
+    if (!bus) {
+        M5_LIB_LOGE("I2C bus null");
+        return false;
+    }
+
+    M5_LIB_LOGD("Add [%s] addr:%02x children:%zu", u.deviceName(), u.address(), u.childrenSize());
+
+    u._manager = this;
+    if (u.assign(bus, port, sda, scl)) {
         u._order = ++_registerCount;
         _units.emplace_back(&u);
         return add_children(u);
@@ -250,6 +275,15 @@ bool UnitUnified::add_children(Component& u)
             }
             it->_manager = this;
             it->_adapter = parent->ensure_adapter(ch);
+            // A child behind a hub (PaHub etc.) runs at its own clock, capped by the parent's: the parent bus and
+            // the hub itself may not go faster. Skipped when the child shares the parent's adapter
+            if (it->_adapter != parent->_adapter) {
+                auto ad = it->asAdapter<AdapterI2C>(Adapter::Type::I2C);
+                const uint32_t clock{it->component_config().clock};
+                if (ad && clock && clock < ad->clock()) {
+                    ad->setClock(clock);
+                }
+            }
             M5_LIB_LOGD("  Shared:%u %u", parent->_adapter.use_count(), it->_adapter.use_count());
             it->_order = ++_registerCount;
             _units.emplace_back(&*it);
@@ -308,11 +342,26 @@ std::string UnitUnified::make_unit_info(const Component* u, const uint8_t indent
     stack.reserve(16);
     stack.push_back({u, indent});
 
+    // Units sharing an adapter talk over the same path (e.g. daisy-chained LEDs on one hub channel)
+    struct SeenAdapter {
+        const Adapter* adapter;
+        uint32_t order;
+    };
+    std::vector<SeenAdapter> seen;
+
     while (!stack.empty()) {
         auto entry = stack.back();
         stack.pop_back();
 
-        s += m5::utility::formatString("%*c%s\n", entry.indent * 4, ' ', entry.node->debugInfo().c_str());
+        std::string shared{};
+        const Adapter* ad = entry.node->_adapter.get();
+        auto it = std::find_if(seen.begin(), seen.end(), [ad](const SeenAdapter& sa) { return sa.adapter == ad; });
+        if (it != seen.end()) {
+            shared = m5::utility::formatString("  shared:#%u", it->order);
+        } else {
+            seen.push_back({ad, entry.node->order()});
+        }
+        s += std::string(entry.indent * 4, ' ') + entry.node->debugInfo() + shared + '\n';
 
         // Push sibling first (processed later = output later)
         if (entry.node->_next) {

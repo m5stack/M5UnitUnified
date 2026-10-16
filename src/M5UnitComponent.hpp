@@ -10,6 +10,7 @@
 #ifndef M5_UNIT_COMPONENT_HPP
 #define M5_UNIT_COMPONENT_HPP
 
+#include "m5_unit_unified_version.hpp"
 #include "m5_unit_component/types.hpp"
 #include "m5_unit_component/adapter.hpp"
 #if defined(ESP_PLATFORM)
@@ -313,6 +314,16 @@ public:
       @return True if successful
      */
     virtual bool assign(i2c_master_bus_handle_t bus);
+    /*!
+      @brief Assign I2C master bus with its port and pins (ESP-IDF native driver)
+      @param bus ESP-IDF I2C master bus handle
+      @param port I2C port the bus was created on
+      @param sda SDA GPIO the bus was created on
+      @param scl SCL GPIO the bus was created on
+      @return True if successful
+      @note The bus handle does not expose its pins; pass them so that AdapterI2C::sda() / scl() / port() report them
+     */
+    virtual bool assign(i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl);
 #endif
 #if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && !__has_include(<driver/i2c_master.h>))
     /*!

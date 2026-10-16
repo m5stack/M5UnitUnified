@@ -304,6 +304,12 @@ void loop() {
 - SPI SPI class による
 - SPI ESP-IDF SPI デバイスハンドル (`spi_device_handle_t`) による
 
+> **NOTE:** M5Unified は必須ではありません。M5Unified がなくてもビルドできますが、次の 2 つは使えません。
+> - I2C_Class (`M5.In_I2C` / `M5.Ex_I2C`) による I2C は、M5Unified がビルドに含まれているときだけ有効です。
+> - wiring helper (`src/wiring/m5_unit_unified_wiring.hpp`) は、そのヘッダより前に `<M5Unified.h>` を include したときだけ有効です。
+>
+> I2C_Class による I2C は、M5Unified が使っている M5GFX の I2C 実装で動きます。
+
 ### サポートされるデバイス,ユニット
 [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)を参照
 

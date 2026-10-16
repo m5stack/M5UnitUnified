@@ -35,6 +35,11 @@ public:
     {
         return _pin_num;
     }
+    //! @brief Get the peripheral input signal routed from this pin at backup(), or -1 if none
+    inline int16_t getInFuncNum(void) const
+    {
+        return _in_func_num;
+    }
     //! @brief Save current pin configuration
     void backup(void);
     //! @brief Restore saved pin configuration

@@ -45,4 +45,38 @@ endif()
 # different configuration than the other compilers.
 if(MSVC)
   target_compile_options(m5unitunified_native_check PRIVATE /Zc:__cplusplus)
+  set(wiring_gate_flags "/Zc:__cplusplus")
+else()
+  set(wiring_gate_flags "")
 endif()
+
+# The wiring helpers are declared only when <M5Unified.h> is included before the
+# wiring header (README). Compile only, at configure time: control.cpp must
+# compile, and the other two must fail on the missing helper itself.
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+function(wiring_gate_check name expect_ok)
+  try_compile(gate_ok "${CMAKE_BINARY_DIR}/wiring_gate/${name}"
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/wiring_gate/${name}.cpp"
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${M5UU_DIR}/src;${M5HAL_DIR}/src;${M5UTILITY_DIR}/src"
+    COMPILE_DEFINITIONS ${wiring_gate_flags}
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    OUTPUT_VARIABLE gate_out)
+  if(expect_ok AND NOT gate_ok)
+    message(FATAL_ERROR "wiring gate: ${name}.cpp must compile\n${gate_out}")
+  endif()
+  if(NOT expect_ok)
+    if(gate_ok)
+      message(FATAL_ERROR "wiring gate: ${name}.cpp must not compile (the wiring helpers are visible)")
+    endif()
+    # GCC: ‘i2cPins’ is not a member of ..., MSVC: 'i2cPins': is not a member of ...,
+    # Clang: no member named 'i2cPins'. GCC quotes with Unicode quotes, so match any quote
+    if(NOT gate_out MATCHES "i2cPins[^ ]* is not a member|no member named [^ ]*i2cPins")
+      message(FATAL_ERROR "wiring gate: ${name}.cpp failed for another reason\n${gate_out}")
+    endif()
+  endif()
+  message(STATUS "wiring gate: ${name} OK")
+endfunction()
+wiring_gate_check(control TRUE)
+wiring_gate_check(without_m5unified FALSE)
+wiring_gate_check(m5unified_after FALSE)

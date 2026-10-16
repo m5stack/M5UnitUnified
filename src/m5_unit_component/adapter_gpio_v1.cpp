@@ -178,23 +178,24 @@ public:
                 M5_LIB_LOGE("RMT(v1) No room on TX channel for %u memory blocks", blocks);
                 return false;
             }
-            _tx_config          = tx_config;
-            _tx_config.channel  = ch;
-            _tx_config.gpio_num = tx_pin();
+            tx_config.channel  = ch;
+            tx_config.gpio_num = tx_pin();
 
-            dump_rmt_config(_tx_config, "TX");
+            dump_rmt_config(tx_config, "TX");
 
-            auto err = rmt_config(&_tx_config);
+            auto err = rmt_config(&tx_config);
             if (err != ESP_OK) {
                 M5_LIB_LOGE("Failed to config TX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
-            err = rmt_driver_install(_tx_config.channel, 0, 0);
+            err = rmt_driver_install(tx_config.channel, 0, 0);
             if (err != ESP_OK) {
                 M5_LIB_LOGE("Failed to install TX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
+            // Hold the channel only once installed, so the destructor never releases a channel it does not own
+            _tx_config = tx_config;
 
             if (_adapter_cfg.tx.invert_signal) {
                 gpio_matrix_out(_tx_config.gpio_num, _tx_config.channel + RMT_SIG_OUT0_IDX, true, false);
@@ -214,23 +215,32 @@ public:
                 return false;
             }
 
-            _rx_config          = rx_config;
-            _rx_config.channel  = ch;
-            _rx_config.gpio_num = rx_pin();
+            rx_config.channel  = ch;
+            rx_config.gpio_num = rx_pin();
 
-            dump_rmt_config(_rx_config, "RX");
+            dump_rmt_config(rx_config, "RX");
 
-            auto err = rmt_config(&_rx_config);
+            auto err = rmt_config(&rx_config);
             if (err != ESP_OK) {
                 M5_LIB_LOGE("Failed to config RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
 
-            err = rmt_driver_install(_rx_config.channel, cfg.rx.ring_buffer_size, 0);
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // Ping-pong reception is turned off after rmt_rx_start(); leave room for one threshold copy
+            // (half a block) that may land before that, plus the whole memory copied at the end of a frame
+            const size_t mem_bytes   = rx_config.mem_block_num * RMT_MEM_ITEM_NUM * 4;
+            const size_t rx_buf_size = std::max<size_t>(cfg.rx.ring_buffer_size, 2 * mem_bytes);
+#else
+            const size_t rx_buf_size = cfg.rx.ring_buffer_size;
+#endif
+            err = rmt_driver_install(rx_config.channel, rx_buf_size, 0);
             if (err != ESP_OK) {
                 M5_LIB_LOGE("Failed to install RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
+            // Hold the channel only once installed, so the destructor never releases a channel it does not own
+            _rx_config = rx_config;
 
             if (_adapter_cfg.rx.invert_signal) {
                 // RX input signals are numbered from the first RX-capable channel
@@ -245,6 +255,11 @@ public:
                 M5_LIB_LOGE("Failed to start RX");
                 return false;
             }
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // ESP-IDF 4.4 overruns its receive buffer when a frame outgrows it in ping-pong mode,
+            // which rmt_rx_start() enables; receive within the RMT memory only (as on ESP32)
+            rmt_set_rx_thr_intr_en(_rx_config.channel, false, 0);
+#endif
 
             // Discard garbage
             size_t rx_size{};

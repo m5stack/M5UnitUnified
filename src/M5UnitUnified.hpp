@@ -87,6 +87,18 @@ public:
       @return True if successful
      */
     bool add(Component& u, i2c_master_bus_handle_t bus);
+    /*!
+      @brief Adding unit to be managed (I2C, ESP-IDF native driver, with the bus port and pins)
+      @param u Unit Component
+      @param bus ESP-IDF I2C master bus handle
+      @param port I2C port the bus was created on
+      @param sda SDA GPIO the bus was created on
+      @param scl SCL GPIO the bus was created on
+      @return True if successful
+      @note The bus handle does not expose its pins; pass them so that AdapterI2C::sda() / scl() / port() report them
+     */
+    bool add(Component& u, i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda,
+             const gpio_num_t scl);
 #endif
 #if defined(DOXYGEN_PROCESS) || (defined(ESP_PLATFORM) && !__has_include(<driver/i2c_master.h>))
     /*!

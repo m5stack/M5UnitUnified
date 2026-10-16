@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  UnitTest for chip-dependent paths (ADC channel mapping, I2C pin lookup, RMT v1 channel allocation)
+  UnitTest for chip-dependent paths (ADC channel mapping, I2C pin lookup and release, RMT v1 channel allocation)
   No wiring required
 */
 #include <gtest/gtest.h>
@@ -13,8 +13,18 @@
 #include <m5_unit_component/adapter.hpp>
 #include <Wire.h>
 #include <driver/gpio.h>
+#include <driver/uart.h>
+#include <esp_idf_version.h>
 #include <soc/soc_caps.h>
 #include <soc/adc_channel.h>
+#include <soc/gpio_pins.h>
+#include <soc/gpio_reg.h>
+#include <soc/gpio_sig_map.h>
+#include <soc/gpio_struct.h>
+// Wire1 is LP I2C from ESP-IDF 5.4 (arduino-esp32 3.2); older hal/i2c_ll.h does not build as C++
+#if SOC_LP_I2C_SUPPORTED && !SOC_LP_GPIO_MATRIX_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+#include <hal/i2c_ll.h>  // LP_I2C_SDA_IOMUX_PAD / LP_I2C_SCL_IOMUX_PAD
+#endif
 #include <memory>
 #include <vector>
 #include <wiring/m5_unit_unified_wiring.hpp>  // include last; M5_UNIT_UNIFIED_WIRING_HAS_WIRE1
@@ -50,6 +60,23 @@ bool pick_output_pin_pair(int& first, int& second)
         }
     }
     return false;
+}
+
+// Peripheral output signal routed to the pin (SIG_GPIO_OUT_IDX while it is a plain GPIO)
+uint32_t out_signal(const int pin)
+{
+    return (REG_READ(GPIO_FUNC0_OUT_SEL_CFG_REG + pin * 4) >> GPIO_FUNC0_OUT_SEL_S) & GPIO_FUNC0_OUT_SEL_V;
+}
+
+// GPIO routed to the peripheral input signal (GPIO_MATRIX_CONST_ONE_INPUT while fed a constant high)
+uint32_t in_source(const uint32_t sig)
+{
+#if defined(GPIO_FUNC0_IN_SEL_S)
+    return (GPIO.func_in_sel_cfg[sig].val >> GPIO_FUNC0_IN_SEL_S) & GPIO_FUNC0_IN_SEL_V;
+#else
+    // ESP32-P4 reserves input signal 0, so its register macros start at 1
+    return (GPIO.func_in_sel_cfg[sig].val >> GPIO_FUNC1_IN_SEL_S) & GPIO_FUNC1_IN_SEL_V;
+#endif
 }
 
 }  // namespace
@@ -150,14 +177,64 @@ TEST(ChipCaps, I2CWirePinLookup)
     EXPECT_TRUE(began);
     if (began) {
         AdapterI2C adapter(Wire, I2C_ADDR, I2C_FREQ);
+        EXPECT_EQ(adapter.port(), 0);
         EXPECT_EQ(adapter.sda(), sda);
         EXPECT_EQ(adapter.scl(), scl);
     }
     Wire.end();
 }
 
+// releasePins() hands SDA/SCL to GPIO and restorePins() reattaches them to the I2C controller,
+// including the input routing that releasePins() feeds a constant high
+TEST(ChipCaps, I2CReleaseRestorePins)
+{
+    const int sda = M5.getPin(m5::pin_name_t::port_a_sda);
+    const int scl = M5.getPin(m5::pin_name_t::port_a_scl);
+    if (!valid_pin(sda) || !valid_pin(scl)) {
+        GTEST_SKIP() << "No PortA on this board";
+    }
+
+    Wire.end();
+    const bool began = Wire.begin(sda, scl, I2C_FREQ);
+    EXPECT_TRUE(began);
+    if (began) {
+        AdapterI2C adapter(Wire, I2C_ADDR, I2C_FREQ);
+        // The input and output signal indexes of I2C SDA/SCL are equal
+        const uint32_t sig_sda = out_signal(sda);
+        const uint32_t sig_scl = out_signal(scl);
+        EXPECT_EQ(in_source(sig_sda), static_cast<uint32_t>(sda));
+        EXPECT_EQ(in_source(sig_scl), static_cast<uint32_t>(scl));
+
+        const bool released = adapter.releasePins();
+        EXPECT_TRUE(released);
+        if (released) {
+            EXPECT_EQ(out_signal(sda), static_cast<uint32_t>(SIG_GPIO_OUT_IDX));
+            EXPECT_EQ(out_signal(scl), static_cast<uint32_t>(SIG_GPIO_OUT_IDX));
+            EXPECT_EQ(in_source(sig_sda), static_cast<uint32_t>(GPIO_MATRIX_CONST_ONE_INPUT));
+            EXPECT_EQ(in_source(sig_scl), static_cast<uint32_t>(GPIO_MATRIX_CONST_ONE_INPUT));
+
+            // Open-drain with the pull-up: high when released, low when driven
+            // (the pull-up takes a while to raise the bus, so wait before reading high)
+            const auto gpio_sda = static_cast<gpio_num_t>(sda);
+            EXPECT_EQ(gpio_get_level(gpio_sda), 1);
+            gpio_set_level(gpio_sda, 0);
+            EXPECT_EQ(gpio_get_level(gpio_sda), 0);
+            gpio_set_level(gpio_sda, 1);
+            m5::utility::delay(1);
+            EXPECT_EQ(gpio_get_level(gpio_sda), 1);
+
+            EXPECT_TRUE(adapter.restorePins());
+            EXPECT_EQ(out_signal(sda), sig_sda);
+            EXPECT_EQ(out_signal(scl), sig_scl);
+            EXPECT_EQ(in_source(sig_sda), static_cast<uint32_t>(sda));
+            EXPECT_EQ(in_source(sig_scl), static_cast<uint32_t>(scl));
+        }
+    }
+    Wire.end();
+}
+
 #if M5_UNIT_UNIFIED_WIRING_HAS_WIRE1
-// Wire1 is HP I2C1 (routed through the GPIO matrix) or LP I2C (fixed pads, not looked up)
+// Wire1 is HP I2C1 (routed through the GPIO matrix) or LP I2C (fixed pads, reported only once begun)
 // This checks only the pin lookup logic of AdapterI2C, not bus communication; it also runs on boards
 // that do not route Wire1 to any connector (e.g. NanoC6, whose LP I2C pads are not on the GROVE port)
 TEST(ChipCaps, I2CWire1PinLookup)
@@ -173,14 +250,36 @@ TEST(ChipCaps, I2CWire1PinLookup)
     EXPECT_TRUE(began);
     if (began) {
         AdapterI2C adapter(Wire1, I2C_ADDR, I2C_FREQ);
+        // Bus 1 is HP I2C1, or LP_I2C_NUM_0 (also 1) where Wire1 is LP I2C
+        EXPECT_EQ(adapter.port(), 1);
         if (wire1_is_hp) {
             EXPECT_EQ(adapter.sda(), sda);
             EXPECT_EQ(adapter.scl(), scl);
         } else {
-            // LP I2C on fixed pads: not looked up, and pushPin/popPin must not touch HP I2C0 pins
+            // LP I2C that has not begun: no pins, so pushPin/popPin must not touch HP I2C0 pins
             EXPECT_EQ(adapter.sda(), -1);
             EXPECT_EQ(adapter.scl(), -1);
         }
+    }
+    Wire1.end();
+}
+#endif
+
+#if M5_UNIT_UNIFIED_WIRING_HAS_WIRE1 && SOC_HP_I2C_NUM == 1 && defined(LP_I2C_SDA_IOMUX_PAD)
+// Wire1 is LP I2C, which opens only on its fixed pads; once begun, AdapterI2C reports them.
+// They are not routed through the GPIO matrix, so releasePins() must refuse them
+// (on NanoC6 the SCL pad drives the blue LED, which may flicker meanwhile)
+TEST(ChipCaps, I2CWire1LowPowerPads)
+{
+    Wire1.end();
+    const bool began = Wire1.begin(LP_I2C_SDA_IOMUX_PAD, LP_I2C_SCL_IOMUX_PAD, I2C_FREQ);
+    EXPECT_TRUE(began);
+    if (began) {
+        AdapterI2C adapter(Wire1, I2C_ADDR, I2C_FREQ);
+        EXPECT_EQ(adapter.port(), LP_I2C_NUM_0);
+        EXPECT_EQ(adapter.sda(), LP_I2C_SDA_IOMUX_PAD);
+        EXPECT_EQ(adapter.scl(), LP_I2C_SCL_IOMUX_PAD);
+        EXPECT_FALSE(adapter.releasePins());
     }
     Wire1.end();
 }
@@ -508,3 +607,44 @@ TEST(ChipCaps, RmtV2RecreateWhileReceiving)
     EXPECT_EQ(read_frame(a, buf), frame.size());
 }
 #endif
+
+// available() counts the received bytes, through both the Arduino and the ESP-IDF implementation.
+// The UART internal loopback (TX to RX) is used, so no unit is needed
+TEST(ChipCaps, UartAvailable)
+{
+    int tx{}, rx{};
+    if (!pick_output_pin_pair(tx, rx)) {
+        GTEST_SKIP() << "No free port pins on this board";
+    }
+    Serial1.begin(115200, SERIAL_8N1, rx, tx);
+    EXPECT_EQ(uart_set_loop_back(UART_NUM_1, true), ESP_OK);
+
+    AdapterUART a(Serial1);     // SerialImpl
+    AdapterUART b(UART_NUM_1);  // ESPIDFImpl on the same port
+    a.setTimeout(100);
+    a.flushRX();
+    EXPECT_EQ(a.available(), 0U);
+    EXPECT_EQ(b.available(), 0U);
+
+    const uint8_t out[] = {0xAA, 0x12, 0x34, 0xF0};
+    EXPECT_EQ(a.writeWithTransaction(out, sizeof(out), 0), m5::hal::error::error_t::OK);
+    a.flush();
+    m5::utility::delay(5);  // 4 bytes take about 0.35 ms at 115200 bps
+    EXPECT_EQ(a.available(), sizeof(out));
+    EXPECT_EQ(b.available(), sizeof(out));
+
+    uint8_t in[sizeof(out)]{};
+    EXPECT_EQ(a.readWithTransaction(in, sizeof(in)), m5::hal::error::error_t::OK);
+    EXPECT_EQ(memcmp(in, out, sizeof(out)), 0);
+    EXPECT_EQ(a.available(), 0U);
+
+    // flushRX() drops what is buffered
+    EXPECT_EQ(a.writeWithTransaction(out, sizeof(out), 0), m5::hal::error::error_t::OK);
+    a.flush();
+    m5::utility::delay(5);
+    a.flushRX();
+    EXPECT_EQ(a.available(), 0U);
+
+    uart_set_loop_back(UART_NUM_1, false);
+    Serial1.end();
+}

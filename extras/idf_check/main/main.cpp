@@ -23,6 +23,14 @@ namespace {
 m5::unit::UnitUnified units;
 }  // namespace
 
+// <M5Unified.h> is included before the wiring header, so the helpers must be declared.
+// External linkage keeps this compiled; it is never called.
+bool idf_check_wiring(m5::unit::Component& unit)
+{
+    (void)m5::unit::wiring::i2cPins();
+    return m5::unit::wiring::addI2C(units, unit);
+}
+
 extern "C" void app_main(void)
 {
     M5.begin();

@@ -46,6 +46,12 @@ void AdapterUART::SerialImpl::setTimeout(const uint32_t ms)
     _serial->setTimeout(ms);
 }
 
+size_t AdapterUART::SerialImpl::available()
+{
+    const int n = _serial->available();
+    return (n > 0) ? static_cast<size_t>(n) : 0;
+}
+
 m5::hal::error::error_t AdapterUART::SerialImpl::readWithTransaction(uint8_t* data, const size_t len)
 {
     return (_serial->readBytes(data, len) == len) ? m5::hal::error::error_t::OK
@@ -85,6 +91,15 @@ void AdapterUART::ESPIDFImpl::flushRX()
 void AdapterUART::ESPIDFImpl::setTimeout(const uint32_t ms)
 {
     _timeout_ms = ms;
+}
+
+size_t AdapterUART::ESPIDFImpl::available()
+{
+    size_t n{};
+    if (!uart_is_driver_installed(_uart_num) || uart_get_buffered_data_len(_uart_num, &n) != ESP_OK) {
+        return 0;
+    }
+    return n;
 }
 
 m5::hal::error::error_t AdapterUART::ESPIDFImpl::readWithTransaction(uint8_t* data, const size_t len)

@@ -305,6 +305,12 @@ In the future, all connections will be made through M5HAL, eliminating the need 
 - SPI with SPI class
 - SPI with ESP-IDF SPI device handle (`spi_device_handle_t`)
 
+> **NOTE:** M5Unified is optional. M5UnitUnified builds without it, but two features are then unavailable:
+> - I2C with I2C_Class (`M5.In_I2C` / `M5.Ex_I2C`) is enabled only when M5Unified is part of the build.
+> - The wiring helpers (`src/wiring/m5_unit_unified_wiring.hpp`) are enabled only when `<M5Unified.h>` is included before that header.
+>
+> I2C through I2C_Class runs on the I2C implementation of M5GFX, which M5Unified uses.
+
 ### Supported devices, units
 See also [Wiki](https://github.com/m5stack/M5UnitUnified/wiki/)
 

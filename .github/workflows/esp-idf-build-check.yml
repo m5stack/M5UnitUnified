@@ -86,9 +86,9 @@ jobs:
           # ESP32-C3: ADC2 has 1 of 5 channel slots (ADC channel lookup)
           - target: esp32c3
             idf: v5.5.4
-          # ESP32-S2: single-core Xtensa, func_sel register field
-          - target: esp32s2
-            idf: v5.5.4
+          # ESP32-S2 is not supported: M5Unified / M5GFX do not support it. Re-enable when they do
+#          - target: esp32s2
+#            idf: v5.5.4
           # ESP32-C5 (supported from v5.5): LP UART counted in SOC_UART_NUM
           - target: esp32c5
             idf: v5.5.4
