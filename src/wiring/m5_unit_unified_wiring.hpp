@@ -258,6 +258,8 @@ inline HatI2CPins hatI2CPins()
         case m5::board_t::board_M5StickCPlus2:
             return {0, 26, false};
         case m5::board_t::board_M5StickS3:
+            // SCL is GPIO0 (strapping pin): a Hat that pulls it to its own unpowered supply at power-on (e.g. Hat DAC)
+            // makes the board boot into download mode
             return {8, 0, false};
         case m5::board_t::board_M5StackCoreInk:
             return {25, 26, false};
