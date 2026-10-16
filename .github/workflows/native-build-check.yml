@@ -74,15 +74,23 @@ jobs:
       # through CMake. The check project lives in extras/native_check (not shipped
       # with the library). On the host only the M5HAL bus and I2C_Class paths
       # remain; GPIO / RMT / UART / SPI are excluded by design.
+      # Configure also runs the wiring gate checks (extras/native_check/wiring_gate).
       - name: Configure
         run: |
           cmake -S M5UnitUnified/extras/native_check -B build \
             -DM5HAL_DIR="${{ github.workspace }}/M5HAL" \
             -DM5UTILITY_DIR="${{ github.workspace }}/M5Utility"
 
-      - name: Build
+      # Without M5Unified the I2C_Class adapter must be the stub (the #pragma
+      # message in adapter_i2c.cpp), the counterpart of the "Support I2C_Class"
+      # check in esp-idf-build-check.yml
+      - name: Build and check that the I2C_Class adapter is the stub
         run: |
-          cmake --build build --config Release
+          cmake --build build --config Release 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          grep -q "Not support I2C_Class" build.log \
+            || { echo "ERROR: adapter_i2c.cpp did not build the I2C_Class stub without M5Unified"; exit 1; }
 
       - name: Run
         run: |
