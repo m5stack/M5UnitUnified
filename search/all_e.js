@@ -7,5 +7,7 @@ var searchData=
   ['readregister32le_4',['readRegister32LE',['../classm5_1_1unit_1_1_component.html#af8a788c0a766bd8f7ba3d9b3d607c9d6',1,'m5::unit::Component']]],
   ['readregister8_5',['readRegister8',['../classm5_1_1unit_1_1_component.html#a22dbec94a6047d2b08794109a1d37e1c',1,'m5::unit::Component']]],
   ['readwithtransaction_6',['readWithTransaction',['../classm5_1_1unit_1_1_adapter.html#aa70c6328189e26683081aea2663d9438',1,'m5::unit::Adapter::readWithTransaction()'],['../classm5_1_1unit_1_1_component.html#ab94824ccec085321fed35acb1150a5fe',1,'m5::unit::Component::readWithTransaction()']]],
-  ['restore_7',['restore',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b',1,'m5::unit::gpio::pin_backup_t']]]
+  ['releasepins_7',['releasePins',['../classm5_1_1unit_1_1_adapter_i2_c.html#a9f01d8bd69c95ce5e7cdf0e740639c16',1,'m5::unit::AdapterI2C']]],
+  ['restore_8',['restore',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b',1,'m5::unit::gpio::pin_backup_t']]],
+  ['restorepins_9',['restorePins',['../classm5_1_1unit_1_1_adapter_i2_c.html#af2f027830c0e301c1a390d3a614dd3a4',1,'m5::unit::AdapterI2C']]]
 ];

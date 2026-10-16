@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.0 git rev:c6d337c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.1 git rev:fe64406</span>
    </div>
   </td>
  </tr>
@@ -123,6 +123,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a02792d7a83975cc137fb7f641f75b6c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afbd48cf69b9731fbdb71b36f66ddb73e" id="r_afbd48cf69b9731fbdb71b36f66ddb73e"><td class="memItemLeft" align="right" valign="top">virtual m5::I2C_Class *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afbd48cf69b9731fbdb71b36f66ddb73e">getI2CClass</a> () override</td></tr>
 <tr class="separator:afbd48cf69b9731fbdb71b36f66ddb73e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a597a01af8c67bb521ae627e6d5017d4b" id="r_a597a01af8c67bb521ae627e6d5017d4b"><td class="memItemLeft" align="right" valign="top">virtual int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a597a01af8c67bb521ae627e6d5017d4b">port</a> () const override</td></tr>
+<tr class="memdesc:a597a01af8c67bb521ae627e6d5017d4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C port number, or -1 if unknown.  <br /></td></tr>
+<tr class="separator:a597a01af8c67bb521ae627e6d5017d4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9d4581517f7f7df7975fac0b80b5a00" id="r_aa9d4581517f7f7df7975fac0b80b5a00"><td class="memItemLeft" align="right" valign="top">virtual int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa9d4581517f7f7df7975fac0b80b5a00">scl</a> () const override</td></tr>
 <tr class="separator:aa9d4581517f7f7df7975fac0b80b5a00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2064a95dbbdedb7e856e34d313d03348" id="r_a2064a95dbbdedb7e856e34d313d03348"><td class="memItemLeft" align="right" valign="top">virtual int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2064a95dbbdedb7e856e34d313d03348">sda</a> () const override</td></tr>
@@ -381,6 +384,35 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>_clock</b> {100 *
 <p>Gets the implementation type. </p>
 
 <p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html#ab5053d593e11d940fd8282ce8ac2aea0">m5::unit::AdapterI2C::I2CImpl</a>.</p>
+
+</div>
+</div>
+<a id="a597a01af8c67bb521ae627e6d5017d4b" name="a597a01af8c67bb521ae627e6d5017d4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a597a01af8c67bb521ae627e6d5017d4b">&#9670;&#160;</a></span>port()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual int16_t m5::unit::AdapterI2C::I2CClassImpl::port </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>I2C port number, or -1 if unknown. </p>
+
+<p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter_i2_c_1_1_i2_c_impl.html#a97b502ea0bcb9e08ef97c0524b30c238">m5::unit::AdapterI2C::I2CImpl</a>.</p>
 
 </div>
 </div>

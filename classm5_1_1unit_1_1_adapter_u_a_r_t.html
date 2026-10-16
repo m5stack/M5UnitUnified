@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.0 git rev:c6d337c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.1 git rev:fe64406</span>
    </div>
   </td>
  </tr>
@@ -134,6 +134,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>flushRX</b> ()</td></
 <tr class="memitem:a0edca694f9627eb571cc87cb45c013a8" id="r_a0edca694f9627eb571cc87cb45c013a8"><td class="memItemLeft" align="right" valign="top"><a id="a0edca694f9627eb571cc87cb45c013a8" name="a0edca694f9627eb571cc87cb45c013a8"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setTimeout</b> (const uint32_t ms)</td></tr>
 <tr class="separator:a0edca694f9627eb571cc87cb45c013a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2281c9e6c1614d5b383eaa891f64ba73" id="r_a2281c9e6c1614d5b383eaa891f64ba73"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2281c9e6c1614d5b383eaa891f64ba73">available</a> ()</td></tr>
+<tr class="memdesc:a2281c9e6c1614d5b383eaa891f64ba73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes received and not read yet.  <br /></td></tr>
+<tr class="separator:a2281c9e6c1614d5b383eaa891f64ba73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a0e8aea071977cdc91c4e8b0bef400e" id="r_a2a0e8aea071977cdc91c4e8b0bef400e"><td class="memItemLeft" align="right" valign="top"><a id="a2a0e8aea071977cdc91c4e8b0bef400e" name="a2a0e8aea071977cdc91c4e8b0bef400e"></a>
 <a class="el" href="classm5_1_1unit_1_1_adapter_u_a_r_t_1_1_u_a_r_t_impl.html">UARTImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>impl</b> ()</td></tr>
 <tr class="separator:a2a0e8aea071977cdc91c4e8b0bef400e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -254,7 +257,37 @@ std::unique_ptr&lt; <a class="el" href="classm5_1_1unit_1_1_adapter_1_1_impl.htm
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>UART access adapter. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a2281c9e6c1614d5b383eaa891f64ba73" name="a2281c9e6c1614d5b383eaa891f64ba73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2281c9e6c1614d5b383eaa891f64ba73">&#9670;&#160;</a></span>available()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t m5::unit::AdapterUART::available </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Bytes received and not read yet. </p>
+<dl class="section return"><dt>Returns</dt><dd>Number of bytes that can be read without waiting (0 if unknown) </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Lets a unit read only when a whole frame has arrived, instead of blocking until the timeout. Since 0.6.1 (M5_UNIT_UNIFIED_VERSION) </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

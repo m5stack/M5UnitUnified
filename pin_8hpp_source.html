@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.0 git rev:c6d337c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.1 git rev:fe64406</span>
    </div>
   </td>
  </tr>
@@ -128,30 +128,37 @@ $(function(){initNavTree('pin_8hpp_source.html',''); initResizable(true); });
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        <span class="keywordflow">return</span> _pin_num;</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    }</div>
 </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aff815db57f98dc96c15a1ffff3faf626">backup</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b">restore</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    uint32_t _io_mux_gpio_reg{};</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    uint32_t _gpio_pin_reg{};</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    uint32_t _gpio_func_out_reg{};</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    uint32_t _gpio_func_in_reg{};</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    int16_t _in_func_num{-1};</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    int8_t _pin_num{-1};  <span class="comment">// GPIO_NUM_NC</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">bool</span> _gpio_enable{};</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>};</div>
+<div class="foldopen" id="foldopen00039" data-start="{" data-end="}">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a03031e1d6bc1eb27c09b30715020ea69">   39</a></span>    <span class="keyword">inline</span> int16_t <a class="code hl_function" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a03031e1d6bc1eb27c09b30715020ea69">getInFuncNum</a>(<span class="keywordtype">void</span>)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">    </span>{</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <span class="keywordflow">return</span> _in_func_num;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    }</div>
 </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}  <span class="comment">// namespace gpio</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>}  <span class="comment">// namespace unit</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>}  <span class="comment">// namespace m5</span></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aff815db57f98dc96c15a1ffff3faf626">backup</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b">restore</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    uint32_t _io_mux_gpio_reg{};</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    uint32_t _gpio_pin_reg{};</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    uint32_t _gpio_func_out_reg{};</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    uint32_t _gpio_func_in_reg{};</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    int16_t _in_func_num{-1};</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    int8_t _pin_num{-1};  <span class="comment">// GPIO_NUM_NC</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> _gpio_enable{};</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>};</div>
+</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>}  <span class="comment">// namespace gpio</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}  <span class="comment">// namespace unit</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>}  <span class="comment">// namespace m5</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html">m5::unit::gpio::pin_backup_t</a></div><div class="ttdoc">Save and restore GPIO pin configuration.</div><div class="ttdef"><b>Definition</b> pin.hpp:24</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_a03031e1d6bc1eb27c09b30715020ea69"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a03031e1d6bc1eb27c09b30715020ea69">m5::unit::gpio::pin_backup_t::getInFuncNum</a></div><div class="ttdeci">int16_t getInFuncNum(void) const</div><div class="ttdoc">Get the peripheral input signal routed from this pin at backup(), or -1 if none.</div><div class="ttdef"><b>Definition</b> pin.hpp:39</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_a858da4975915536d63a9c894534449b4"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a858da4975915536d63a9c894534449b4">m5::unit::gpio::pin_backup_t::getPin</a></div><div class="ttdeci">int8_t getPin(void) const</div><div class="ttdoc">Get the target pin number.</div><div class="ttdef"><b>Definition</b> pin.hpp:34</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_aabbe36b0f35d3b71ba8854f125e85a9a"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aabbe36b0f35d3b71ba8854f125e85a9a">m5::unit::gpio::pin_backup_t::pin_backup_t</a></div><div class="ttdeci">pin_backup_t(int pin_num=1)</div><div class="ttdoc">Constructor.</div><div class="ttdef"><b>Definition</b> pin.cpp:122</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_aabbe36b0f35d3b71ba8854f125e85a9a"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aabbe36b0f35d3b71ba8854f125e85a9a">m5::unit::gpio::pin_backup_t::pin_backup_t</a></div><div class="ttdeci">pin_backup_t(int pin_num=1)</div><div class="ttdoc">Constructor.</div><div class="ttdef"><b>Definition</b> pin.cpp:129</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_ab7a30173a1a01746f3f396c9319dcd14"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ab7a30173a1a01746f3f396c9319dcd14">m5::unit::gpio::pin_backup_t::setPin</a></div><div class="ttdeci">void setPin(int pin_num)</div><div class="ttdoc">Set the target pin number.</div><div class="ttdef"><b>Definition</b> pin.hpp:29</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_ad30ae18046a5ea19128335e58147a34b"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b">m5::unit::gpio::pin_backup_t::restore</a></div><div class="ttdeci">void restore(void)</div><div class="ttdoc">Restore saved pin configuration.</div><div class="ttdef"><b>Definition</b> pin.cpp:130</div></div>
-<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_aff815db57f98dc96c15a1ffff3faf626"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aff815db57f98dc96c15a1ffff3faf626">m5::unit::gpio::pin_backup_t::backup</a></div><div class="ttdeci">void backup(void)</div><div class="ttdoc">Save current pin configuration.</div><div class="ttdef"><b>Definition</b> pin.cpp:126</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_ad30ae18046a5ea19128335e58147a34b"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#ad30ae18046a5ea19128335e58147a34b">m5::unit::gpio::pin_backup_t::restore</a></div><div class="ttdeci">void restore(void)</div><div class="ttdoc">Restore saved pin configuration.</div><div class="ttdef"><b>Definition</b> pin.cpp:137</div></div>
+<div class="ttc" id="aclassm5_1_1unit_1_1gpio_1_1pin__backup__t_html_aff815db57f98dc96c15a1ffff3faf626"><div class="ttname"><a href="classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#aff815db57f98dc96c15a1ffff3faf626">m5::unit::gpio::pin_backup_t::backup</a></div><div class="ttdeci">void backup(void)</div><div class="ttdoc">Save current pin configuration.</div><div class="ttdef"><b>Definition</b> pin.cpp:133</div></div>
 <div class="ttc" id="anamespacem5_html"><div class="ttname"><a href="namespacem5.html">m5</a></div><div class="ttdoc">Top level namespace of M5Stack.</div><div class="ttdef"><b>Definition</b> test_helper.hpp:20</div></div>
 <div class="ttc" id="anamespaceunit_html"><div class="ttname"><a href="namespaceunit.html">unit</a></div><div class="ttdoc">Unit-related namespace.</div></div>
 </div><!-- fragment --></div><!-- contents -->

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.0 git rev:c6d337c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.1 git rev:fe64406</span>
    </div>
   </td>
  </tr>
@@ -184,6 +184,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setClock</b> (const u
 <a class="el" href="#a8d18994dbe5d6f786c355fc9ba12b704">ImplType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>implType</b> () const</td></tr>
 <tr class="memdesc:af902f23ebec43f21e047f89e7bd4cb0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C implementation type. <br /></td></tr>
 <tr class="separator:af902f23ebec43f21e047f89e7bd4cb0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa7ee9a66de1c2001d7701a35ec98dd" id="r_affa7ee9a66de1c2001d7701a35ec98dd"><td class="memItemLeft" align="right" valign="top"><a id="affa7ee9a66de1c2001d7701a35ec98dd" name="affa7ee9a66de1c2001d7701a35ec98dd"></a>
+int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>port</b> () const</td></tr>
+<tr class="memdesc:affa7ee9a66de1c2001d7701a35ec98dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C port number, or -1 if unknown (TwoWire, Bus, or a bus handle added without its port) <br /></td></tr>
+<tr class="separator:affa7ee9a66de1c2001d7701a35ec98dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4357f844a0e6ea1558320624139480f3" id="r_a4357f844a0e6ea1558320624139480f3"><td class="memItemLeft" align="right" valign="top"><a id="a4357f844a0e6ea1558320624139480f3" name="a4357f844a0e6ea1558320624139480f3"></a>
 int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>scl</b> () const</td></tr>
 <tr class="separator:a4357f844a0e6ea1558320624139480f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -193,6 +197,12 @@ int16_t&#160;</td><td class="memItemRight" valign="bottom"><b>sda</b> () const</
 <tr class="memitem:a65120f0f4d29cee27a26339cb892b823" id="r_a65120f0f4d29cee27a26339cb892b823"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classm5_1_1unit_1_1_adapter.html">Adapter</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a65120f0f4d29cee27a26339cb892b823">duplicate</a> (const uint8_t addr) override</td></tr>
 <tr class="memdesc:a65120f0f4d29cee27a26339cb892b823"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a duplicate adapter with a different address.  <br /></td></tr>
 <tr class="separator:a65120f0f4d29cee27a26339cb892b823"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f01d8bd69c95ce5e7cdf0e740639c16" id="r_a9f01d8bd69c95ce5e7cdf0e740639c16"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f01d8bd69c95ce5e7cdf0e740639c16">releasePins</a> ()</td></tr>
+<tr class="memdesc:a9f01d8bd69c95ce5e7cdf0e740639c16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detach SDA/SCL from the I2C controller and make them GPIO.  <br /></td></tr>
+<tr class="separator:a9f01d8bd69c95ce5e7cdf0e740639c16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2f027830c0e301c1a390d3a614dd3a4" id="r_af2f027830c0e301c1a390d3a614dd3a4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2f027830c0e301c1a390d3a614dd3a4">restorePins</a> ()</td></tr>
+<tr class="memdesc:af2f027830c0e301c1a390d3a614dd3a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reattach SDA/SCL to the I2C controller as they were before <a class="el" href="#a9f01d8bd69c95ce5e7cdf0e740639c16" title="Detach SDA/SCL from the I2C controller and make them GPIO.">releasePins()</a>  <br /></td></tr>
+<tr class="separator:af2f027830c0e301c1a390d3a614dd3a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Temporary API</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><dl class="section warning"><dt>Warning</dt><dd>Functionality required for a specific unit </dd>
 <dd>
@@ -380,6 +390,53 @@ Additional Inherited Members</h2></td></tr>
 <p>Create a duplicate adapter with a different address. </p>
 
 <p>Reimplemented from <a class="el" href="classm5_1_1unit_1_1_adapter.html#abd0e300cbe4b9aa7d9788d3015eae42c">m5::unit::Adapter</a>.</p>
+
+</div>
+</div>
+<a id="a9f01d8bd69c95ce5e7cdf0e740639c16" name="a9f01d8bd69c95ce5e7cdf0e740639c16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f01d8bd69c95ce5e7cdf0e740639c16">&#9670;&#160;</a></span>releasePins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::AdapterI2C::releasePins </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Detach SDA/SCL from the I2C controller and make them GPIO. </p>
+<p>For sending a frame an I2C controller cannot send (e.g. a few bits, no address). SDA/SCL become open-drain GPIO outputs, left high with the internal pull-ups, and the controller is fed an idle (high) bus so it does not take the GPIO waveform as bus traffic. Drive them with the GPIO API (gpio_set_level etc.), then call <a class="el" href="#af2f027830c0e301c1a390d3a614dd3a4" title="Reattach SDA/SCL to the I2C controller as they were before releasePins()">restorePins()</a> </p><dl class="section return"><dt>Returns</dt><dd>True if successful. False (with nothing changed) if<ul>
+<li>SDA/SCL are unknown (sda() / scl() return -1, e.g. add(unit, bus) without the port and pins)</li>
+<li>the pins are not routed through the GPIO matrix: LP I2C on its fixed pads (ESP32-C6 / C5 Wire1, ESP-IDF LP_I2C_NUM_0) and ESP32-P4 GPIO0-15 used as LP IO</li>
+<li>the build is not for ESP (native / host) </li>
+</ul>
+</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>A software bus (M5HAL Bus) has no controller to detach, so its pins are just made GPIO </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Do not access any unit on the same bus until <a class="el" href="#af2f027830c0e301c1a390d3a614dd3a4" title="Reattach SDA/SCL to the I2C controller as they were before releasePins()">restorePins()</a> </dd></dl>
+
+</div>
+</div>
+<a id="af2f027830c0e301c1a390d3a614dd3a4" name="af2f027830c0e301c1a390d3a614dd3a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2f027830c0e301c1a390d3a614dd3a4">&#9670;&#160;</a></span>restorePins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool m5::unit::AdapterI2C::restorePins </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reattach SDA/SCL to the I2C controller as they were before <a class="el" href="#a9f01d8bd69c95ce5e7cdf0e740639c16" title="Detach SDA/SCL from the I2C controller and make them GPIO.">releasePins()</a> </p>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
 
 </div>
 </div>

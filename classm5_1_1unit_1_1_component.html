@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.0 git rev:c6d337c</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.1 git rev:fe64406</span>
    </div>
   </td>
  </tr>
@@ -228,6 +228,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:add6114e53d4552436a37c4ade19cfddf" id="r_add6114e53d4552436a37c4ade19cfddf"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add6114e53d4552436a37c4ade19cfddf">assign</a> (i2c_master_bus_handle_t bus)</td></tr>
 <tr class="memdesc:add6114e53d4552436a37c4ade19cfddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign I2C master bus (ESP-IDF native driver)  <br /></td></tr>
 <tr class="separator:add6114e53d4552436a37c4ade19cfddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7104fe2d6e72ad93c68b93da295735c7" id="r_a7104fe2d6e72ad93c68b93da295735c7"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7104fe2d6e72ad93c68b93da295735c7">assign</a> (i2c_master_bus_handle_t bus, const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)</td></tr>
+<tr class="memdesc:a7104fe2d6e72ad93c68b93da295735c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign I2C master bus with its port and pins (ESP-IDF native driver)  <br /></td></tr>
+<tr class="separator:a7104fe2d6e72ad93c68b93da295735c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3bf4932966f98d9b3305720f77d05a74" id="r_a3bf4932966f98d9b3305720f77d05a74"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3bf4932966f98d9b3305720f77d05a74">assign</a> (const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl)</td></tr>
 <tr class="memdesc:a3bf4932966f98d9b3305720f77d05a74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign I2C (ESP-IDF legacy driver, pre-installed port)  <br /></td></tr>
 <tr class="separator:a3bf4932966f98d9b3305720f77d05a74"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -591,7 +594,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="a3bf4932966f98d9b3305720f77d05a74" name="a3bf4932966f98d9b3305720f77d05a74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3bf4932966f98d9b3305720f77d05a74">&#9670;&#160;</a></span>assign() <span class="overload">[1/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bf4932966f98d9b3305720f77d05a74">&#9670;&#160;</a></span>assign() <span class="overload">[1/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -636,7 +639,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="a2a42fb24049e7050ab23911e7d573cc7" name="a2a42fb24049e7050ab23911e7d573cc7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a42fb24049e7050ab23911e7d573cc7">&#9670;&#160;</a></span>assign() <span class="overload">[2/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a42fb24049e7050ab23911e7d573cc7">&#9670;&#160;</a></span>assign() <span class="overload">[2/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -676,7 +679,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="a46df44c5a8fbf2f5877e0f1442dbdedf" name="a46df44c5a8fbf2f5877e0f1442dbdedf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a46df44c5a8fbf2f5877e0f1442dbdedf">&#9670;&#160;</a></span>assign() <span class="overload">[3/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a46df44c5a8fbf2f5877e0f1442dbdedf">&#9670;&#160;</a></span>assign() <span class="overload">[3/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -710,7 +713,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="af2f924cd57ef139bd5df8944ccb86fcf" name="af2f924cd57ef139bd5df8944ccb86fcf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2f924cd57ef139bd5df8944ccb86fcf">&#9670;&#160;</a></span>assign() <span class="overload">[4/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af2f924cd57ef139bd5df8944ccb86fcf">&#9670;&#160;</a></span>assign() <span class="overload">[4/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -744,7 +747,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="add6114e53d4552436a37c4ade19cfddf" name="add6114e53d4552436a37c4ade19cfddf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#add6114e53d4552436a37c4ade19cfddf">&#9670;&#160;</a></span>assign() <span class="overload">[5/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#add6114e53d4552436a37c4ade19cfddf">&#9670;&#160;</a></span>assign() <span class="overload">[5/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -777,8 +780,60 @@ template&lt;class T &gt; </div>
 
 </div>
 </div>
+<a id="a7104fe2d6e72ad93c68b93da295735c7" name="a7104fe2d6e72ad93c68b93da295735c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7104fe2d6e72ad93c68b93da295735c7">&#9670;&#160;</a></span>assign() <span class="overload">[6/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool m5::unit::Component::assign </td>
+          <td>(</td>
+          <td class="paramtype">i2c_master_bus_handle_t</td>          <td class="paramname"><span class="paramname"><em>bus</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const i2c_port_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>sda</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>scl</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Assign I2C master bus with its port and pins (ESP-IDF native driver) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bus</td><td>ESP-IDF I2C master bus handle </td></tr>
+    <tr><td class="paramname">port</td><td>I2C port the bus was created on </td></tr>
+    <tr><td class="paramname">sda</td><td>SDA GPIO the bus was created on </td></tr>
+    <tr><td class="paramname">scl</td><td>SCL GPIO the bus was created on </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The bus handle does not expose its pins; pass them so that AdapterI2C::sda() / scl() / port() report them </dd></dl>
+
+</div>
+</div>
 <a id="a808553bbfb783c0583f057cfe1624fe5" name="a808553bbfb783c0583f057cfe1624fe5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a808553bbfb783c0583f057cfe1624fe5">&#9670;&#160;</a></span>assign() <span class="overload">[6/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a808553bbfb783c0583f057cfe1624fe5">&#9670;&#160;</a></span>assign() <span class="overload">[7/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -812,7 +867,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="a3f804cd2eca99117aaefc85d46c3d613" name="a3f804cd2eca99117aaefc85d46c3d613"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f804cd2eca99117aaefc85d46c3d613">&#9670;&#160;</a></span>assign() <span class="overload">[7/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f804cd2eca99117aaefc85d46c3d613">&#9670;&#160;</a></span>assign() <span class="overload">[8/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -846,7 +901,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="af2e4d2656bc3344ba63cd1d103684095" name="af2e4d2656bc3344ba63cd1d103684095"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2e4d2656bc3344ba63cd1d103684095">&#9670;&#160;</a></span>assign() <span class="overload">[8/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af2e4d2656bc3344ba63cd1d103684095">&#9670;&#160;</a></span>assign() <span class="overload">[9/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -885,7 +940,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="a4ab048dfc573035e068d4f7f28846a71" name="a4ab048dfc573035e068d4f7f28846a71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ab048dfc573035e068d4f7f28846a71">&#9670;&#160;</a></span>assign() <span class="overload">[9/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ab048dfc573035e068d4f7f28846a71">&#9670;&#160;</a></span>assign() <span class="overload">[10/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -924,7 +979,7 @@ template&lt;class T &gt; </div>
 </div>
 </div>
 <a id="ab9c48f5796410da43ccaa89fc4bc5fc3" name="ab9c48f5796410da43ccaa89fc4bc5fc3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab9c48f5796410da43ccaa89fc4bc5fc3">&#9670;&#160;</a></span>assign() <span class="overload">[10/10]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9c48f5796410da43ccaa89fc4bc5fc3">&#9670;&#160;</a></span>assign() <span class="overload">[11/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">

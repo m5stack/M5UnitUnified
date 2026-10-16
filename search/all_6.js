@@ -4,10 +4,11 @@ var searchData=
   ['get_5finstance_1',['get_instance',['../classm5_1_1unit_1_1googletest_1_1_i2_c_component_test_base.html#a792628453e177d3cf15013e8a666776a',1,'m5::unit::googletest::I2CComponentTestBase::get_instance()'],['../classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html#a5f12c26afaba97cfaa0332dafccbe808',1,'m5::unit::googletest::GPIOComponentTestBase::get_instance()'],['../classm5_1_1unit_1_1googletest_1_1_u_a_r_t_component_test_base.html#aefb4533823aab0a5a39211e0f8a47b7f',1,'m5::unit::googletest::UARTComponentTestBase::get_instance()'],['../classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html#a95db151897980078ee89c9c4905e0ab3',1,'m5::unit::googletest::SPIComponentTestBase::get_instance()=0']]],
   ['get_5fspi_2',['get_spi',['../classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html#aae4d33e1379a4727bd13841177ca57e7',1,'m5::unit::googletest::SPIComponentTestBase']]],
   ['get_5fspi_5fsettings_3',['get_spi_settings',['../classm5_1_1unit_1_1googletest_1_1_s_p_i_component_test_base.html#ad1e5b62f168b11d59ecd405ce2019b17',1,'m5::unit::googletest::SPIComponentTestBase']]],
-  ['getpin_4',['getPin',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a858da4975915536d63a9c894534449b4',1,'m5::unit::gpio::pin_backup_t']]],
-  ['googletest_5',['googletest',['../namespacegoogletest.html',1,'']]],
-  ['gpio_6',['GPIO',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235',1,'m5::unit::Adapter']]],
-  ['gpiocomponenttestbase_7',['GPIOComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html',1,'m5::unit::googletest']]],
-  ['gpiopinpair_8',['GpioPinPair',['../structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html',1,'m5::unit::wiring']]],
-  ['gpiorole_9',['GpioRole',['../m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794',1,'m5::unit::wiring']]]
+  ['getinfuncnum_4',['getInFuncNum',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a03031e1d6bc1eb27c09b30715020ea69',1,'m5::unit::gpio::pin_backup_t']]],
+  ['getpin_5',['getPin',['../classm5_1_1unit_1_1gpio_1_1pin__backup__t.html#a858da4975915536d63a9c894534449b4',1,'m5::unit::gpio::pin_backup_t']]],
+  ['googletest_6',['googletest',['../namespacegoogletest.html',1,'']]],
+  ['gpio_7',['GPIO',['../classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafceaa4b03abff0e37da035d6fc0f9a4b1235',1,'m5::unit::Adapter']]],
+  ['gpiocomponenttestbase_8',['GPIOComponentTestBase',['../classm5_1_1unit_1_1googletest_1_1_g_p_i_o_component_test_base.html',1,'m5::unit::googletest']]],
+  ['gpiopinpair_9',['GpioPinPair',['../structm5_1_1unit_1_1wiring_1_1_gpio_pin_pair.html',1,'m5::unit::wiring']]],
+  ['gpiorole_10',['GpioRole',['../m5__unit__unified__wiring_8hpp.html#a5ef72887835235a6726c6825654b9794',1,'m5::unit::wiring']]]
 ];
