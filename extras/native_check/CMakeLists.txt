@@ -69,8 +69,9 @@ function(wiring_gate_check name expect_ok)
     if(gate_ok)
       message(FATAL_ERROR "wiring gate: ${name}.cpp must not compile (the wiring helpers are visible)")
     endif()
-    # GCC / MSVC: 'i2cPins' is not a member of ..., Clang: no member named 'i2cPins'
-    if(NOT gate_out MATCHES "'i2cPins':? is not a member|no member named 'i2cPins'")
+    # GCC: ‘i2cPins’ is not a member of ..., MSVC: 'i2cPins': is not a member of ...,
+    # Clang: no member named 'i2cPins'. GCC quotes with Unicode quotes, so match any quote
+    if(NOT gate_out MATCHES "i2cPins[^ ]* is not a member|no member named [^ ]*i2cPins")
       message(FATAL_ERROR "wiring gate: ${name}.cpp failed for another reason\n${gate_out}")
     endif()
   endif()
