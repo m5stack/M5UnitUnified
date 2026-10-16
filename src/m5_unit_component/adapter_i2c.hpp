@@ -226,14 +226,24 @@ public:
         virtual m5::hal::error::error_t wakeup() override;
 
     protected:
+        // Timing registers for this unit's clock, read back after i2c_param_config (high == 0: not readable)
+        struct timing_t {
+            int high{}, low{};
+            int start_setup{}, start_hold{};
+            int stop_setup{}, stop_hold{};
+            int sample{}, hold{};
+            int timeout{};
+        };
+
         void apply_clock();
+        void restore_timing() const;
         m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
                                                        const uint32_t stop);
 
     private:
         i2c_port_t _port{I2C_NUM_0};
         int16_t _sda{-1}, _scl{-1};
-        int _high{0}, _low{0};
+        timing_t _timing{};
     };
 #endif
 

@@ -586,10 +586,10 @@ AdapterI2C::ESPIDFLegacyBusImpl::ESPIDFLegacyBusImpl(const i2c_port_t port, cons
 {
     // The legacy driver has no per-device clock (unlike the IDF >= 5.2 master driver, which applies
     // each device's scl_speed_hz per transfer). The whole port shares one timing register set, so
-    // every consumer must re-assert its own clock before each transfer. Compute this unit's period
+    // every consumer must re-assert its own timing before each transfer. Read this unit's timing
     // once here (the driver is already installed by the wiring helper); transactions then re-apply it
-    // via i2c_set_period. Each unit caches its own _high/_low, so units with different clocks on the
-    // same port do not clobber each other.
+    // (restore_timing). Each unit caches its own timing, so units with different clocks on the same
+    // port do not clobber each other.
     apply_clock();
 }
 
@@ -604,18 +604,35 @@ void AdapterI2C::ESPIDFLegacyBusImpl::apply_clock()
     conf.master.clk_speed = _clock;
     // i2c_param_config applies timing to the HAL even without the driver installed, but
     // i2c_get_period returns ESP_FAIL (without writing) when the driver object is absent.
-    // Mark the cached period invalid (0) when it cannot be read back; transactions then skip
-    // i2c_set_period and rely on the timing param_config just applied.
-    _high = 0;
-    _low  = 0;
+    // Mark the cached timing invalid (high = 0) when it cannot be read back; transactions then skip
+    // restore_timing and rely on the timing param_config just applied.
+    _timing = timing_t{};
     if (i2c_param_config(_port, &conf) == ESP_OK) {
-        if (i2c_get_period(_port, &_high, &_low) != ESP_OK) {
-            _high = 0;
-            _low  = 0;
+        timing_t t{};
+        // param_config also sets the start / stop / data hold and sample times and the SCL timeout from the clock.
+        // Keep them all: with the period alone, a 400 kHz transfer after a 100 kHz unit runs with the 100 kHz data
+        // hold time (as long as the 400 kHz low period), and the device NACKs
+        if (i2c_get_period(_port, &t.high, &t.low) == ESP_OK &&
+            i2c_get_start_timing(_port, &t.start_setup, &t.start_hold) == ESP_OK &&
+            i2c_get_stop_timing(_port, &t.stop_setup, &t.stop_hold) == ESP_OK &&
+            i2c_get_data_timing(_port, &t.sample, &t.hold) == ESP_OK && i2c_get_timeout(_port, &t.timeout) == ESP_OK &&
+            t.high > 0 && t.low > 0) {
+            _timing = t;
         }
     }
-    M5_LIB_LOGI("apply_clock port=%d clock=%u high=%d low=%d%s", (int)_port, (unsigned)_clock, _high, _low,
-                (_high > 0 && _low > 0) ? "" : " (period unreadable; using param_config timing)");
+    M5_LIB_LOGI("apply_clock port=%d clock=%u high=%d low=%d hold=%d%s", (int)_port, (unsigned)_clock, _timing.high,
+                _timing.low, _timing.hold, _timing.high ? "" : " (timing unreadable; using param_config timing)");
+}
+
+void AdapterI2C::ESPIDFLegacyBusImpl::restore_timing() const
+{
+    if (_timing.high) {
+        i2c_set_period(_port, _timing.high, _timing.low);
+        i2c_set_start_timing(_port, _timing.start_setup, _timing.start_hold);
+        i2c_set_stop_timing(_port, _timing.stop_setup, _timing.stop_hold);
+        i2c_set_data_timing(_port, _timing.sample, _timing.hold);
+        i2c_set_timeout(_port, _timing.timeout);
+    }
 }
 
 bool AdapterI2C::ESPIDFLegacyBusImpl::begin()
@@ -634,8 +651,7 @@ AdapterI2C::I2CImpl* AdapterI2C::ESPIDFLegacyBusImpl::duplicate(const uint8_t ad
 {
     auto* p =
         new ESPIDFLegacyBusImpl(_port, static_cast<gpio_num_t>(_sda), static_cast<gpio_num_t>(_scl), addr, _clock);
-    p->_high = _high;
-    p->_low  = _low;
+    p->_timing = _timing;
     return p;
 }
 
@@ -644,9 +660,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::readWithTransaction(uin
     if (!data || !len) {
         return m5::hal::error::error_t::INVALID_ARGUMENT;
     }
-    if (_high > 0 && _low > 0) {
-        i2c_set_period(_port, _high, _low);
-    }
+    restore_timing();
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_READ), true);
@@ -663,9 +677,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::readWithTransaction(uin
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::write_with_transaction(const uint8_t addr, const uint8_t* data,
                                                                                 const size_t len, const uint32_t stop)
 {
-    if (_high > 0 && _low > 0) {
-        i2c_set_period(_port, _high, _low);
-    }
+    restore_timing();
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, static_cast<uint8_t>((addr << 1) | I2C_MASTER_WRITE), true);
@@ -689,9 +701,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(co
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint8_t reg, const uint8_t* data,
                                                                               const size_t len, const uint32_t stop)
 {
-    if (_high > 0 && _low > 0) {
-        i2c_set_period(_port, _high, _low);
-    }
+    restore_timing();
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_WRITE), true);
@@ -711,9 +721,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(co
                                                                               const size_t len, const uint32_t stop)
 {
     m5::types::big_uint16_t r(reg);
-    if (_high > 0 && _low > 0) {
-        i2c_set_period(_port, _high, _low);
-    }
+    restore_timing();
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, static_cast<uint8_t>((_addr << 1) | I2C_MASTER_WRITE), true);
