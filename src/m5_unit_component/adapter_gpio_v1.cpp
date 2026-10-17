@@ -123,10 +123,11 @@ void dump_rmt_config(const rmt_config_t& cfg, const char* title = "RMT CONFIG")
     }
 }
 
-// A frame that ended on the idle threshold closes with a zero duration; one cut off by a full RX memory does not
-bool is_truncated(const rmt_item32_t* items, const size_t item_num)
+// A frame cut off by a full RX memory fills it and does not close with a zero duration. A complete frame can lack
+// the zero too (the driver leaves out a closing item whose first duration is zero), so check the length as well
+bool is_truncated(const rmt_item32_t* items, const size_t item_num, const size_t capacity)
 {
-    return item_num && items[item_num - 1].duration0 && items[item_num - 1].duration1;
+    return item_num && item_num >= capacity && items[item_num - 1].duration0 && items[item_num - 1].duration1;
 }
 
 #if 0
@@ -347,7 +348,14 @@ public:
         // dump_items(items, rx_size / sizeof(rmt_item32_t));
         memcpy(data, "\0\0", 2);
         if (items && rx_size) {
-            report_truncated(is_truncated(items, rx_size / sizeof(rmt_item32_t)));
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // With ping-pong reception the limit is the receive buffer, which ESP-IDF reports itself
+            if (!_adapter_cfg.rx.pingpong)
+#endif
+            {
+                report_truncated(
+                    is_truncated(items, rx_size / sizeof(rmt_item32_t), _rx_config.mem_block_num * RMT_MEM_ITEM_NUM));
+            }
             uint16_t rlen = std::min<uint16_t>(rx_size, max_len);
             memcpy(data, &rlen, sizeof(rlen));
             memcpy(data + 2, items, rlen);
