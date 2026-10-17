@@ -17,6 +17,7 @@
 #include <driver/uart.h>
 #if !__has_include(<driver/i2c_master.h>)
 #include <driver/i2c.h>  // ESP-IDF legacy I2C driver
+#include <soc/i2c_struct.h>
 #endif
 #include <esp_idf_version.h>
 #include <soc/soc_caps.h>
@@ -241,8 +242,31 @@ TEST(ChipCaps, I2CReleaseRestorePins)
 }
 
 #if !__has_include(<driver/i2c_master.h>)
+namespace {
+// SCL timeout enable bit of I2C0 (ESP32 has none: its timeout is always on). -1: not available
+int i2c0_timeout_enabled()
+{
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    return I2C0.to.time_out_en;
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    return I2C0.timeout.time_out_en;
+#else
+    return -1;
+#endif
+}
+void i2c0_disable_timeout()
+{
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    I2C0.to.time_out_en = 0;
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    I2C0.timeout.time_out_en = 0;
+#endif
+}
+}  // namespace
+
 // ESP-IDF legacy driver: the adapter gives the bus an SCL timeout long enough for clock stretching (about 25 ms) and
-// writes it back before every transfer, so another setting (another unit's i2c_param_config()) does not stay
+// writes it back before every transfer, so another setting (another unit's i2c_param_config()) does not stay.
+// A failed transfer can reset the controller, which leaves the timeout disabled; the adapter enables it again
 TEST(ChipCaps, I2CLegacySclTimeout)
 {
     const int sda = M5.getPin(m5::pin_name_t::port_a_sda);
@@ -253,7 +277,7 @@ TEST(ChipCaps, I2CLegacySclTimeout)
 #if defined(CONFIG_IDF_TARGET_ESP32)
     constexpr int expected = 0xFFFFF;  // APB cycles: about 13 ms, the longest ESP32 allows
 #else
-    constexpr int expected = 20;  // 2^20 source clock cycles: about 26 ms at 40 MHz
+    constexpr int expected   = 20;  // 2^20 source clock cycles: about 26 ms at 40 MHz
 #endif
     constexpr i2c_port_t port = I2C_NUM_0;
 
@@ -279,12 +303,17 @@ TEST(ChipCaps, I2CLegacySclTimeout)
         EXPECT_EQ(i2c_get_timeout(port, &timeout), ESP_OK);
         EXPECT_EQ(timeout, expected);
 
-        // Another setting on the same port, then a transfer (no device at I2C_ADDR: a NACK is expected)
+        // Another setting on the same port and the timeout disabled as by a controller reset, then a transfer
+        // (no device at I2C_ADDR: it fails with a NACK)
         EXPECT_EQ(i2c_set_timeout(port, 5), ESP_OK);
+        i2c0_disable_timeout();
         const uint8_t data{};
-        (void)adapter.writeWithTransaction(&data, 1, 1);
+        EXPECT_NE(adapter.writeWithTransaction(&data, 1, 1), m5::hal::error::error_t::OK);
         EXPECT_EQ(i2c_get_timeout(port, &timeout), ESP_OK);
         EXPECT_EQ(timeout, expected);
+        if (i2c0_timeout_enabled() >= 0) {
+            EXPECT_EQ(i2c0_timeout_enabled(), 1);
+        }
     }
     i2c_driver_delete(port);
 }
@@ -598,7 +627,7 @@ gpio::adapter_config_t loopback_config(const uint16_t ring_buffer_size)
 #if defined(SOC_RMT_SUPPORT_RX_PINGPONG) && SOC_RMT_SUPPORT_RX_PINGPONG
     cfg.rx.mem_blocks = 1;
 #else
-    cfg.rx.mem_blocks      = 4;   // Without RX ping-pong a frame must fit in the channel memory
+    cfg.rx.mem_blocks        = 4;   // Without RX ping-pong a frame must fit in the channel memory
 #endif
     return cfg;
 }
