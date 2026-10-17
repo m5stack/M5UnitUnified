@@ -367,7 +367,8 @@ public:
     }
 
 protected:
-    // Truncated frames are still delivered; warn at most once a second with the count since the last warning
+    // Truncated frames are still delivered. Debug level: a receiver that outputs noise between frames (e.g. an
+    // ASK receiver) fills the memory all the time. Log at most once a second with the count since the last log
     void report_truncated(const bool truncated)
     {
         if (!truncated) {
@@ -376,8 +377,10 @@ protected:
         ++_truncated;
         const TickType_t now = xTaskGetTickCount();
         if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
-            M5_LIB_LOGW("RMT RX: %u frame(s) truncated, larger than the RMT memory (increase mem_blocks)",
-                        static_cast<unsigned>(_truncated));
+            M5_LIB_LOGD(
+                "RMT RX: %u frame(s) filled the RMT memory and were cut off (noise, or a frame longer than "
+                "mem_blocks allows)",
+                static_cast<unsigned>(_truncated));
             _truncated             = 0;
             _truncated_reported_at = now;
         }

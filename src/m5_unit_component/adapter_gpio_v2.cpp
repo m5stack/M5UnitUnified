@@ -394,7 +394,8 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
 
     memcpy(data, "\0\0", 2);
     if (items && rx_size) {
-        // Truncated frames are still delivered; warn at most once a second with the count since the last warning
+        // Truncated frames are still delivered. Debug level: a receiver that outputs noise between frames (e.g. an
+        // ASK receiver) fills the buffer all the time. Log at most once a second with the count since the last log
         size_t capacity = _rx_buf_len / sizeof(rmt_symbol_word_t);
 #if !SOC_RMT_SUPPORT_RX_PINGPONG
         // Without RX ping-pong the RMT memory of the channel is a limit as well
@@ -405,8 +406,9 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
             ++_truncated;
             const TickType_t now = xTaskGetTickCount();
             if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
-                M5_LIB_LOGW(
-                    "RMT RX: %u frame(s) truncated, larger than the RX buffer or memory (ring_buffer_size, mem_blocks)",
+                M5_LIB_LOGD(
+                    "RMT RX: %u frame(s) filled the RX buffer or memory and were cut off (noise, or a frame longer "
+                    "than ring_buffer_size / mem_blocks allows)",
                     static_cast<unsigned>(_truncated));
                 _truncated             = 0;
                 _truncated_reported_at = now;

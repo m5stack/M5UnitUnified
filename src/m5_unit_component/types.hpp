@@ -113,7 +113,7 @@ struct adapter_config_t {
     };
     /*!
       @brief For RX
-      @note A frame longer than the receiver can hold is delivered truncated, with a warning in the log.
+      @note A frame longer than the receiver can hold is delivered truncated, noted in the debug log.
       The limit is mem_blocks x 64 items on ESP32 and mem_blocks x 48 items on ESP32-S3 / ESP32-C3 with
       ESP-IDF 4.x (RMT v1; ring_buffer_size with pingpong), and ring_buffer_size with ESP-IDF 5 or later
       (RMT v2; also the RMT memory on ESP32)
