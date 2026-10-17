@@ -111,7 +111,11 @@ struct adapter_config_t {
         bool loop_enabled{};         ///< Loop mode (TX repeats automatically)
         //        bool carrier_enabled{};      ///< Enable carrier modulation (not commonly used)
     };
-    //! @brief For RX
+    /*!
+      @brief For RX
+      @note ESP-IDF 4.x on ESP32-S3 / ESP32-C3 (RMT v1): a frame must fit in mem_blocks x 48 items;
+      a longer frame is dropped
+    */
     struct rx_config_t : config_t {
         uint16_t ring_buffer_size{};        ///< Maximum size of one received frame (bytes)
         uint16_t filter_ticks_threshold{};  ///< Filter: min valid pulse duration (in ticks)

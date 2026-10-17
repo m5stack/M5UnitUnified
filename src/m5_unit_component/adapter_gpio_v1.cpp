@@ -15,6 +15,10 @@
 // #include <esp_clk.h>
 #include <esp32/clk.h>
 #include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+#include <hal/rmt_ll.h>
+#include <soc/rmt_struct.h>
+#endif
 using namespace m5::unit::gpio;
 
 namespace {
@@ -225,6 +229,12 @@ public:
                 M5_LIB_LOGE("Failed to config RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // rmt_config() turns on the RX memory wrap. With the threshold interrupt off (see below) a wrapped
+            // frame keeps only the items written after the wrap, so turn the wrap off: a frame larger than the
+            // RMT memory then ends in an RX error, which ESP-IDF drops instead of delivering a broken frame
+            rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+#endif
 
 #if SOC_RMT_SUPPORT_RX_PINGPONG
             // Ping-pong reception is turned off after rmt_rx_start(); leave room for one threshold copy
