@@ -111,7 +111,12 @@ struct adapter_config_t {
         bool loop_enabled{};         ///< Loop mode (TX repeats automatically)
         //        bool carrier_enabled{};      ///< Enable carrier modulation (not commonly used)
     };
-    //! @brief For RX
+    /*!
+      @brief For RX
+      @note A frame longer than the receiver can hold is delivered truncated, with a warning in the log.
+      The limit is mem_blocks x 64 items on ESP32 and mem_blocks x 48 items on ESP32-S3 / ESP32-C3 with
+      ESP-IDF 4.x (RMT v1), and ring_buffer_size with ESP-IDF 5 or later (RMT v2; also the RMT memory on ESP32)
+    */
     struct rx_config_t : config_t {
         uint16_t ring_buffer_size{};        ///< Maximum size of one received frame (bytes)
         uint16_t filter_ticks_threshold{};  ///< Filter: min valid pulse duration (in ticks)

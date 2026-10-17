@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 /*
-  UnitTest for chip-dependent paths (ADC channel mapping, I2C pin lookup and release, RMT v1 channel allocation)
+  UnitTest for chip-dependent paths (ADC channel mapping, I2C pin lookup and release, RMT v1 channel allocation
+  and RX wrap)
   No wiring required
 */
 #include <gtest/gtest.h>
@@ -21,6 +22,9 @@
 #include <soc/gpio_reg.h>
 #include <soc/gpio_sig_map.h>
 #include <soc/gpio_struct.h>
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+#include <soc/rmt_struct.h>
+#endif
 // Wire1 is LP I2C from ESP-IDF 5.4 (arduino-esp32 3.2); older hal/i2c_ll.h does not build as C++
 #if SOC_LP_I2C_SUPPORTED && !SOC_LP_GPIO_MATRIX_SUPPORTED && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
 #include <hal/i2c_ll.h>  // LP_I2C_SDA_IOMUX_PAD / LP_I2C_SCL_IOMUX_PAD
@@ -389,6 +393,43 @@ TEST(ChipCaps, RmtV1MemoryBlocksDoNotOverlap)
         EXPECT_LE(ch + blocks, SOC_RMT_CHANNELS_PER_GROUP) << "channel " << ch;
     }
 }
+
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+// RMT v1 on ESP32-S3 / ESP32-C3: rmt_config() turns on the RX memory wrap, which keeps only the tail of a frame
+// larger than the RMT memory. The adapter must turn it off so that such a frame keeps its head instead
+TEST(ChipCaps, RmtV1RxWrapDisabled)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin)) {
+        GTEST_SKIP() << "No free GPIO port on this board";
+    }
+    constexpr int rx_first = SOC_RMT_CHANNELS_PER_GROUP - SOC_RMT_RX_CANDIDATES_PER_GROUP;
+
+    gpio::adapter_config_t cfg{};
+    cfg.mode                    = gpio::Mode::RmtRX;
+    cfg.rx.tick_ns              = 1000;
+    cfg.rx.mem_blocks           = 1;
+    cfg.rx.ring_buffer_size     = 256;
+    cfg.rx.idle_ticks_threshold = 1000;
+
+    AdapterGPIO a(pin, -1);
+    if (!a.begin(cfg)) {
+        FAIL() << "RX begin failed";
+        return;
+    }
+    const int n = a.impl()->rmtRxChannel() - rx_first;
+    EXPECT_GE(n, 0);
+    EXPECT_LT(n, SOC_RMT_RX_CANDIDATES_PER_GROUP);
+    if (n < 0 || n >= SOC_RMT_RX_CANDIDATES_PER_GROUP) {
+        return;
+    }
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    EXPECT_FALSE(RMT.chmconf[n].conf1.mem_rx_wrap_en_m);
+#else
+    EXPECT_FALSE(RMT.rx_conf[n].conf1.mem_rx_wrap_en);
+#endif
+}
+#endif
 #endif
 
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2)

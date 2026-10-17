@@ -15,6 +15,10 @@
 // #include <esp_clk.h>
 #include <esp32/clk.h>
 #include <soc/soc_caps.h>
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+#include <hal/rmt_ll.h>
+#include <soc/rmt_struct.h>
+#endif
 using namespace m5::unit::gpio;
 
 namespace {
@@ -117,6 +121,12 @@ void dump_rmt_config(const rmt_config_t& cfg, const char* title = "RMT CONFIG")
         M5_LIB_LOGI("  filter_thresh   : %d", cfg.rx_config.filter_ticks_thresh);
         M5_LIB_LOGI("  idle_threshold  : %d", cfg.rx_config.idle_threshold);
     }
+}
+
+// A frame that ended on the idle threshold closes with a zero duration; one cut off by a full RX memory does not
+bool is_truncated(const rmt_item32_t* items, const size_t item_num)
+{
+    return item_num && items[item_num - 1].duration0 && items[item_num - 1].duration1;
 }
 
 #if 0
@@ -225,6 +235,12 @@ public:
                 M5_LIB_LOGE("Failed to config RX %d:%s", err, esp_err_to_name(err));
                 return false;
             }
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // rmt_config() turns on the RX memory wrap. With the threshold interrupt off (see below) a wrapped
+            // frame keeps only the items written after the wrap, so turn the wrap off: a frame larger than the
+            // RMT memory then keeps its head, cut at the end of the memory, as on ESP32
+            rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+#endif
 
 #if SOC_RMT_SUPPORT_RX_PINGPONG
             // Ping-pong reception is turned off after rmt_rx_start(); leave room for one threshold copy
@@ -327,6 +343,7 @@ public:
         // dump_items(items, rx_size / sizeof(rmt_item32_t));
         memcpy(data, "\0\0", 2);
         if (items && rx_size) {
+            report_truncated(is_truncated(items, rx_size / sizeof(rmt_item32_t)));
             uint16_t rlen = std::min<uint16_t>(rx_size, max_len);
             memcpy(data, &rlen, sizeof(rlen));
             memcpy(data + 2, items, rlen);
@@ -338,7 +355,25 @@ public:
     }
 
 protected:
+    // Truncated frames are still delivered; warn at most once a second with the count since the last warning
+    void report_truncated(const bool truncated)
+    {
+        if (!truncated) {
+            return;
+        }
+        ++_truncated;
+        const TickType_t now = xTaskGetTickCount();
+        if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
+            M5_LIB_LOGW("RMT RX: %u frame(s) truncated, larger than the RMT memory (increase mem_blocks)",
+                        static_cast<unsigned>(_truncated));
+            _truncated             = 0;
+            _truncated_reported_at = now;
+        }
+    }
+
     rmt_config_t _rx_config{}, _tx_config{};
+    uint32_t _truncated{};
+    TickType_t _truncated_reported_at{};
 };
 
 AdapterGPIO::AdapterGPIO(const int8_t rx_pin, const int8_t tx_pin) : AdapterGPIOBase(new GPIOImplV1(rx_pin, tx_pin))
