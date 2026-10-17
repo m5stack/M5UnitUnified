@@ -239,7 +239,9 @@ public:
             // rmt_config() turns on the RX memory wrap. With the threshold interrupt off (see below) a wrapped
             // frame keeps only the items written after the wrap, so turn the wrap off: a frame larger than the
             // RMT memory then keeps its head, cut at the end of the memory, as on ESP32
-            rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+            if (!cfg.rx.pingpong) {
+                rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+            }
 #endif
 
 #if SOC_RMT_SUPPORT_RX_PINGPONG
@@ -273,8 +275,10 @@ public:
             }
 #if SOC_RMT_SUPPORT_RX_PINGPONG
             // ESP-IDF 4.4 overruns its receive buffer when a frame outgrows it in ping-pong mode,
-            // which rmt_rx_start() enables; receive within the RMT memory only (as on ESP32)
-            rmt_set_rx_thr_intr_en(_rx_config.channel, false, 0);
+            // which rmt_rx_start() enables; receive within the RMT memory only (as on ESP32) unless asked for
+            if (!cfg.rx.pingpong) {
+                rmt_set_rx_thr_intr_en(_rx_config.channel, false, 0);
+            }
 #endif
 
             // Discard garbage

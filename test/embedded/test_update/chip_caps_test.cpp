@@ -511,6 +511,41 @@ TEST(ChipCaps, RmtV1RxWrapDisabled)
     EXPECT_FALSE(RMT.rx_conf[n].conf1.mem_rx_wrap_en);
 #endif
 }
+
+// rx.pingpong keeps the RX memory wrap on (ping-pong reception), for frames longer than the RMT memory
+TEST(ChipCaps, RmtV1RxPingPongOptIn)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin)) {
+        GTEST_SKIP() << "No free GPIO port on this board";
+    }
+    constexpr int rx_first = SOC_RMT_CHANNELS_PER_GROUP - SOC_RMT_RX_CANDIDATES_PER_GROUP;
+
+    gpio::adapter_config_t cfg{};
+    cfg.mode                    = gpio::Mode::RmtRX;
+    cfg.rx.tick_ns              = 1000;
+    cfg.rx.mem_blocks           = 1;
+    cfg.rx.ring_buffer_size     = 256;
+    cfg.rx.idle_ticks_threshold = 1000;
+    cfg.rx.pingpong             = true;
+
+    AdapterGPIO a(pin, -1);
+    if (!a.begin(cfg)) {
+        FAIL() << "RX begin failed";
+        return;
+    }
+    const int n = a.impl()->rmtRxChannel() - rx_first;
+    EXPECT_GE(n, 0);
+    EXPECT_LT(n, SOC_RMT_RX_CANDIDATES_PER_GROUP);
+    if (n < 0 || n >= SOC_RMT_RX_CANDIDATES_PER_GROUP) {
+        return;
+    }
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+    EXPECT_TRUE(static_cast<bool>(RMT.chmconf[n].conf1.mem_rx_wrap_en_m));
+#else
+    EXPECT_TRUE(static_cast<bool>(RMT.rx_conf[n].conf1.mem_rx_wrap_en));
+#endif
+}
 #endif
 #endif
 
