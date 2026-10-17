@@ -579,6 +579,16 @@ m5::hal::error::error_t AdapterI2C::ESPIDFMasterBusImpl::wakeup()
 }
 #elif defined(ESP_PLATFORM)
 #pragma message("ESP-IDF I2C backend: legacy driver/i2c.h")
+namespace {
+// SCL timeout of the legacy driver, long enough for the clock stretching SMBus allows (Tlow:sext, 25 ms).
+// i2c_param_config() sets about 10 SCL periods (about 100 us at 100 kHz), which a slave that stretches the clock
+// (e.g. an STM32 right after power-on) exceeds
+#if defined(CONFIG_IDF_TARGET_ESP32)
+constexpr int legacy_scl_timeout = 0xFFFFF;  // APB (80 MHz) cycles: about 13 ms, the longest ESP32 allows
+#else
+constexpr int legacy_scl_timeout = 20;  // 2^20 source clock cycles: about 26 ms at 40 MHz, 33 ms at 32 MHz
+#endif
+}  // namespace
 
 AdapterI2C::ESPIDFLegacyBusImpl::ESPIDFLegacyBusImpl(const i2c_port_t port, const gpio_num_t sda, const gpio_num_t scl,
                                                      const uint8_t addr, const uint32_t clock)
@@ -608,10 +618,11 @@ void AdapterI2C::ESPIDFLegacyBusImpl::apply_clock()
     // restore_timing and rely on the timing param_config just applied.
     _timing = timing_t{};
     if (i2c_param_config(_port, &conf) == ESP_OK) {
+        i2c_set_timeout(_port, legacy_scl_timeout);
         timing_t t{};
-        // param_config also sets the start / stop / data hold and sample times and the SCL timeout from the clock.
-        // Keep them all: with the period alone, a 400 kHz transfer after a 100 kHz unit runs with the 100 kHz data
-        // hold time (as long as the 400 kHz low period), and the device NACKs
+        // param_config also sets the start / stop / data hold and sample times from the clock (and the SCL timeout,
+        // replaced above). Keep them all: with the period alone, a 400 kHz transfer after a 100 kHz unit runs with
+        // the 100 kHz data hold time (as long as the 400 kHz low period), and the device NACKs
         if (i2c_get_period(_port, &t.high, &t.low) == ESP_OK &&
             i2c_get_start_timing(_port, &t.start_setup, &t.start_hold) == ESP_OK &&
             i2c_get_stop_timing(_port, &t.stop_setup, &t.stop_hold) == ESP_OK &&
@@ -655,6 +666,18 @@ AdapterI2C::I2CImpl* AdapterI2C::ESPIDFLegacyBusImpl::duplicate(const uint8_t ad
     return p;
 }
 
+// A failed command can reset the controller (i2c_hw_fsm_reset() on chips without an FSM reset bit: ESP32-S3, C3,
+// C6...), which writes the timing values back but leaves the SCL timeout disabled. i2c_param_config() is the only
+// call that enables it again, so configure the bus again after a failure
+m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::result_of(const esp_err_t err)
+{
+    if (err == ESP_OK) {
+        return m5::hal::error::error_t::OK;
+    }
+    apply_clock();
+    return m5::hal::error::error_t::I2C_BUS_ERROR;
+}
+
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::readWithTransaction(uint8_t* data, const size_t len)
 {
     if (!data || !len) {
@@ -671,7 +694,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::readWithTransaction(uin
     i2c_master_stop(cmd);
     esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
     i2c_cmd_link_delete(cmd);
-    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+    return result_of(err);
 }
 
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::write_with_transaction(const uint8_t addr, const uint8_t* data,
@@ -689,7 +712,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::write_with_transaction(
     }
     esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
     i2c_cmd_link_delete(cmd);
-    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+    return result_of(err);
 }
 
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint8_t* data, const size_t len,
@@ -714,7 +737,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(co
     }
     esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
     i2c_cmd_link_delete(cmd);
-    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+    return result_of(err);
 }
 
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(const uint16_t reg, const uint8_t* data,
@@ -734,7 +757,7 @@ m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::writeWithTransaction(co
     }
     esp_err_t err = i2c_master_cmd_begin(_port, cmd, pdMS_TO_TICKS(1000));
     i2c_cmd_link_delete(cmd);
-    return (err == ESP_OK) ? m5::hal::error::error_t::OK : m5::hal::error::error_t::I2C_BUS_ERROR;
+    return result_of(err);
 }
 
 m5::hal::error::error_t AdapterI2C::ESPIDFLegacyBusImpl::generalCall(const uint8_t* data, const size_t len)

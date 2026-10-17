@@ -113,9 +113,10 @@ struct adapter_config_t {
     };
     /*!
       @brief For RX
-      @note A frame longer than the receiver can hold is delivered truncated, with a warning in the log.
+      @note A frame longer than the receiver can hold is delivered truncated, noted in the debug log.
       The limit is mem_blocks x 64 items on ESP32 and mem_blocks x 48 items on ESP32-S3 / ESP32-C3 with
-      ESP-IDF 4.x (RMT v1), and ring_buffer_size with ESP-IDF 5 or later (RMT v2; also the RMT memory on ESP32)
+      ESP-IDF 4.x (RMT v1; ring_buffer_size with pingpong), and ring_buffer_size with ESP-IDF 5 or later
+      (RMT v2; also the RMT memory on ESP32)
     */
     struct rx_config_t : config_t {
         uint16_t ring_buffer_size{};        ///< Maximum size of one received frame (bytes)
@@ -123,6 +124,12 @@ struct adapter_config_t {
         uint16_t idle_ticks_threshold{};    ///< RX idle threshold (in ticks for v1, in us for v2)
         bool filter_enabled{};              ///< Enable input signal filter
         RxPull pull{RxPull::None};          ///< Internal pull on the RX pin
+        /*!
+          @brief Receive frames longer than the RMT memory with RX ping-pong (RMT v1 on ESP32-S3 / ESP32-C3 only)
+          @warning ESP-IDF 4.x overruns its receive buffer and corrupts memory when a frame outgrows
+          ring_buffer_size (e.g. noise that never goes idle). Off by default; ignored elsewhere
+        */
+        bool pingpong{};
         //        bool eof_flag{};                    ///< Use RX EOF detection via timeout (v2 feature)
     };
 

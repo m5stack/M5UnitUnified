@@ -123,10 +123,11 @@ void dump_rmt_config(const rmt_config_t& cfg, const char* title = "RMT CONFIG")
     }
 }
 
-// A frame that ended on the idle threshold closes with a zero duration; one cut off by a full RX memory does not
-bool is_truncated(const rmt_item32_t* items, const size_t item_num)
+// A frame cut off by a full RX memory fills it and does not close with a zero duration. A complete frame can lack
+// the zero too (the driver leaves out a closing item whose first duration is zero), so check the length as well
+bool is_truncated(const rmt_item32_t* items, const size_t item_num, const size_t capacity)
 {
-    return item_num && items[item_num - 1].duration0 && items[item_num - 1].duration1;
+    return item_num && item_num >= capacity && items[item_num - 1].duration0 && items[item_num - 1].duration1;
 }
 
 #if 0
@@ -239,7 +240,9 @@ public:
             // rmt_config() turns on the RX memory wrap. With the threshold interrupt off (see below) a wrapped
             // frame keeps only the items written after the wrap, so turn the wrap off: a frame larger than the
             // RMT memory then keeps its head, cut at the end of the memory, as on ESP32
-            rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+            if (!cfg.rx.pingpong) {
+                rmt_ll_rx_enable_pingpong(&RMT, ch - rmt_rx_first, false);
+            }
 #endif
 
 #if SOC_RMT_SUPPORT_RX_PINGPONG
@@ -273,8 +276,10 @@ public:
             }
 #if SOC_RMT_SUPPORT_RX_PINGPONG
             // ESP-IDF 4.4 overruns its receive buffer when a frame outgrows it in ping-pong mode,
-            // which rmt_rx_start() enables; receive within the RMT memory only (as on ESP32)
-            rmt_set_rx_thr_intr_en(_rx_config.channel, false, 0);
+            // which rmt_rx_start() enables; receive within the RMT memory only (as on ESP32) unless asked for
+            if (!cfg.rx.pingpong) {
+                rmt_set_rx_thr_intr_en(_rx_config.channel, false, 0);
+            }
 #endif
 
             // Discard garbage
@@ -343,7 +348,14 @@ public:
         // dump_items(items, rx_size / sizeof(rmt_item32_t));
         memcpy(data, "\0\0", 2);
         if (items && rx_size) {
-            report_truncated(is_truncated(items, rx_size / sizeof(rmt_item32_t)));
+#if SOC_RMT_SUPPORT_RX_PINGPONG
+            // With ping-pong reception the limit is the receive buffer, which ESP-IDF reports itself
+            if (!_adapter_cfg.rx.pingpong)
+#endif
+            {
+                report_truncated(
+                    is_truncated(items, rx_size / sizeof(rmt_item32_t), _rx_config.mem_block_num * RMT_MEM_ITEM_NUM));
+            }
             uint16_t rlen = std::min<uint16_t>(rx_size, max_len);
             memcpy(data, &rlen, sizeof(rlen));
             memcpy(data + 2, items, rlen);
@@ -355,7 +367,8 @@ public:
     }
 
 protected:
-    // Truncated frames are still delivered; warn at most once a second with the count since the last warning
+    // Truncated frames are still delivered. Debug level: a receiver that outputs noise between frames (e.g. an
+    // ASK receiver) fills the memory all the time. Log at most once a second with the count since the last log
     void report_truncated(const bool truncated)
     {
         if (!truncated) {
@@ -364,8 +377,10 @@ protected:
         ++_truncated;
         const TickType_t now = xTaskGetTickCount();
         if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
-            M5_LIB_LOGW("RMT RX: %u frame(s) truncated, larger than the RMT memory (increase mem_blocks)",
-                        static_cast<unsigned>(_truncated));
+            M5_LIB_LOGD(
+                "RMT RX: %u frame(s) filled the RMT memory and were cut off (noise, or a frame longer than "
+                "mem_blocks allows)",
+                static_cast<unsigned>(_truncated));
             _truncated             = 0;
             _truncated_reported_at = now;
         }

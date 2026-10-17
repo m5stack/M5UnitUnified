@@ -19,6 +19,7 @@
 #include <soc/soc.h>           // PRO_CPU_NUM
 #include <soc/gpio_sig_map.h>  // SIG_GPIO_OUT_IDX
 #include <esp_rom_gpio.h>
+#include <algorithm>
 
 using namespace m5::unit::gpio;
 
@@ -137,11 +138,12 @@ void dump_rmt_config(const rmt_receive_config_t &cfg)
 #endif
 }
 
-// A frame that ended on the idle threshold closes with a zero duration; one cut off by a full RX memory or buffer
-// does not
-bool is_truncated(const rmt_symbol_word_t *symbols, const size_t symbol_num)
+// A frame cut off by a full RX memory or buffer fills it and does not close with a zero duration. A complete frame
+// can lack the zero too, so check the length as well
+bool is_truncated(const rmt_symbol_word_t *symbols, const size_t symbol_num, const size_t capacity)
 {
-    return symbol_num && symbols[symbol_num - 1].duration0 && symbols[symbol_num - 1].duration1;
+    return symbol_num && symbol_num >= capacity && symbols[symbol_num - 1].duration0 &&
+           symbols[symbol_num - 1].duration1;
 }
 
 #if 0
@@ -392,13 +394,21 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
 
     memcpy(data, "\0\0", 2);
     if (items && rx_size) {
-        // Truncated frames are still delivered; warn at most once a second with the count since the last warning
-        if (is_truncated(reinterpret_cast<const rmt_symbol_word_t *>(items), rx_size / sizeof(rmt_symbol_word_t))) {
+        // Truncated frames are still delivered. Debug level: a receiver that outputs noise between frames (e.g. an
+        // ASK receiver) fills the buffer all the time. Log at most once a second with the count since the last log
+        size_t capacity = _rx_buf_len / sizeof(rmt_symbol_word_t);
+#if !SOC_RMT_SUPPORT_RX_PINGPONG
+        // Without RX ping-pong the RMT memory of the channel is a limit as well
+        capacity = std::min<size_t>(capacity, _rx_config.mem_block_symbols);
+#endif
+        if (is_truncated(reinterpret_cast<const rmt_symbol_word_t *>(items), rx_size / sizeof(rmt_symbol_word_t),
+                         capacity)) {
             ++_truncated;
             const TickType_t now = xTaskGetTickCount();
             if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
-                M5_LIB_LOGW(
-                    "RMT RX: %u frame(s) truncated, larger than the RX buffer or memory (ring_buffer_size, mem_blocks)",
+                M5_LIB_LOGD(
+                    "RMT RX: %u frame(s) filled the RX buffer or memory and were cut off (noise, or a frame longer "
+                    "than ring_buffer_size / mem_blocks allows)",
                     static_cast<unsigned>(_truncated));
                 _truncated             = 0;
                 _truncated_reported_at = now;

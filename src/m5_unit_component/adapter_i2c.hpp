@@ -237,6 +237,7 @@ public:
 
         void apply_clock();
         void restore_timing() const;
+        m5::hal::error::error_t result_of(const esp_err_t err);
         m5::hal::error::error_t write_with_transaction(const uint8_t addr, const uint8_t* data, const size_t len,
                                                        const uint32_t stop);
 
