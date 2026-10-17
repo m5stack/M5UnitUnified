@@ -396,7 +396,7 @@ TEST(ChipCaps, RmtV1MemoryBlocksDoNotOverlap)
 
 #if SOC_RMT_SUPPORT_RX_PINGPONG
 // RMT v1 on ESP32-S3 / ESP32-C3: rmt_config() turns on the RX memory wrap, which keeps only the tail of a frame
-// larger than the RMT memory. The adapter must turn it off so that such a frame is dropped
+// larger than the RMT memory. The adapter must turn it off so that such a frame keeps its head instead
 TEST(ChipCaps, RmtV1RxWrapDisabled)
 {
     const int pin = rmt_test_pin();

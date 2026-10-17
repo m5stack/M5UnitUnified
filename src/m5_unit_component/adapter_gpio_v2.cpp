@@ -137,6 +137,13 @@ void dump_rmt_config(const rmt_receive_config_t &cfg)
 #endif
 }
 
+// A frame that ended on the idle threshold closes with a zero duration; one cut off by a full RX memory or buffer
+// does not
+bool is_truncated(const rmt_symbol_word_t *symbols, const size_t symbol_num)
+{
+    return symbol_num && symbols[symbol_num - 1].duration0 && symbols[symbol_num - 1].duration1;
+}
+
 #if 0
 void dump_symbols(const rmt_symbol_word_t *symbols, const uint32_t symbol_num)
 {
@@ -221,6 +228,8 @@ protected:
 
     volatile uint32_t _dropped{};  // Frames the receive callback could not store (counted in ISR)
     uint32_t _dropped_reported{};
+    uint32_t _truncated{};  // Truncated frames not reported yet
+    TickType_t _truncated_reported_at{};
     volatile bool _rx_stopping{};  // Set before disabling: the callback no longer restarts reception
     volatile bool _rx_stalled{};   // The callback failed to restart reception (restarted on the next read)
 };
@@ -383,6 +392,18 @@ m5::hal::error::error_t GPIOImplV2::readWithTransaction(uint8_t *data, const siz
 
     memcpy(data, "\0\0", 2);
     if (items && rx_size) {
+        // Truncated frames are still delivered; warn at most once a second with the count since the last warning
+        if (is_truncated(reinterpret_cast<const rmt_symbol_word_t *>(items), rx_size / sizeof(rmt_symbol_word_t))) {
+            ++_truncated;
+            const TickType_t now = xTaskGetTickCount();
+            if (now - _truncated_reported_at >= pdMS_TO_TICKS(1000)) {
+                M5_LIB_LOGW(
+                    "RMT RX: %u frame(s) truncated, larger than the RX buffer or memory (ring_buffer_size, mem_blocks)",
+                    static_cast<unsigned>(_truncated));
+                _truncated             = 0;
+                _truncated_reported_at = now;
+            }
+        }
         uint16_t rlen = (rx_size > max_len) ? static_cast<uint16_t>(max_len) : static_cast<uint16_t>(rx_size);
         memcpy(data, &rlen, sizeof(rlen));
         memcpy(data + 2, items, rlen);
