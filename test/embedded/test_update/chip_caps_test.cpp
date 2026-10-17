@@ -776,6 +776,9 @@ TEST(ChipCaps, UartAvailable)
     }
     Serial1.begin(115200, SERIAL_8N1, rx, tx);
     EXPECT_EQ(uart_set_loop_back(UART_NUM_1, true), ESP_OK);
+    // begin() and the switch to the loopback can leave a garbage byte still on its way to the driver buffer,
+    // which flushRX() would miss: let it arrive first
+    m5::utility::delay(5);
 
     AdapterUART a(Serial1);     // SerialImpl
     AdapterUART b(UART_NUM_1);  // ESPIDFImpl on the same port
