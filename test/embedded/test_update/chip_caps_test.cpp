@@ -15,6 +15,9 @@
 #include <Wire.h>
 #include <driver/gpio.h>
 #include <driver/uart.h>
+#if !__has_include(<driver/i2c_master.h>)
+#include <driver/i2c.h>  // ESP-IDF legacy I2C driver
+#endif
 #include <esp_idf_version.h>
 #include <soc/soc_caps.h>
 #include <soc/adc_channel.h>
@@ -236,6 +239,56 @@ TEST(ChipCaps, I2CReleaseRestorePins)
     }
     Wire.end();
 }
+
+#if !__has_include(<driver/i2c_master.h>)
+// ESP-IDF legacy driver: the adapter gives the bus an SCL timeout long enough for clock stretching (about 25 ms) and
+// writes it back before every transfer, so another setting (another unit's i2c_param_config()) does not stay
+TEST(ChipCaps, I2CLegacySclTimeout)
+{
+    const int sda = M5.getPin(m5::pin_name_t::port_a_sda);
+    const int scl = M5.getPin(m5::pin_name_t::port_a_scl);
+    if (!valid_pin(sda) || !valid_pin(scl)) {
+        GTEST_SKIP() << "No PortA on this board";
+    }
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    constexpr int expected = 0xFFFFF;  // APB cycles: about 13 ms, the longest ESP32 allows
+#else
+    constexpr int expected = 20;  // 2^20 source clock cycles: about 26 ms at 40 MHz
+#endif
+    constexpr i2c_port_t port = I2C_NUM_0;
+
+    Wire.end();
+    i2c_config_t conf{};
+    conf.mode             = I2C_MODE_MASTER;
+    conf.sda_io_num       = sda;
+    conf.scl_io_num       = scl;
+    conf.sda_pullup_en    = GPIO_PULLUP_ENABLE;
+    conf.scl_pullup_en    = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = I2C_FREQ;
+    const bool installed =
+        i2c_param_config(port, &conf) == ESP_OK && i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0) == ESP_OK;
+    EXPECT_TRUE(installed);
+    if (!installed) {
+        return;
+    }
+
+    {
+        AdapterI2C adapter(port, static_cast<gpio_num_t>(sda), static_cast<gpio_num_t>(scl), I2C_ADDR, I2C_FREQ);
+        EXPECT_TRUE(adapter.begin());
+        int timeout{};
+        EXPECT_EQ(i2c_get_timeout(port, &timeout), ESP_OK);
+        EXPECT_EQ(timeout, expected);
+
+        // Another setting on the same port, then a transfer (no device at I2C_ADDR: a NACK is expected)
+        EXPECT_EQ(i2c_set_timeout(port, 5), ESP_OK);
+        const uint8_t data{};
+        (void)adapter.writeWithTransaction(&data, 1, 1);
+        EXPECT_EQ(i2c_get_timeout(port, &timeout), ESP_OK);
+        EXPECT_EQ(timeout, expected);
+    }
+    i2c_driver_delete(port);
+}
+#endif
 
 #if M5_UNIT_UNIFIED_WIRING_HAS_WIRE1
 // Wire1 is HP I2C1 (routed through the GPIO matrix) or LP I2C (fixed pads, reported only once begun)
@@ -545,7 +598,7 @@ gpio::adapter_config_t loopback_config(const uint16_t ring_buffer_size)
 #if defined(SOC_RMT_SUPPORT_RX_PINGPONG) && SOC_RMT_SUPPORT_RX_PINGPONG
     cfg.rx.mem_blocks = 1;
 #else
-    cfg.rx.mem_blocks = 4;  // Without RX ping-pong a frame must fit in the channel memory
+    cfg.rx.mem_blocks      = 4;   // Without RX ping-pong a frame must fit in the channel memory
 #endif
     return cfg;
 }
