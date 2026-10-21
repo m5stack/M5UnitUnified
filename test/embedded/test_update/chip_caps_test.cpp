@@ -782,6 +782,8 @@ TEST(ChipCaps, UartAvailable)
 
     AdapterUART a(Serial1);     // SerialImpl
     AdapterUART b(UART_NUM_1);  // ESPIDFImpl on the same port
+    EXPECT_EQ(a.uartPort(), UART_NUM_MAX);
+    EXPECT_EQ(b.uartPort(), UART_NUM_1);
     a.setTimeout(100);
     a.flushRX();
     EXPECT_EQ(a.available(), 0U);
