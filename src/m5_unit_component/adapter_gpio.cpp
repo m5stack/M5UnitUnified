@@ -396,16 +396,28 @@ uint8_t calculate_rmt_clk_div(uint32_t apb_freq_hz, uint32_t tick_ns)
     return static_cast<uint8_t>(clk_div);
 }
 
-uint32_t calculate_rmt_resolution_hz(uint32_t apb_freq_hz, uint32_t tick_ns)
+uint32_t calculate_rmt_resolution_hz(uint32_t src_freq_hz, uint32_t tick_ns)
 {
     if (tick_ns == 0) {
-        return apb_freq_hz;
+        return src_freq_hz;
     }
 
     uint64_t target_hz = 1000000000UL / tick_ns;
-    uint32_t clk_div   = std::max<uint32_t>(1, (apb_freq_hz + target_hz / 2) / target_hz);
+    uint32_t clk_div   = std::max<uint32_t>(1, (src_freq_hz + target_hz / 2) / target_hz);
     clk_div            = std::min<uint32_t>(clk_div, 255U);
-    return apb_freq_hz / clk_div;
+    return src_freq_hz / clk_div;
+}
+
+bool rmt_resolution_matches(const uint32_t resolution_hz, const uint32_t tick_ns)
+{
+    if (tick_ns == 0) {
+        return true;
+    }
+    if (resolution_hz == 0) {
+        return false;
+    }
+    const uint64_t actual_ns = (1000000000ULL + resolution_hz / 2) / resolution_hz;
+    return actual_ns == tick_ns;
 }
 
 }  // namespace gpio

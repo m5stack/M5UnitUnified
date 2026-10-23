@@ -642,6 +642,67 @@ TEST(ChipCaps, RmtRxPull)
     EXPECT_TRUE(gpio::apply_rx_pull(GPIO_NUM_36, gpio::RxPull::None));
 #endif
 }
+
+TEST(ChipCaps, RmtResolutionMatches)
+{
+    EXPECT_TRUE(gpio::rmt_resolution_matches(20000000, 50));
+    EXPECT_FALSE(gpio::rmt_resolution_matches(16000000, 50));
+    EXPECT_TRUE(gpio::rmt_resolution_matches(32000000, 31));  // 31.25 ns
+    EXPECT_TRUE(gpio::rmt_resolution_matches(1000000, 1000));
+    EXPECT_TRUE(gpio::rmt_resolution_matches(0, 0));
+    EXPECT_FALSE(gpio::rmt_resolution_matches(0, 50));
+
+    // The source clock is divided by an integer: 32 MHz cannot make 20 MHz (50 ns)
+    EXPECT_EQ(gpio::calculate_rmt_resolution_hz(80000000, 50), 20000000U);
+    EXPECT_EQ(gpio::calculate_rmt_resolution_hz(32000000, 50), 16000000U);
+    EXPECT_EQ(gpio::calculate_rmt_resolution_hz(80000000, 25), 40000000U);
+    EXPECT_EQ(gpio::calculate_rmt_resolution_hz(32000000, 25), 32000000U);
+}
+
+// The adapter reports the resolution the RMT actually runs at, so units can convert durations to ticks.
+// ESP32-H2 divides a 32 MHz clock; the others divide 80 MHz
+TEST(ChipCaps, RmtActualResolution)
+{
+    const int pin = rmt_test_pin();
+    if (!valid_pin(pin)) {
+        GTEST_SKIP() << "No free GPIO port on this board";
+    }
+#if defined(CONFIG_IDF_TARGET_ESP32H2)
+    constexpr uint32_t res_50ns{16000000};
+    constexpr uint32_t res_25ns{32000000};
+#else
+    constexpr uint32_t res_50ns{20000000};
+    constexpr uint32_t res_25ns{40000000};
+#endif
+
+    auto tx_resolution = [pin](const uint32_t tick_ns) {
+        gpio::adapter_config_t cfg{};
+        cfg.mode          = gpio::Mode::RmtTX;
+        cfg.tx.tick_ns    = tick_ns;
+        cfg.tx.mem_blocks = 1;
+        AdapterGPIO a(-1, pin);
+        EXPECT_EQ(a.tx_resolution_hz(), 0U);
+        EXPECT_TRUE(a.begin(cfg));
+        EXPECT_EQ(a.rx_resolution_hz(), 0U);
+        return a.tx_resolution_hz();
+    };
+    EXPECT_EQ(tx_resolution(50), res_50ns);
+    EXPECT_EQ(tx_resolution(25), res_25ns);
+
+    {
+        gpio::adapter_config_t cfg{};
+        cfg.mode                    = gpio::Mode::RmtRX;
+        cfg.rx.tick_ns              = 1000;
+        cfg.rx.mem_blocks           = 1;
+        cfg.rx.ring_buffer_size     = 256;
+        cfg.rx.idle_ticks_threshold = 10000;
+        AdapterGPIO a(pin, -1);
+        EXPECT_EQ(a.rx_resolution_hz(), 0U);
+        EXPECT_TRUE(a.begin(cfg));
+        EXPECT_EQ(a.rx_resolution_hz(), 1000000U);
+        EXPECT_EQ(a.tx_resolution_hz(), 0U);
+    }
+}
 #endif
 
 #if defined(M5_UNIT_UNIFIED_USING_RMT_V2) && M5_UNIT_UNIFIED_HAS_RMT
@@ -662,7 +723,7 @@ gpio::adapter_config_t loopback_config(const uint16_t ring_buffer_size)
 #if defined(SOC_RMT_SUPPORT_RX_PINGPONG) && SOC_RMT_SUPPORT_RX_PINGPONG
     cfg.rx.mem_blocks = 1;
 #else
-    cfg.rx.mem_blocks        = 4;   // Without RX ping-pong a frame must fit in the channel memory
+    cfg.rx.mem_blocks = 4;  // Without RX ping-pong a frame must fit in the channel memory
 #endif
     return cfg;
 }

@@ -30,12 +30,20 @@ namespace gpio {
 uint8_t calculate_rmt_clk_div(const uint32_t apb_freq_hz, const uint32_t tick_ns);
 
 /*!
-   @brief Calculate resolution from desired tick time
-  @param apb_freq_hz Current APB clock (Hz)
+  @brief Calculate resolution from desired tick time
+  @param src_freq_hz RMT source clock (Hz)
   @param tick_ns Desired tick time (ns)
-  @return resolution for RMT v2
+  @return resolution for RMT v2 (src_freq_hz divided by an integer)
 */
-uint32_t calculate_rmt_resolution_hz(const uint32_t apb_freq_hz, const uint32_t tick_ns);
+uint32_t calculate_rmt_resolution_hz(const uint32_t src_freq_hz, const uint32_t tick_ns);
+
+/*!
+  @brief Does the RMT resolution give the desired tick time?
+  @param resolution_hz RMT resolution (Hz)
+  @param tick_ns Desired tick time (ns)
+  @return True if one tick of resolution_hz, rounded to ns, is tick_ns (always true if tick_ns is 0)
+*/
+bool rmt_resolution_matches(const uint32_t resolution_hz, const uint32_t tick_ns);
 
 /*!
   @brief Get the ADC channel of a GPIO
@@ -102,6 +110,16 @@ public:
         virtual void* rmtRxHandle() const
         {
             return nullptr;
+        }
+        //! @brief Get the actual RMT TX resolution (Hz, 0 before begin() or without TX)
+        virtual uint32_t rmtTxResolutionHz() const
+        {
+            return 0;
+        }
+        //! @brief Get the actual RMT RX resolution (Hz, 0 before begin() or without RX)
+        virtual uint32_t rmtRxResolutionHz() const
+        {
+            return 0;
         }
 
         //
@@ -213,6 +231,27 @@ public:
     inline bool begin(const gpio::adapter_config_t& cfg)
     {
         return impl()->begin(cfg);
+    }
+    /*!
+      @brief Get the actual RMT TX resolution
+      @return Resolution (Hz), 0 before begin() or if TX is not used
+      @note The RMT divides its source clock by an integer, so one tick can differ from tx.tick_ns
+      (e.g. ESP32-H2 has a 32 MHz clock and gives 16 MHz for tick_ns 50). Convert durations to ticks with this value
+      @note Since 0.6.4 (M5_UNIT_UNIFIED_VERSION)
+    */
+    inline uint32_t tx_resolution_hz() const
+    {
+        return impl()->rmtTxResolutionHz();
+    }
+    /*!
+      @brief Get the actual RMT RX resolution
+      @return Resolution (Hz), 0 before begin() or if RX is not used
+      @note One tick can differ from rx.tick_ns as with tx_resolution_hz()
+      @note Since 0.6.4 (M5_UNIT_UNIFIED_VERSION)
+    */
+    inline uint32_t rx_resolution_hz() const
+    {
+        return impl()->rmtRxResolutionHz();
     }
 };
 

@@ -19,6 +19,10 @@
 #include <soc/soc.h>           // PRO_CPU_NUM
 #include <soc/gpio_sig_map.h>  // SIG_GPIO_OUT_IDX
 #include <esp_rom_gpio.h>
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+#include <esp_clk_tree.h>
+#include <esp_private/rmt.h>  // rmt_get_channel_resolution
+#endif
 #include <algorithm>
 
 using namespace m5::unit::gpio;
@@ -27,13 +31,43 @@ namespace {
 
 rmt_encoder_handle_t copy_encoder{};
 
-rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint32_t apb_freq_hz)
+// RMT v2 divides the clock of clk_src, which is not always the APB clock (XTAL on ESP32-H2, PLL_F80M on ESP32-C6)
+uint32_t rmt_source_freq_hz(const rmt_clock_source_t clk_src)
+{
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+    uint32_t hz{};
+    if (esp_clk_tree_src_get_freq_hz(static_cast<soc_module_clk_t>(clk_src), ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED,
+                                     &hz) == ESP_OK &&
+        hz) {
+        return hz;
+    }
+#else
+    (void)clk_src;
+#endif
+    return esp_clk_apb_freq();
+}
+
+// The resolution the driver actually set (it divides by integers, so it can differ from the requested one)
+uint32_t rmt_channel_resolution_hz(const rmt_channel_handle_t handle, const uint32_t requested_hz)
+{
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+    uint32_t hz{};
+    if (rmt_get_channel_resolution(handle, &hz) == ESP_OK && hz) {
+        return hz;
+    }
+#else
+    (void)handle;
+#endif
+    return requested_hz;
+}
+
+rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint32_t src_freq_hz)
 {
     rmt_tx_channel_config_t out{};
     out.clk_src = RMT_CLK_SRC_DEFAULT;
     out.mem_block_symbols =
         std::max<uint32_t>(SOC_RMT_MEM_WORDS_PER_CHANNEL, cfg.tx.mem_blocks * SOC_RMT_MEM_WORDS_PER_CHANNEL);
-    out.resolution_hz     = calculate_rmt_resolution_hz(apb_freq_hz, cfg.tx.tick_ns);
+    out.resolution_hz     = calculate_rmt_resolution_hz(src_freq_hz, cfg.tx.tick_ns);
     out.trans_queue_depth = 4;
     out.flags.with_dma    = cfg.tx.with_dma;
     // NOTE: cfg.tx.loop_enabled drives two independent features:
@@ -51,13 +85,13 @@ rmt_tx_channel_config_t to_rmt_tx_config(const adapter_config_t &cfg, const uint
     return out;
 }
 
-rmt_rx_channel_config_t to_rmt_rx_config(const adapter_config_t &cfg, const uint32_t apb_freq_hz)
+rmt_rx_channel_config_t to_rmt_rx_config(const adapter_config_t &cfg, const uint32_t src_freq_hz)
 {
     rmt_rx_channel_config_t out{};
     out.clk_src = RMT_CLK_SRC_DEFAULT;
     out.mem_block_symbols =
         std::max<uint32_t>(SOC_RMT_MEM_WORDS_PER_CHANNEL, cfg.rx.mem_blocks * SOC_RMT_MEM_WORDS_PER_CHANNEL);
-    out.resolution_hz   = calculate_rmt_resolution_hz(apb_freq_hz, cfg.rx.tick_ns);
+    out.resolution_hz   = calculate_rmt_resolution_hz(src_freq_hz, cfg.rx.tick_ns);
     out.flags.with_dma  = cfg.rx.with_dma;
     out.flags.invert_in = cfg.rx.invert_signal;
     return out;
@@ -175,6 +209,14 @@ public:
     {
         return _rx_handle;
     }
+    uint32_t rmtTxResolutionHz() const override
+    {
+        return _tx_resolution_hz;
+    }
+    uint32_t rmtRxResolutionHz() const override
+    {
+        return _rx_resolution_hz;
+    }
 
     virtual ~GPIOImplV2()
     {
@@ -223,6 +265,7 @@ protected:
     rmt_tx_channel_config_t _tx_config{};
     rmt_transmit_config_t _transmit_config{};
 
+    uint32_t _rx_resolution_hz{}, _tx_resolution_hz{};
     uint16_t _rx_buf_len{};
 
     uint8_t *_rx_buf{};
@@ -240,13 +283,18 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
 {
     // RMT TX
     if (!_tx_handle && (cfg.mode == gpio::Mode::RmtTX || cfg.mode == gpio::Mode::RmtRXTX)) {
-        _tx_config          = to_rmt_tx_config(cfg, esp_clk_apb_freq());
+        _tx_config          = to_rmt_tx_config(cfg, rmt_source_freq_hz(RMT_CLK_SRC_DEFAULT));
         _tx_config.gpio_num = tx_pin();
 
         auto err = rmt_new_tx_channel(&_tx_config, &_tx_handle);
         if (err != ESP_OK) {
             M5_LIB_LOGE("Failed to rmt_new_tx_channel pin:%d %x", tx_pin(), err);
             return false;
+        }
+        _tx_resolution_hz = rmt_channel_resolution_hz(_tx_handle, _tx_config.resolution_hz);
+        if (!rmt_resolution_matches(_tx_resolution_hz, cfg.tx.tick_ns)) {
+            M5_LIB_LOGW("RMT(v2) TX resolution %u Hz does not give tick_ns %u",
+                        static_cast<unsigned>(_tx_resolution_hz), static_cast<unsigned>(cfg.tx.tick_ns));
         }
         err = rmt_enable(_tx_handle);
         if (err != ESP_OK) {
@@ -280,7 +328,7 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
         }
         _rx_buf_len = cfg.rx.ring_buffer_size;
 
-        _rx_config          = to_rmt_rx_config(cfg, esp_clk_apb_freq());
+        _rx_config          = to_rmt_rx_config(cfg, rmt_source_freq_hz(RMT_CLK_SRC_DEFAULT));
         _rx_config.gpio_num = rx_pin();
 
         auto err = rmt_new_rx_channel(&_rx_config, &_rx_handle);
@@ -288,6 +336,11 @@ bool GPIOImplV2::begin(const gpio::adapter_config_t &cfg)
             M5_LIB_LOGE("Failed to rmt_new_rx_channel pin:%d %x", rx_pin(), err);
             dump_rmt_config(_rx_config);
             return false;
+        }
+        _rx_resolution_hz = rmt_channel_resolution_hz(_rx_handle, _rx_config.resolution_hz);
+        if (!rmt_resolution_matches(_rx_resolution_hz, cfg.rx.tick_ns)) {
+            M5_LIB_LOGW("RMT(v2) RX resolution %u Hz does not give tick_ns %u",
+                        static_cast<unsigned>(_rx_resolution_hz), static_cast<unsigned>(cfg.rx.tick_ns));
         }
 
         rmt_rx_event_callbacks_t cbs{};
