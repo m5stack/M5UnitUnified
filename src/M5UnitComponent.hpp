@@ -912,7 +912,11 @@ protected:
 
 // Helper for creating derived classes from Component
 ///@cond
-#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                  \
+// Same as M5_UNIT_COMPONENT_HPP_BUILDER but declares no move constructor / move assignment:
+// the class declares its own (or = delete), e.g. when it hands `this` to an ISR or a C library.
+// A user-defined move must move the Component base too (Component(std::move(other))).
+// Since 0.6.4 (M5_UNIT_UNIFIED_VERSION)
+#define M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(cls, reg)     \
 public:                                                          \
     constexpr static uint8_t DEFAULT_ADDRESS{(reg)};             \
     static const types::uid_t uid;                               \
@@ -922,10 +926,6 @@ public:                                                          \
     cls(const cls&) = delete;                                    \
                                                                  \
     cls& operator=(const cls&) = delete;                         \
-                                                                 \
-    cls(cls&&) noexcept = default;                               \
-                                                                 \
-    cls& operator=(cls&&) noexcept = default;                    \
                                                                  \
 protected:                                                       \
     inline virtual const char* unit_device_name() const override \
@@ -940,6 +940,15 @@ protected:                                                       \
     {                                                            \
         return attr;                                             \
     }
+
+// Do not move a unit after UnitUnified::add(): UnitUnified keeps its address
+#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg) \
+public:                                         \
+    cls(cls&&) noexcept = default;              \
+                                                \
+    cls& operator=(cls&&) noexcept = default;   \
+                                                \
+    M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(cls, reg)
 
 // Helper for creating derived class from PeriodicMeasurementAdapter
 #define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)    \
