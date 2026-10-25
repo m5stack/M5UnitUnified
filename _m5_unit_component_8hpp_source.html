@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.3 git rev:e38fc73</span>
+   <div id="projectname">M5UnitUnified<span id="projectnumber">&#160;0.6.4 git rev:53b220c</span>
    </div>
   </td>
  </tr>
@@ -743,20 +743,20 @@ $(function(){initNavTree('_m5_unit_component_8hpp_source.html',''); initResizabl
 <div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>}  <span class="comment">// namespace m5</span></div>
 <div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span> </div>
 <div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span><span class="comment">// Helper for creating derived classes from Component</span></div>
-<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span><span class="preprocessor">#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg)                  \</span></div>
-<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span><span class="preprocessor">public:                                                          \</span></div>
-<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span><span class="preprocessor">    constexpr static uint8_t DEFAULT_ADDRESS{(reg)};             \</span></div>
-<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span><span class="preprocessor">    static const types::uid_t uid;                               \</span></div>
-<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span><span class="preprocessor">    static const types::attr_t attr;                             \</span></div>
-<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span><span class="preprocessor">    static const char name[];                                    \</span></div>
-<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span><span class="preprocessor">                                                                 \</span></div>
-<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span><span class="preprocessor">    cls(const cls&amp;) = delete;                                    \</span></div>
-<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span><span class="preprocessor">                                                                 \</span></div>
-<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span><span class="preprocessor">    cls&amp; operator=(const cls&amp;) = delete;                         \</span></div>
+<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span><span class="comment">// Same as M5_UNIT_COMPONENT_HPP_BUILDER but declares no move constructor / move assignment:</span></div>
+<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span><span class="comment">// the class declares its own (or = delete), e.g. when it hands `this` to an ISR or a C library.</span></div>
+<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span><span class="comment">// A user-defined move must move the Component base too (Component(std::move(other))).</span></div>
+<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span><span class="comment">// Since 0.6.4 (M5_UNIT_UNIFIED_VERSION)</span></div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span><span class="preprocessor">#define M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(cls, reg)     \</span></div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span><span class="preprocessor">public:                                                          \</span></div>
+<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span><span class="preprocessor">    constexpr static uint8_t DEFAULT_ADDRESS{(reg)};             \</span></div>
+<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span><span class="preprocessor">    static const types::uid_t uid;                               \</span></div>
+<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span><span class="preprocessor">    static const types::attr_t attr;                             \</span></div>
+<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span><span class="preprocessor">    static const char name[];                                    \</span></div>
 <div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span><span class="preprocessor">                                                                 \</span></div>
-<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span><span class="preprocessor">    cls(cls&amp;&amp;) noexcept = default;                               \</span></div>
+<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span><span class="preprocessor">    cls(const cls&amp;) = delete;                                    \</span></div>
 <div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span><span class="preprocessor">                                                                 \</span></div>
-<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span><span class="preprocessor">    cls&amp; operator=(cls&amp;&amp;) noexcept = default;                    \</span></div>
+<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span><span class="preprocessor">    cls&amp; operator=(const cls&amp;) = delete;                         \</span></div>
 <div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span><span class="preprocessor">                                                                 \</span></div>
 <div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span><span class="preprocessor">protected:                                                       \</span></div>
 <div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span><span class="preprocessor">    inline virtual const char* unit_device_name() const override \</span></div>
@@ -772,41 +772,50 @@ $(function(){initNavTree('_m5_unit_component_8hpp_source.html',''); initResizabl
 <div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span><span class="preprocessor">        return attr;                                             \</span></div>
 <div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span><span class="preprocessor">    }</span></div>
 <div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span> </div>
-<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span><span class="comment">// Helper for creating derived class from PeriodicMeasurementAdapter</span></div>
-<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span><span class="preprocessor">#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)    \</span></div>
-<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span><span class="preprocessor">protected:                                                                     \</span></div>
-<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span><span class="preprocessor">    friend class PeriodicMeasurementAdapter&lt;cls, md&gt;;                          \</span></div>
-<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span><span class="preprocessor">                                                                               \</span></div>
-<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span><span class="preprocessor">    inline md oldest_periodic_data() const                                     \</span></div>
-<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span><span class="preprocessor">        return !_data-&gt;empty() ? _data-&gt;front().value() : md{};                \</span></div>
-<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span><span class="preprocessor">    inline md latest_periodic_data() const                                     \</span></div>
-<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span><span class="preprocessor">        return !_data-&gt;empty() ? _data-&gt;back().value() : md{};                 \</span></div>
-<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span><span class="preprocessor">    inline virtual size_t available_periodic_measurement_data() const override \</span></div>
-<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span><span class="preprocessor">        return _data-&gt;size();                                                  \</span></div>
-<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00961" name="l00961"></a><span class="lineno">  961</span><span class="preprocessor">    inline virtual bool empty_periodic_measurement_data() const override       \</span></div>
-<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span><span class="preprocessor">        return _data-&gt;empty();                                                 \</span></div>
-<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span><span class="preprocessor">    inline virtual bool full_periodic_measurement_data() const override        \</span></div>
-<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span><span class="preprocessor">        return _data-&gt;full();                                                  \</span></div>
-<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span><span class="preprocessor">    inline virtual void discard_periodic_measurement_data() override           \</span></div>
-<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span><span class="preprocessor">        _data-&gt;pop_front();                                                    \</span></div>
-<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span><span class="preprocessor">    }                                                                          \</span></div>
-<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span><span class="preprocessor">    inline virtual void flush_periodic_measurement_data() override             \</span></div>
-<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span><span class="preprocessor">    {                                                                          \</span></div>
-<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span><span class="preprocessor">        _data-&gt;clear();                                                        \</span></div>
-<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span><span class="preprocessor">    }</span></div>
-<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span> </div>
-<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span><span class="comment">// Do not move a unit after UnitUnified::add(): UnitUnified keeps its address</span></div>
+<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span><span class="preprocessor">#define M5_UNIT_COMPONENT_HPP_BUILDER(cls, reg) \</span></div>
+<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span><span class="preprocessor">public:                                         \</span></div>
+<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span><span class="preprocessor">    cls(cls&amp;&amp;) noexcept = default;              \</span></div>
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span><span class="preprocessor">                                                \</span></div>
+<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span><span class="preprocessor">    cls&amp; operator=(cls&amp;&amp;) noexcept = default;   \</span></div>
+<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span><span class="preprocessor">                                                \</span></div>
+<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span><span class="preprocessor">    M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(cls, reg)</span></div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span> </div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span><span class="comment">// Helper for creating derived class from PeriodicMeasurementAdapter</span></div>
+<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span><span class="preprocessor">#define M5_UNIT_COMPONENT_PERIODIC_MEASUREMENT_ADAPTER_HPP_BUILDER(cls, md)    \</span></div>
+<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span><span class="preprocessor">protected:                                                                     \</span></div>
+<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span><span class="preprocessor">    friend class PeriodicMeasurementAdapter&lt;cls, md&gt;;                          \</span></div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span><span class="preprocessor">                                                                               \</span></div>
+<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span><span class="preprocessor">    inline md oldest_periodic_data() const                                     \</span></div>
+<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span><span class="preprocessor">        return !_data-&gt;empty() ? _data-&gt;front().value() : md{};                \</span></div>
+<div class="line"><a id="l00961" name="l00961"></a><span class="lineno">  961</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span><span class="preprocessor">    inline md latest_periodic_data() const                                     \</span></div>
+<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span><span class="preprocessor">        return !_data-&gt;empty() ? _data-&gt;back().value() : md{};                 \</span></div>
+<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span><span class="preprocessor">    inline virtual size_t available_periodic_measurement_data() const override \</span></div>
+<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span><span class="preprocessor">        return _data-&gt;size();                                                  \</span></div>
+<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span><span class="preprocessor">    inline virtual bool empty_periodic_measurement_data() const override       \</span></div>
+<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span><span class="preprocessor">        return _data-&gt;empty();                                                 \</span></div>
+<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span><span class="preprocessor">    inline virtual bool full_periodic_measurement_data() const override        \</span></div>
+<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span><span class="preprocessor">        return _data-&gt;full();                                                  \</span></div>
+<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span><span class="preprocessor">    inline virtual void discard_periodic_measurement_data() override           \</span></div>
+<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00980" name="l00980"></a><span class="lineno">  980</span><span class="preprocessor">        _data-&gt;pop_front();                                                    \</span></div>
+<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span><span class="preprocessor">    }                                                                          \</span></div>
+<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span><span class="preprocessor">    inline virtual void flush_periodic_measurement_data() override             \</span></div>
+<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span><span class="preprocessor">    {                                                                          \</span></div>
+<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span><span class="preprocessor">        _data-&gt;clear();                                                        \</span></div>
+<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span><span class="preprocessor">    }</span></div>
+<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span> </div>
+<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aadapter_8hpp_html"><div class="ttname"><a href="adapter_8hpp.html">adapter.hpp</a></div><div class="ttdoc">Adapters to treat M5HAL and any connection in the same way.</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_html"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter.html">m5::unit::Adapter</a></div><div class="ttdoc">Adapter base class to treat M5HAL and TwoWire,GPIO,Serial,SPI... in the same way.</div></div>
 <div class="ttc" id="aclassm5_1_1unit_1_1_adapter_html_a6d3797f5be198a03cd4699e63dbbafce"><div class="ttname"><a href="classm5_1_1unit_1_1_adapter.html#a6d3797f5be198a03cd4699e63dbbafce">m5::unit::Adapter::Type</a></div><div class="ttdeci">Type</div><div class="ttdoc">Adapter type.</div><div class="ttdef"><b>Definition</b> adapter_base.hpp:28</div></div>
