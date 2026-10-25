@@ -28,6 +28,7 @@ m5::unit::UnitUnified units;
 bool idf_check_wiring(m5::unit::Component& unit)
 {
     (void)m5::unit::wiring::i2cPins();
+    (void)m5::unit::wiring::addUART(units, unit, 115200, m5::unit::wiring::UartConfig::Default, 1024);
     return m5::unit::wiring::addI2C(units, unit);
 }
 

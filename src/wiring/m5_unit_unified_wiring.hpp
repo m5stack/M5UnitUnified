@@ -438,16 +438,32 @@ inline HardwareSerial& defaultUartSerial()
 #endif
 }
 
+//! @brief Restart serial on (rx, tx), applying rx_buffer_size first when it is not 0
+inline bool beginUartSerial(HardwareSerial& serial, const uint32_t baud, const uint32_t cfg, const int8_t rx,
+                            const int8_t tx, const size_t rx_buffer_size)
+{
+    serial.end();
+    // HardwareSerial resizes its RX buffer only while it is stopped
+    if (rx_buffer_size && serial.setRxBufferSize(rx_buffer_size) != rx_buffer_size) {
+        M5_LIB_LOGE("wiring: UART rx_buffer_size=%u rejected", (unsigned)rx_buffer_size);
+        return false;
+    }
+    serial.begin(baud, cfg, rx, tx);
+    return true;
+}
+
 /*!
   @brief Add a unit on the board's default UART, preferring PortC and falling back to PortA
   @param baud Baud rate (default 115200)
   @param config UartConfig enum (default `UartConfig::Default` = 8N1)
+  @param rx_buffer_size RX buffer size in bytes, larger than the UART hardware FIFO (128 bytes).
+  0 (default) keeps the size set on the Serial (256 bytes unless changed)
   @note Selects HardwareSerial via defaultUartSerial() based on board.
         On NanoC6 / NanoH2 fallback, M5.Ex_I2C.begin() + release() is called to flip the m5gfx
         I2C `initialized` flag so release() actually detaches the bus + restores pins.
 */
 inline bool addUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200,
-                    const UartConfig config = UartConfig::Default)
+                    const UartConfig config = UartConfig::Default, const size_t rx_buffer_size = 0)
 {
     HardwareSerial& serial = defaultUartSerial();
     const uint32_t cfg     = toArduinoSerialConfig(config);
@@ -464,9 +480,7 @@ inline bool addUART(UnitUnified& units, Component& unit, const uint32_t baud = 1
     }
     M5_LIB_LOGI("wiring: UART rx=%d tx=%d baud=%lu config=0x%lx fallback_a=%d", (int)p.rx, (int)p.tx,
                 (unsigned long)baud, (unsigned long)cfg, (int)p.fallback_a);
-    serial.end();
-    serial.begin(baud, cfg, p.rx, p.tx);
-    return units.add(unit, serial);
+    return beginUartSerial(serial, baud, cfg, p.rx, p.tx, rx_buffer_size) && units.add(unit, serial);
 }
 
 //! @brief Add a unit on an already-begun SPI bus (CS is taken from the unit ctor / address)
@@ -554,10 +568,11 @@ inline bool addHatGPIO(UnitUnified& units, Component& unit, const GpioRole role 
   @brief Add a unit on the board's Hat UART header
   @param baud Baud rate (default 115200)
   @param config UartConfig enum (default `UartConfig::Default` = 8N1)
+  @param rx_buffer_size RX buffer size in bytes, as for addUART()
   @note Selects HardwareSerial via defaultUartSerial() based on board.
 */
 inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200,
-                       const UartConfig config = UartConfig::Default)
+                       const UartConfig config = UartConfig::Default, const size_t rx_buffer_size = 0)
 {
     HardwareSerial& serial = defaultUartSerial();
     const uint32_t cfg     = toArduinoSerialConfig(config);
@@ -568,9 +583,7 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
     }
     M5_LIB_LOGI("wiring: addHatUART board=0x%02x rx=%d tx=%d baud=%lu config=0x%lx", (int)M5.getBoard(), (int)p.rx,
                 (int)p.tx, (unsigned long)baud, (unsigned long)cfg);
-    serial.end();
-    serial.begin(baud, cfg, p.rx, p.tx);
-    return units.add(unit, serial);
+    return beginUartSerial(serial, baud, cfg, p.rx, p.tx, rx_buffer_size) && units.add(unit, serial);
 }
 #endif  // ARDUINO
 
@@ -632,9 +645,12 @@ struct I2CCacheEntry {
 };
 #endif
 
+constexpr size_t uart_default_rx_buffer_size = 256;
+
 struct UARTCacheEntry {
     uint32_t key;
     uart_port_t port;
+    size_t rx_buffer_size;  //!< 0 if the driver was installed by someone else
 };
 
 struct SPIHostEntry {
@@ -752,24 +768,32 @@ inline bool ensureI2CLegacyDriver(const i2c_port_t port, const gpio_num_t sda, c
 }
 #endif
 
-//! @brief Get or install a UART port, cached by {port, rx, tx}.
+//! @brief Get or install a UART port, cached by {port, rx, tx}. rx_buffer_size 0 means the default (256 bytes)
 inline uart_port_t ensureUARTPort(const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud,
-                                  const UartConfig config)
+                                  const UartConfig config, const size_t rx_buffer_size)
 {
-    const uint32_t key = (static_cast<uint32_t>(static_cast<uint8_t>(port)) << 24) |
+    const size_t rx_size = rx_buffer_size ? rx_buffer_size : uart_default_rx_buffer_size;
+    const uint32_t key   = (static_cast<uint32_t>(static_cast<uint8_t>(port)) << 24) |
                          (static_cast<uint32_t>(static_cast<uint8_t>(rx)) << 16) |
                          (static_cast<uint32_t>(static_cast<uint8_t>(tx)) << 8);
     static UARTCacheEntry cache[kUARTPortCacheSize]{};
     static size_t count{};
     for (size_t i = 0; i < count; ++i) {
-        if (cache[i].key == key) return cache[i].port;
+        if (cache[i].key == key) {
+            // The driver keeps the buffer it was installed with
+            if (rx_buffer_size && cache[i].rx_buffer_size && cache[i].rx_buffer_size != rx_size) {
+                M5_LIB_LOGW("wiring: UART port=%d already installed with rx_buffer_size=%u (requested %u)", (int)port,
+                            (unsigned)cache[i].rx_buffer_size, (unsigned)rx_size);
+            }
+            return cache[i].port;
+        }
     }
     if (count >= kUARTPortCacheSize) {
         M5_LIB_LOGE("wiring: UART port cache full (max %zu)", kUARTPortCacheSize);
         return UART_NUM_MAX;
     }
     if (uart_is_driver_installed(port)) {
-        cache[count] = {key, port};
+        cache[count] = {key, port, 0};
         return cache[count++].port;
     }
     const auto p = toIdfUartParams(config);
@@ -782,11 +806,11 @@ inline uart_port_t ensureUARTPort(const uart_port_t port, const gpio_num_t rx, c
     uc.source_clk = UART_SCLK_DEFAULT;
     if (uart_param_config(port, &uc) != ESP_OK ||
         uart_set_pin(port, tx, rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) != ESP_OK ||
-        uart_driver_install(port, 256, 0, 0, nullptr, 0) != ESP_OK) {
-        M5_LIB_LOGE("wiring: uart setup failed port=%d", (int)port);
+        uart_driver_install(port, static_cast<int>(rx_size), 0, 0, nullptr, 0) != ESP_OK) {
+        M5_LIB_LOGE("wiring: uart setup failed port=%d rx_buffer_size=%u", (int)port, (unsigned)rx_size);
         return UART_NUM_MAX;
     }
-    cache[count] = {key, port};
+    cache[count] = {key, port, rx_size};
     return cache[count++].port;
 }
 
@@ -864,12 +888,14 @@ inline i2c_master_bus_handle_t i2cBusHandle(const i2c_port_t port, const gpio_nu
 
 /*!
   @brief Get or install a UART port (cached by {port, rx, tx})
+  @param rx_buffer_size RX buffer size in bytes, larger than the UART hardware FIFO (128 bytes). 0 (default) is
+  256 bytes. Ignored when the port is already installed
   @note  Intended for unit-specific wiring; examples should use addUART() instead.
 */
 inline uart_port_t uartPortHandle(const uart_port_t port, const gpio_num_t rx, const gpio_num_t tx, const uint32_t baud,
-                                  const UartConfig config = UartConfig::Default)
+                                  const UartConfig config = UartConfig::Default, const size_t rx_buffer_size = 0)
 {
-    return detail::ensureUARTPort(port, rx, tx, baud, config);
+    return detail::ensureUARTPort(port, rx, tx, baud, config, rx_buffer_size);
 }
 
 /*!
@@ -957,14 +983,19 @@ inline bool addGPIO(UnitUnified& units, Component& unit, const GpioRole role = G
     return units.add(unit, p.rx, p.tx);
 }
 
-//! @brief Add a unit on UART, preferring PortC and falling back to PortA (ESP-IDF native)
+/*!
+  @brief Add a unit on UART, preferring PortC and falling back to PortA (ESP-IDF native)
+  @param rx_buffer_size RX buffer size in bytes, larger than the UART hardware FIFO (128 bytes). 0 (default) is
+  256 bytes
+*/
 inline bool addUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200,
-                    const UartConfig config = UartConfig::Default)
+                    const UartConfig config = UartConfig::Default, const size_t rx_buffer_size = 0)
 {
     const auto pins = uartPins();
     M5_LIB_LOGI("wiring(ESP-IDF): UART rx=%d tx=%d baud=%u fallback_a=%d", (int)pins.rx, (int)pins.tx, (unsigned)baud,
                 (int)pins.fallback_a);
-    auto port = uartPortHandle(defaultUartPort(), (gpio_num_t)pins.rx, (gpio_num_t)pins.tx, baud, config);
+    auto port =
+        uartPortHandle(defaultUartPort(), (gpio_num_t)pins.rx, (gpio_num_t)pins.tx, baud, config, rx_buffer_size);
     if (port == UART_NUM_MAX) return false;
     return units.add(unit, port);
 }
@@ -1037,9 +1068,12 @@ inline bool addHatGPIO(UnitUnified& units, Component& unit, const GpioRole role 
     return units.add(unit, p.rx, p.tx);
 }
 
-//! @brief Add a unit on the board's Hat UART header (ESP-IDF native)
+/*!
+  @brief Add a unit on the board's Hat UART header (ESP-IDF native)
+  @param rx_buffer_size RX buffer size in bytes, as for addUART()
+*/
 inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud = 115200,
-                       const UartConfig config = UartConfig::Default)
+                       const UartConfig config = UartConfig::Default, const size_t rx_buffer_size = 0)
 {
     const auto p = hatUARTPins();
     if (p.rx < 0 || p.tx < 0) {
@@ -1048,7 +1082,7 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
     }
     M5_LIB_LOGI("wiring(ESP-IDF): addHatUART board=0x%02x rx=%d tx=%d baud=%u", (int)M5.getBoard(), (int)p.rx,
                 (int)p.tx, (unsigned)baud);
-    auto port = uartPortHandle(defaultUartPort(), (gpio_num_t)p.rx, (gpio_num_t)p.tx, baud, config);
+    auto port = uartPortHandle(defaultUartPort(), (gpio_num_t)p.rx, (gpio_num_t)p.tx, baud, config, rx_buffer_size);
     if (port == UART_NUM_MAX) return false;
     return units.add(unit, port);
 }

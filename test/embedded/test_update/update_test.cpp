@@ -15,6 +15,7 @@
 #include <SPI.h>
 #include <M5Unified.h>
 #include <M5HAL.hpp>
+#include <driver/uart.h>
 #include <wiring/m5_unit_unified_wiring.hpp>  // include last; uses M5Unified/M5HAL detected above
 
 using namespace m5::unit;
@@ -377,4 +378,63 @@ TEST(Component, DuplicateAdd)
     EXPECT_TRUE(u.isRegistered());
     // Second add of same unit should fail
     EXPECT_FALSE(add_with_i2c(units, u));
+}
+
+// Test: addUART() rx_buffer_size keeps a burst longer than the default 256 byte RX buffer
+TEST(Wiring, AddUARTRxBufferSize)
+{
+    const auto pins = m5::unit::wiring::uartPins();
+    if (pins.rx < 0 || pins.tx < 0) {
+        GTEST_SKIP() << "No UART port on this board";
+    }
+#if M5_UNIT_UNIFIED_WIRING_HP_UART_NUM > 2
+    constexpr uart_port_t port = UART_NUM_2;  // Serial2
+#else
+    constexpr uart_port_t port = UART_NUM_1;  // Serial1
+#endif
+    HardwareSerial& serial = m5::unit::wiring::defaultUartSerial();
+
+    constexpr size_t burst = 640;
+    uint8_t out[burst]{};
+    for (size_t i = 0; i < burst; ++i) {
+        out[i] = static_cast<uint8_t>(i);
+    }
+    // Received bytes after sending the burst through the internal loopback
+    auto received = [&serial, &out]() {
+        EXPECT_EQ(uart_set_loop_back(port, true), ESP_OK);
+        m5::utility::delay(5);  // let a garbage byte from the switch arrive before dropping it
+        while (serial.available()) {
+            serial.read();
+        }
+        serial.write(out, burst);
+        serial.flush();
+        m5::utility::delay(10);
+        const size_t n = serial.available();
+        uart_set_loop_back(port, false);
+        return n;
+    };
+
+    // 0 keeps the default 256 bytes: the burst overflows it
+    {
+        UnitUnified units;
+        UnitDummyUART u;
+        EXPECT_TRUE(m5::unit::wiring::addUART(units, u));
+        EXPECT_LT(received(), burst);
+    }
+    {
+        UnitUnified units;
+        UnitDummyUART u;
+        EXPECT_TRUE(m5::unit::wiring::addUART(units, u, 115200, m5::unit::wiring::UartConfig::Default, 1024));
+        EXPECT_EQ(received(), burst);
+    }
+    // Not larger than the hardware FIFO: rejected
+    {
+        UnitUnified units;
+        UnitDummyUART u;
+        EXPECT_FALSE(m5::unit::wiring::addUART(units, u, 115200, m5::unit::wiring::UartConfig::Default, 64));
+        EXPECT_FALSE(u.isRegistered());
+    }
+
+    serial.end();
+    serial.setRxBufferSize(256);
 }

@@ -160,6 +160,14 @@ public:
     {
         return _rx_config.channel;
     }
+    uint32_t rmtTxResolutionHz() const override
+    {
+        return _tx_resolution_hz;
+    }
+    uint32_t rmtRxResolutionHz() const override
+    {
+        return _rx_resolution_hz;
+    }
 
     virtual ~GPIOImplV1()
     {
@@ -206,7 +214,12 @@ public:
                 return false;
             }
             // Hold the channel only once installed, so the destructor never releases a channel it does not own
-            _tx_config = tx_config;
+            _tx_config        = tx_config;
+            _tx_resolution_hz = _tx_config.clk_div ? esp_clk_apb_freq() / _tx_config.clk_div : 0;
+            if (!rmt_resolution_matches(_tx_resolution_hz, cfg.tx.tick_ns)) {
+                M5_LIB_LOGW("RMT(v1) TX resolution %u Hz does not give tick_ns %u",
+                            static_cast<unsigned>(_tx_resolution_hz), static_cast<unsigned>(cfg.tx.tick_ns));
+            }
 
             if (_adapter_cfg.tx.invert_signal) {
                 gpio_matrix_out(_tx_config.gpio_num, _tx_config.channel + RMT_SIG_OUT0_IDX, true, false);
@@ -259,7 +272,12 @@ public:
                 return false;
             }
             // Hold the channel only once installed, so the destructor never releases a channel it does not own
-            _rx_config = rx_config;
+            _rx_config        = rx_config;
+            _rx_resolution_hz = _rx_config.clk_div ? esp_clk_apb_freq() / _rx_config.clk_div : 0;
+            if (!rmt_resolution_matches(_rx_resolution_hz, cfg.rx.tick_ns)) {
+                M5_LIB_LOGW("RMT(v1) RX resolution %u Hz does not give tick_ns %u",
+                            static_cast<unsigned>(_rx_resolution_hz), static_cast<unsigned>(cfg.rx.tick_ns));
+            }
 
             if (_adapter_cfg.rx.invert_signal) {
                 // RX input signals are numbered from the first RX-capable channel
@@ -387,6 +405,7 @@ protected:
     }
 
     rmt_config_t _rx_config{}, _tx_config{};
+    uint32_t _rx_resolution_hz{}, _tx_resolution_hz{};
     uint32_t _truncated{};
     TickType_t _truncated_reported_at{};
 };

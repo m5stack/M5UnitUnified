@@ -8,7 +8,10 @@
 */
 #include <gtest/gtest.h>
 #include <M5UnitComponent.hpp>
+#include <M5Utility.hpp>
 #include "unit_dummy.hpp"
+#include <type_traits>
+#include <utility>
 
 TEST(Component, Children)
 {
@@ -115,4 +118,70 @@ TEST(Component, DefaultProperties)
 
     // deviceName
     EXPECT_STREQ(u.deviceName(), "UnitDummy");
+}
+
+namespace {
+using namespace m5::unit;
+using namespace m5::utility::mmh3;
+
+// A unit that cannot be moved
+class UnitNoMove : public Component {
+    M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(UnitNoMove, 0x00);
+
+public:
+    UnitNoMove() : Component(DUMMY_I2C_ADDR)
+    {
+    }
+    UnitNoMove(UnitNoMove&&) = delete;
+    UnitNoMove& operator=(UnitNoMove&&) = delete;
+};
+const char UnitNoMove::name[] = "UnitNoMove";
+const types::uid_t UnitNoMove::uid{"UnitNoMove"_mmh3};
+const types::attr_t UnitNoMove::attr{types::attribute::AccessI2C};
+
+// A unit that keeps a pointer to itself (as handed to an ISR) and refreshes it when moved
+class UnitSelfMove : public Component {
+    M5_UNIT_COMPONENT_HPP_BUILDER_WITHOUT_MOVE(UnitSelfMove, 0x00);
+
+public:
+    UnitSelfMove() : Component(DUMMY_I2C_ADDR), self{this}
+    {
+    }
+    UnitSelfMove(UnitSelfMove&& o) noexcept : Component(std::move(o)), self{this}
+    {
+    }
+    UnitSelfMove& operator=(UnitSelfMove&& o) noexcept
+    {
+        Component::operator=(std::move(o));
+        self               = this;
+        return *this;
+    }
+    UnitSelfMove* self{};
+};
+const char UnitSelfMove::name[] = "UnitSelfMove";
+const types::uid_t UnitSelfMove::uid{"UnitSelfMove"_mmh3};
+const types::attr_t UnitSelfMove::attr{types::attribute::AccessI2C};
+}  // namespace
+
+TEST(Component, BuilderWithoutMove)
+{
+    static_assert(std::is_move_constructible<UnitDummy>::value, "BUILDER keeps the default move");
+    static_assert(!std::is_copy_constructible<UnitNoMove>::value, "Copy is deleted");
+    static_assert(!std::is_move_constructible<UnitNoMove>::value, "The unit deleted its move");
+    static_assert(!std::is_move_assignable<UnitNoMove>::value, "The unit deleted its move");
+
+    UnitNoMove n;
+    EXPECT_STREQ(n.deviceName(), "UnitNoMove");
+    EXPECT_EQ(n.identifier(), UnitNoMove::uid);
+    EXPECT_EQ(n.address(), DUMMY_I2C_ADDR);
+
+    UnitSelfMove a;
+    EXPECT_EQ(a.self, &a);
+    UnitSelfMove b(std::move(a));
+    EXPECT_EQ(b.self, &b);
+    EXPECT_EQ(b.address(), DUMMY_I2C_ADDR);
+    EXPECT_STREQ(b.deviceName(), "UnitSelfMove");
+    UnitSelfMove c;
+    c = std::move(b);
+    EXPECT_EQ(c.self, &c);
 }

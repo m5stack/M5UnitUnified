@@ -49,6 +49,13 @@ public:
         {
             return 0;
         }
+#if defined(ESP_PLATFORM)
+        //! @brief ESP-IDF UART port (UART_NUM_MAX if not on an ESP-IDF port)
+        virtual uart_port_t uartPort() const
+        {
+            return UART_NUM_MAX;
+        }
+#endif
     };
 
     //
@@ -86,7 +93,7 @@ public:
         virtual m5::hal::error::error_t readWithTransaction(uint8_t* data, const size_t len) override;
         virtual m5::hal::error::error_t writeWithTransaction(const uint8_t* data, const size_t len,
                                                              const uint32_t stop) override;
-        inline uart_port_t uartPort() const
+        inline virtual uart_port_t uartPort() const override
         {
             return _uart_num;
         }
@@ -127,6 +134,18 @@ public:
     {
         return impl()->available();
     }
+#if defined(ESP_PLATFORM)
+    /*!
+      @brief ESP-IDF UART port of this adapter
+      @return The port given to AdapterUART(uart_port_t), or UART_NUM_MAX for AdapterUART(HardwareSerial&)
+      @note Lets a unit call the ESP-IDF UART driver for what the adapter does not cover.
+      Since 0.6.4 (M5_UNIT_UNIFIED_VERSION)
+     */
+    inline uart_port_t uartPort() const
+    {
+        return impl()->uartPort();
+    }
+#endif
 
     inline UARTImpl* impl()
     {
