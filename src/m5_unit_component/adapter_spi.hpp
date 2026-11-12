@@ -103,7 +103,6 @@ public:
 
     private:
         spi_device_handle_t _handle{};
-        gpio_num_t _cs{GPIO_NUM_NC};
         bool _in_transaction{false};
     };
 #endif
@@ -142,9 +141,6 @@ protected:
     AdapterSPI() : Adapter(Adapter::Type::SPI, new SPIImpl())
     {
     }
-
-protected:
-    gpio_num_t _cs{GPIO_NUM_NC};
 };
 
 }  // namespace unit

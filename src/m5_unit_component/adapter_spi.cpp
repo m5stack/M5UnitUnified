@@ -144,7 +144,7 @@ m5::hal::error::error_t to_spi_error(const esp_err_t err)
 }  // namespace
 
 AdapterSPI::ESPIDFImpl::ESPIDFImpl(spi_device_handle_t handle, const gpio_num_t cs)
-    : AdapterSPI::SPIImpl(), _handle(handle), _cs(output_cs_or_nc(cs))
+    : AdapterSPI::SPIImpl(output_cs_or_nc(cs)), _handle(handle)
 {
     if (_cs != GPIO_NUM_NC) {
         gpio_set_direction(_cs, GPIO_MODE_OUTPUT);
