@@ -11,10 +11,12 @@
 #ifndef M5_UNIT_COMPONENT_GOOGLETEST_HELPER_HPP
 #define M5_UNIT_COMPONENT_GOOGLETEST_HELPER_HPP
 
+#include "../M5UnitComponent.hpp"
 #include <M5Utility.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 namespace m5 {
