@@ -354,9 +354,10 @@ inline bool i2cSoftware(UnitUnified& units, Component& unit, const int sda, cons
 #endif
 ///@}
 
-///@name High-level addX (Arduino only — drives Wire / SPI / HardwareSerial)
+///@name High-level addX (Arduino + M5Unified — drives Wire / SPI / HardwareSerial)
 ///@{
 #if defined(ARDUINO)
+#if defined(__M5UNIFIED_HPP__)
 /*!
   @brief Add a unit on the board's default I2C, picking the right backend automatically
   @param nesso NessoN1 only: PortB (default) -> SoftwareI2C, PortA -> Wire (QWIIC)
@@ -402,6 +403,7 @@ inline bool addGPIO(UnitUnified& units, Component& unit, const GpioRole role = G
     M5_LIB_LOGI("wiring: GPIO rx=%d tx=%d role=%d fallback_a=%d", (int)p.rx, (int)p.tx, (int)role, (int)p.fallback_a);
     return units.add(unit, p.rx, p.tx);
 }
+#endif  // __M5UNIFIED_HPP__
 
 //! @brief Map UartConfig to Arduino's SERIAL_* uint32_t value
 inline uint32_t toArduinoSerialConfig(const UartConfig c)
@@ -452,6 +454,7 @@ inline bool beginUartSerial(HardwareSerial& serial, const uint32_t baud, const u
     return true;
 }
 
+#if defined(__M5UNIFIED_HPP__)
 /*!
   @brief Add a unit on the board's default UART, preferring PortC and falling back to PortA
   @param baud Baud rate (default 115200)
@@ -482,6 +485,7 @@ inline bool addUART(UnitUnified& units, Component& unit, const uint32_t baud = 1
                 (unsigned long)baud, (unsigned long)cfg, (int)p.fallback_a);
     return beginUartSerial(serial, baud, cfg, p.rx, p.tx, rx_buffer_size) && units.add(unit, serial);
 }
+#endif  // __M5UNIFIED_HPP__
 
 //! @brief Add a unit on an already-begun SPI bus (CS is taken from the unit ctor / address)
 inline bool spiBus(UnitUnified& units, Component& unit, SPIClass& spi, const SPISettings& settings)
@@ -490,6 +494,7 @@ inline bool spiBus(UnitUnified& units, Component& unit, SPIClass& spi, const SPI
     return units.add(unit, spi, settings);
 }
 
+#if defined(__M5UNIFIED_HPP__)
 /*!
   @brief Add a unit on the board's shared SD/SPI bus, beginning it on demand
   @param clock_hz SPI clock in Hz
@@ -585,6 +590,7 @@ inline bool addHatUART(UnitUnified& units, Component& unit, const uint32_t baud 
                 (int)p.tx, (unsigned long)baud, (unsigned long)cfg);
     return beginUartSerial(serial, baud, cfg, p.rx, p.tx, rx_buffer_size) && units.add(unit, serial);
 }
+#endif  // __M5UNIFIED_HPP__
 #endif  // ARDUINO
 
 ///@name ESP-IDF native infrastructure (cache, hooks, defaults)
